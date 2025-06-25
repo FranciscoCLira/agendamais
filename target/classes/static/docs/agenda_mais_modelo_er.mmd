@@ -1,0 +1,56 @@
+import graphviz
+import os
+
+# Recriar o modelo ER com as alterações feitas
+dot = graphviz.Digraph(comment='Modelo ER - Agenda Mais (Atualizado)')
+dot.attr('node', shape='record', style='filled', fillcolor='lavender')
+
+# Entidades e principais campos
+entities = {
+    "Usuario": ["codUsuario", "senha", "nivelAcessoUsuario"],
+    "Pessoa": ["id", "codUsuario", "nomePessoa", "situacaoPessoa", "emailPessoa", "celularPessoa"],
+    "TipoAtividade": ["id", "tituloTipoAtividade", "descricaoTipoAtividade"],
+    "Instituicao": ["id", "nomeInstituicao", "situacaoInstituicao"],
+    "SubInstituicao": ["id", "idInstituicao", "nomeSubInstituicao"],
+    "Atividade": ["id", "tipoAtividade", "idInstituicao", "idSubInstituicao", "idSolicitante", "tituloAtividade", "linkAtividadeOnLine"],
+    "OcorrenciaAtividade": ["id", "idAtividade", "idAutor", "temaOcorrencia", "qtdeParticipantes", "obsEncerramento"],
+    "Autor": ["id", "idPessoa", "funcaoAutor"],
+    "Inscricao": ["id", "idPessoa", "idInstituicao", "tipoAtividade"],
+    "PessoaInstituicao": ["id", "idPessoa", "idInstituicao"],
+    "PessoaSubInstituicao": ["id", "idPessoa", "idSubInstituicao"],
+    "LogPostagem": ["id", "idOcorrenciaAtividade", "dataPostagem", "horaPostagem"]
+}
+
+# Criar nós de entidade
+for entity, fields in entities.items():
+    label = f"{entity}|{{" + "|".join(fields) + "}}"
+    dot.node(entity, label=label)
+
+# Relacionamentos principais
+relationships = [
+    ("Pessoa", "Usuario"),
+    ("Pessoa", "PessoaInstituicao"),
+    ("Pessoa", "PessoaSubInstituicao"),
+    ("Pessoa", "Autor"),
+    ("Pessoa", "Inscricao"),
+    ("Pessoa", "Atividade"),
+    ("Atividade", "TipoAtividade"),
+    ("Atividade", "Instituicao"),
+    ("Atividade", "SubInstituicao"),
+    ("OcorrenciaAtividade", "Atividade"),
+    ("OcorrenciaAtividade", "Autor"),
+    ("LogPostagem", "OcorrenciaAtividade"),
+    ("SubInstituicao", "Instituicao"),
+    ("PessoaInstituicao", "Instituicao"),
+    ("PessoaSubInstituicao", "SubInstituicao"),
+    ("Inscricao", "TipoAtividade"),
+    ("Inscricao", "Instituicao")
+]
+
+for src, dst in relationships:
+    dot.edge(src, dst)
+
+# Renderizar o modelo ER atualizado
+path = "/mnt/data/agenda_mais_modelo_er_atualizado"
+dot.render(path, format="png", cleanup=False)
+f"{path}.png"
