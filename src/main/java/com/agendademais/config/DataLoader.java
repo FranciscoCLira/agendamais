@@ -39,14 +39,17 @@ public class DataLoader implements CommandLineRunner {
      // if (usuarioRepository.count() > 0 || instituicaoRepository.count() > 0) {
 
     	if (!reloadData || usuarioRepository.count() > 0 || instituicaoRepository.count() > 0) {
-            System.out.println("****** /config/DataLoader.java - Não recarregou a base de dados ******");
-        	System.out.println("****** reloadData=" + reloadData);
+        	System.out.println("****************************************************************************");
+            System.out.println("****** /config/DataLoader.java - Não recarregou a base de dados       ******");
         	System.out.println("****** spring.jpa.hibernate.ddl-auto=update ==> reloadData=" + reloadData);
+        	System.out.println("****************************************************************************");
             return; // Já existem dados, não recarregar
         }
 
-        System.out.println("****** /config/DataLoader.java - Recarregou a base de dados  ******");
+    	System.out.println("****************************************************************************");
+        System.out.println("****** /config/DataLoader.java - Recarregou a base de dados           ******");
     	System.out.println("****** spring.jpa.hibernate.ddl-auto=create ==> reloadData=" + reloadData);
+    	System.out.println("****************************************************************************");
 
         Instituicao inst1 = new Instituicao();
         inst1.setNomeInstituicao("Instituto Aurora");
