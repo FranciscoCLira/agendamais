@@ -2,103 +2,104 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Agenda Mais - Login</title>
+    <title>Login - Agenda Mais</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
         }
         header {
-            background-color: #4b0082;
+            background-color: #4B0082;
             color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 2rem;
+            text-align: center;
         }
         header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 2rem;
         }
         header p {
             margin: 0;
-            font-size: 16px;
-            color: #e0e0ff;
+            font-size: 1.1rem;
+            margin-top: 0.4rem;
         }
-        .container {
-            width: 400px;
-            margin: 50px auto;
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 70vh;
+        }
+        form {
             background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
         }
         label {
             display: block;
-            margin-top: 10px;
-            font-weight: bold;
+            margin-bottom: 0.5rem;
         }
         input, select {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
         }
-        button {
-            margin-top: 20px;
+        .btn {
             width: 100%;
-            padding: 10px;
-            background-color: #4b0082;
+            background-color: #4B0082;
             color: white;
             border: none;
-            border-radius: 4px;
+            padding: 0.7rem;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #360061;
+        .btn:hover {
+            background-color: #5c1aa3;
         }
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-        .cadastro-link {
-            display: block;
+        .register-link {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 1rem;
+        }
+        .register-link a {
+            color: #4B0082;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 <header>
-    <div>
-        <h1>Agenda Mais</h1>
-        <p>Agendando tudo e mais</p>
-    </div>
-    <div th:text="${nomeInstituicao}" style="text-align: right;"></div>
+    <h1>Agenda Mais</h1>
+    <p>Agendando tudo e mais</p>
 </header>
-
-<div class="container">
+<main>
     <form th:action="@{/login}" method="post">
-        <label for="codUsuario">Código do Usuário:</label>
-        <input type="text" id="codUsuario" name="codUsuario" maxlength="25" required/>
+        <label for="codUsuario">Usuário</label>
+        <input type="text" id="codUsuario" name="codUsuario" required>
 
-        <label for="senha">Senha:</label>
-        <input type="password" id="senha" name="senha" required/>
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" required>
 
-        <label for="idInstituicao">Instituição:</label>
+        <label for="idInstituicao">Instituição</label>
         <select id="idInstituicao" name="idInstituicao" required>
-            <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
+            <option th:each="inst : ${instituicoes}"
+                    th:value="${inst.id}"
+                    th:text="${inst.nomeInstituicao}"></option>
         </select>
 
-        <div th:if="${erro}" class="error" th:text="${erro}"></div>
+        <button type="submit" class="btn">Entrar</button>
 
-        <button type="submit">Entrar</button>
-        <a th:href="@{/cadastro}" class="cadastro-link">Ainda não tem cadastro?</a>
+        <div class="register-link">
+            <p>Ainda não tem cadastro? <a th:href="@{/cadastro}">Cadastre-se</a></p>
+        </div>
     </form>
-</div>
+</main>
 </body>
 </html>
