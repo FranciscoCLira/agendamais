@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda Mais - Cadastro de Atividade</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        .linha-terco {
+            width: 32%;
+        }
+        .linha-doistercos {
+            width: 66%;
+        }
+        .linha-meia {
+            width: 50%;
+        }
+        .linha-sessenta {
+            width: 60%;
+        }
+    </style>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function preencherIdSolicitante() {
+            const emailInput = document.getElementById("emailSolicitante").value;
+            const datalist = document.getElementById("sugestoesEmail");
+            const idInput = document.getElementById("idSolicitante");
+
+            for (let i = 0; i < datalist.options.length; i++) {
+                if (datalist.options[i].value === emailInput) {
+                    const pessoaId = datalist.options[i].getAttribute("data-id");
+                    idInput.value = pessoaId;
+                    return;
+                }
+            }
+            idInput.value = "";
+        }
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <header style="background-color:#4b0082; padding: 20px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; color: white;">Agenda Mais</h1>
+        <p style="margin: 0; font-size: 16px; color: #e0e0ff;">Agendando tudo e mais</p>
+    </header>
+
+    <h1 th:text="${atividade.id} != null ? 'Editar Atividade' : 'Nova Atividade'"></h1>
+
+    <form th:action="@{/atividades/salvar}" th:object="${atividade}" method="post" onsubmit="preencherIdSolicitante()">
+        <input type="hidden" th:field="*{id}" />
+
+        <label for="tituloAtividade">Título:</label>
+        <input type="text" id="tituloAtividade" th:field="*{tituloAtividade}" maxlength="30" required style="width: 30ch;" /><br/>
+
+        <label for="tipoAtividade">Tipo de Atividade:</label>
+        <select id="tipoAtividade" th:field="*{tipoAtividade}" required style="width: 30ch;">
+            <option th:each="tipo : ${tiposAtividade}" th:value="${tipo.id}" th:text="${tipo.tituloTipoAtividade}"></option>
+        </select><br/>
+
+        <label for="instituicao">Instituição:</label>
+        <select id="instituicao" th:field="*{instituicao}" required>
+            <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
+        </select><br/>
+
+        <label for="subInstituicao">Subinstituição:</label>
+        <select id="subInstituicao" th:field="*{subInstituicao}">
+            <option th:each="sub : ${subinstituicoes}" th:value="${sub.id}" th:text="${sub.nomeSubInstituicao}"></option>
+        </select><br/>
+
+        <label for="emailSolicitante">E-mail do Solicitante:</label>
+        <input type="email" id="emailSolicitante" name="emailSolicitante" list="sugestoesEmail" class="linha-sessenta" style="width: 60%;" required onchange="preencherIdSolicitante()" />
+        <datalist id="sugestoesEmail">
+            <option th:each="p : ${pessoas}" th:value="${p.emailPessoa}" th:text="${p.nomePessoa + ' (' + p.emailPessoa + ')'}" th:attr="data-id=${p.id}"></option>
+        </datalist>
+        <input type="hidden" name="idSolicitante" id="idSolicitante" th:value="${atividade.idSolicitante != null ? atividade.idSolicitante.id : ''}" />
+        <br/>
+
+        <label for="formaApresentacao">Forma de Apresentação:</label>
+        <select id="formaApresentacao" th:field="*{formaApresentacao}" required class="linha-terco">
+            <option value="1">Presencial</option>
+            <option value="2">Virtual</option>
+            <option value="3">Presencial e Virtual</option>
+        </select><br/>
+
+        <label for="situacaoAtividade">Situação:</label>
+        <select id="situacaoAtividade" th:field="*{situacaoAtividade}" required class="linha-terco">
+            <option value="A">Ativa</option>
+            <option value="I">Inativa</option>
+            <option value="C">Cancelada</option>
+        </select><br/>
+
+        <label for="publicoAlvo">Público Alvo:</label>
+        <select id="publicoAlvo" th:field="*{publicoAlvo}" class="linha-terco">
+            <option value="1">Aberto</option>
+            <option value="2">Restrito</option>
+            <option value="3">Acadêmico</option>
+            <option value="4">Outro</option>
+        </select><br/>
+
+        <label for="descricaoAtividade">Descrição:</label><br/>
+        <textarea id="descricaoAtividade" th:field="*{descricaoAtividade}" rows="4" cols="50"></textarea><br/>
+
+        <label for="comentariosAtividade">Comentários:</label><br/>
+        <textarea id="comentariosAtividade" th:field="*{comentariosAtividade}" rows="2" cols="50"></textarea><br/>
+
+        <label for="linkMaterialAtividade">Link para Material:</label>
+        <input type="url" id="linkMaterialAtividade" th:field="*{linkMaterialAtividade}" /><br/>
+
+        <label for="linkAtividadeOnLine">Link Atividade Online:</label>
+        <input type="url" id="linkAtividadeOnLine" th:field="*{linkAtividadeOnLine}" /><br/>
+
+        <button type="submit">Salvar</button>
+        <a th:href="@{/atividades}">Cancelar</a>
+    </form>
+</body>
+</html>

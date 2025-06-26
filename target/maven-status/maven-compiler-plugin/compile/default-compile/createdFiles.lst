@@ -25,3 +25,4 @@ com\agendademais\repositories\TipoAtividadeRepository.class
 com\agendademais\entities\LogPostagem.class
 com\agendademais\entities\TipoAtividade.class
 com\agendademais\entities\PessoaSubInstituicao.class
+com\agendademais\controllers\AtividadeController.class

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda Mais - Lista de Atividades</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1>Lista de Atividades</h1>
+
+    <a th:href="@{/atividades/novo}">Nova Atividade</a>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Situação</th>
+                <th>Instituição</th>
+                <th>Apresentação</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="atividade : ${atividades}">
+                <td th:text="${atividade.tituloAtividade}"></td>
+                <td th:text="${atividade.tipoAtividade.tituloTipoAtividade}"></td>
+                <td th:text="${atividade.situacaoAtividade}"></td>
+                <td th:text="${atividade.instituicao.nomeInstituicao}"></td>
+                <td th:text="${atividade.formaApresentacao}"></td>
+                <td>
+                    <a th:href="@{'/atividades/editar/' + ${atividade.id}}">Editar</a>
+                    <a th:href="@{'/atividades/deletar/' + ${atividade.id}}" onclick="return confirm('Confirma exclusão?')">Excluir</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
