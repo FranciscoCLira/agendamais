@@ -1,56 +1,36 @@
-import graphviz
-import os
+# from graphviz import Digraph
 
-# Recriar o modelo ER com as alterações feitas
-dot = graphviz.Digraph(comment='Modelo ER - Agenda Mais (Atualizado)')
-dot.attr('node', shape='record', style='filled', fillcolor='lavender')
+# Criar o diagrama ERD novamente após reset
+erd = Digraph(comment='Modelo Entidade-Relacionamento - Agenda Mais')
 
-# Entidades e principais campos
-entities = {
-    "Usuario": ["codUsuario", "senha", "nivelAcessoUsuario"],
-    "Pessoa": ["id", "codUsuario", "nomePessoa", "situacaoPessoa", "emailPessoa", "celularPessoa"],
-    "TipoAtividade": ["id", "tituloTipoAtividade", "descricaoTipoAtividade"],
-    "Instituicao": ["id", "nomeInstituicao", "situacaoInstituicao"],
-    "SubInstituicao": ["id", "idInstituicao", "nomeSubInstituicao"],
-    "Atividade": ["id", "tipoAtividade", "idInstituicao", "idSubInstituicao", "idSolicitante", "tituloAtividade", "linkAtividadeOnLine"],
-    "OcorrenciaAtividade": ["id", "idAtividade", "idAutor", "temaOcorrencia", "qtdeParticipantes", "obsEncerramento"],
-    "Autor": ["id", "idPessoa", "funcaoAutor"],
-    "Inscricao": ["id", "idPessoa", "idInstituicao", "tipoAtividade"],
-    "PessoaInstituicao": ["id", "idPessoa", "idInstituicao"],
-    "PessoaSubInstituicao": ["id", "idPessoa", "idSubInstituicao"],
-    "LogPostagem": ["id", "idOcorrenciaAtividade", "dataPostagem", "horaPostagem"]
-}
+# Estilo de nó
+erd.attr('node', shape='record')
 
-# Criar nós de entidade
-for entity, fields in entities.items():
-    label = f"{entity}|{{" + "|".join(fields) + "}}"
-    dot.node(entity, label=label)
+# Entidades principais
+erd.node('Usuario', '{Usuario|+id\\l+codUsuario: String\\l+senha: String\\l+nivelAcessoUsuario: int\\l}')
+erd.node('Pessoa', '{Pessoa|+id\\l+nomePessoa: String\\l+emailPessoa: String\\l}')
+erd.node('Instituicao', '{Instituicao|+id\\l+nomeInstituicao: String\\l}')
+erd.node('SubInstituicao', '{SubInstituicao|+id\\l+nomeSubInstituicao: String\\l}')
+erd.node('UsuarioInstituicao', '{UsuarioInstituicao|+id\\l+sitAcessoUsuarioInstituicao: String\\l}')
+erd.node('Atividade', '{Atividade|+id\\l+tituloAtividade: String\\l+idSolicitante: Pessoa\\l}')
+erd.node('TipoAtividade', '{TipoAtividade|+id\\l+tituloTipoAtividade: String\\l}')
+erd.node('Autor', '{Autor|+id\\l+idPessoa: Pessoa\\l}')
+erd.node('OcorrenciaAtividade', '{OcorrenciaAtividade|+id\\l+idAtividade: Atividade\\l+idAutor: Autor\\l}')
+erd.node('Inscricao', '{Inscricao|+id\\l+idPessoa: Pessoa\\l+tipoAtividade: TipoAtividade\\l}')
 
-# Relacionamentos principais
-relationships = [
-    ("Pessoa", "Usuario"),
-    ("Pessoa", "PessoaInstituicao"),
-    ("Pessoa", "PessoaSubInstituicao"),
-    ("Pessoa", "Autor"),
-    ("Pessoa", "Inscricao"),
-    ("Pessoa", "Atividade"),
-    ("Atividade", "TipoAtividade"),
-    ("Atividade", "Instituicao"),
-    ("Atividade", "SubInstituicao"),
-    ("OcorrenciaAtividade", "Atividade"),
-    ("OcorrenciaAtividade", "Autor"),
-    ("LogPostagem", "OcorrenciaAtividade"),
-    ("SubInstituicao", "Instituicao"),
-    ("PessoaInstituicao", "Instituicao"),
-    ("PessoaSubInstituicao", "SubInstituicao"),
-    ("Inscricao", "TipoAtividade"),
-    ("Inscricao", "Instituicao")
-]
+# Relacionamentos
+erd.edge('Usuario', 'UsuarioInstituicao', label='1:N')
+erd.edge('Instituicao', 'UsuarioInstituicao', label='1:N')
+erd.edge('Usuario', 'Pessoa', label='1:1', style='dashed')
+erd.edge('Pessoa', 'Atividade', label='1:N', style='dashed')
+erd.edge('TipoAtividade', 'Atividade', label='1:N')
+erd.edge('Pessoa', 'Autor', label='1:1')
+erd.edge('Atividade', 'OcorrenciaAtividade', label='1:N')
+erd.edge('Autor', 'OcorrenciaAtividade', label='1:N')
+erd.edge('Pessoa', 'Inscricao', label='1:N')
+erd.edge('TipoAtividade', 'Inscricao', label='1:N')
+erd.edge('Instituicao', 'SubInstituicao', label='1:N')
+erd.edge('SubInstituicao', 'Atividade', label='1:N')
 
-for src, dst in relationships:
-    dot.edge(src, dst)
-
-# Renderizar o modelo ER atualizado
-path = "/mnt/data/agenda_mais_modelo_er_atualizado"
-dot.render(path, format="png", cleanup=False)
-f"{path}.png"
+# erd.render('/mnt/data/agenda_mais_erd', format='png', cleanup=True)
+# '/mnt/data/agenda_mais_erd.png'

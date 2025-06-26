@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda Mais - Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4b0082;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        header p {
+            margin: 0;
+            font-size: 16px;
+            color: #e0e0ff;
+        }
+        .container {
+            width: 400px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background-color: #4b0082;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #360061;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .cadastro-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <h1>Agenda Mais</h1>
+        <p>Agendando tudo e mais</p>
+    </div>
+    <div th:text="${nomeInstituicao}" style="text-align: right;"></div>
+</header>
+
+<div class="container">
+    <form th:action="@{/login}" method="post">
+        <label for="codUsuario">Código do Usuário:</label>
+        <input type="text" id="codUsuario" name="codUsuario" maxlength="25" required/>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required/>
+
+        <label for="idInstituicao">Instituição:</label>
+        <select id="idInstituicao" name="idInstituicao" required>
+            <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
+        </select>
+
+        <div th:if="${erro}" class="error" th:text="${erro}"></div>
+
+        <button type="submit">Entrar</button>
+        <a th:href="@{/cadastro}" class="cadastro-link">Ainda não tem cadastro?</a>
+    </form>
+</div>
+</body>
+</html>
