@@ -58,10 +58,6 @@ public class LoginController {
         } else {
             model.addAttribute("erro", "Usuário ou senha inválidos.");
             return "login";
-          }
         }
-        @GetMapping("/cadastro")
-        public String showCadastroForm() {
-            return "cadastro-form";
     }
 }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda Mais - Superusuário</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            margin: 0;
+        }
+        header {
+            background-color: #4B0082;
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        header span {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        main {
+            padding: 2rem;
+        }
+        .card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        .card h2 {
+            margin-bottom: 1rem;
+            color: #4B0082;
+        }
+        .card p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .btn {
+            background-color: #4B0082;
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #5c1aa3;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Agenda Mais</h1>
+    <span th:text="${nomeInstituicao}">Instituição</span>
+</header>
+<main>
+    <div class="card">
+        <h2>Painel do Superusuário</h2>
+        <p>Gerencie usuários, promova ou remova acessos, bloqueie contas e acompanhe o uso do sistema.</p>
+        <div>
+            <button class="btn" onclick="location.href='/usuarios'">Gerenciar Usuários</button>
+            <button class="btn" onclick="location.href='/relatorios'">Relatórios e Logs</button>
+            <button class="btn" onclick="location.href='/'">Sair</button>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar Usuários - Agenda Mais</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+        }
+        header {
+            background-color: #4B0082;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        header h1 {
+            margin: 0;
+        }
+        main {
+            padding: 2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #eee;
+        }
+        select, .btn {
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .btn {
+            background-color: #4B0082;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #5c1aa3;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Gerenciar Usuários</h1>
+    <span th:text="${nomeInstituicao}">Instituição</span>
+</header>
+<main>
+    <h2>Lista de Usuários</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Nível</th>
+                <th>Alterar Nível</th>
+                <th>Situação Acesso</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="usuario : ${usuarios}">
+                <td th:text="${usuario.id}"></td>
+                <td th:text="${usuario.codUsuario}"></td>
+                <td th:text="${usuario.nivelAcessoUsuario}"></td>
+                <td>
+                    <form th:action="@{/usuarios/alterar-nivel}" method="post">
+                        <input type="hidden" name="id" th:value="${usuario.id}" />
+                        <select name="novoNivel">
+                            <option value="1">Participante</option>
+                            <option value="2">Autor</option>
+                            <option value="5">Administrador</option>
+                            <option value="9">SuperUsuário</option>
+                        </select>
+                        <button type="submit" class="btn">Atualizar</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{/usuarios/situacao}" method="post">
+                        <input type="hidden" name="idUsuario" th:value="${usuario.id}" />
+                        <select name="novaSituacao">
+                            <option value="A">Ativo</option>
+                            <option value="B">Bloqueado</option>
+                            <option value="C">Cancelado</option>
+                        </select>
+                        <button type="submit" class="btn">Alterar</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{/usuarios/remover}" method="post">
+                        <input type="hidden" name="id" th:value="${usuario.id}" />
+                        <button type="submit" class="btn">Remover</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

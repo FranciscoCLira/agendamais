@@ -9,6 +9,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\OcorrenciaAtividad
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\PessoaSubInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Autor.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\InstituicaoRepository.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\CadastroController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\TipoAtividadeRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\PessoaSubInstituicaoRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\UsuarioInstituicaoRepository.java
@@ -22,6 +23,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Atividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\LoginController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\PessoaInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\UsuarioInstituicao.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\UsuarioController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\SubInstituicaoRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\TipoAtividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Usuario.java

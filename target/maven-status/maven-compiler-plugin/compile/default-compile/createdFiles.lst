@@ -1,5 +1,6 @@
 com\agendademais\controllers\LoginController.class
 com\agendademais\repositories\InstituicaoRepository.class
+com\agendademais\controllers\UsuarioController.class
 com\agendademais\entities\Usuario.class
 com\agendademais\repositories\AtividadeRepository.class
 com\agendademais\repositories\SubInstituicaoRepository.class
@@ -28,4 +29,5 @@ com\agendademais\repositories\TipoAtividadeRepository.class
 com\agendademais\entities\LogPostagem.class
 com\agendademais\entities\TipoAtividade.class
 com\agendademais\entities\PessoaSubInstituicao.class
+com\agendademais\controllers\CadastroController.class
 com\agendademais\controllers\AtividadeController.class
