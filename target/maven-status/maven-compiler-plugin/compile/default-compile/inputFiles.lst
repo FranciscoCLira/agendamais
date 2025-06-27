@@ -1,4 +1,5 @@
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\AtividadeRepository.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\RecuperacaoLoginController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\TipoAtividadeController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\PessoaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\OcorrenciaAtividadeRepository.java
@@ -20,6 +21,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Instituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\SubInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\config\DataLoader.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AutorController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AlterarSenhaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AtividadeController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\PessoaRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Inscricao.java

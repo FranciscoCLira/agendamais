@@ -18,8 +18,9 @@ public class RecuperacaoLoginController {
 
     @PostMapping("/recuperar-login")
     public String recuperarLogin(@RequestParam("emailRecuperacao") String email, Model model) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByPessoaEmailPessoa(email);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
 
+        
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             model.addAttribute("mensagem", "Seu código de usuário é: " + usuario.getCodUsuario() + " e sua senha é: " + usuario.getSenha());

@@ -4,50 +4,16 @@
     <meta charset="UTF-8">
     <title>Login - Agenda Mais</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f8f8fc;
-            margin: 0;
-            padding: 0;
-        }
-        .cabecalho-roxo {
-            text-align: center;
-            background-color: #4A148C;
-            color: white;
-            padding: 20px;
-        }
-        .cabecalho-roxo h1,
-        .cabecalho-roxo h2 {
-            margin: 0;
-        }
-        .login-container {
-            width: 350px;
-            margin: 30px auto;
-            padding: 30px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .login-container input,
-        .login-container select,
-        .login-container button {
-            width: 100%;
-            margin: 10px 0;
-        }
-        .cadastro-section {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
 </head>
 <body>
+
 <div class="cabecalho-roxo">
     <h1>Agenda Mais</h1>
     <h2>Agendando tudo e mais</h2>
 </div>
 
 <div class="login-container">
+    <h2>Login</h2>
     <form th:action="@{/login}" method="post">
         <label for="codUsuario">Usuário:</label>
         <input type="text" id="codUsuario" name="codUsuario" required>
@@ -55,9 +21,10 @@
         <label for="senha">Senha:</label>
         <input type="password" id="senha" name="senha" required>
 
-        <label for="instituicaoId">Instituição:</label>
-        <select id="instituicaoId" name="instituicaoId" required>
-            <option th:each="instituicao : ${instituicoes}" 
+        <label for="instituicao">Instituição:</label>
+        <select id="instituicao" name="instituicaoId" required>
+            <option value="" disabled selected>Selecione a Instituição</option>
+            <option th:each="instituicao : ${instituicoes}"
                     th:value="${instituicao.id}"
                     th:text="${instituicao.nomeInstituicao}"></option>
         </select>
@@ -65,20 +32,16 @@
         <button type="submit">Entrar</button>
     </form>
 
-    <div class="cadastro-section">
-        <a th:href="@{/cadastro}" class="botao-link">Cadastre-se</a>
-
-        <form th:action="@{/recuperar-login}" method="post" style="margin-top: 15px;">
-            <p>
-                Para recuperar seu Usuário e/ou Senha, informe seu Email:
-                <input type="email" name="emailRecuperacao" placeholder="Digite seu email" style="width: 100%; margin-top: 8px;">
-            </p>
-            <button type="submit">Recuperar</button>
+    <div class="extra-links">
+        <p><a th:href="@{/cadastro}">Não tem cadastro? Clique aqui</a></p>
+        
+        <form th:action="@{/recuperar-login}" method="post">
+            <label for="emailRecuperacao">Recuperar Usuário/Senha</label>
+            <input type="email" id="emailRecuperacao" name="emailRecuperacao" required>
+            <button type="submit">Confirmar</button>
         </form>
-
-        <div th:if="${mensagem}" style="margin-top: 10px; color: #4A148C; font-weight: bold;">
-            <p th:text="${mensagem}"></p>
-        </div>
+        
+        <p><a th:href="@{/alterar-senha}">Deseja alterar sua senha?</a></p>
     </div>
 </div>
 </body>
