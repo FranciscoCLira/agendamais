@@ -2,105 +2,31 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastro - Agenda Mais</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-        }
-        header {
-            background-color: #4B0082;
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-        header p {
-            margin: 0;
-            font-size: 1.1rem;
-            margin-top: 0.4rem;
-        }
-        main {
-            display: flex;
-            justify-content: center;
-            padding: 2rem;
-        }
-        form {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        input, select {
-            width: 100%;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .btn {
-            background-color: #4B0082;
-            color: white;
-            padding: 0.7rem 1.2rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn:hover {
-            background-color: #5c1aa3;
-        }
-        .erro {
-            color: red;
-            margin-bottom: 1rem;
-            font-weight: bold;
-            text-align: center;
-        }
-    </style>
+    <title>Cadastro</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-<header>
-    <h1>Agenda Mais</h1>
-    <p>Agendando tudo e mais</p>
-</header>
-<main>
-    <form th:action="@{/cadastro}" method="post">
-        <h2>Cadastro de Novo Usuário</h2>
+    <header class="cabecalho-centro">
+        <h1>Agenda Mais</h1>
+        <h2>Agendando tudo e mais</h2>
+    </header>
 
-        <div th:if="${erro}" class="erro" th:text="${erro}"></div>
+    <main>
+        <h3>Cadastro de Novo Usuário</h3>
+        <form action="/cadastro" method="post">
+            <!-- Campos do formulário -->
+            <label for="codUsuario">Usuário:</label>
+            <input type="text" id="codUsuario" name="codUsuario" required><br>
 
-        <label for="nome">Nome Completo</label>
-        <input type="text" id="nome" name="nomePessoa" required>
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required><br>
 
-        <label for="email">E-mail</label>
-        <input type="email" id="email" name="emailPessoa" required>
+            <!-- Outros campos para Pessoa e Instituições -->
 
-        <label for="codUsuario">Usuário (máx 25 caracteres)</label>
-        <input type="text" id="codUsuario" name="codUsuario" maxlength="25" required>
+            <button type="submit">Cadastrar</button>
+        </form>
 
-        <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" required>
-
-        <label for="instituicoes">Vincular Instituições</label>
-        <select id="instituicoes" name="idInstituicoes" multiple required>
-            <option th:each="inst : ${instituicoes}"
-                    th:value="${inst.id}"
-                    th:text="${inst.nomeInstituicao}"></option>
-        </select>
-
-        <button type="submit" class="btn">Concluir Cadastro</button>
-    </form>
-</main>
+        <p><a href="/login">Já tem cadastro? Faça login</a></p>
+    </main>
 </body>
 </html>

@@ -2,10 +2,46 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Agenda Mais - Lista de Atividades</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <title>Lista de Atividades</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f8fc;
+            color: #333;
+            padding: 20px;
+        }
+        .cabecalho-roxo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #4A148C;
+            color: white;
+            padding: 10px 20px;
+        }
+        .cabecalho-roxo h1,
+        .cabecalho-roxo h2 {
+            margin: 0;
+        }
+        .cabecalho-roxo span {
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
 </head>
+
 <body>
+<header class="cabecalho-roxo">
+    <div>
+        <h1>Agenda Mais</h1>
+        <h2>Agendando tudo e mais</h2>
+    </div>
+    <div>
+        <span th:text="${nomeInstituicao}"></span>
+    </div>
+</header>
+
+<main>
     <h1>Lista de Atividades</h1>
 
     <a th:href="@{/atividades/novo}">Nova Atividade</a>
@@ -35,5 +71,6 @@
             </tr>
         </tbody>
     </table>
+</main>    
 </body>
 </html>

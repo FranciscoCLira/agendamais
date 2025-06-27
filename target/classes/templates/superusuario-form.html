@@ -2,70 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>SuperUsuário - Agenda Mais</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; margin: 0; }
-        header {
-            background-color: #4B0082;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-        }
-        header h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: normal;
-        }
-        main { padding: 2rem; }
-        .section {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 0 6px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        .section h3 { margin-top: 0; color: #4B0082; }
-        a.btn {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: #4B0082;
-            color: white;
-            border-radius: 4px;
-            text-decoration: none;
-        }
-        a.btn:hover { background-color: #5c1aa3; }
-    </style>
+    <title>SuperUsuário</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-<header>
-    <h1>Agenda Mais</h1>
-    <h2>SuperUsuário</h2>
-</header>
-<main>
-    <div class="section">
-        <h3>Gerenciar Usuários</h3>
-        <p>Visualize, promova, bloqueie ou remova usuários do sistema.</p>
-        <a href="/usuarios" class="btn">Gerenciar Usuários</a>
-    </div>
+    <header class="cabecalho-roxo">
+        <div>
+            <h1>Agenda Mais</h1>
+            <h2>Agendando tudo e mais</h2>
+        </div>
+        <div>
+            <span th:text="${nomeInstituicao}"></span>
+        </div>
+    </header>
 
-    <div class="section">
-        <h3>Gerenciar Instituições</h3>
-        <p>Adicione, edite ou remova instituições disponíveis para cadastro de usuários.</p>
-        <a href="/instituicoes" class="btn">Gerenciar Instituições</a>
-    </div>
-
-    <div class="section">
-        <h3>Gerenciar Administradores</h3>
-        <p>Vincule administradores a instituições para controle de permissões.</p>
-        <a href="/admin-vinculo" class="btn">Vincular Administradores</a>
-    </div>
-</main>
+    <main>
+        <h3>Área do SuperUsuário</h3>
+        <p>Em breve: gerenciamento de permissões e vinculações institucionais.</p>
+    </main>
 </body>
 </html>

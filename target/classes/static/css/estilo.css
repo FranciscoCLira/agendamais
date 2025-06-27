@@ -5,6 +5,33 @@ body {
     padding: 20px;
 }
 
+.cabecalho-roxo {
+    background-color: #4B0082; /* Roxo escuro */
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cabecalho-roxo h1, .cabecalho-roxo h2 {
+    margin: 0;
+    color: white;
+}
+
+.cabecalho-centro {
+    background-color: #4B0082;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.cabecalho-centro h1, .cabecalho-centro h2 {
+    margin: 0;
+    color: white;
+}
+
+
 h1 {
     color: #4b0082;
     text-align: center;
@@ -67,3 +94,4 @@ a {
 a:hover {
     text-decoration: underline;
 }
+

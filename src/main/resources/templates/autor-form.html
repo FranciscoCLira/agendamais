@@ -2,74 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Agenda Mais - Cadastro de Autor</title>
-    <style>
-        .linha-meia { width: 50%; }
-    </style>
-    <script th:inline="javascript">
-        function preencherIdPessoa() {
-            const emailInput = document.getElementById("emailPessoa").value;
-            const datalist = document.getElementById("sugestoesEmail");
-            const idInput = document.getElementById("idPessoa");
-
-            for (let i = 0; i < datalist.options.length; i++) {
-                if (datalist.options[i].value === emailInput) {
-                    const pessoaId = datalist.options[i].getAttribute("data-id");
-                    idInput.value = pessoaId;
-                    return;
-                }
-            }
-            idInput.value = "";
-        }
-    </script>
+    <title>Autor</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-<header style="background-color:#4b0082; padding: 20px; text-align: center;">
-    <h1 style="margin: 0; font-size: 28px; color: white;">Agenda Mais</h1>
-    <p style="margin: 0; font-size: 16px; color: #e0e0ff;">Agendando tudo e mais</p>
-</header>
+    <header class="cabecalho-roxo">
+        <div>
+            <h1>Agenda Mais</h1>
+            <h2>Agendando tudo e mais</h2>
+        </div>
+        <div>
+            <span th:text="${nomeInstituicao}"></span>
+        </div>
+    </header>
 
-<h1 th:text="${autor.id} != null ? 'Editar Autor' : 'Novo Autor'"></h1>
-
-<form th:action="@{/autores/salvar}" th:object="${autor}" method="post" onsubmit="preencherIdPessoa()">
-    <input type="hidden" th:field="*{id}" />
-
-    <label for="emailPessoa">E-mail do Autor:</label>
-    <input type="email" id="emailPessoa" name="emailPessoa" list="sugestoesEmail" class="linha-meia" required onchange="preencherIdPessoa()" />
-    <datalist id="sugestoesEmail">
-        <option th:each="p : ${pessoas}" th:value="${p.emailPessoa}" th:text="${p.nomePessoa + ' (' + p.emailPessoa + ')'}" th:attr="data-id=${p.id}"></option>
-    </datalist>
-    <input type="hidden" name="idPessoa" id="idPessoa" th:value="${autor.idPessoa != null ? autor.idPessoa.id : ''}" />
-    <br/><br/>
-
-    <label for="funcaoAutor">Função:</label>
-    <select id="funcaoAutor" th:field="*{funcaoAutor}" required>
-        <option value="1">Palestrante</option>
-        <option value="2">Mediador</option>
-        <option value="3">Autor</option>
-        <option value="4">Outro</option>
-    </select><br/><br/>
-
-    <label for="curriculoFuncaoAutor">Currículo:</label><br/>
-    <textarea id="curriculoFuncaoAutor" th:field="*{curriculoFuncaoAutor}" rows="3" cols="50"></textarea><br/><br/>
-
-    <label for="linkImgAutor">Link Imagem:</label>
-    <input type="url" id="linkImgAutor" th:field="*{linkImgAutor}" /><br/><br/>
-
-    <label for="linkMaterialAutor">Link Material:</label>
-    <input type="url" id="linkMaterialAutor" th:field="*{linkMaterialAutor}" /><br/><br/>
-
-    <label for="situacaoAutor">Situação:</label>
-    <select id="situacaoAutor" th:field="*{situacaoAutor}" required>
-        <option value="A">Ativo</option>
-        <option value="I">Inativo</option>
-        <option value="P">Pendente</option>
-        <option value="C">Cancelado</option>
-        <option value="B">Bloqueado</option>
-    </select><br/><br/>
-
-    <button type="submit">Salvar</button>
-    <a th:href="@{/autores}">Cancelar</a>
-</form>
+    <main>
+        <h3>Área do Autor</h3>
+        <p>Em breve: gerenciamento de materiais e temas de ocorrência.</p>
+    </main>
 </body>
 </html>

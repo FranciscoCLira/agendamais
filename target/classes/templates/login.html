@@ -3,103 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Agenda Mais</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f8fc;
             margin: 0;
             padding: 0;
         }
-        header {
-            background-color: #4B0082;
-            color: white;
-            padding: 2rem;
+        .cabecalho-roxo {
             text-align: center;
+            background-color: #4A148C;
+            color: white;
+            padding: 20px;
         }
-        header h1 {
+        .cabecalho-roxo h1,
+        .cabecalho-roxo h2 {
             margin: 0;
-            font-size: 2rem;
         }
-        header p {
-            margin: 0;
-            font-size: 1.1rem;
-            margin-top: 0.4rem;
-        }
-        main {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 70vh;
-        }
-        form {
+        .login-container {
+            width: 350px;
+            margin: 30px auto;
+            padding: 30px;
             background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .login-container input,
+        .login-container select,
+        .login-container button {
             width: 100%;
-            max-width: 400px;
+            margin: 10px 0;
         }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        input, select {
-            width: 100%;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .btn {
-            width: 100%;
-            background-color: #4B0082;
-            color: white;
-            border: none;
-            padding: 0.7rem;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background-color: #5c1aa3;
-        }
-        .register-link {
+        .cadastro-section {
             text-align: center;
-            margin-top: 1rem;
-        }
-        .register-link a {
-            color: #4B0082;
-            text-decoration: none;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-<header>
+<div class="cabecalho-roxo">
     <h1>Agenda Mais</h1>
-    <p>Agendando tudo e mais</p>
-</header>
-<main>
+    <h2>Agendando tudo e mais</h2>
+</div>
+
+<div class="login-container">
     <form th:action="@{/login}" method="post">
-        <label for="codUsuario">Usuário</label>
+        <label for="codUsuario">Usuário:</label>
         <input type="text" id="codUsuario" name="codUsuario" required>
 
-        <label for="senha">Senha</label>
+        <label for="senha">Senha:</label>
         <input type="password" id="senha" name="senha" required>
 
-        <label for="idInstituicao">Instituição</label>
-        <select id="idInstituicao" name="idInstituicao" required>
-            <option th:each="inst : ${instituicoes}"
-                    th:value="${inst.id}"
-                    th:text="${inst.nomeInstituicao}"></option>
+        <label for="instituicaoId">Instituição:</label>
+        <select id="instituicaoId" name="instituicaoId" required>
+            <option th:each="instituicao : ${instituicoes}" 
+                    th:value="${instituicao.id}"
+                    th:text="${instituicao.nomeInstituicao}"></option>
         </select>
 
-        <button type="submit" class="btn">Entrar</button>
-
-        <div class="register-link">
-            <p>Ainda não tem cadastro? <a th:href="@{/cadastro}">Cadastre-se</a></p>
-        </div>
+        <button type="submit">Entrar</button>
     </form>
-</main>
+
+    <div class="cadastro-section">
+        <a th:href="@{/cadastro}" class="botao-link">Cadastre-se</a>
+
+        <form th:action="@{/recuperar-login}" method="post" style="margin-top: 15px;">
+            <p>
+                Para recuperar seu Usuário e/ou Senha, informe seu Email:
+                <input type="email" name="emailRecuperacao" placeholder="Digite seu email" style="width: 100%; margin-top: 8px;">
+            </p>
+            <button type="submit">Recuperar</button>
+        </form>
+
+        <div th:if="${mensagem}" style="margin-top: 10px; color: #4A148C; font-weight: bold;">
+            <p th:text="${mensagem}"></p>
+        </div>
+    </div>
+</div>
 </body>
 </html>

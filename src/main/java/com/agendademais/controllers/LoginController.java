@@ -2,6 +2,7 @@ package com.agendademais.controllers;
 
 import com.agendademais.entities.Usuario;
 import com.agendademais.repositories.UsuarioRepository;
+import com.agendademais.repositories.InstituicaoRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,8 +19,12 @@ public class LoginController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private InstituicaoRepository instituicaoRepository;
+
     @GetMapping("/login")
-    public String loginForm() {
+    public String loginForm(Model model) {
+        model.addAttribute("instituicoes", instituicaoRepository.findAll());
         return "login";
     }
 
@@ -42,6 +47,7 @@ public class LoginController {
             }
         } else {
             model.addAttribute("erro", "Usuário ou senha inválidos");
+            model.addAttribute("instituicoes", instituicaoRepository.findAll());
             return "login";
         }
     }

@@ -2,67 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Agenda Mais - Participante</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f3f3f3;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #4B0082;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-        main {
-            padding: 2rem;
-        }
-        .card {
-            background-color: white;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
-            margin: 2rem auto;
-        }
-        .card h2 {
-            color: #4B0082;
-        }
-        .btn {
-            background-color: #4B0082;
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 1rem;
-        }
-        .btn:hover {
-            background-color: #5a22aa;
-        }
-    </style>
+    <title>Participante</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-    <header>
-        <h1>Agenda Mais</h1>
-        <span th:text="${nomeInstituicao}"></span>
-    </header>
-    <main>
-        <div class="card">
-            <h2>Bem-vindo, Participante!</h2>
-            <p>Você pode visualizar suas atividades e realizar inscrições.</p>
-            <a th:href="@{/inscricoes/minhas}" class="btn">Minhas Inscrições</a>
-            <a th:href="@{/atividades/disponiveis}" class="btn">Atividades Disponíveis</a>
+    <header class="cabecalho-roxo">
+        <div>
+            <h1>Agenda Mais</h1>
+            <h2>Agendando tudo e mais</h2>
         </div>
+        <div>
+            <span th:text="${nomeInstituicao}"></span>
+        </div>
+    </header>
+
+    <main>
+        <h3>Bem-vindo, Participante!</h3>
+        <p>Em breve: funcionalidades para visualização de atividades e inscrições.</p>
     </main>
 </body>
 </html>

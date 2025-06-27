@@ -6,9 +6,11 @@ import com.agendademais.repositories.*;
 
 import java.time.LocalDate;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -26,6 +28,22 @@ public class AtividadeController {
     @Autowired
     private PessoaRepository pessoaRepo;
 
+    
+
+    @GetMapping("/atividade-form")
+    public String exibirFormularioAtividade(HttpSession session, Model model) {
+        String nomeInstituicao = (String) session.getAttribute("nomeInstituicao");
+        model.addAttribute("nomeInstituicao", nomeInstituicao);
+        return "atividade-form";
+    }
+
+    @GetMapping("/atividade-lista")
+    public String listarAtividades(HttpSession session, Model model) {
+        String nomeInstituicao = (String) session.getAttribute("nomeInstituicao");
+        model.addAttribute("nomeInstituicao", nomeInstituicao);
+        return "atividade-lista";
+    }    
+    
     
     @GetMapping
     public String listar(Model model) {
