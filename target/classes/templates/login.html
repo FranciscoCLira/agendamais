@@ -5,44 +5,54 @@
     <title>Login - Agenda Mais</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
+
 <body>
+  <div class="cabecalho-roxo">
+	    <h1>Agenda Mais</h1>
+	    <h2>Agendando tudo e mais</h2>
+  </div>
 
-<div class="cabecalho-roxo">
-    <h1>Agenda Mais</h1>
-    <h2>Agendando tudo e mais</h2>
-</div>
-
-<div class="login-container">
-    <h2>Login</h2>
+  <div style="max-width:400px; margin:auto; padding:20px; background:#fff; border-radius:8px;">
+    <h2 style="text-align:center;">Login</h2>
     <form th:action="@{/login}" method="post">
-        <label for="codUsuario">Usuário:</label>
-        <input type="text" id="codUsuario" name="codUsuario" required>
+      <!-- Campos de login -->
+      <label for="codUsuario">Usuário:</label>
+      <input type="text" id="codUsuario" name="codUsuario" required />
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" name="senha" required />
+      <label for="instituicao">Instituição:</label>
+      <select id="instituicao" name="instituicao" required>
+        <option th:each="inst : ${instituicoes}" 
+                th:value="${inst.id}" 
+                th:text="${inst.nomeInstituicao}"></option>
+      </select>
+      
+      <button type="submit" style="width:150px; margin:10px auto; display:block;">Entrar</button>
 
-        <label for="senha">Senha:</label>
-        <input type="password" id="senha" name="senha" required>
 
-        <label for="instituicao">Instituição:</label>
-        <select id="instituicao" name="instituicaoId" required>
-            <option value="" disabled selected>Selecione a Instituição</option>
-            <option th:each="instituicao : ${instituicoes}"
-                    th:value="${instituicao.id}"
-                    th:text="${instituicao.nomeInstituicao}"></option>
-        </select>
-
-        <button type="submit">Entrar</button>
     </form>
 
-    <div class="extra-links">
-        <p><a th:href="@{/cadastro}">Não tem cadastro? Clique aqui</a></p>
-        
-        <form th:action="@{/recuperar-login}" method="post">
-            <label for="emailRecuperacao">Recuperar Usuário/Senha</label>
-            <input type="email" id="emailRecuperacao" name="emailRecuperacao" required>
-            <button type="submit">Confirmar</button>
-        </form>
-        
-        <p><a th:href="@{/alterar-senha}">Deseja alterar sua senha?</a></p>
-    </div>
-</div>
+    <hr />
+
+    <p style="text-align:center; margin-top:20px; margin-bottom:0;">
+      Para recuperar Usuário/Senha, informe seu Email:
+    </p>
+    <form th:action="@{/recuperar-login}" method="post" style="text-align:center;">
+      <input type="email" name="email" placeholder="seu@email.com" required />
+      <button type="submit" style="width:150px; margin:10px auto; display:block;">Confirmar</button>
+    </form>
+
+    <p th:if="${mensagemRecuperacao}" 
+       th:text="${mensagemRecuperacao}" 
+       style="text-align:center; color:green; margin-top:10px;"></p>
+
+    <p style="text-align:center; margin-top:20px;">
+      Não tem cadastro? <a href="/cadastro">Clique aqui</a>
+    </p>
+    <p style="text-align:center;">
+      Deseja alterar sua senha? <a href="/alterar-senha">Clique aqui</a>
+    </p>
+  </div>
 </body>
+
 </html>
