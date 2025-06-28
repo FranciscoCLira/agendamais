@@ -1,3 +1,4 @@
+com\agendademais\controllers\TesteEmailRunnerController.class
 com\agendademais\controllers\UsuarioController.class
 com\agendademais\entities\Usuario.class
 com\agendademais\repositories\AtividadeRepository.class
