@@ -54,10 +54,22 @@
     </style>
 </head>
 <body>
-<header>
-    <h1>Gerenciar Usuários</h1>
-    <span th:text="${nomeInstituicao}">Instituição</span>
-</header>
+
+    <header class="cabecalho">
+        <div class="titulo">
+            <h1>Agenda Mais</h1>
+            <h3>Agendando tudo e mais</h3>
+        </div>
+        <div>
+            <h1 th:text="${nomeInstituicao}">xxxxxxxx</h1>
+            <h3>Gerenciar Usuários</h3>
+        </div>
+        
+	    <div class="logo">
+	      <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+	    </div>        
+    </header>
+
 <main>
     <h2>Lista de Usuários</h2>
     <table>

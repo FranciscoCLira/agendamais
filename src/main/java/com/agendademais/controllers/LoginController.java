@@ -31,26 +31,39 @@ public class LoginController {
     @PostMapping("/login")
     public String processarLogin(@RequestParam String codUsuario,
                                   @RequestParam String senha,
-                                  HttpSession session,
+                                  @RequestParam Long instituicao,
                                   Model model) {
+    	
         Optional<Usuario> optUsuario = usuarioRepository.findByCodUsuario(codUsuario);
 
-        if (optUsuario.isPresent() && optUsuario.get().getSenha().equals(senha)) {
+        if (optUsuario.isPresent()) {
             Usuario usuario = optUsuario.get();
-            session.setAttribute("usuarioLogado", usuario);
-            switch (usuario.getNivelAcessoUsuario()) {
-                case 1: return "redirect:/participante-form";
-                case 2: return "redirect:/autor-form";
-                case 5: return "redirect:/administrador-form";
-                case 9: return "redirect:/superusuario-form";
-                default: return "redirect:/login";
+            
+            if (usuario.getSenha().equals(senha)) {
+                // Redirecionamento por nível de acesso
+	            switch (usuario.getNivelAcessoUsuario()) {
+	                case 1: return "redirect:/participante-form";
+	                case 2: return "redirect:/autor-form";
+	                case 5: return "redirect:/administrador-form";
+	                case 9: return "redirect:/superusuario-form";
+	                default: return "redirect:/login";
+	            }    
+            } else {
+                // Senha incorreta
+	            model.addAttribute("mensagemErro", "Senha inválida.");
+	            model.addAttribute("codUsuario", codUsuario);
+	            model.addAttribute("instituicaoSelecionada", instituicao);
+	            model.addAttribute("instituicoes", instituicaoRepository.findAll());
+	            return "login";
+        
             }
-        } else {
-            model.addAttribute("erro", "Usuário ou senha inválidos");
+        } else {   
+            model.addAttribute("mensagemErro", "Usuário não encontrado.");
             model.addAttribute("instituicoes", instituicaoRepository.findAll());
             return "login";
-        }
-    }
+        }    
+    }    
+
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {

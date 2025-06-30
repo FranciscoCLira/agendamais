@@ -40,8 +40,15 @@ public class CadastroController {
                                     @RequestParam String emailPessoa,
                                     @RequestParam String codUsuario,
                                     @RequestParam String senha,
+                                    @RequestParam String confirmarSenha,
                                     @RequestParam List<Long> idInstituicoes,
                                     Model model) {
+    	
+
+        if (!senha.equals(confirmarSenha)) {
+            model.addAttribute("mensagem", "As senhas não coincidem.");
+            return "cadastro";
+        }
 
         Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
         if (existente.isPresent()) {

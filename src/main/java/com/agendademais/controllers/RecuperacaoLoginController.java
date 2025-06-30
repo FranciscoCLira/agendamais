@@ -51,7 +51,7 @@ public class RecuperacaoLoginController {
                       + "<p style='font-size:18px; color:#4A148C;'><strong>" + usuario.getCodUsuario() + "</strong></p>"
                       + "<p>Por segurança, sua senha não é enviada.</p>"
                       + "<p>Para redefinir sua senha, clique no link abaixo:</p>"
-                      + "<p><a href='http://localhost:8080/alterar-senha' style='color:#4A148C;'>Alterar Senha</a></p>"
+                      + "<p><a href='http://localhost:8080/recuperar-senha' style='color:#4A148C;'>Recuperar Senha</a></p>"
                       + "<br>"
                       + "<p>Atenciosamente,<br>Equipe Agenda Mais</p>"
                       + "</div>"

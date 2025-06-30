@@ -5,18 +5,28 @@ body {
     padding: 20px;
 }
 
-.cabecalho-roxo {
-    background-color: #4B0082; /* Roxo escuro */
-    color: white;
-    padding: 20px;
+.cabecalho {
+    background-color: #4A148C;
+    color: #fff;
+    padding: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.cabecalho-roxo h1, .cabecalho-roxo h2 {
+
+.cabecalho .titulo {
+    display: flex;
+    flex-direction: column;
+}
+
+.cabecalho h1, .cabecalho h3 {
     margin: 0;
     color: white;
+}
+
+.cabecalho .logo img {
+    height: 40px;
 }
 
 .cabecalho-centro {
@@ -26,16 +36,68 @@ body {
     padding: 20px;
 }
 
-.cabecalho-centro h1, .cabecalho-centro h2 {
-    margin: 0;
-    color: white;
+.login-container,
+.form-container {
+    max-width: 400px;
+    margin: auto;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
 }
 
-
-h1 {
-    color: #4b0082;
+.login-container h2,
+.form-container h2 {
     text-align: center;
-    margin-bottom: 30px;
+}
+
+.login-container .links,
+.login-container .recuperacao {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.login-container select {
+    margin-top: 10px;
+}
+
+.mensagem-erro {
+    color: red;
+    text-align: center;
+    font-weight: bold;
+}
+
+.mensagem-sucesso {
+    color: green;
+    text-align: center;
+    font-weight: bold;
+}
+
+.senha-container {
+    position: relative;
+}
+
+.senha-container input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.olho {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.mensagem {
+    text-align: center;
+    color: green;
+    margin-top: 10px;
+}
+
+.login-container input[type="text"] {
+	max-width: 240px;
 }
 
 form {
@@ -54,6 +116,12 @@ label {
     font-weight: bold;
     color: #4b0082;
 }
+
+
+.form-container input[type="text"] {
+	max-width: 240px;
+}
+
 
 input[type="text"],
 input[type="email"],

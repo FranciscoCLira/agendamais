@@ -1,38 +1,66 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Alterar Senha</title>
-    <link rel="stylesheet" href="/css/estilo.css">
+  <meta charset="UTF-8">
+  <title>Alterar Senha</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}">
 </head>
-<body>
-<div class="cabecalho">
-    <div>
-        <h1>Agenda Mais</h1>
-        <h2>Agendando tudo e mais</h2>
-    </div>
-</div>
 
-<div class="form-container">
+<body>
+  <header class="cabecalho">
+    <div class="titulo">
+      <h1>Agenda Mais</h1>
+      <h3>Agendando tudo e mais</h3>
+    </div>
+    <div class="logo">
+      <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+    </div>
+  </header>
+  
+  <div class="form-container">
     <h2>Alterar Senha</h2>
     <form th:action="@{/alterar-senha}" method="post">
-        <div class="form-group">
-            <label for="codUsuario">Código do Usuário:</label>
-            <input type="text" id="codUsuario" name="codUsuario" required>
-        </div>
-        <div class="form-group">
-            <label for="senhaAtual">Senha Atual:</label>
-            <input type="password" id="senhaAtual" name="senhaAtual" required>
-        </div>
-        <div class="form-group">
-            <label for="novaSenha">Nova Senha:</label>
-            <input type="password" id="novaSenha" name="novaSenha" required>
-        </div>
-        <div class="form-group">
-            <button type="submit">Alterar Senha</button>
-        </div>
-        <div class="mensagem" th:if="${mensagem}" th:text="${mensagem}"></div>
+      <label>Código do Usuário:</label>
+      <input type="text" name="codUsuario" th:value="${codUsuario}" required minlength="6" maxlength="30" pattern="^[a-zA-Z0-9]+$"/>
+
+      <label>Senha Atual:</label>
+	  <div class="senha-container">
+		  <input type="password" id="senhaAtual" name="senhaAtual" required/>
+		  <span onclick="toggleSenha('senhaAtual')" class="olho">&#128065;</span>
+	  </div>
+
+      <label>Nova Senha:</label>
+	  <div class="senha-container">
+	       <input type="password" id="novaSenha" name="novaSenha" th:value="${novaSenha}" required/>
+	       <span onclick="toggleSenha('novaSenha')" class="olho">&#128065;</span>
+	  </div>
+ 
+      <label>Confirmar Nova Senha:</label>
+  	  <div class="senha-container">
+	       <input type="password" id="confirmarSenha" name="confirmarSenha" th:value="${confirmarSenha}" required/>
+	       <span onclick="toggleSenha('confirmarSenha')" class="olho">&#128065;</span>
+	  </div>
+      
+      <button type="submit">Confirmar Alteração</button>
     </form>
-</div>
+    <p th:if="${mensagem}" th:text="${mensagem}" class="mensagem"></p>
+    
+	<div style="text-align:center; margin-top:10px;">
+	  <a href="/login"><button type="button">Voltar ao Login</button></a>
+	</div>
+    
+  </div>
+  
+<script>
+function toggleSenha(idCampo) {
+  var input = document.getElementById(idCampo);
+  if (input.type === "password") {
+    input.type = "text";
+  } else {
+    input.type = "password";
+  }
+}
+</script>
+    
 </body>
 </html>

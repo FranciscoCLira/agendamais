@@ -22,12 +22,15 @@ public class UsuarioController {
     @Autowired
     private UsuarioInstituicaoRepository usuarioInstituicaoRepository;
 
+        
     @GetMapping
     public String listarUsuarios(HttpSession session, Model model) {
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuarioLogado == null || usuarioLogado.getNivelAcessoUsuario() < 5) {
-            return "redirect:/login";
-        }
+
+          //  inibido para testes sem logar        
+//        if (usuarioLogado == null || usuarioLogado.getNivelAcessoUsuario() < 5) {
+//            return "redirect:/login";
+//        }
 
         List<Usuario> usuarios = usuarioRepository.findAll();
         model.addAttribute("usuarios", usuarios);

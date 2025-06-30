@@ -6,27 +6,44 @@
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-    <header class="cabecalho-centro">
-        <h1>Agenda Mais</h1>
-        <h2>Agendando tudo e mais</h2>
-    </header>
+<body>
+  <header class="cabecalho">
+    <div class="titulo">
+      <h1>Agenda Mais</h1>
+      <h3>Agendando tudo e mais</h3>
+    </div>
+    <div class="logo">
+      <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+    </div>
+  </header>
 
-    <main>
-        <h3>Cadastro de Novo Usuário</h3>
-        <form action="/cadastro" method="post">
-            <!-- Campos do formulário -->
-            <label for="codUsuario">Usuário:</label>
-            <input type="text" id="codUsuario" name="codUsuario" required><br>
-
-            <label for="senha">Senha:</label>
-            <input type="password" id="senha" name="senha" required><br>
-
-            <!-- Outros campos para Pessoa e Instituições -->
-
+  <div class="form-container">
+     <h2>Cadastro de Novo Usuário</h2>
+     <form action="/cadastro" method="post">
+     
+         <!-- Campos do formulário -->
+         <label for="codUsuario">Novo Código do Usuário:</label>
+         <input type="text" id="codUsuario" name="codUsuario" required><br>
+         <label for="senha">Senha:</label>
+         <input type="password" id="senha" name="senha" required><br>
+	     <label>Confirmar Senha:</label>
+	     <input type="password" name="confirmarSenha" required/>
+	         
+         <!-- Outros campos para Pessoa e Instituições -->
+         <div> 
             <button type="submit">Cadastrar</button>
-        </form>
+         </div>
+     </form>
 
-        <p><a href="/login">Já tem cadastro? Faça login</a></p>
-    </main>
+     <p th:if="${mensagem}" th:text="${mensagem}" class="mensagem"></p>
+  
+     <p><a href="/login">Já tem cadastro? Faça login</a></p>
+     
+         
+	 <div style="text-align:center; margin-top:10px;">
+	   <a href="/login"><button type="button">Voltar ao Login</button></a>
+  	 </div>
+
+  </div>
 </body>
 </html>

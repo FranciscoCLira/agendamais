@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Alterar Senha</title>
+  <title>Recuperar Senha</title>
   <link rel="stylesheet" th:href="@{/css/estilo.css}">
 </head>
 
@@ -18,30 +18,25 @@
   </header>
   
   <div class="form-container">
-    <h2>Alterar Senha</h2>
-    <form th:action="@{/alterar-senha}" method="post">
+    <h2>Recuperar Senha</h2>
+    <form th:action="@{/recuperar-senha}" method="post">
       <label>Código do Usuário:</label>
       <input type="text" name="codUsuario" th:value="${codUsuario}" required minlength="6" maxlength="30" pattern="^[a-zA-Z0-9]+$"/>
 
-      <label>Senha Atual:</label>
-	  <div class="senha-container">
-		  <input type="password" id="senhaAtual" name="senhaAtual" required/>
-		  <span onclick="toggleSenha('senhaAtual')" class="olho">&#128065;</span>
-	  </div>
-
       <label>Nova Senha:</label>
 	  <div class="senha-container">
-	       <input type="password" id="novaSenha" name="novaSenha" th:value="${novaSenha}" required/>
-	       <span onclick="toggleSenha('novaSenha')" class="olho">&#128065;</span>
+	       <input type="password" id="novaSenhaRec" name="novaSenha" th:value="${novaSenha}" required/>
+	       <span onclick="toggleSenha('novaSenhaRec')" class="olho">&#128065;</span>
 	  </div>
- 
+
       <label>Confirmar Nova Senha:</label>
-  	  <div class="senha-container">
-	       <input type="password" id="confirmarSenha" name="confirmarSenha" th:value="${confirmarSenha}" required/>
-	       <span onclick="toggleSenha('confirmarSenha')" class="olho">&#128065;</span>
-	  </div>
-      
-      <button type="submit">Confirmar Alteração</button>
+      <div class="senha-container">
+     	   <input type="password" id="confirmarSenhaRec" name="confirmarSenha" required/>
+	       <span onclick="toggleSenha('confirmarSenhaRec')" class="olho">&#128065;</span>      </div>
+       
+      <div> 
+         <button type="submit">Redefinir Senha</button>
+      </div>
     </form>
     <p th:if="${mensagem}" th:text="${mensagem}" class="mensagem"></p>
     
@@ -61,6 +56,6 @@ function toggleSenha(idCampo) {
   }
 }
 </script>
-    
+  
 </body>
 </html>
