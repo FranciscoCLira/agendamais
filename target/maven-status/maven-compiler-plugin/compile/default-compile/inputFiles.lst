@@ -1,6 +1,5 @@
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\AtividadeRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\RecuperacaoLoginController.java
-C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\TesteEmailRunnerController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\TipoAtividadeController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\PessoaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\OcorrenciaAtividadeRepository.java
@@ -10,9 +9,9 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\AutorRepositor
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\OcorrenciaAtividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\PessoaSubInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ParticipanteController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\CadastroPessoaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Autor.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\InstituicaoRepository.java
-C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\CadastroController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\TipoAtividadeRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AdministradorController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\SuperusuarioController.java
@@ -24,6 +23,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\config\DataLoader.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AutorController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AlterarSenhaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AtividadeController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\CadastroUsuarioController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\PessoaRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Inscricao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Atividade.java

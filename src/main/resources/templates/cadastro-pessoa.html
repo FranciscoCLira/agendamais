@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Pessoa</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+  <style>
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="titulo">
+      <h1>Agenda Mais</h1>
+      <h3>Agendando tudo e mais</h3>
+    </div>
+    <div class="logo">
+      <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+    </div>
+  </header>
+
+  <div class="form-container">
+    <h2>Informações Complementares</h2>
+
+    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
+    <form th:action="@{/cadastro-pessoa}" method="post">
+      <input type="hidden" name="codUsuario" th:value="${codUsuario}"/>
+      <input type="hidden" name="senha" th:value="${senha}"/>
+
+      <label>Nome da Pessoa:</label>
+      <input type="text" name="nomePessoa" maxlength="80" th:value="${nomePessoa}" required pattern="[A-Za-z0-9\s]+" />
+
+      <label>Email:</label>
+      <input type="email" name="emailPessoa" th:value="${emailPessoa}" required/>
+
+      <label>Celular:</label>
+      <input type="text" name="celularPessoa" th:value="${celularPessoa}" required placeholder="+55-21-99999-9999"
+             pattern="^\+\d{2}-\d{2}-\d{4,5}-\d{4}$" />
+
+      <label>País:</label>
+      <select name="nomePaisSelect" id="paisSelect" required onchange="paisChange()">
+        <option value="">Selecione</option>
+        <option>Brasil</option>
+        <option>Portugal</option>
+        <option>Espanha</option>
+        <option>Estados Unidos</option>
+        <option>Chile</option>
+        <option>Argentina</option>
+        <option>Outro</option>
+      </select>
+      <input type="text" id="paisOutro" name="paisOutro" class="hidden" placeholder="Informe o País"/>
+
+      <label>Estado:</label>
+      <select name="nomeEstadoSelect" id="estadoSelect" required>
+        <option value="">Selecione</option>
+        <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+        <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+        <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+        <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+        <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+        <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+        <option>SP</option><option>SE</option><option>TO</option>
+        <option>Outro</option>
+      </select>
+      <input type="text" id="estadoOutro" name="estadoOutro" class="hidden" placeholder="Informe o Estado"/>
+
+      <label>Cidade:</label>
+      <select name="cidadeSelect" id="cidadeSelect" required onchange="cidadeChange()">
+        <option value="">Selecione</option>
+        <option>São Paulo</option>
+        <option>São Bernardo do Campo</option>
+        <option>São Caetano do Sul</option>
+        <option>Santo André</option>
+        <option>Mauá</option>
+        <option>Osasco</option>
+        <option>Mogi das Cruzes</option>
+        <option>Santos</option>
+        <option>São Vicente</option>
+        <option>Mongaguá</option>
+        <option>Outro</option>
+      </select>
+      <input type="text" id="cidadeOutro" name="cidadeOutro" class="hidden" placeholder="Informe a Cidade"/>
+
+      <label>Currículo:</label>
+      <textarea name="curriculoPessoal" th:text="${curriculoPessoal}"></textarea>
+
+      <label>Comentários:</label>
+      <textarea name="comentarios" th:text="${comentarios}"></textarea>
+
+      <label>Instituições:</label>
+      <select name="idInstituicoes" multiple required>
+        <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
+      </select>
+
+      <button type="submit">Confirmar Cadastro</button>
+    </form>
+
+    <div style="text-align:center; margin-top:10px;">
+      <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
+      <a href="/login"><button type="button">Voltar ao Login</button></a>
+    </div>
+  </div>
+
+<script>
+function paisChange() {
+  const pais = document.getElementById("paisSelect").value;
+  const paisOutro = document.getElementById("paisOutro");
+  const estadoSelect = document.getElementById("estadoSelect");
+  const estadoOutro = document.getElementById("estadoOutro");
+
+  if (pais === "Outro") {
+    paisOutro.classList.remove("hidden");
+    paisOutro.required = true;
+
+    estadoSelect.classList.add("hidden");
+    estadoSelect.required = false;
+
+    estadoOutro.classList.remove("hidden");
+    estadoOutro.required = true;
+  } else if (pais === "Brasil") {
+    paisOutro.classList.add("hidden");
+    paisOutro.required = false;
+
+    estadoSelect.classList.remove("hidden");
+    estadoSelect.required = true;
+
+    estadoOutro.classList.add("hidden");
+    estadoOutro.required = false;
+  } else {
+    paisOutro.classList.add("hidden");
+    paisOutro.required = false;
+
+    estadoSelect.classList.add("hidden");
+    estadoSelect.required = false;
+
+    estadoOutro.classList.remove("hidden");
+    estadoOutro.required = true;
+  }
+}
+
+
+function cidadeChange() {
+  const cidade = document.getElementById("cidadeSelect").value;
+  const cidadeOutro = document.getElementById("cidadeOutro");
+  if (cidade === "Outro") {
+    cidadeOutro.classList.remove("hidden");
+    cidadeOutro.required = true;
+  } else {
+    cidadeOutro.classList.add("hidden");
+    cidadeOutro.required = false;
+  }
+}
+ 
+</script>
+</body>
+</html>

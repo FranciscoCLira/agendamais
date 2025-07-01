@@ -5,20 +5,17 @@ import java.time.LocalDate;
 
 @Entity
 public class Pessoa {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
-    private Usuario codUsuario;
     
 	private String nomePessoa;
     private String situacaoPessoa;
     private String emailPessoa;
     private String celularPessoa;
-    private String paisPessoa;
-    private String estadoEnderecoPessoa;
-    private String cidadeEnderecoPessoa;
+    private String nomePaisPessoa;
+    private String NomeEstadoPessoa;
+    private String NomeCidadePessoa;
     private String comentarios;
     private LocalDate dataInclusao;
     private LocalDate dataUltimaAtualizacao;
@@ -31,12 +28,6 @@ public class Pessoa {
 	}
 	public void setId(Long id) {
 		this.id = id;
-	}
-	public Usuario getCodUsuario() {
-		return codUsuario;
-	}
-	public void setCodUsuario(Usuario codUsuario) {
-		this.codUsuario = codUsuario;
 	}
 	public String getNomePessoa() {
 		return nomePessoa;
@@ -62,23 +53,23 @@ public class Pessoa {
 	public void setCelularPessoa(String celularPessoa) {
 		this.celularPessoa = celularPessoa;
 	}
-	public String getPaisPessoa() {
-		return paisPessoa;
+	public String getNomePaisPessoa() {
+		return nomePaisPessoa;
 	}
-	public void setPaisPessoa(String paisPessoa) {
-		this.paisPessoa = paisPessoa;
+	public void setNomePaisPessoa(String nomePaisPessoa) {
+		this.nomePaisPessoa = nomePaisPessoa;
 	}
-	public String getEstadoEnderecoPessoa() {
-		return estadoEnderecoPessoa;
+	public String getNomeEstadoPessoa() {
+		return NomeEstadoPessoa;
 	}
-	public void setEstadoEnderecoPessoa(String estadoEnderecoPessoa) {
-		this.estadoEnderecoPessoa = estadoEnderecoPessoa;
+	public void setNomeEstadoPessoa(String NomeEstadoPessoa) {
+		this.NomeEstadoPessoa = NomeEstadoPessoa;
 	}
-	public String getCidadeEnderecoPessoa() {
-		return cidadeEnderecoPessoa;
+	public String getNomeCidadePessoa() {
+		return NomeCidadePessoa;
 	}
-	public void setCidadeEnderecoPessoa(String cidadeEnderecoPessoa) {
-		this.cidadeEnderecoPessoa = cidadeEnderecoPessoa;
+	public void setNomeCidadePessoa(String NomeCidadePessoa) {
+		this.NomeCidadePessoa = NomeCidadePessoa;
 	}
 	public String getComentarios() {
 		return comentarios;
