@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Novo Vínculo Pessoa-Instituição</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="titulo">
+      <h1>Agenda Mais</h1>
+      <h3>Agendando tudo e mais</h3>
+    </div>
+  </header>
+
+  <div class="form-container">
+    <h2>Novo Vínculo Pessoa-Instituição</h2>
+    <form action="#" th:action="@{/pessoa-instituicao/salvar}" method="post">
+      <label>Pessoa:</label>
+      <select name="pessoaId" required>
+        <option value="">Selecione</option>
+        <option th:each="p : ${pessoas}" th:value="${p.id}" th:text="${p.nomePessoa}"></option>
+      </select>
+
+      <label>Instituição:</label>
+      <select name="instituicaoId" required>
+        <option value="">Selecione</option>
+        <option th:each="i : ${instituicoes}" th:value="${i.id}" th:text="${i.nomeInstituicao}"></option>
+      </select>
+
+      <label>Identificação:</label>
+      <input type="text" name="identificacao" maxlength="20" placeholder="Opcional" />
+
+      <label>Data de Afiliação:</label>
+      <input type="date" name="dataAfiliacao" />
+
+      <button type="submit">Salvar</button>
+    </form>
+
+    <div style="text-align:center; margin-top:10px;">
+      <a href="/pessoa-instituicao"><button>Voltar</button></a>
+    </div>
+  </div>
+</body>
+</html>

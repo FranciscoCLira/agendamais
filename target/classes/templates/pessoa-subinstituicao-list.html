@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vínculos Pessoa-SubInstituição</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="titulo">
+      <h1>Agenda Mais</h1>
+      <h3>Agendando tudo e mais</h3>
+    </div>
+  </header>
+
+  <div class="form-container">
+    <h2>Vínculos Pessoa-SubInstituição</h2>
+    <a th:href="@{/pessoa-subinstituicao/novo}"><button>Novo Vínculo</button></a>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pessoa</th>
+          <th>Instituição</th>
+          <th>SubInstituição</th>
+          <th>Identificação</th>
+          <th>Data Afiliação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="v : ${vinculos}">
+          <td th:text="${v.id}"></td>
+          <td th:text="${v.pessoa.nomePessoa}"></td>
+          <td th:text="${v.instituicao.nomeInstituicao}"></td>
+          <td th:text="${v.subInstituicao.nomeSubInstituicao}"></td>
+          <td th:text="${v.identificacaoPessoaSubInstituicao}"></td>
+          <td th:text="${v.dataAfiliacao}"></td>
+          <td>
+            <a th:href="@{'/pessoa-subinstituicao/excluir/' + ${v.id}}">Excluir</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="text-align:center; margin-top:10px;">
+      <a href="/"><button>Voltar ao Início</button></a>
+    </div>
+  </div>
+</body>
+</html>

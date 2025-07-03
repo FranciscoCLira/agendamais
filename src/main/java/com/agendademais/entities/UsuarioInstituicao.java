@@ -10,11 +10,11 @@ public class UsuarioInstituicao {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "id_instituicao")
+    @JoinColumn(name = "instituicao_id")
     private Instituicao instituicao;
 
     private String sitAcessoUsuarioInstituicao; // A, B, C

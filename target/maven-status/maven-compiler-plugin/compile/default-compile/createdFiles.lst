@@ -1,3 +1,4 @@
+com\agendademais\controllers\CadastroRelacionamentoController.class
 com\agendademais\controllers\UsuarioController.class
 com\agendademais\entities\Usuario.class
 com\agendademais\repositories\AtividadeRepository.class
@@ -16,6 +17,7 @@ com\agendademais\entities\Inscricao.class
 com\agendademais\repositories\InscricaoRepository.class
 com\agendademais\entities\Autor.class
 com\agendademais\entities\Instituicao.class
+com\agendademais\controllers\PessoaSubInstituicaoController.class
 com\agendademais\repositories\UsuarioRepository.class
 com\agendademais\controllers\AdministradorController.class
 com\agendademais\controllers\AlterarSenhaController.class
@@ -24,6 +26,7 @@ com\agendademais\controllers\CadastroUsuarioController.class
 com\agendademais\entities\LogPostagem.class
 com\agendademais\entities\PessoaSubInstituicao.class
 com\agendademais\controllers\AtividadeController.class
+com\agendademais\controllers\PessoaInstituicaoController.class
 com\agendademais\controllers\LoginController.class
 com\agendademais\repositories\InstituicaoRepository.class
 com\agendademais\controllers\SuperusuarioController.class

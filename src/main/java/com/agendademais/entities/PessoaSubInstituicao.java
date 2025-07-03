@@ -1,24 +1,35 @@
 package com.agendademais.entities;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
-public class PessoaSubInstituicao {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class PessoaSubInstituicao implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    private Pessoa idPessoa;
+    @JoinColumn(name = "pessoa_id")
+    private Pessoa pessoa;
 
     @ManyToOne
-    private Instituicao idInstituicao;
+    @JoinColumn(name = "instituicao_id")
+    private Instituicao instituicao;
 
     @ManyToOne
-    private SubInstituicao idSubInstituicao;
+    @JoinColumn(name = "sub_instituicao_id")
+    private SubInstituicao subInstituicao;
 
+    @Column(length = 20)
     private String identificacaoPessoaSubInstituicao;
-    private LocalDate dataAssociacao;
+
+    private LocalDate dataAfiliacao;
+
     private LocalDate dataUltimaAtualizacao;
 
     
@@ -30,40 +41,45 @@ public class PessoaSubInstituicao {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public Pessoa getIdPessoa() {
-		return idPessoa;
-	}
-	public void setIdPessoa(Pessoa idPessoa) {
-		this.idPessoa = idPessoa;
-	}
-	public Instituicao getIdInstituicao() {
-		return idInstituicao;
-	}
-	public void setIdInstituicao(Instituicao idInstituicao) {
-		this.idInstituicao = idInstituicao;
-	}
-	public SubInstituicao getIdSubInstituicao() {
-		return idSubInstituicao;
-	}
-	public void setIdSubInstituicao(SubInstituicao idSubInstituicao) {
-		this.idSubInstituicao = idSubInstituicao;
-	}
 	public String getIdentificacaoPessoaSubInstituicao() {
 		return identificacaoPessoaSubInstituicao;
 	}
 	public void setIdentificacaoPessoaSubInstituicao(String identificacaoPessoaSubInstituicao) {
 		this.identificacaoPessoaSubInstituicao = identificacaoPessoaSubInstituicao;
 	}
-	public LocalDate getDataAssociacao() {
-		return dataAssociacao;
+	public LocalDate getDataAfiliacao() {
+		return dataAfiliacao;
 	}
-	public void setDataAssociacao(LocalDate dataAssociacao) {
-		this.dataAssociacao = dataAssociacao;
+	public void setDataAfiliacao(LocalDate dataAfiliacao) {
+		this.dataAfiliacao = dataAfiliacao;
 	}
 	public LocalDate getDataUltimaAtualizacao() {
 		return dataUltimaAtualizacao;
 	}
 	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
+	}
+	
+	
+	public Pessoa getPessoa() {
+		return pessoa;
+	}
+	public void setPessoa(Pessoa pessoa) {
+		this.pessoa = pessoa;
+	}
+	public Instituicao getInstituicao() {
+		return instituicao;
+	}
+	public void setInstituicao(Instituicao instituicao) {
+		this.instituicao = instituicao;
+	}
+	public SubInstituicao getSubInstituicao() {
+		return subInstituicao;
+	}
+	public void setSubInstituicao(SubInstituicao subInstituicao) {
+		this.subInstituicao = subInstituicao;
+	}
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 }

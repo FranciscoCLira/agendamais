@@ -9,7 +9,8 @@ public class SubInstituicao {
     private Long id;
 
     @ManyToOne
-    private Instituicao idInstituicao;
+    @JoinColumn(name = "id_instituicao")
+    private Instituicao instituicao;
 
     private String nomeSubInstituicao;
     private String situacaoSubInstituicao;
@@ -24,12 +25,14 @@ public class SubInstituicao {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public Instituicao getIdInstituicao() {
-		return idInstituicao;
+
+	public Instituicao getInstituicao() { 
+		return instituicao; 
 	}
-	public void setIdInstituicao(Instituicao idInstituicao) {
-		this.idInstituicao = idInstituicao;
+	public void setInstituicao(Instituicao instituicao) { 
+		this.instituicao = instituicao; 
 	}
+	
 	public String getNomeSubInstituicao() {
 		return nomeSubInstituicao;
 	}
@@ -48,4 +51,5 @@ public class SubInstituicao {
 	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
 	}
+	
 }

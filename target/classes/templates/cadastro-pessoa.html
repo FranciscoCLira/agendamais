@@ -26,14 +26,14 @@
     <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
 
     <form th:action="@{/cadastro-pessoa}" method="post">
-      <input type="hidden" name="codUsuario" th:value="${codUsuario}"/>
-      <input type="hidden" name="senha" th:value="${senha}"/>
+      <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+      <input type="hidden" name="senha" th:value="${senha}" />
 
       <label>Nome da Pessoa:</label>
       <input type="text" name="nomePessoa" maxlength="80" th:value="${nomePessoa}" required pattern="[A-Za-z0-9\s]+" />
 
       <label>Email:</label>
-      <input type="email" name="emailPessoa" th:value="${emailPessoa}" required/>
+      <input type="email" name="emailPessoa" th:value="${emailPessoa}" required />
 
       <label>Celular:</label>
       <input type="text" name="celularPessoa" th:value="${celularPessoa}" required placeholder="+55-21-99999-9999"
@@ -50,7 +50,7 @@
         <option>Argentina</option>
         <option>Outro</option>
       </select>
-      <input type="text" id="paisOutro" name="paisOutro" class="hidden" placeholder="Informe o País"/>
+      <input type="text" id="paisOutro" name="paisOutro" class="hidden" placeholder="Informe o País" />
 
       <label>Estado:</label>
       <select name="nomeEstadoSelect" id="estadoSelect" required>
@@ -64,11 +64,12 @@
         <option>SP</option><option>SE</option><option>TO</option>
         <option>Outro</option>
       </select>
-      <input type="text" id="estadoOutro" name="estadoOutro" class="hidden" placeholder="Informe o Estado"/>
+      <input type="text" id="estadoOutro" name="estadoOutro" class="hidden" placeholder="Informe o Estado" />
 
       <label>Cidade:</label>
       <select name="cidadeSelect" id="cidadeSelect" required onchange="cidadeChange()">
         <option value="">Selecione</option>
+        <option>Outro</option>
         <option>São Paulo</option>
         <option>São Bernardo do Campo</option>
         <option>São Caetano do Sul</option>
@@ -79,9 +80,8 @@
         <option>Santos</option>
         <option>São Vicente</option>
         <option>Mongaguá</option>
-        <option>Outro</option>
       </select>
-      <input type="text" id="cidadeOutro" name="cidadeOutro" class="hidden" placeholder="Informe a Cidade"/>
+      <input type="text" id="cidadeOutro" name="cidadeOutro" class="hidden" placeholder="Informe a Cidade" />
 
       <label>Currículo:</label>
       <textarea name="curriculoPessoal" th:text="${curriculoPessoal}"></textarea>
@@ -89,70 +89,63 @@
       <label>Comentários:</label>
       <textarea name="comentarios" th:text="${comentarios}"></textarea>
 
-      <label>Instituições:</label>
-      <select name="idInstituicoes" multiple required>
-        <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
-      </select>
-
       <button type="submit">Confirmar Cadastro</button>
-    </form>
 
-    <div style="text-align:center; margin-top:10px;">
-      <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
-      <a href="/login"><button type="button">Voltar ao Login</button></a>
-    </div>
+      <div style="text-align:center; margin-top:10px;">
+        <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
+        <a href="/login"><button type="button">Voltar ao Login</button></a>
+      </div>
+    </form>
   </div>
 
-<script>
-function paisChange() {
-  const pais = document.getElementById("paisSelect").value;
-  const paisOutro = document.getElementById("paisOutro");
-  const estadoSelect = document.getElementById("estadoSelect");
-  const estadoOutro = document.getElementById("estadoOutro");
+  <script>
+    function paisChange() {
+      const pais = document.getElementById("paisSelect").value;
+      const paisOutro = document.getElementById("paisOutro");
+      const estadoSelect = document.getElementById("estadoSelect");
+      const estadoOutro = document.getElementById("estadoOutro");
 
-  if (pais === "Outro") {
-    paisOutro.classList.remove("hidden");
-    paisOutro.required = true;
+      if (pais === "Outro") {
+        paisOutro.classList.remove("hidden");
+        paisOutro.required = true;
 
-    estadoSelect.classList.add("hidden");
-    estadoSelect.required = false;
+        estadoSelect.classList.add("hidden");
+        estadoSelect.required = false;
 
-    estadoOutro.classList.remove("hidden");
-    estadoOutro.required = true;
-  } else if (pais === "Brasil") {
-    paisOutro.classList.add("hidden");
-    paisOutro.required = false;
+        estadoOutro.classList.remove("hidden");
+        estadoOutro.required = true;
+      } else if (pais === "Brasil") {
+        paisOutro.classList.add("hidden");
+        paisOutro.required = false;
 
-    estadoSelect.classList.remove("hidden");
-    estadoSelect.required = true;
+        estadoSelect.classList.remove("hidden");
+        estadoSelect.required = true;
 
-    estadoOutro.classList.add("hidden");
-    estadoOutro.required = false;
-  } else {
-    paisOutro.classList.add("hidden");
-    paisOutro.required = false;
+        estadoOutro.classList.add("hidden");
+        estadoOutro.required = false;
+      } else {
+        paisOutro.classList.add("hidden");
+        paisOutro.required = false;
 
-    estadoSelect.classList.add("hidden");
-    estadoSelect.required = false;
+        estadoSelect.classList.add("hidden");
+        estadoSelect.required = false;
 
-    estadoOutro.classList.remove("hidden");
-    estadoOutro.required = true;
-  }
-}
+        estadoOutro.classList.remove("hidden");
+        estadoOutro.required = true;
+      }
+    }
 
-
-function cidadeChange() {
-  const cidade = document.getElementById("cidadeSelect").value;
-  const cidadeOutro = document.getElementById("cidadeOutro");
-  if (cidade === "Outro") {
-    cidadeOutro.classList.remove("hidden");
-    cidadeOutro.required = true;
-  } else {
-    cidadeOutro.classList.add("hidden");
-    cidadeOutro.required = false;
-  }
-}
- 
-</script>
+    function cidadeChange() {
+      const cidade = document.getElementById("cidadeSelect").value;
+      const cidadeOutro = document.getElementById("cidadeOutro");
+      if (cidade === "Outro") {
+        cidadeOutro.classList.remove("hidden");
+        cidadeOutro.required = true;
+      } else {
+        cidadeOutro.classList.add("hidden");
+        cidadeOutro.required = false;
+      }
+    }
+  </script>
 </body>
 </html>

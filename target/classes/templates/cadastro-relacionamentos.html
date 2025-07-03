@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Escolher Instituições/SubInstituições</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .form-container {
+      max-width: 1000px;
+      margin: auto;
+    }
+    .mensagem-erro {
+      color: red;
+      font-weight: bold;
+    }
+    .mensagem-sucesso {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<header class="cabecalho">
+  <div class="titulo">
+    <h1>Agenda Mais</h1>
+    <h3>Agendando tudo e mais</h3>
+  </div>
+  <div class="logo">
+    <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+  </div>
+</header>
+
+<div class="form-container">
+  <h2>Escolher Instituições e SubInstituições</h2>
+
+  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
+  <form th:action="@{/cadastro-relacionamentos}" method="post">
+
+    <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+
+    <table>
+      <thead>
+        <tr>
+          <th>Escolher</th>
+          <th>Instituição</th>
+          <th>Data Afiliação</th>
+          <th>SubInstituição (opcional)</th>
+          <th>Identificação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="inst : ${instituicoes}">
+          <td>
+            <input type="checkbox" th:name="'instituicoesSelecionadas'" th:value="${inst.id}" 
+                   th:id="'instituicao_' + ${inst.id}" 
+                   th:attr="onchange='toggleSubInstituicoes(' + ${inst.id} + ')'" />
+          </td>
+          <td th:text="${inst.nomeInstituicao}"></td>
+          <td>
+            <input type="date" th:name="'dataAfiliacao_' + ${inst.id}" />
+          </td>
+          <td>
+            <select th:name="'subInstituicao_' + ${inst.id}" th:id="'subInst_' + ${inst.id}" disabled>
+              <option value="">Nenhuma</option>
+              <option th:each="sub : ${subInstituicoes}"
+				      th:if="${sub != null and sub.idInstituicao != null and sub.idInstituicao.id == inst.id}"
+				      th:value="${sub.id}"
+				      th:text="${sub.nomeSubInstituicao}"></option>
+            </select>
+          </td>
+          <td>
+            <input type="text" th:name="'identificacao_' + ${inst.id}" maxlength="20"/>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="text-align:center; margin-top:20px;">
+      <button type="submit">Confirmar Cadastro</button>
+      <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
+      <a href="/login"><button type="button">Voltar ao Login</button></a>
+    </div>
+  </form>
+</div>
+
+<script>
+function toggleSubInstituicoes(instId) {
+  const checkbox = document.getElementById("instituicao_" + instId);
+  const select = document.getElementById("subInst_" + instId);
+  if (checkbox.checked) {
+    select.disabled = false;
+  } else {
+    select.disabled = true;
+    select.value = "";
+  }
+}
+</script>
+</body>
+</html>

@@ -1,69 +1,88 @@
 package com.agendademais.controllers;
 
 import com.agendademais.entities.Usuario;
-import com.agendademais.repositories.UsuarioRepository;
 import com.agendademais.repositories.InstituicaoRepository;
+import com.agendademais.repositories.PessoaInstituicaoRepository;
+import com.agendademais.repositories.UsuarioRepository;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/login")
 public class LoginController {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final InstituicaoRepository instituicaoRepository;
+    private final PessoaInstituicaoRepository pessoaInstituicaoRepository;
 
-    @Autowired
-    private InstituicaoRepository instituicaoRepository;
+    public LoginController(
+            UsuarioRepository usuarioRepository,
+            InstituicaoRepository instituicaoRepository,
+            PessoaInstituicaoRepository pessoaInstituicaoRepository) {
+        this.usuarioRepository = usuarioRepository;
+        this.instituicaoRepository = instituicaoRepository;
+        this.pessoaInstituicaoRepository = pessoaInstituicaoRepository;
+    }
 
-    @GetMapping("/login")
+    @GetMapping
     public String loginForm(Model model) {
         model.addAttribute("instituicoes", instituicaoRepository.findAll());
         return "login";
     }
 
-    @PostMapping("/login")
-    public String processarLogin(@RequestParam String codUsuario,
-                                  @RequestParam String senha,
-                                  @RequestParam Long instituicao,
-                                  Model model) {
-    	
-        Optional<Usuario> optUsuario = usuarioRepository.findByCodUsuario(codUsuario);
+    @PostMapping
+    public String processarLogin(
+            @RequestParam String codUsuario,
+            @RequestParam String senha,
+            @RequestParam(required = false) Long instituicao,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
 
-        if (optUsuario.isPresent()) {
-            Usuario usuario = optUsuario.get();
-            
-            if (usuario.getSenha().equals(senha)) {
-                // Redirecionamento por nível de acesso
-	            switch (usuario.getNivelAcessoUsuario()) {
-	                case 1: return "redirect:/participante-form";
-	                case 2: return "redirect:/autor-form";
-	                case 5: return "redirect:/administrador-form";
-	                case 9: return "redirect:/superusuario-form";
-	                default: return "redirect:/login";
-	            }    
-            } else {
-                // Senha incorreta
-	            model.addAttribute("mensagemErro", "Senha inválida.");
-	            model.addAttribute("codUsuario", codUsuario);
-	            model.addAttribute("instituicaoSelecionada", instituicao);
-	            model.addAttribute("instituicoes", instituicaoRepository.findAll());
-	            return "login";
-        
-            }
-        } else {   
-            model.addAttribute("mensagemErro", "Usuário não encontrado.");
-            model.addAttribute("instituicoes", instituicaoRepository.findAll());
-            return "login";
-        }    
-    }    
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
 
+        if (usuarioOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
+            return "redirect:/login";
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        if (!usuario.getSenha().equals(senha)) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Senha inválida.");
+            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+            return "redirect:/login";
+        }
+
+        // Verifica se há vínculos
+        boolean temVinculos = usuario.getPessoa() != null &&
+                pessoaInstituicaoRepository.existsByPessoaId(usuario.getPessoa().getId());
+
+        if (!temVinculos) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Seu cadastro está pendente. Conclua seus vínculos antes de acessar o sistema.");
+            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+            return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
+        }
+
+        // Salva na sessão
+        session.setAttribute("usuarioLogado", usuario);
+        session.setAttribute("instituicaoSelecionada", instituicao);
+
+        // Redirecionamento por nível
+        int nivel = usuario.getNivelAcessoUsuario();
+        if (nivel == 1) return "redirect:/participante-form";
+        if (nivel == 2) return "redirect:/autor-form";
+        if (nivel == 5) return "redirect:/administrador-form";
+        if (nivel == 9) return "redirect:/superusuario-form";
+
+        // Default: Participante
+        return "redirect:/participante-form";
+    }
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {

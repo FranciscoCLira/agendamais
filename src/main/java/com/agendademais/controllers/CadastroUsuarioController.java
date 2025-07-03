@@ -5,6 +5,7 @@ import com.agendademais.repositories.UsuarioRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
 
@@ -25,10 +26,12 @@ public class CadastroUsuarioController {
     }
 
     @PostMapping("/cadastro-usuario")
-    public String processarCadastroUsuario(@RequestParam String codUsuario,
-                                           @RequestParam String senha,
-                                           @RequestParam String confirmarSenha,
-                                           Model model) {
+    public String processarCadastroUsuario(
+            @RequestParam String codUsuario,
+            @RequestParam String senha,
+            @RequestParam String confirmarSenha,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         if (!senha.equals(confirmarSenha)) {
             model.addAttribute("mensagemErro", "As senhas não coincidem.");
@@ -38,9 +41,9 @@ public class CadastroUsuarioController {
 
         Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
         if (existente.isPresent()) {
-            model.addAttribute("mensagemErro", "Já existe um usuário com esse código. Tente outro.");
-            model.addAttribute("codUsuario", codUsuario);
-            return "cadastro-usuario";
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                "Usuário já iniciado, faça login e conclua seu cadastro.");
+            return "redirect:/login";
         }
 
         return "redirect:/cadastro-pessoa?codUsuario=" + codUsuario + "&senha=" + senha;
