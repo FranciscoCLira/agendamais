@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<header class="cabecalho">
+  <div class="titulo">
+    <h1>Agenda Mais</h1>
+    <h3>Agendando tudo e mais</h3>
+  </div>
+  <div class="info-usuario">
+    <p th:if="${session.instituicaoSelecionada != null}" th:text="${session.instituicaoSelecionada.nomeInstituicao}">Instituição</p>
+    <p th:if="${session.usuarioLogado != null}">
+      Cód.Usuário: 
+      <span th:text="${#strings.abbreviate(session.usuarioLogado.codUsuario,25)}">usuario</span>
+    </p>
+    <p th:if="${session.usuarioLogado != null}">
+      <span th:text="${#strings.abbreviate(session.usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
+    </p>
+  </div>
+</header>
+</body>
+</html>

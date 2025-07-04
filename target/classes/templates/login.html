@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
-  <link rel="stylesheet" th:href="@{/css/estilo.css}">
+  <title>Login - Agenda Mais</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
   <header class="cabecalho">
@@ -19,44 +19,81 @@
   <div class="form-container">
     <h2>Login</h2>
 
+    <!-- Mensagens -->
     <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
     <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
 
-    <form th:action="@{/login}" method="post">
+	<div th:if="${mensagemErro}" style="text-align:center; margin-top:20px;">
+	  <a href="/login">
+	    <button type="button">Voltar ao Login</button>
+	  </a>
+	</div>
+
+    <!-- Primeira etapa: validar login -->
+    <form th:action="@{/login}" method="post" 
+          th:if="${exibirInstituicoes != null and !exibirInstituicoes}">
       <label for="codUsuario">Usuário:</label>
       <input type="text" id="codUsuario" name="codUsuario"
-             th:value="${codUsuario}" required>
+             th:value="${codUsuario}"
+             maxlength="25" pattern="[A-Za-z0-9]+" required/>
 
       <label for="senha">Senha:</label>
-      <div style="position: relative;">
-        <input type="password" id="senha" name="senha" required>
-        <span onclick="toggleSenha()" style="position:absolute; right:10px; top:10px; cursor:pointer;">👁️</span>
-      </div>
-
-      <label for="instituicao">Instituição:</label>
-      <select id="instituicao" name="instituicao" required>
-        <option value="">Selecione uma Instituição</option>
-        <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
-      </select>
-
-      <button type="submit">Entrar</button>
+	  <div class="senha-container">
+	     <input type="password" id="senha" name="senha" required placeholder="Senha"/>
+	     <span class="toggle-password" onclick="togglePassword('senha')">&#128065;</span>
+	  </div>
+	  
+      <button type="submit">Validar Login</button>
     </form>
 
-    <div style="text-align:center; margin-top:10px;">
-      <a href="/cadastro-usuario"><button type="button">Não tem Cadastro?</button></a>
-      <a href="/recuperar-senha"><button type="button">Recuperar Senha</button></a>
+<!-- Segunda etapa: escolher instituição -->
+<form th:action="@{/login/entrar}" method="post" th:if="${exibirInstituicoes}">
+  <input type="hidden" name="codUsuario" th:value="${codUsuario}"/>
+  <input type="hidden" name="senha" th:value="${senha}"/>
 
-      <a th:if="${codUsuario}" th:href="@{'/cadastro-relacionamentos?codUsuario=' + ${codUsuario}}">
-         <button type="button">Concluir Cadastro</button>
-      </a>
+  <label>Escolha a Instituição:</label>
+  <select name="instituicao" required>
+    <option value="">Selecione uma instituição</option>
+    <option th:each="inst : ${instituicoes}"
+            th:value="${inst.id}"
+            th:text="${inst.nomeInstituicao}"></option>
+  </select>
+
+  <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+    <button type="submit">Entrar</button>
+    <a href="/login">
+      <button type="button">Retornar</button>
+    </a>
+  </div>
+</form>
+
+    <!-- Links adicionais -->
+    <div class="links" style="text-align:center; margin-top:15px;">
+      <p><a href="/cadastro-usuario">Não tem cadastro?</a></p>
+      <p><a href="/alterar-senha">Deseja alterar sua senha?</a></p>
+    </div>
+
+    <!-- Recuperar login/senha -->
+    <div class="recuperacao">
+      <p>Para recuperar Usuário/Senha, informe seu Email:</p>
+      <form th:action="@{/recuperar-login}" method="post">
+        <input type="email" name="email" placeholder="seu@email.com" required/>
+        <button type="submit" style="width:150px; margin:10px auto; display:block;">Confirmar</button>
+      </form>
+      <p th:if="${mensagemRecuperacao}" th:text="${mensagemRecuperacao}" class="mensagem-sucesso"></p>
     </div>
   </div>
-
-  <script>
-  function toggleSenha() {
-    const senha = document.getElementById("senha");
-    senha.type = senha.type === "password" ? "text" : "password";
-  }
-  </script>
 </body>
+
+<script>
+function togglePassword(id) {
+  const input = document.getElementById(id);
+  if (input.type === "password") {
+    input.type = "text";
+  } else {
+    input.type = "password";
+  }
+}
+</script>
+
 </html>

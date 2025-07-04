@@ -30,7 +30,7 @@ public class AlterarSenhaController {
                                      Model model) {
 
         if (!novaSenha.equals(confirmarSenha)) {
-            model.addAttribute("mensagem", "As senhas não coincidem: " + codUsuario);
+            model.addAttribute("mensagemErro", "As senhas não coincidem: " + codUsuario);
             model.addAttribute("codUsuario", codUsuario);
             model.addAttribute("novaSenha", novaSenha);
             model.addAttribute("confirmarSenha", confirmarSenha);
@@ -40,7 +40,7 @@ public class AlterarSenhaController {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
 
         if (usuarioOpt.isEmpty()) {
-            model.addAttribute("mensagem", "Usuário não encontrado: " + codUsuario);
+            model.addAttribute("mensagemErro", "Usuário não encontrado: " + codUsuario);
             model.addAttribute("codUsuario", codUsuario);
             model.addAttribute("novaSenha", novaSenha);
             model.addAttribute("confirmarSenha", confirmarSenha);
@@ -50,7 +50,7 @@ public class AlterarSenhaController {
         Usuario usuario = usuarioOpt.get();
 
         if (!usuario.getSenha().equals(senhaAtual)) {
-            model.addAttribute("mensagem", "Senha atual incorreta: " + codUsuario);
+            model.addAttribute("mensagemErro", "Senha atual incorreta: " + codUsuario);
             model.addAttribute("codUsuario", codUsuario);
             model.addAttribute("novaSenha", novaSenha);
             model.addAttribute("confirmarSenha", confirmarSenha);
@@ -58,7 +58,7 @@ public class AlterarSenhaController {
         }
 
         if (usuario.getSenha().equals(novaSenha)) {
-            model.addAttribute("mensagem", "A nova senha não pode ser igual à anterior: " + codUsuario);
+            model.addAttribute("mensagemErro", "A nova senha não pode ser igual à anterior: " + codUsuario);
             model.addAttribute("codUsuario", codUsuario);
             model.addAttribute("novaSenha", novaSenha);
             model.addAttribute("confirmarSenha", confirmarSenha);
@@ -67,7 +67,7 @@ public class AlterarSenhaController {
 
         usuario.setSenha(novaSenha);
         usuarioRepository.save(usuario);
-        model.addAttribute("mensagem", "Senha alterada com sucesso! Usuário: " + codUsuario);
+        model.addAttribute("mensagemErro", "Senha alterada com sucesso! Usuário: " + codUsuario);
 
         // Limpa campos após sucesso
         model.addAttribute("codUsuario", "");

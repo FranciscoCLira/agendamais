@@ -18,30 +18,25 @@ public class CadastroPessoaController {
     private final UsuarioRepository usuarioRepository;
     private final PessoaRepository pessoaRepository;
     private final InstituicaoRepository instituicaoRepository;
-    private final SubInstituicaoRepository subInstituicaoRepository;
+
 
     public CadastroPessoaController(
             UsuarioRepository usuarioRepository,
             PessoaRepository pessoaRepository,
             InstituicaoRepository instituicaoRepository,
-            SubInstituicaoRepository subInstituicaoRepository,
-            UsuarioInstituicaoRepository usuarioInstituicaoRepository,
-            PessoaInstituicaoRepository pessoaInstituicaoRepository,
-            PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository) {
+            UsuarioInstituicaoRepository usuarioInstituicaoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.pessoaRepository = pessoaRepository;
         this.instituicaoRepository = instituicaoRepository;
-        this.subInstituicaoRepository = subInstituicaoRepository;
     }
 
     @GetMapping
-    public String mostrarFormulario(@RequestParam String codUsuario,
-                                    @RequestParam String senha,
-                                    Model model) {
+    public String mostrarFormularioCadastroPessoa(@RequestParam String codUsuario,
+                                                  @RequestParam String senha,
+                                                  Model model) {
         model.addAttribute("codUsuario", codUsuario);
         model.addAttribute("senha", senha);
         model.addAttribute("instituicoes", instituicaoRepository.findAll());
-        model.addAttribute("subinstituicoes", subInstituicaoRepository.findAll());
         return "cadastro-pessoa";
     }
 
@@ -53,56 +48,46 @@ public class CadastroPessoaController {
             @RequestParam String nomePessoa,
             @RequestParam String emailPessoa,
             @RequestParam String celularPessoa,
-            @RequestParam(required = false) String curriculoPessoal,
-            @RequestParam(required = false) String comentarios,
             @RequestParam String nomePaisSelect,
             @RequestParam(required = false) String paisOutro,
             @RequestParam String nomeEstadoSelect,
             @RequestParam(required = false) String estadoOutro,
             @RequestParam String cidadeSelect,
             @RequestParam(required = false) String cidadeOutro,
+            @RequestParam(required = false) String curriculoPessoal,
+            @RequestParam(required = false) String comentarios,
             RedirectAttributes redirectAttributes,
             Model model) {
 
-        // Validação de Estado
-        String estadoFinal = ("Outro".equals(nomeEstadoSelect)) ? estadoOutro : nomeEstadoSelect;
-        if (estadoFinal == null || estadoFinal.isEmpty()) {
-            model.addAttribute("mensagemErro", "Por favor, informe o Estado.");
-            model.addAttribute("codUsuario", codUsuario);
-            model.addAttribute("senha", senha);
-            model.addAttribute("nomePessoa", nomePessoa);
-            model.addAttribute("emailPessoa", emailPessoa);
-            model.addAttribute("celularPessoa", celularPessoa);
-            model.addAttribute("curriculoPessoal", curriculoPessoal);
-            model.addAttribute("comentarios", comentarios);
+        String paisFinal = "Outro".equals(nomePaisSelect) ? paisOutro : nomePaisSelect;
+        String estadoFinal = "Outro".equals(nomeEstadoSelect) ? estadoOutro : nomeEstadoSelect;
+        String cidadeFinal = "Outro".equals(cidadeSelect) ? cidadeOutro : cidadeSelect;
+
+        if (paisFinal == null || paisFinal.isBlank()) {
+            model.addAttribute("mensagemErro", "Informe o País.");
+            return "cadastro-pessoa";
+        }
+        if (estadoFinal == null || estadoFinal.isBlank()) {
+            model.addAttribute("mensagemErro", "Informe o Estado.");
+            return "cadastro-pessoa";
+        }
+        if (cidadeFinal == null || cidadeFinal.isBlank()) {
+            model.addAttribute("mensagemErro", "Informe a Cidade.");
             return "cadastro-pessoa";
         }
 
-        // Validação de Cidade
-        String cidadeFinal = ("Outro".equals(cidadeSelect)) ? cidadeOutro : cidadeSelect;
-        if (cidadeFinal == null || cidadeFinal.isEmpty()) {
-            model.addAttribute("mensagemErro", "Por favor, informe a Cidade.");
-            model.addAttribute("codUsuario", codUsuario);
-            model.addAttribute("senha", senha);
-            model.addAttribute("nomePessoa", nomePessoa);
-            model.addAttribute("emailPessoa", emailPessoa);
-            model.addAttribute("celularPessoa", celularPessoa);
-            model.addAttribute("curriculoPessoal", curriculoPessoal);
-            model.addAttribute("comentarios", comentarios);
-            return "cadastro-pessoa";
-        }
-
-        // Verifica se o usuário já existe
         Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
         if (existente.isPresent()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário já existente, informe um novo Código de Usuário.");
-            return "redirect:/cadastro-usuario";
+            Usuario usuarioExistente = existente.get();
+            if (usuarioExistente.getPessoa() == null) {
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Usuário já iniciado. Faça login para concluir seu cadastro.");
+                return "redirect:/login";
+            }
+            model.addAttribute("mensagemErro", "Usuário já existente.");
+            return "cadastro-pessoa";
         }
 
-        // País
-        String paisFinal = ("Outro".equals(nomePaisSelect)) ? paisOutro : nomePaisSelect;
-
-        // Salva Pessoa
         Pessoa pessoa = new Pessoa();
         pessoa.setNomePessoa(nomePessoa);
         pessoa.setEmailPessoa(emailPessoa);
@@ -117,7 +102,6 @@ public class CadastroPessoaController {
         pessoa.setDataUltimaAtualizacao(LocalDate.now());
         pessoaRepository.save(pessoa);
 
-        // Salva Usuario
         Usuario usuario = new Usuario();
         usuario.setCodUsuario(codUsuario);
         usuario.setSenha(senha);
@@ -125,7 +109,10 @@ public class CadastroPessoaController {
         usuario.setPessoa(pessoa);
         usuarioRepository.save(usuario);
 
-        // Redireciona para a ETAPA FINAL de relacionamento
+        redirectAttributes.addFlashAttribute("mensagemSucesso",
+                "Informações salvas. Agora escolha suas instituições.");
+        redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+
         return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
     }
 }

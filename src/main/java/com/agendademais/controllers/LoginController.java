@@ -32,55 +32,73 @@ public class LoginController {
     @GetMapping
     public String loginForm(Model model) {
         model.addAttribute("instituicoes", instituicaoRepository.findAll());
+        model.addAttribute("exibirInstituicoes", false); // ou true se quiser que apareça
         return "login";
     }
-
+    
     @PostMapping
     public String processarLogin(
             @RequestParam String codUsuario,
             @RequestParam String senha,
             @RequestParam(required = false) Long instituicao,
+            Model model,
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
 
         if (usuarioOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
-            return "redirect:/login";
+            model.addAttribute("mensagemErro", "Usuário não encontrado.");
+            model.addAttribute("codUsuario", codUsuario);
+            return "login";
         }
 
         Usuario usuario = usuarioOpt.get();
 
         if (!usuario.getSenha().equals(senha)) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Senha inválida.");
-            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
-            return "redirect:/login";
+            model.addAttribute("mensagemErro", "Senha inválida.");
+            model.addAttribute("codUsuario", codUsuario);
+            return "login";
         }
 
-        // Verifica se há vínculos
         boolean temVinculos = usuario.getPessoa() != null &&
                 pessoaInstituicaoRepository.existsByPessoaId(usuario.getPessoa().getId());
 
-        if (!temVinculos) {
+        if (usuario.getPessoa() != null && (!temVinculos)) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Seu cadastro está pendente. Conclua seus vínculos antes de acessar o sistema.");
             redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+            redirectAttributes.addFlashAttribute("senha", senha);
             return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
         }
 
-        // Salva na sessão
-        session.setAttribute("usuarioLogado", usuario);
-        session.setAttribute("instituicaoSelecionada", instituicao);
+        // Se chegou aqui, carrega Instituições
+        model.addAttribute("instituicoes", instituicaoRepository.findAll());
+        model.addAttribute("codUsuario", codUsuario);
+        model.addAttribute("senha", senha);
+        model.addAttribute("exibirInstituicoes", true);
+        return "login";
+    }
 
-        // Redirecionamento por nível
+    @PostMapping("/entrar")
+    public String confirmarLogin(
+            @RequestParam String codUsuario,
+            @RequestParam String senha,
+            @RequestParam Long instituicao,
+            HttpSession session) {
+
+        Usuario usuario = usuarioRepository.findByCodUsuario(codUsuario).orElseThrow();
+
+        session.setAttribute("usuarioLogado", usuario);
+        session.setAttribute("instituicaoSelecionada",
+                instituicaoRepository.findById(instituicao).orElse(null));
+
         int nivel = usuario.getNivelAcessoUsuario();
         if (nivel == 1) return "redirect:/participante-form";
         if (nivel == 2) return "redirect:/autor-form";
         if (nivel == 5) return "redirect:/administrador-form";
         if (nivel == 9) return "redirect:/superusuario-form";
 
-        // Default: Participante
         return "redirect:/participante-form";
     }
 

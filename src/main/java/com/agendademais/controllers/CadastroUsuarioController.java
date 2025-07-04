@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/cadastro-usuario")
 public class CadastroUsuarioController {
 
     private final UsuarioRepository usuarioRepository;
@@ -18,20 +19,23 @@ public class CadastroUsuarioController {
         this.usuarioRepository = usuarioRepository;
     }
 
-    @GetMapping("/cadastro-usuario")
+    @GetMapping
     public String mostrarFormularioCadastroUsuario(Model model) {
-    	// limpa mensagem
-        // model.addAttribute("mensagemSucesso", null);
         return "cadastro-usuario";
     }
 
-    @PostMapping("/cadastro-usuario")
-    public String processarCadastroUsuario(
-            @RequestParam String codUsuario,
-            @RequestParam String senha,
-            @RequestParam String confirmarSenha,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    @PostMapping
+    public String processarCadastroUsuario(@RequestParam String codUsuario,
+                                           @RequestParam String senha,
+                                           @RequestParam String confirmarSenha,
+                                           RedirectAttributes redirectAttributes,
+                                           Model model) {
+
+        if (codUsuario.length() < 6 || codUsuario.length() > 25) {
+            model.addAttribute("mensagemErro", "O Código do Usuário deve ter entre 6 e 25 caracteres.");
+            model.addAttribute("codUsuario", codUsuario);
+            return "cadastro-usuario";
+        }
 
         if (!senha.equals(confirmarSenha)) {
             model.addAttribute("mensagemErro", "As senhas não coincidem.");
@@ -41,9 +45,16 @@ public class CadastroUsuarioController {
 
         Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
         if (existente.isPresent()) {
-            redirectAttributes.addFlashAttribute("mensagemErro",
-                "Usuário já iniciado, faça login e conclua seu cadastro.");
-            return "redirect:/login";
+            Usuario usuario = existente.get();
+            boolean temPessoa = usuario.getPessoa() != null;
+            if (!temPessoa) {
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Usuário já iniciado. Faça login para concluir seu cadastro.");
+                return "redirect:/login";
+            } else {
+                model.addAttribute("mensagemErro", "Já existe um usuário com esse código.");
+                return "cadastro-usuario";
+            }
         }
 
         return "redirect:/cadastro-pessoa?codUsuario=" + codUsuario + "&senha=" + senha;

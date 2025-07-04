@@ -31,7 +31,7 @@ public class RecuperarSenhaController {
                                        Model model) {
 
         if (!novaSenha.equals(confirmarSenha)) {
-            model.addAttribute("mensagem", "As senhas não coincidem: " + codUsuario);
+            model.addAttribute("mensagemErro", "As senhas não coincidem: " + codUsuario);
             model.addAttribute("codUsuario", codUsuario);
             model.addAttribute("novaSenha", novaSenha);
             model.addAttribute("confirmarSenha", confirmarSenha);
@@ -41,7 +41,7 @@ public class RecuperarSenhaController {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
 
         if (usuarioOpt.isEmpty()) {
-            model.addAttribute("mensagem", "Usuário não encontrado: " + codUsuario);
+            model.addAttribute("mensagemErro", "Usuário não encontrado: " + codUsuario);
             model.addAttribute("codUsuario", codUsuario);
             model.addAttribute("novaSenha", novaSenha);
             model.addAttribute("confirmarSenha", confirmarSenha);
@@ -52,7 +52,7 @@ public class RecuperarSenhaController {
 
         usuario.setSenha(novaSenha);
         usuarioRepository.save(usuario);
-        model.addAttribute("mensagem", "Senha redefinida com sucesso! Usuário: " + codUsuario);
+        model.addAttribute("mensagemSucesso", "Senha redefinida com sucesso! Usuário: " + codUsuario);
 
         // Limpa campos após sucesso
         model.addAttribute("codUsuario", "");

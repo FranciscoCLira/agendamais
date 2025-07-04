@@ -2,15 +2,18 @@ package com.agendademais.controllers;
 
 import com.agendademais.entities.*;
 import com.agendademais.repositories.*;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
+@RequestMapping("/cadastro-relacionamentos")
 public class CadastroRelacionamentoController {
 
     private final UsuarioRepository usuarioRepository;
@@ -32,13 +35,8 @@ public class CadastroRelacionamentoController {
         this.pessoaSubInstituicaoRepository = pessoaSubInstituicaoRepository;
     }
 
-    @GetMapping("/cadastro-relacionamentos")
-    public String mostrarFormularioRelacionamentos(@RequestParam String codUsuario, Model model) {
-        if (codUsuario == null || codUsuario.trim().isEmpty()) {
-            model.addAttribute("mensagemErro", "Código de usuário não informado.");
-            return "login";
-        }
-
+    @GetMapping
+    public String mostrarFormulario(@RequestParam String codUsuario, Model model) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
         if (usuarioOpt.isEmpty()) {
             model.addAttribute("mensagemErro", "Usuário não encontrado.");
@@ -48,87 +46,77 @@ public class CadastroRelacionamentoController {
         Usuario usuario = usuarioOpt.get();
 
         model.addAttribute("codUsuario", codUsuario);
+        model.addAttribute("nomeUsuario", usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
         model.addAttribute("instituicoes", instituicaoRepository.findAll());
         model.addAttribute("subInstituicoes", subInstituicaoRepository.findAll());
+
         return "cadastro-relacionamentos";
     }
 
-
-    @PostMapping("/cadastro-relacionamentos")
+    @Transactional
+    @PostMapping
     public String processarRelacionamentos(
             @RequestParam String codUsuario,
-            @RequestParam(required = false) List<Long> instituicoesSelecionadas,
-            @RequestParam Map<String, String> allParams,
-            RedirectAttributes redirectAttributes,
-            Model model) {
+            @RequestParam(value = "instituicoesSelecionadas", required = false) List<Long> instituicoesIds,
+            @RequestParam(required = false) String identificacao_,
+            @RequestParam(required = false) String dataAfiliacao_,
+            @RequestParam(required = false) String subInstituicao_,
+            RedirectAttributes redirectAttributes) {
 
-        if (instituicoesSelecionadas == null || instituicoesSelecionadas.isEmpty()) {
-            model.addAttribute("mensagemErro", "Selecione ao menos uma Instituição.");
-            model.addAttribute("codUsuario", codUsuario);
-            model.addAttribute("instituicoes", instituicaoRepository.findAll());
-            model.addAttribute("subInstituicoes", subInstituicaoRepository.findAll());
-            return "cadastro-relacionamentos";
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
+        if (usuarioOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
+            return "redirect:/login";
         }
 
-        Optional<Usuario> optUsuario = usuarioRepository.findByCodUsuario(codUsuario);
-        if (optUsuario.isEmpty()) {
-            model.addAttribute("mensagemErro", "Usuário não encontrado.");
-            return "cadastro-relacionamentos";
-        }
-        Usuario usuario = optUsuario.get();
+        Usuario usuario = usuarioOpt.get();
         Pessoa pessoa = usuario.getPessoa();
 
-        if (pessoa == null) {
-            model.addAttribute("mensagemErro", "Pessoa vinculada ao usuário não encontrada.");
-            return "cadastro-relacionamentos";
+        if (instituicoesIds == null || instituicoesIds.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Selecione ao menos uma Instituição.");
+            return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
         }
 
-        for (Long instId : instituicoesSelecionadas) {
+        for (Long instId : instituicoesIds) {
             Instituicao inst = instituicaoRepository.findById(instId).orElse(null);
             if (inst == null) continue;
 
-            // Data de Afiliação
-            String dataStr = allParams.get("dataAfiliacao_" + instId);
-            LocalDate dataAfiliacao = (dataStr != null && !dataStr.isEmpty()) ? LocalDate.parse(dataStr) : null;
+            String identificacaoKey = "identificacao_" + instId;
+            String dataKey = "dataAfiliacao_" + instId;
+            String subKey = "subInstituicao_" + instId;
 
-            // Identificação
-            String identificacao = allParams.get("identificacao_" + instId);
-            if (identificacao != null && identificacao.length() > 20) {
-                identificacao = identificacao.substring(0, 20);
-            }
+            String identificacao = identificacao_;
+            String dataAfiliacao = dataAfiliacao_;
+            String subIdStr = subInstituicao_;
 
-            // Salva PessoaInstituicao
-            PessoaInstituicao psi = new PessoaInstituicao();
-            psi.setPessoa(pessoa);
-            psi.setInstituicao(inst);
-            psi.setDataAfiliacao(dataAfiliacao);
-            psi.setIdentificacaoPessoaInstituicao(identificacao);
-            psi.setDataUltimaAtualizacao(LocalDate.now());
-            pessoaInstituicaoRepository.save(psi);
+            PessoaInstituicao pi = new PessoaInstituicao();
+            pi.setPessoa(pessoa);
+            pi.setInstituicao(inst);
+            pi.setIdentificacaoPessoaInstituicao(identificacao);
+            pi.setDataAfiliacao(dataAfiliacao != null && !dataAfiliacao.isBlank() ? LocalDate.parse(dataAfiliacao) : null);
+            pi.setDataUltimaAtualizacao(LocalDate.now());
+            pessoaInstituicaoRepository.save(pi);
 
-            // SubInstituicao
-            String subInstIdStr = allParams.get("subInstituicao_" + instId);
-            if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
-                Long subId = Long.parseLong(subInstIdStr);
-                SubInstituicao subInst = subInstituicaoRepository.findById(subId).orElse(null);
-                if (subInst != null) {
-                    PessoaSubInstituicao psiSub = new PessoaSubInstituicao();
-                    psiSub.setPessoa(pessoa);
-                    psiSub.setInstituicao(inst);
-                    psiSub.setSubInstituicao(subInst);
-                    psiSub.setDataAfiliacao(dataAfiliacao);
-                    psiSub.setIdentificacaoPessoaSubInstituicao(identificacao);
-                    psiSub.setDataUltimaAtualizacao(LocalDate.now());
-                    pessoaSubInstituicaoRepository.save(psiSub);
+            if (subIdStr != null && !subIdStr.isBlank()) {
+                Long subId = Long.parseLong(subIdStr);
+                SubInstituicao sub = subInstituicaoRepository.findById(subId).orElse(null);
+                if (sub != null) {
+                    PessoaSubInstituicao psi = new PessoaSubInstituicao();
+                    psi.setPessoa(pessoa);
+                    psi.setInstituicao(inst);
+                    psi.setSubInstituicao(sub);
+                    psi.setIdentificacaoPessoaSubInstituicao(identificacao);
+                    psi.setDataAfiliacao(dataAfiliacao != null && !dataAfiliacao.isBlank() ? LocalDate.parse(dataAfiliacao) : null);
+                    psi.setDataUltimaAtualizacao(LocalDate.now());
+                    pessoaSubInstituicaoRepository.save(psi);
                 }
             }
         }
 
-        redirectAttributes.addFlashAttribute(
-        	    "mensagemSucesso",
-        	    "Cadastro concluído com sucesso! Usuário: " + codUsuario + " - " + pessoa.getNomePessoa()
-        );
-        return "redirect:/cadastro-usuario";
+        redirectAttributes.addFlashAttribute("mensagemSucesso",
+                "Cadastro concluído com sucesso! Usuário: " + codUsuario +
+                        (pessoa != null ? " - " + pessoa.getNomePessoa() : ""));
 
+        return "redirect:/cadastro-usuario";
     }
 }

@@ -6,15 +6,7 @@
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-    <header class="cabecalho">
-        <div>
-            <h1>Agenda Mais</h1>
-            <h3>Agendando tudo e mais</h3>
-        </div>
-        <div>
-            <span th:text="${nomeInstituicao}"></span>
-        </div>
-    </header>
+    <div th:replace="fragments/layout_cabecalho :: header"></div>
 
     <main>
         <h3>Área do SuperUsuário</h3>

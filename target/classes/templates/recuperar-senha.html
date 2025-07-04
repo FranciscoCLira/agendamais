@@ -38,7 +38,9 @@
          <button type="submit">Redefinir Senha</button>
       </div>
     </form>
-    <p th:if="${mensagem}" th:text="${mensagem}" class="mensagem"></p>
+
+	<p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+	<p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>   
     
 	<div style="text-align:center; margin-top:10px;">
 	  <a href="/login"><button type="button">Voltar ao Login</button></a>
