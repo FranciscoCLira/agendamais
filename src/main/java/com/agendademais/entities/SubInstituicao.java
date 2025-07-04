@@ -9,7 +9,7 @@ public class SubInstituicao {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_instituicao")
+    @JoinColumn(name = "instituicao_id")
     private Instituicao instituicao;
 
     private String nomeSubInstituicao;

@@ -4,4 +4,6 @@ import com.agendademais.entities.PessoaSubInstituicao;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PessoaSubInstituicaoRepository extends JpaRepository<PessoaSubInstituicao, Long> {
+	
+	void deleteAllByPessoaId(Long pessoaId);
 }

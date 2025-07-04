@@ -65,11 +65,10 @@ public class LoginController {
                 pessoaInstituicaoRepository.existsByPessoaId(usuario.getPessoa().getId());
 
         if (usuario.getPessoa() != null && (!temVinculos)) {
-            redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Seu cadastro está pendente. Conclua seus vínculos antes de acessar o sistema.");
-            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
-            redirectAttributes.addFlashAttribute("senha", senha);
-            return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
+        	// Salva usuario na sessao com chave "usuarioPendencia"
+        	session.setAttribute("usuarioPendencia", usuario);
+        	session.setAttribute("senhaPendencia", senha);
+        	return "redirect:/cadastro-relacionamentos";
         }
 
         // Se chegou aqui, carrega Instituições
