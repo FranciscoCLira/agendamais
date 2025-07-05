@@ -19,6 +19,9 @@ public class DataLoader implements CommandLineRunner {
     @Value("${app.reload-data:false}")
     private boolean reloadData;
 
+    @Value("${spring.jpa.hibernate.ddl-auto}")
+    private String ddlAuto;
+    
     public DataLoader(InstituicaoRepository instituicaoRepository,
                       UsuarioRepository usuarioRepository,
                       PessoaRepository pessoaRepository,
@@ -31,16 +34,25 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (!reloadData && (usuarioRepository.count() > 0 || instituicaoRepository.count() > 0)) {
-            System.out.println("****************************************************************************");
-            System.out.println("****** spring.jpa.hibernate.ddl-auto=update                         ********");
+        
+    	System.out.println("****************************************************************************");
+    	System.out.println("****** spring.jpa.hibernate.ddl-auto=" + ddlAuto +  "                         ********");
+    	System.out.println("****** app.reload-data=" + reloadData +  "                                        ********");
+    	
+    	if (!reloadData) { 
             System.out.println("****** /config/DataLoader.java - Não recarregou a base de dados     ********");
             System.out.println("****************************************************************************");
             return;
         }
 
-        System.out.println("****************************************************************************");
+        if  (usuarioRepository.count() > 0 || instituicaoRepository.count() > 0) {
+            System.out.println("****** /config/DataLoader.java - Não recarregou a base de dados     ********");
+            System.out.println("****************************************************************************");
+            return;
+        }
+
         System.out.println("****** /config/DataLoader.java - Recarregando a base de dados.....   *******");
+        System.out.println("****************************************************************************");
 
         Instituicao inst1 = new Instituicao();
         inst1.setNomeInstituicao("Instituto Aurora");
