@@ -8,6 +8,7 @@ com\agendademais\controllers\RecuperacaoLoginController.class
 com\agendademais\controllers\PessoaController.class
 com\agendademais\repositories\PessoaInstituicaoRepository.class
 com\agendademais\controllers\RecuperarSenhaController.class
+com\agendademais\config\GlobalModelAttributes.class
 com\agendademais\controllers\ParticipanteController.class
 com\agendademais\entities\Pessoa.class
 com\agendademais\repositories\PessoaRepository.class

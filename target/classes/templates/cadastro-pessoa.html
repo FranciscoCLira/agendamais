@@ -6,21 +6,11 @@
   <link rel="stylesheet" th:href="@{/css/estilo.css}" />
   <style>
     .form-container {
-      max-width: 600px;
+      max-width: 400px;
       margin: auto;
       background: #fff;
       padding: 20px;
       border-radius: 8px;
-    }
-    .mensagem-erro {
-      color: red;
-      font-weight: bold;
-      text-align: center;
-    }
-    .mensagem-sucesso {
-      color: green;
-      font-weight: bold;
-      text-align: center;
     }
     .hidden { display: none; }
   </style>
@@ -38,6 +28,10 @@
 
   <div class="form-container">
     <h2>Informações Complementares</h2>
+
+  <div style="text-align:center; margin-bottom:10px;">
+    <strong th:text="'Usuário: ' + ${codUsuario}"></strong>
+  </div>
 
     <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
     <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>

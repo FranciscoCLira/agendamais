@@ -2,34 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Escolher Instituições/SubInstituições</title>
-  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+  <title>Escolher Instituições e Subinstituições</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}">
   <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    .form-container {
-      max-width: 1000px;
-      margin: auto;
-    }
-    .mensagem-erro {
-      color: red;
-      font-weight: bold;
-    }
-    .mensagem-sucesso {
-      color: green;
-      font-weight: bold;
-    }
+    .hidden { display: none; }
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+    th, td { border:1px solid #ccc; padding:6px; text-align:left; }
+    th { background:#eee; }
+    .form-container { max-width: 1000px; margin: auto; }
   </style>
 </head>
 <body>
@@ -42,83 +22,103 @@
     <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
   </div>
 </header>
-<body>
 
-  <div class="form-container">
-    <h2>Escolher Instituições e SubInstituições</h2>
-    <p style="text-align:center;font-weight:bold;">
-      Cód. Usuário: <span th:text="${codUsuario}"></span>
-      <br/>
-      Nome: <span th:text="${nomeUsuario}"></span>
-    </p>
+<div class="form-container">
+  <h2>Escolher Instituições e Subinstituições</h2>
 
-    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
-
-    <form th:action="@{/cadastro-relacionamentos}" method="post">
-      <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
-
-      <table>
-        <thead>
-          <tr>
-            <th><span style="font-size:1.2em;">✔️</span></th>
-            <th>Instituição</th>
-            <th>Dt.Afiliação</th>
-            <th>Id.Instituição</th>
-            <th>SubInstituição</th>
-            <th>Dt.Afiliação</th>
-            <th>Id.SubInstituição</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="inst : ${instituicoes}">
-            <td>
-              <input type="checkbox" th:name="'instituicoesSelecionadas'" th:value="${inst.id}"
-                     th:id="'inst_' + ${inst.id}"
-                     th:attr="onchange='toggleSubInstituicoes(' + ${inst.id} + ')'" />
-            </td>
-            <td th:text="${#strings.abbreviate(inst.nomeInstituicao,20)}"></td>
-            <td>
-              <input type="date" th:name="'dataAfiliacao_' + ${inst.id}"
-                     max="[[${#dates.format(#dates.createNow(),'yyyy-MM-dd')}]]"/>
-            </td>
-            <td>
-              <input type="text" th:name="'identificacaoInst_' + ${inst.id}" maxlength="17"/>
-            </td>
-            <td>
-              <select th:name="'subInstituicao_' + ${inst.id}" th:id="'subInst_' + ${inst.id}" disabled>
-                <option value="">Nenhuma</option>
-				<option th:each="sub : ${#lists.select(subInstituicoes, s -> s.instituicao != null and s.instituicao.id == inst.id)}"
-				        th:value="${sub.id}"
-				        th:text="${#strings.abbreviate(sub.nomeSubInstituicao,20)}">
-				</option>
-              </select>
-            </td>
-            <td>
-              <input type="date" th:name="'dataAfiliacaoSub_' + ${inst.id}"
-                     max="[[${#dates.format(#dates.createNow(),'yyyy-MM-dd')}]]"/>
-            </td>
-            <td>
-              <input type="text" th:name="'identificacaoSub_' + ${inst.id}" maxlength="17"/>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div style="text-align:center;margin-top:20px;">
-        <button type="submit">Confirmar Cadastro</button>
-        <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
-        <a href="/login"><button type="button">Voltar ao Login</button></a>
-      </div>
-    </form>
+  <div style="text-align:center; margin-bottom:10px;">
+    <strong th:text="'Usuário: ' + ${codUsuario} + ' - ' + ${nomeUsuario}"></strong>
   </div>
 
-  <script>
-    function toggleSubInstituicoes(instId) {
-      var cb = document.getElementById('inst_' + instId);
-      var sel = document.getElementById('subInst_' + instId);
-      sel.disabled = !cb.checked;
-    }
-  </script>
+  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
+  <form th:action="@{/cadastro-relacionamentos}" method="post">
+    <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+
+	<table>
+	  <thead>
+	    <tr>
+	      <th>Escolher</th>
+	      <th>Instituição</th>
+	      <th>Dt.Afiliação</th>
+	      <th>Id.Instituição</th>
+	      <th>SubInstituição</th>
+	      <th>Dt.Afiliação</th>
+	      <th>Id.SubInstituição</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    <tr th:each="inst : ${instituicoes}">
+	      <td>
+	        <input type="checkbox"
+	               th:name="'instituicoesSelecionadas'"
+	               th:value="${inst.id}"
+	               th:checked="${parametrosForm != null and parametrosForm['instituicoesSelecionadas'] == inst.id.toString()}" />
+	      </td>
+	      <td th:text="${#strings.abbreviate(inst.nomeInstituicao,20)}"></td>
+	      <td>
+	        <input type="date"
+	               th:name="'dataAfiliacao_' + ${inst.id}"
+	               th:value="${parametrosForm != null ? parametrosForm['dataAfiliacao_' + inst.id] : ''}" />
+	      </td>
+	      <td>
+	        <input type="text"
+	               maxlength="17"
+	               th:name="'identificacao_' + ${inst.id}"
+	               th:value="${parametrosForm != null ? parametrosForm['identificacao_' + inst.id] : ''}" />
+	      </td>
+	      <td>
+	        <select th:name="'subInstituicao_' + ${inst.id}">
+	          <option value="">Nenhuma</option>
+	          <option th:each="sub : ${subInstituicoes}"
+	                  th:if="${sub.instituicao?.id == inst.id}"
+	                  th:value="${sub.id}"
+	                  th:selected="${parametrosForm != null and parametrosForm['subInstituicao_' + inst.id] == sub.id.toString()}"
+	                  th:text="${#strings.abbreviate(sub.nomeSubInstituicao,20)}"></option>
+	        </select>
+	      </td>
+	      <td>
+	        <input type="date"
+	               th:name="'dataAfiliacaoSub_' + ${inst.id}"
+	               th:value="${parametrosForm != null ? parametrosForm['dataAfiliacaoSub_' + inst.id] : ''}" />
+	      </td>
+	      <td>
+	        <input type="text"
+	               maxlength="17"
+	               th:name="'identificacaoSub_' + ${inst.id}"
+	               th:value="${parametrosForm != null ? parametrosForm['identificacaoSub_' + inst.id] : ''}" />
+	      </td>
+	    </tr>
+	  </tbody>
+	</table>
+
+
+    <div style="text-align:center; margin-top:20px;">
+      <button type="submit">Confirmar Cadastro</button>
+      <a href="/login"><button type="button">Voltar ao Login</button></a>
+    </div>
+  </form>
+</div>
+
+<script>
+function toggleSubInstituicao(instId) {
+  const cb = document.getElementById('inst_' + instId);
+  const select = document.getElementById('subInst_' + instId);
+  const date = document.getElementsByName('dataAfiliacaoSub_' + instId)[0];
+  const ident = document.getElementsByName('identificacaoSub_' + instId)[0];
+
+  if (cb.checked) {
+    select.disabled = false;
+    date.disabled = false;
+    ident.disabled = false;
+  } else {
+    select.disabled = true;
+    date.disabled = true;
+    ident.disabled = true;
+  }
+}
+</script>
+
 </body>
 </html>

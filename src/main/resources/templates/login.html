@@ -31,7 +31,7 @@
 
     <!-- Primeira etapa: validar login -->
     <form th:action="@{/login}" method="post" 
-          th:if="${exibirInstituicoes != null and !exibirInstituicoes}">
+          th:if="${exibirInstituicoes == null or !exibirInstituicoes}">
       <label for="codUsuario">Usuário:</label>
       <input type="text" id="codUsuario" name="codUsuario"
              th:value="${codUsuario}"
@@ -46,26 +46,21 @@
       <button type="submit">Validar Login</button>
     </form>
 
-<!-- Segunda etapa: escolher instituição -->
-<form th:action="@{/login/entrar}" method="post" th:if="${exibirInstituicoes}">
-  <input type="hidden" name="codUsuario" th:value="${codUsuario}"/>
-  <input type="hidden" name="senha" th:value="${senha}"/>
+	<!-- Segunda etapa: escolher instituição -->
+	<form th:action="@{/login}" method="post" th:if="${exibirInstituicoes}">
+	  <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+	  <input type="hidden" name="senha" th:value="${senha}" />
+	  
+	  <label>Escolha a Instituição:</label>
+	  <select name="instituicao" required>
+	    <option th:each="inst : ${instituicoes}"
+	            th:value="${inst.instituicao.id}"
+	            th:text="${inst.instituicao.nomeInstituicao}"></option>
+	  </select>
+	  <button type="submit">Entrar</button>
+	  <a href="/login"><button type="button">Retornar</button></a>
+	</form>
 
-  <label>Escolha a Instituição:</label>
-  <select name="instituicao" required>
-    <option value="">Selecione uma instituição</option>
-    <option th:each="inst : ${instituicoes}"
-            th:value="${inst.id}"
-            th:text="${inst.nomeInstituicao}"></option>
-  </select>
-
-  <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
-    <button type="submit">Entrar</button>
-    <a href="/login">
-      <button type="button">Retornar</button>
-    </a>
-  </div>
-</form>
 
     <!-- Links adicionais -->
     <div class="links" style="text-align:center; margin-top:15px;">

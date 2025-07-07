@@ -17,7 +17,7 @@ public class UsuarioInstituicao {
     @JoinColumn(name = "instituicao_id")
     private Instituicao instituicao;
 
-    private String sitAcessoUsuarioInstituicao; // A, B, C
+    private String sitAcessoUsuarioInstituicao; // A=Ativo, B=Bloqueado, C=Cancelado
 
     public Long getId() {
         return id;

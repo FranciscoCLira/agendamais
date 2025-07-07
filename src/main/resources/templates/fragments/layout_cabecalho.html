@@ -7,14 +7,21 @@
     <h1>Agenda Mais</h1>
     <h3>Agendando tudo e mais</h3>
   </div>
+
   <div class="info-usuario">
-    <p th:if="${session.instituicaoSelecionada != null}" th:text="${session.instituicaoSelecionada.nomeInstituicao}">Instituição</p>
-    <p th:if="${session.usuarioLogado != null}">
-      Cód.Usuário: 
-      <span th:text="${#strings.abbreviate(session.usuarioLogado.codUsuario,25)}">usuario</span>
+	<p th:if="${instituicaoSelecionada != null}">
+	  <span th:text="${instituicaoSelecionada.nomeInstituicao}">Instituição</span>
+	</p>
+	<p th:if="${instituicaoSelecionada == null}">
+	  Instituição não selecionada
+	</p>
+
+    <p th:if="${usuarioLogado != null}">
+      Cód.Usuário:
+      <span th:text="${#strings.abbreviate(usuarioLogado.codUsuario,25)}">usuario</span>
     </p>
-    <p th:if="${session.usuarioLogado != null}">
-      <span th:text="${#strings.abbreviate(session.usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
+    <p th:if="${usuarioLogado != null}">
+      <span th:text="${#strings.abbreviate(usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
     </p>
   </div>
 </header>
