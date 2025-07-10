@@ -59,9 +59,16 @@ public class CadastroRelacionamentoController {
     @PostMapping
     public String processarCadastroRelacionamentos(
             @RequestParam Map<String, String> allParams,
+            @RequestParam(name = "instituicoesSelecionadas", required = false)
+            String[] instituicoesSelecionadas,
             HttpSession session,
             RedirectAttributes redirectAttributes,
             Model model) {
+    	
+    	System.out.println("=== CadastroRelacionamentoController - processarCadastroRelacionamentos  ====");
+    	System.out.println("======== DADOS ENVIADOS ========");
+    	allParams.forEach((k, v) -> System.out.println(k + ": " + v));
+    	System.out.println("====================================================================");
 
         String codUsuario = allParams.get("codUsuario");
         if (codUsuario == null || codUsuario.isEmpty()) {
@@ -121,58 +128,55 @@ public class CadastroRelacionamentoController {
         pessoaSubInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
 
         // ===== 3) Insere os novos vínculos =====
-        for (String key : allParams.keySet()) {
-            if (key.startsWith("instituicoesSelecionadas")) {
-                String instIdStr = allParams.get(key);
-                Long instId = Long.parseLong(instIdStr);
+        for (String instIdStr : instituicoesSelecionadas) {
+            Long instId = Long.parseLong(instIdStr);
 
-                // Data afiliação
-                String dataAfiliacaoStr = allParams.get("dataAfiliacao_" + instId);
-                LocalDate dataAfiliacao = (dataAfiliacaoStr != null && !dataAfiliacaoStr.isEmpty())
-                        ? LocalDate.parse(dataAfiliacaoStr) : null;
+            // Data afiliação
+            String dataAfiliacaoStr = allParams.get("dataAfiliacao_" + instId);
+            LocalDate dataAfiliacao = (dataAfiliacaoStr != null && !dataAfiliacaoStr.isEmpty())
+                    ? LocalDate.parse(dataAfiliacaoStr) : null;
 
-                // Inclui PessoaInstituicao
-                PessoaInstituicao psi = new PessoaInstituicao();
-                psi.setPessoa(pessoa);
-                psi.setInstituicao(instituicaoRepository.findById(instId).orElse(null));
-                psi.setDataUltimaAtualizacao(LocalDate.now());
-                psi.setDataAfiliacao(dataAfiliacao);
+            // Inclui PessoaInstituicao
+            PessoaInstituicao psi = new PessoaInstituicao();
+            psi.setPessoa(pessoa);
+            psi.setInstituicao(instituicaoRepository.findById(instId).orElse(null));
+            psi.setDataUltimaAtualizacao(LocalDate.now());
+            psi.setDataAfiliacao(dataAfiliacao);
 
-                String identificacao = allParams.get("identificacao_" + instId);
-                psi.setIdentificacaoPessoaInstituicao(identificacao);
-                pessoaInstituicaoRepository.save(psi);
+            String identificacao = allParams.get("identificacao_" + instId);
+            psi.setIdentificacaoPessoaInstituicao(identificacao);
+            pessoaInstituicaoRepository.save(psi);
 
-                // Inclui UsuarioInstituicao
-                UsuarioInstituicao ui = new UsuarioInstituicao();
-                ui.setUsuario(usuario);
-                ui.setInstituicao(psi.getInstituicao());
-                ui.setSitAcessoUsuarioInstituicao("A");
-                usuarioInstituicaoRepository.save(ui);
+            // Inclui UsuarioInstituicao
+            UsuarioInstituicao ui = new UsuarioInstituicao();
+            ui.setUsuario(usuario);
+            ui.setInstituicao(psi.getInstituicao());
+            ui.setSitAcessoUsuarioInstituicao("A");
+            usuarioInstituicaoRepository.save(ui);
 
-                // SubInstituição
-                String subInstIdStr = allParams.get("subInstituicao_" + instId);
-                if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
-                    Long subInstId = Long.parseLong(subInstIdStr);
-                    SubInstituicao subInst = subInstituicaoRepository.findById(subInstId).orElse(null);
+            // SubInstituição
+            String subInstIdStr = allParams.get("subInstituicao_" + instId);
+            if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
+                Long subInstId = Long.parseLong(subInstIdStr);
+                SubInstituicao subInst = subInstituicaoRepository.findById(subInstId).orElse(null);
 
-                    if (subInst != null) {
-                        String dataAfiliacaoSubStr = allParams.get("dataAfiliacaoSub_" + instId);
-                        LocalDate dataAfiliacaoSub = (dataAfiliacaoSubStr != null && !dataAfiliacaoSubStr.isEmpty())
-                                ? LocalDate.parse(dataAfiliacaoSubStr) : null;
+                if (subInst != null) {
+                    String dataAfiliacaoSubStr = allParams.get("dataAfiliacaoSub_" + instId);
+                    LocalDate dataAfiliacaoSub = (dataAfiliacaoSubStr != null && !dataAfiliacaoSubStr.isEmpty())
+                            ? LocalDate.parse(dataAfiliacaoSubStr) : null;
 
-                        PessoaSubInstituicao psiSub = new PessoaSubInstituicao();
-                        psiSub.setPessoa(pessoa);
-                        psiSub.setSubInstituicao(subInst);
-                        psiSub.setInstituicao(subInst.getInstituicao());
-                        psiSub.setDataUltimaAtualizacao(LocalDate.now());
-                        psiSub.setDataAfiliacao(dataAfiliacaoSub);
+                    PessoaSubInstituicao psiSub = new PessoaSubInstituicao();
+                    psiSub.setPessoa(pessoa);
+                    psiSub.setSubInstituicao(subInst);
+                    psiSub.setInstituicao(subInst.getInstituicao());
+                    psiSub.setDataUltimaAtualizacao(LocalDate.now());
+                    psiSub.setDataAfiliacao(dataAfiliacaoSub);
 
-                        psiSub.setIdentificacaoPessoaSubInstituicao(
-                                allParams.get("identificacaoSub_" + instId)
-                        );
+                    psiSub.setIdentificacaoPessoaSubInstituicao(
+                            allParams.get("identificacaoSub_" + instId)
+                    );
 
-                        pessoaSubInstituicaoRepository.save(psiSub);
-                    }
+                    pessoaSubInstituicaoRepository.save(psiSub);
                 }
             }
         }

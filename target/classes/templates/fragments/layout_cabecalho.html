@@ -2,28 +2,41 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
 <body>
-<header class="cabecalho">
-  <div class="titulo">
-    <h1>Agenda Mais</h1>
-    <h3>Agendando tudo e mais</h3>
-  </div>
+<!-- fragments/layout_cabecalho.html -->
+<div th:fragment="cabecalho">
+	
+	<header class="cabecalho">
+	  <div class="titulo">
+	    <h1>Agenda Mais</h1>
+	    <h3>Agendando tudo e mais</h3>
+	  </div>
+	
+	  <div class="logo-central">
+	    <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+	  </div>
+	
+	  <div class="info-usuario">
+	
+	    <!-- Nome da instituição ou Controle Total -->
+		<p th:if="${instituicaoSelecionada != null}">
+		  <span th:text="${instituicaoSelecionada.nomeInstituicao}"></span>
+		</p>
+		<p th:if="${instituicaoSelecionada == null}">
+		  <span>*** Controle Total ***</span>
+		</p>
+		
+	    <!-- Usuário logado -->
+	    <p th:if="${usuarioLogado != null}">
+	      Cód.Usuário: 
+	      <span th:text="${#strings.abbreviate(usuarioLogado.codUsuario,25)}">usuario</span>
+	    </p>
+	    <p th:if="${usuarioLogado != null}">
+	      <span th:text="${#strings.abbreviate(usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
+	    </p>
+	
+	  </div>
+	</header>
 
-  <div class="info-usuario">
-	<p th:if="${instituicaoSelecionada != null}">
-	  <span th:text="${instituicaoSelecionada.nomeInstituicao}">Instituição</span>
-	</p>
-	<p th:if="${instituicaoSelecionada == null}">
-	  Instituição não selecionada
-	</p>
-
-    <p th:if="${usuarioLogado != null}">
-      Cód.Usuário:
-      <span th:text="${#strings.abbreviate(usuarioLogado.codUsuario,25)}">usuario</span>
-    </p>
-    <p th:if="${usuarioLogado != null}">
-      <span th:text="${#strings.abbreviate(usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
-    </p>
-  </div>
-</header>
+</div>
 </body>
 </html>

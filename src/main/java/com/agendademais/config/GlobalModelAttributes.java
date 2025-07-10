@@ -1,9 +1,10 @@
 package com.agendademais.config;
 
+import com.agendademais.entities.Instituicao;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.ui.Model;
 
 @ControllerAdvice
 public class GlobalModelAttributes {
@@ -11,15 +12,20 @@ public class GlobalModelAttributes {
     @ModelAttribute
     public void adicionarVariaveisGlobais(HttpSession session, Model model) {
     	
-        System.out.println("**************************************");
-        System.out.println("✅ GlobalModelAttributes executando...");
-        System.out.println("**************************************");
-    	
+        // System.out.println("**************************************");
+        // System.out.println("✅ GlobalModelAttributes EXECUTANDO...");
+        // System.out.println("**************************************");
+
         Object usuario = session.getAttribute("usuarioLogado");
-        Object instituicao = session.getAttribute("instituicaoSelecionada");
+        Object inst = session.getAttribute("instituicaoSelecionada");
 
         model.addAttribute("usuarioLogado", usuario);
-        model.addAttribute("instituicaoSelecionada", instituicao);
+
+        if (inst instanceof Instituicao) {
+            model.addAttribute("instituicaoSelecionada", (Instituicao) inst);
+        } else {
+            model.addAttribute("instituicaoSelecionada", null);
+            model.addAttribute("controleTotal", true);
+        }
     }
 }
-

@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Controle Total</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+<div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+<div class="form-container">
+    <h2 th:text="${tituloPagina}">Painel de Controle Total</h2>
+
+    <ul class="menu-opcoes">
+        <li><a th:href="@{/instituicoes}">Gerenciar Instituições</a></li>
+        <li><a th:href="@{/usuarios/geral}">Gestão Geral de Usuários</a></li>
+    </ul>
+</div>
+</body>
+</html>

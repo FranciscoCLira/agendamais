@@ -6,89 +6,83 @@
   <link rel="stylesheet" th:href="@{/css/estilo.css}" />
 </head>
 <body>
-  <header class="cabecalho">
-    <div class="titulo">
-      <h1>Agenda Mais</h1>
-      <h3>Agendando tudo e mais</h3>
-    </div>
-    <div class="logo">
-      <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
-    </div>
-  </header>
-
-  <div class="form-container">
-    <h2>Login</h2>
-
-    <!-- Mensagens -->
-    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
-
-	<div th:if="${mensagemErro}" style="text-align:center; margin-top:20px;">
-	  <a href="/login">
-	    <button type="button">Voltar ao Login</button>
-	  </a>
-	</div>
-
-    <!-- Primeira etapa: validar login -->
-    <form th:action="@{/login}" method="post" 
-          th:if="${exibirInstituicoes == null or !exibirInstituicoes}">
-      <label for="codUsuario">Usuário:</label>
-      <input type="text" id="codUsuario" name="codUsuario"
-             th:value="${codUsuario}"
-             maxlength="25" pattern="[A-Za-z0-9]+" required/>
-
-      <label for="senha">Senha:</label>
-	  <div class="senha-container">
-	     <input type="password" id="senha" name="senha" required placeholder="Senha"/>
-	     <span class="toggle-password" onclick="togglePassword('senha')">&#128065;</span>
-	  </div>
-	  
-      <button type="submit">Validar Login</button>
-    </form>
-
-	<!-- Segunda etapa: escolher instituição -->
-	<form th:action="@{/login}" method="post" th:if="${exibirInstituicoes}">
-	  <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
-	  <input type="hidden" name="senha" th:value="${senha}" />
-	  
-	  <label>Escolha a Instituição:</label>
-	  <select name="instituicao" required>
-	    <option th:each="inst : ${instituicoes}"
-	            th:value="${inst.instituicao.id}"
-	            th:text="${inst.instituicao.nomeInstituicao}"></option>
-	  </select>
-	  <button type="submit">Entrar</button>
-	  <a href="/login"><button type="button">Retornar</button></a>
-	</form>
-
-
-    <!-- Links adicionais -->
-    <div class="links" style="text-align:center; margin-top:15px;">
-      <p><a href="/cadastro-usuario">Não tem cadastro?</a></p>
-      <p><a href="/alterar-senha">Deseja alterar sua senha?</a></p>
-    </div>
-
-    <!-- Recuperar login/senha -->
-    <div class="recuperacao">
-      <p>Para recuperar Usuário/Senha, informe seu Email:</p>
-      <form th:action="@{/recuperar-login}" method="post">
-        <input type="email" name="email" placeholder="seu@email.com" required/>
-        <button type="submit" style="width:150px; margin:10px auto; display:block;">Confirmar</button>
-      </form>
-      <p th:if="${mensagemRecuperacao}" th:text="${mensagemRecuperacao}" class="mensagem-sucesso"></p>
-    </div>
+<header class="cabecalho">
+  <div class="titulo">
+    <h1>Agenda Mais</h1>
+    <h3>Agendando tudo e mais</h3>
   </div>
-</body>
+  <div class="logo">
+    <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+  </div>
+</header>
+
+<div class="form-container">
+  <h2>Login</h2>
+
+  <!-- Mensagens -->
+  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
+  <div th:if="${mensagemErro}" style="text-align:center; margin-top:20px;">
+     <p><a href="login/recuperar-login-email">Esqueceu a senha ou login?</a></p>
+  </div>
+  
+  <!-- Primeira etapa: validar login -->
+  <form th:action="@{/login}" method="post"
+        th:if="${exibirInstituicoes == null or !exibirInstituicoes}">
+    <label for="codUsuario">Usuário:</label>
+    <input type="text" id="codUsuario" name="codUsuario"
+           th:value="${codUsuario}"
+           maxlength="25" pattern="[A-Za-z0-9]+" required/>
+
+    <label for="senha">Senha:</label>
+    <div class="senha-container">
+      <input type="password" id="senha" name="senha" required placeholder="Senha"/>
+      <span class="toggle-password" onclick="togglePassword('senha')">&#128065;</span>
+    </div>
+
+    <button type="submit">Validar Login</button>
+  </form>
+  
+  <!-- Etapa 2: selecionar instituição -->
+  <form th:action="@{/login/entrar}" method="post" th:if="${exibirInstituicoes}">
+      <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+      <input type="hidden" name="senha" th:value="${senha}" />
+      
+      <label>Escolha a Instituição:</label>
+      <select name="instituicao" required>
+         <option th:if="${nivelAcesso == 9}" value="0">*** Controle Total ***</option>
+
+	     <!-- Demais instituições -->
+         <option th:each="inst : ${instituicoes}" th:value="${inst.id}" th:text="${inst.nomeInstituicao}"></option>
+      </select>
+      
+      <button type="submit">Entrar</button>
+      <a href="/login"><button type="button">Retornar</button></a>
+  </form>
+
+  <!-- Links adicionais -->
+  <div class="links" style="text-align:center; margin-top:15px;">
+    <p><a href="/cadastro-usuario">Não tem cadastro?</a></p>
+    <p><a href="/alterar-senha">Deseja alterar sua senha?</a></p>
+  </div>
+
+  <!-- Recuperar login/senha -->
+  <div class="recuperacao">
+    <p>Para recuperar Usuário/Senha, informe seu Email:</p>
+    <form th:action="@{/recuperar-login}" method="post">
+      <input type="email" name="email" placeholder="seu@email.com" required/>
+      <button type="submit" style="width:150px; margin:10px auto; display:block;">Confirmar</button>
+    </form>
+    <p th:if="${mensagemRecuperacao}" th:text="${mensagemRecuperacao}" class="mensagem-sucesso"></p>
+  </div>
+</div>
 
 <script>
-function togglePassword(id) {
-  const input = document.getElementById(id);
-  if (input.type === "password") {
-    input.type = "text";
-  } else {
-    input.type = "password";
+  function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
   }
-}
 </script>
-
+</body>
 </html>

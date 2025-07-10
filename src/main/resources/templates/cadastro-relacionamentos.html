@@ -52,7 +52,7 @@
 	    <tr th:each="inst : ${instituicoes}">
 	      <td>
 	        <input type="checkbox"
-	               th:name="'instituicoesSelecionadas'"
+	               th:name="|instituicoesSelecionadas|"
 	               th:value="${inst.id}"
 	               th:checked="${parametrosForm != null and parametrosForm['instituicoesSelecionadas'] == inst.id.toString()}" />
 	      </td>
@@ -119,6 +119,16 @@ function toggleSubInstituicao(instId) {
   }
 }
 </script>
+
+<script>
+  // exibir na console do navegador 
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      console.log("Selecionado:", cb.name, cb.value, cb.checked);
+    });
+  });
+</script>
+
 
 </body>
 </html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu - SuperUsuário</title>
+  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+</head>
+<body>
+  <!-- CABECALHO PADRAO -->
+  <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+
+  <main class="main-content">
+    <h2>Bem-vindo, Administrador!</h2>
+
+    <ul>
+      <li><a href="/inscricao-tipo-atividade">Inscrição em Tipos de Atividades</a></li>
+      <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>
+      <li><a href="/vinculo-instituicao">Vínculos com Instituições</a></li>
+      <li><a href="/autor-form">Informações de Autor</a></li>
+      <li><a href="/gestao-usuarios-instituicao">Gestao de Usuários</a></li>
+    </ul>
+
+    <p style="margin-top: 20px;"><a href="/login/logout">Sair</a></p>
+  </main>
+</body>
+</html>

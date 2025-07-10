@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -38,15 +39,17 @@ public class LoginController {
 
     @GetMapping
     public String loginForm(Model model) {
-        model.addAttribute("instituicoes", instituicaoRepository.findAll());
+        if (!model.containsAttribute("instituicoes")) {
+            model.addAttribute("instituicoes", List.of());
+        }
         return "login";
     }
+
 
     @PostMapping
     public String processarLogin(
             @RequestParam String codUsuario,
             @RequestParam String senha,
-            @RequestParam(required = false) Long instituicao,
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
@@ -65,40 +68,45 @@ public class LoginController {
             return "redirect:/login";
         }
 
-        // Verifica se está bloqueado pelo nível de acesso
-        if (usuario.getNivelAcessoUsuario() == 0) {
-            redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Usuário bloqueado. Consulte o administrador.");
+        if (usuario.getSituacaoUsuario() != null && usuario.getSituacaoUsuario().equals("B")) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário bloqueado. Consulte o administrador.");
             return "redirect:/login";
         }
 
-        // Verifica se há vínculos
         boolean temVinculos = usuario.getPessoa() != null &&
                 pessoaInstituicaoRepository.existsByPessoaId(usuario.getPessoa().getId());
 
         if (!temVinculos) {
-            // Cadastro incompleto - salva na sessão
             session.setAttribute("usuarioPendencia", usuario);
             return "redirect:/cadastro-relacionamentos";
         }
 
-        // Se é SuperUsuário, vai direto ao painel dele
-        if (usuario.getNivelAcessoUsuario() == 9) {
-            session.setAttribute("usuarioLogado", usuario);
-            return "redirect:/superusuario-form";
-        }
-
-        // Carrega vínculos ativos
-        List<UsuarioInstituicao> vinculosAtivos =
-                usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A");
-
+        List<UsuarioInstituicao> vinculosAtivos = usuarioInstituicaoRepository
+                .findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A");
+        
+     	System.out.println("****************************************************************************");
+     	System.out.println("*** LoginController.java /login  usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
+     	System.out.println("*** LoginController.java /login  vinculosAtivos.size()= " + vinculosAtivos.size()); 
+     	System.out.println("****************************************************************************");
+        
         if (vinculosAtivos.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Seu acesso foi bloqueado ou cancelado. Consulte o administrador.");
             return "redirect:/login";
         }
 
-        // Se só tem 1 vínculo, salva a instituição e redireciona
+        // Se for SuperUsuário, sempre exibe a escolha mesmo com 1 vínculo
+        if (usuario.getNivelAcessoUsuario() == 9) {
+            redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
+            redirectAttributes.addFlashAttribute("instituicoes", 
+            		vinculosAtivos.stream().map(UsuarioInstituicao::getInstituicao).toList());
+            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+            redirectAttributes.addFlashAttribute("senha", senha);
+            redirectAttributes.addFlashAttribute("exibirControleTotal", true);
+            redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
+            return "redirect:/login";
+        }
+
         if (vinculosAtivos.size() == 1) {
             UsuarioInstituicao vinculo = vinculosAtivos.get(0);
             session.setAttribute("usuarioLogado", usuario);
@@ -106,13 +114,19 @@ public class LoginController {
             return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
         }
 
-        // Se mais de um vínculo, exibe seleção de instituição
+        // Exibe lista de instituições para escolha
         redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
         redirectAttributes.addFlashAttribute("instituicoes", vinculosAtivos.stream()
-                .map(UsuarioInstituicao::getInstituicao)
-                .toList());
+                .map(UsuarioInstituicao::getInstituicao).toList());
         redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
         redirectAttributes.addFlashAttribute("senha", senha);
+        redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
+        
+        List<Instituicao> instituicoesDoVinculo = vinculosAtivos.stream()
+                .map(UsuarioInstituicao::getInstituicao)
+                .toList();
+
+        redirectAttributes.addFlashAttribute("instituicoes", instituicoesDoVinculo);
 
         return "redirect:/login";
     }
@@ -139,8 +153,34 @@ public class LoginController {
             redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
             return "redirect:/login";
         }
+        
+     	System.out.println("****************************************************************************");
+     	System.out.println("*** LoginController.java /login/entrar  usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
+     	System.out.println("*** LoginController.java /login/entrar  instituicao= " + instituicao); 
+     	System.out.println("****************************************************************************");
+        
+        // ACESSO AO CONTROLE TOTAL (OPCAO VALOR 0)
+        if (instituicao == 0 && usuario.getNivelAcessoUsuario() == 9) {
+            session.setAttribute("usuarioLogado", usuario);
+            session.removeAttribute("instituicaoSelecionada");
+            return "redirect:/menus/menu-controle-total";
+        }
+        
+        if (instituicao == 0 && usuario.getNivelAcessoUsuario() != 9) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Acesso ao Controle Total não permitido.");
+            redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
+            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+            redirectAttributes.addFlashAttribute("senha", senha);
+            redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
 
-        // Verifica se o vínculo com esta instituição está ativo
+            redirectAttributes.addFlashAttribute("instituicoes",
+                usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A")
+                    .stream().map(UsuarioInstituicao::getInstituicao).toList());
+
+            return "redirect:/login";
+        }
+
+        // Valida vínculo com a instituição
         boolean vinculoAtivo = usuarioInstituicaoRepository
                 .existsByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao);
 
@@ -157,15 +197,46 @@ public class LoginController {
             return "redirect:/login";
         }
 
-        // Tudo ok - salva sessão e redireciona
+        // Acesso normal via instituição
         session.setAttribute("usuarioLogado", usuario);
-        
-        Instituicao inst = instituicaoRepository.findById(instituicao).orElse(null);
-        session.setAttribute("instituicaoSelecionada", inst);
+        session.setAttribute("instituicaoSelecionada",
+                instituicaoRepository.findById(instituicao).orElse(null));
+
+        if (usuario.getNivelAcessoUsuario() == 9) {
+            return "redirect:/menus/menu-superusuario";
+
+        }
 
         return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
     }
 
+    @GetMapping("/recuperar-login-email")
+    public String exibirFormularioRecuperacaoEmail(Model model) {
+        model.addAttribute("email", "");
+        model.addAttribute("mensagemErro", null);
+        return "recuperar-login-email"; // view com input de e-mail
+    }
+
+    @PostMapping("/recuperar-login-email")
+    public String processarEmailRecuperacao(
+            @RequestParam("email") String email,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
+
+        if (usuarioOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Email não cadastrado.");
+            redirectAttributes.addFlashAttribute("email", email); // mantém preenchido
+            return "redirect:/login/recuperar-login-email";
+        }
+
+        // Redireciona com CodUsuario preenchido
+        Usuario usuario = usuarioOpt.get();
+        redirectAttributes.addFlashAttribute("codUsuario", usuario.getCodUsuario());
+        return "redirect:/recuperar-senha";
+    }
+
+    
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
@@ -174,10 +245,15 @@ public class LoginController {
 
     private String redirecionarPorNivel(int nivel) {
         return switch (nivel) {
-            case 1 -> "redirect:/participante-form";
-            case 2 -> "redirect:/autor-form";
-            case 5 -> "redirect:/administrador-form";
-            default -> "redirect:/participante-form";
+	    //  case 1 -> "redirect:/participante-form";
+	    //  case 2 -> "redirect:/autor-form";
+	    //  case 5 -> "redirect:/administrador-form";
+	    //  default -> "redirect:/participante-form";
+        
+            case 1 -> "redirect:/menus/menu-participante";
+            case 2 -> "redirect:/menus/menu-autor";
+            case 5 -> "redirect:/menus/menu-administrador";
+            default -> "redirect:/menus/menu-participante";
         };
     }
 }

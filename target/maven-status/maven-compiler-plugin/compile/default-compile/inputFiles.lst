@@ -31,11 +31,13 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\CadastroUsuario
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\PessoaRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Inscricao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Atividade.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\MenuController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\LoginController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\PessoaInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\UsuarioInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\UsuarioController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\SubInstituicaoRepository.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ControleTotalController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\RecuperarSenhaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\TipoAtividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Usuario.java

@@ -11,7 +11,10 @@ public class Pessoa {
     
 	private String nomePessoa;
     private String situacaoPessoa;
+    
+    @Column(name = "email_pessoa")
     private String emailPessoa;
+    
     private String celularPessoa;
     private String nomePaisPessoa;
     private String NomeEstadoPessoa;

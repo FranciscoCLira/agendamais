@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão Geral de Usuários</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+</head>
+<body>
+    <header th:replace="fragments/layout_cabecalho :: cabecalho"></header>
+    <div class="container">
+        <h2>Gestão Geral de Usuários</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cod Usuário</th>
+                    <th>Nome</th>
+                    <th>Situação</th>
+                    <th>Nível Acesso</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="usuario : ${usuarios}">
+                    <td th:text="${usuario.codUsuario}">usuario</td>
+                    <td th:text="${usuario.pessoa?.nomePessoa}">nome</td>
+                    <td th:text="${usuario.situacaoUsuario}">A</td>
+                    <td th:text="${usuario.nivelAcessoUsuario}">1</td>
+                    <td>
+                        <a th:href="@{'/controle-total/usuarios/bloquear/' + ${usuario.id}}">Bloquear</a> |
+                        <a th:href="@{'/controle-total/usuarios/ativar/' + ${usuario.id}}">Ativar</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

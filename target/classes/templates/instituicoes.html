@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Instituições</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+</head>
+<body>
+    <header th:replace="fragments/layout_cabecalho :: cabecalho"></header>
+    <div class="container">
+        <h2>Instituições</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="inst : ${instituicoes}">
+                    <td th:text="${inst.nomeInstituicao}">Instituição</td>
+                    <td>
+                        <a th:href="@{'/controle-total/instituicoes/editar/' + ${inst.id}}">Editar</a> |
+                        <a th:href="@{'/controle-total/instituicoes/excluir/' + ${inst.id}}">Excluir</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a href="/controle-total/instituicoes/nova"><button>Nova Instituição</button></a>
+    </div>
+</body>
+</html>

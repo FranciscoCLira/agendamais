@@ -2,6 +2,7 @@ package com.agendademais.entities;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Entity
 public class Usuario implements Serializable {
@@ -20,8 +21,8 @@ public class Usuario implements Serializable {
 
     @Column(nullable = false)
     private String senha;
-
-
+    
+    
     // 1=Participante, 2=Autor, 5=Administrador, 9=SuperUsuario
     private int nivelAcessoUsuario;
 
@@ -31,6 +32,11 @@ public class Usuario implements Serializable {
     @JoinColumn(name = "pessoa_id", referencedColumnName = "id", nullable = false)
     private Pessoa pessoa;
 
+    private String situacaoUsuario; // A=Ativo, B=Bloqueado
+
+    private LocalDate dataUltimaAtualizacao;
+    
+    
     // Getters e setters
     public Long getId() {
         return id;
@@ -67,4 +73,21 @@ public class Usuario implements Serializable {
     public void setPessoa(Pessoa pessoa) {
         this.pessoa = pessoa;
     }
+
+	public String getSituacaoUsuario() {
+		return situacaoUsuario;
+	}
+
+	public void setSituacaoUsuario(String situacaoUsuario) {
+		this.situacaoUsuario = situacaoUsuario;
+	}
+
+	public LocalDate getDataUltimaAtualizacao() {
+		return dataUltimaAtualizacao;
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+	    this.dataUltimaAtualizacao = LocalDate.now();
+	}
 }

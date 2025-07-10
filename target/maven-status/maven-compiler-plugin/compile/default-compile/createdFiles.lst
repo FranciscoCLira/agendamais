@@ -24,6 +24,7 @@ com\agendademais\controllers\AdministradorController.class
 com\agendademais\controllers\AlterarSenhaController.class
 com\agendademais\repositories\TipoAtividadeRepository.class
 com\agendademais\controllers\CadastroUsuarioController.class
+com\agendademais\controllers\MenuController.class
 com\agendademais\entities\LogPostagem.class
 com\agendademais\entities\PessoaSubInstituicao.class
 com\agendademais\controllers\AtividadeController.class
@@ -42,4 +43,5 @@ com\agendademais\repositories\PessoaSubInstituicaoRepository.class
 com\agendademais\repositories\AutorRepository.class
 com\agendademais\controllers\CadastroPessoaController.class
 com\agendademais\config\DataLoader.class
+com\agendademais\controllers\ControleTotalController.class
 com\agendademais\entities\TipoAtividade.class
