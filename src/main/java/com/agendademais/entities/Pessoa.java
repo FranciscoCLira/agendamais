@@ -12,7 +12,7 @@ public class Pessoa {
 	private String nomePessoa;
     private String situacaoPessoa;
     
-    @Column(name = "email_pessoa")
+    @Column(name = "email_pessoa", unique = true)
     private String emailPessoa;
     
     private String celularPessoa;

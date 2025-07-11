@@ -30,10 +30,10 @@
     <h2>Informações Complementares</h2>
 
   <div style="text-align:center; margin-bottom:10px;">
-    <strong th:text="'Usuário: ' + ${codUsuario}"></strong>
+    <strong th:text="'Usuário: ' + ${codUsuario}" class=mensagem-sucesso></strong>
   </div>
 
-    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+    <p th:if="${mensagemErro}" th:utext="${mensagemErro}" class="mensagem-erro"></p>
     <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
 
     <form th:action="@{/cadastro-pessoa}" method="post">
@@ -44,7 +44,9 @@
       <input type="text" name="nomePessoa" maxlength="80" th:value="${nomePessoa}" required pattern="[A-Za-z0-9\s]+" />
 
       <label>Email:</label>
-      <input type="email" name="emailPessoa" th:value="${emailPessoa}" required/>
+      <input type="email" name="emailPessoa" required
+             placeholder="email@exemplo.com"
+             th:value="${pessoa.emailPessoa}" />
 
       <label>Celular:</label>
       <input type="text" name="celularPessoa" th:value="${celularPessoa}" required placeholder="+55-21-99999-9999"

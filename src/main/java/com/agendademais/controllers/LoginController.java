@@ -210,32 +210,55 @@ public class LoginController {
         return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
     }
 
-    @GetMapping("/recuperar-login-email")
-    public String exibirFormularioRecuperacaoEmail(Model model) {
-        model.addAttribute("email", "");
-        model.addAttribute("mensagemErro", null);
-        return "recuperar-login-email"; // view com input de e-mail
-    }
+//    @GetMapping("/recuperar-login-email")
+//    public String exibirFormularioRecuperacaoEmail(Model model) {
+//        model.addAttribute("email", "");
+//        model.addAttribute("mensagemErro", null);
+//        return "recuperar-login-email"; // view com input de e-mail
+//    }
 
+      // exibe a tela 
+      @GetMapping("/recuperar-login-email")
+      public String mostrarFormRecuperarLoginPorEmail(Model model) {
+    	  // Limpa campos da tela com model.addAttribute
+          //   model.addAttribute("email", "");
+          //   model.addAttribute("mensagemErro", null);
+          // Apenas retorna a view, atributos são carregados automaticamente
+          return "recuperar-login-email";
+      }
+    
+    
     @PostMapping("/recuperar-login-email")
-    public String processarEmailRecuperacao(
-            @RequestParam("email") String email,
-            RedirectAttributes redirectAttributes) {
+    public String recuperarLoginPorEmail(@RequestParam String email, 
+                                         RedirectAttributes redirectAttributes) {
+    	
+    	List<Usuario> usuarios = usuarioRepository.findAllByPessoaEmailPessoa(email);
 
+    	if (usuarios.isEmpty()) {
+    	    redirectAttributes.addFlashAttribute("mensagemErro", "Email não cadastrado.");
+    	    redirectAttributes.addFlashAttribute("email", email);
+    	    return "redirect:/login/recuperar-login-email";
+    	} else if (usuarios.size() > 1) {
+    	    redirectAttributes.addFlashAttribute("mensagemErro",
+    	        "Mais de um cadastro com esse email. Entre em contato com o suporte.");
+    	    redirectAttributes.addFlashAttribute("email", email);
+    	    return "redirect:/login/recuperar-login-email";
+    	}
+    	
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
 
         if (usuarioOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Email não cadastrado.");
-            redirectAttributes.addFlashAttribute("email", email); // mantém preenchido
+            redirectAttributes.addFlashAttribute("email", email); // mantém o valor
             return "redirect:/login/recuperar-login-email";
         }
 
-        // Redireciona com CodUsuario preenchido
+        // Redireciona para a tela de redefinir senha com o CodUsuario já preenchido
         Usuario usuario = usuarioOpt.get();
         redirectAttributes.addFlashAttribute("codUsuario", usuario.getCodUsuario());
         return "redirect:/recuperar-senha";
     }
-
+    
     
     @GetMapping("/logout")
     public String logout(HttpSession session) {

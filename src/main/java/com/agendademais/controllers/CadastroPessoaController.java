@@ -17,32 +17,36 @@ public class CadastroPessoaController {
 
     private final UsuarioRepository usuarioRepository;
     private final PessoaRepository pessoaRepository;
-    private final InstituicaoRepository instituicaoRepository;
+    // private final InstituicaoRepository instituicaoRepository;
 
 
     public CadastroPessoaController(
             UsuarioRepository usuarioRepository,
             PessoaRepository pessoaRepository,
-            InstituicaoRepository instituicaoRepository,
+         //   InstituicaoRepository instituicaoRepository,
             UsuarioInstituicaoRepository usuarioInstituicaoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.pessoaRepository = pessoaRepository;
-        this.instituicaoRepository = instituicaoRepository;
+        // this.instituicaoRepository = instituicaoRepository;
     }
 
     @GetMapping
-    public String mostrarFormularioCadastroPessoa(@RequestParam String codUsuario,
-                                                  @RequestParam String senha,
-                                                  Model model) {
+    public String mostrarFormulario(Model model,
+                  @RequestParam(required = false) String codUsuario,
+                  @RequestParam(required = false) String senha) {
+
+        if (!model.containsAttribute("pessoa")) {
+             model.addAttribute("pessoa", new Pessoa());
+        }
+
         model.addAttribute("codUsuario", codUsuario);
         model.addAttribute("senha", senha);
-        model.addAttribute("instituicoes", instituicaoRepository.findAll());
         return "cadastro-pessoa";
     }
-
     @Transactional
     @PostMapping
     public String processarCadastroPessoa(
+    		@ModelAttribute Pessoa pessoa,
             @RequestParam String codUsuario,
             @RequestParam String senha,
             @RequestParam String nomePessoa,
@@ -75,8 +79,9 @@ public class CadastroPessoaController {
             model.addAttribute("mensagemErro", "Informe a Cidade.");
             return "cadastro-pessoa";
         }
-
+        
         Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
+
         if (existente.isPresent()) {
             Usuario usuarioExistente = existente.get();
             if (usuarioExistente.getPessoa() == null) {
@@ -88,7 +93,24 @@ public class CadastroPessoaController {
             return "cadastro-pessoa";
         }
 
-        Pessoa pessoa = new Pessoa();
+        try {
+        	Pessoa Emailexistente = pessoaRepository.findByEmailPessoa(pessoa.getEmailPessoa());
+
+        	if (Emailexistente != null) {
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Este Email já possui cadastro. <a href='/login/recuperar-login-email'>Quer recuperá-lo?</a>");
+                redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+                redirectAttributes.addFlashAttribute("senha", senha);
+                redirectAttributes.addFlashAttribute("pessoa", pessoa); // Mantém os dados preenchidos
+                return "redirect:/cadastro-pessoa";
+            }
+        } catch (Exception e) {        
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro inesperado ao processar o cadastro.");
+            return "redirect:/login";
+        }
+        
+        // Usa o objeto já preenchido e completa com dados adicionais
         pessoa.setNomePessoa(nomePessoa);
         pessoa.setEmailPessoa(emailPessoa);
         pessoa.setCelularPessoa(celularPessoa);
@@ -102,10 +124,13 @@ public class CadastroPessoaController {
         pessoa.setDataUltimaAtualizacao(LocalDate.now());
         pessoaRepository.save(pessoa);
 
+        // Cria e salva o usuário 
         Usuario usuario = new Usuario();
         usuario.setCodUsuario(codUsuario);
         usuario.setSenha(senha);
         usuario.setNivelAcessoUsuario(1);
+        usuario.setSituacaoUsuario("A");
+        usuario.setDataUltimaAtualizacao(LocalDate.now());
         usuario.setPessoa(pessoa);
         usuarioRepository.save(usuario);
 

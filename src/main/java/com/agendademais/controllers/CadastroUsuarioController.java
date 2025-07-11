@@ -37,6 +37,12 @@ public class CadastroUsuarioController {
             return "cadastro-usuario";
         }
 
+        if (!isSenhaSegura(senha)) {
+            model.addAttribute("mensagemErro", "A senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
+            model.addAttribute("codUsuario", codUsuario);
+            return "cadastro-usuario";
+        }
+        
         if (!senha.equals(confirmarSenha)) {
             model.addAttribute("mensagemErro", "As senhas não coincidem.");
             model.addAttribute("codUsuario", codUsuario);
@@ -57,6 +63,13 @@ public class CadastroUsuarioController {
             }
         }
 
+
         return "redirect:/cadastro-pessoa?codUsuario=" + codUsuario + "&senha=" + senha;
     }
+    
+    private boolean isSenhaSegura(String senha) {
+        if (senha == null || senha.length() < 6) return false;
+        return senha.matches(".*[a-zA-Z].*") && (senha.matches(".*\\d.*") || senha.matches(".*\\W.*"));
+    }
+
 }

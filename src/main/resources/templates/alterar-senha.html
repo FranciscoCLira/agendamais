@@ -26,19 +26,20 @@
       <label>Senha Atual:</label>
 	  <div class="senha-container">
 		  <input type="password" id="senhaAtual" name="senhaAtual" required/>
-		  <span onclick="toggleSenha('senhaAtual')" class="olho">&#128065;</span>
+          <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
+
 	  </div>
 
       <label>Nova Senha:</label>
 	  <div class="senha-container">
 	       <input type="password" id="novaSenha" name="novaSenha" th:value="${novaSenha}" required/>
-	       <span onclick="toggleSenha('novaSenha')" class="olho">&#128065;</span>
+          <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
 	  </div>
  
       <label>Confirmar Nova Senha:</label>
   	  <div class="senha-container">
 	       <input type="password" id="confirmarSenha" name="confirmarSenha" th:value="${confirmarSenha}" required/>
-	       <span onclick="toggleSenha('confirmarSenha')" class="olho">&#128065;</span>
+          <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
 	  </div>
       
       <button type="submit">Confirmar Alteração</button>
@@ -55,8 +56,8 @@
   </div>
   
 <script>
-function toggleSenha(idCampo) {
-  var input = document.getElementById(idCampo);
+function togglePassword(el) {
+  const input = el.previousElementSibling;
   if (input.type === "password") {
     input.type = "text";
   } else {

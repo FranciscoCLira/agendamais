@@ -47,6 +47,14 @@ public class AlterarSenhaController {
             return "alterar-senha";
         }
 
+        if (!isSenhaSegura(novaSenha)) {
+            model.addAttribute("mensagemErro", "A nova senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
+            model.addAttribute("codUsuario", codUsuario);
+            model.addAttribute("novaSenha", novaSenha);
+            model.addAttribute("confirmarSenha", confirmarSenha);
+            return "alterar-senha";
+        }
+        
         Usuario usuario = usuarioOpt.get();
 
         if (!usuario.getSenha().equals(senhaAtual)) {
@@ -67,7 +75,7 @@ public class AlterarSenhaController {
 
         usuario.setSenha(novaSenha);
         usuarioRepository.save(usuario);
-        model.addAttribute("mensagemErro", "Senha alterada com sucesso! Usuário: " + codUsuario);
+        model.addAttribute("mensagemSucesso", "Senha alterada com sucesso! Usuário: " + codUsuario);
 
         // Limpa campos após sucesso
         model.addAttribute("codUsuario", "");
@@ -76,5 +84,11 @@ public class AlterarSenhaController {
 
         return "alterar-senha";
     }
+    
+    private boolean isSenhaSegura(String senha) {
+        if (senha == null || senha.length() < 6) return false;
+        return senha.matches(".*[a-zA-Z].*") && (senha.matches(".*\\d.*") || senha.matches(".*\\W.*"));
+    }
+
 
 }

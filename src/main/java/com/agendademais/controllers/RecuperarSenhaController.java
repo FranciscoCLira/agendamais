@@ -47,7 +47,15 @@ public class RecuperarSenhaController {
             model.addAttribute("confirmarSenha", confirmarSenha);
             return "recuperar-senha";
         }
-
+        
+        if (!isSenhaSegura(novaSenha)) {
+            model.addAttribute("mensagemErro", "A senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
+            model.addAttribute("codUsuario", codUsuario);
+            model.addAttribute("novaSenha", novaSenha);
+            model.addAttribute("confirmarSenha", confirmarSenha);
+            return "recuperar-senha";
+        }
+        
         Usuario usuario = usuarioOpt.get();
 
         usuario.setSenha(novaSenha);
@@ -61,5 +69,11 @@ public class RecuperarSenhaController {
 
         return "recuperar-senha";
     }
+    
+    private boolean isSenhaSegura(String senha) {
+        if (senha == null || senha.length() < 6) return false;
+        return senha.matches(".*[a-zA-Z].*") && (senha.matches(".*\\d.*") || senha.matches(".*\\W.*"));
+    }
+
 
 }

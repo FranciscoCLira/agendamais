@@ -1,6 +1,9 @@
 package com.agendademais.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -19,7 +22,12 @@ public class Usuario implements Serializable {
     @Column(length = 25, nullable = false, unique = true)
     private String codUsuario;
 
-    @Column(nullable = false)
+    
+    @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
+    @Pattern(
+        regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{6,}$",
+        message = "A senha deve conter letras, números e símbolos."
+    )    
     private String senha;
     
     
@@ -84,6 +92,10 @@ public class Usuario implements Serializable {
 
 	public LocalDate getDataUltimaAtualizacao() {
 		return dataUltimaAtualizacao;
+	}
+
+	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
+		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
 	}
 
 	@PreUpdate

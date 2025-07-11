@@ -15,8 +15,11 @@
 
 <div class="form-container">
     <h2>Informe seu Email</h2>
+
+    <!-- Mensagem de erro -->
     <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-    
+
+    <!-- Formulário -->
     <form th:action="@{/login/recuperar-login-email}" method="post">
         <label for="email">Email:</label>
         <input type="email" name="email" placeholder="seu@email.com"
@@ -24,8 +27,7 @@
         <button type="submit" style="margin-top:15px;">Confirmar</button>
     </form>
 
-    <div th:if="${mensagemErro}" class="mensagem-erro" th:text="${mensagemErro}" style="margin-top:15px;"></div>
-
+    <!-- Voltar -->
     <div style="margin-top:20px;">
         <a href="/login"><button type="button">Voltar ao Login</button></a>
     </div>
