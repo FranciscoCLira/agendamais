@@ -40,9 +40,17 @@ public class CadastroRelacionamentoController {
     }
 
     @GetMapping
-    public String mostrarFormulario(HttpSession session, Model model) {
+    public String mostrarFormulario(HttpSession session,
+                                    RedirectAttributes redirectAttributes,
+    		                        Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioPendencia");
+        
+     	System.out.println("****************************************************************************");
+     	System.out.println("*** CadastroRelacionamentoController.java /cadastro-relacionamentos  usuario=" + usuario ); 
+     	System.out.println("****************************************************************************");
+    	
         if (usuario == null) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Erro de sistema: Código de usuário não repassado.");
             return "redirect:/login";
         }
 

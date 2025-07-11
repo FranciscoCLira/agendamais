@@ -2,6 +2,8 @@ package com.agendademais.controllers;
 
 import com.agendademais.entities.*;
 import com.agendademais.repositories.*;
+
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,7 +63,8 @@ public class CadastroPessoaController {
             @RequestParam(required = false) String curriculoPessoal,
             @RequestParam(required = false) String comentarios,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpSession session) {
 
         String paisFinal = "Outro".equals(nomePaisSelect) ? paisOutro : nomePaisSelect;
         String estadoFinal = "Outro".equals(nomeEstadoSelect) ? estadoOutro : nomeEstadoSelect;
@@ -94,9 +97,13 @@ public class CadastroPessoaController {
         }
 
         try {
-        	Pessoa Emailexistente = pessoaRepository.findByEmailPessoa(pessoa.getEmailPessoa());
+        	Pessoa emailExistente = pessoaRepository.findByEmailPessoa(pessoa.getEmailPessoa());
+            
+         	System.out.println("****************************************************************************");
+         	System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  Emailexistente=" + emailExistente ); 
+         	System.out.println("****************************************************************************");
 
-        	if (Emailexistente != null) {
+        	if (emailExistente != null) {
                 redirectAttributes.addFlashAttribute("mensagemErro",
                     "Este Email já possui cadastro. <a href='/login/recuperar-login-email'>Quer recuperá-lo?</a>");
                 redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
@@ -107,9 +114,21 @@ public class CadastroPessoaController {
         } catch (Exception e) {        
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro inesperado ao processar o cadastro.");
+
+            System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  =" + "Erro inesperado ao processar o cadastro."); 
+         	System.out.println("****************************************************************************");
+
+            
             return "redirect:/login";
         }
         
+        if (curriculoPessoal != null && curriculoPessoal.isBlank()) {
+            curriculoPessoal = null;
+        }
+        if (comentarios != null && comentarios.isBlank()) {
+            comentarios = null;
+        }
+
         // Usa o objeto já preenchido e completa com dados adicionais
         pessoa.setNomePessoa(nomePessoa);
         pessoa.setEmailPessoa(emailPessoa);
@@ -137,6 +156,9 @@ public class CadastroPessoaController {
         redirectAttributes.addFlashAttribute("mensagemSucesso",
                 "Informações salvas. Agora escolha suas instituições.");
         redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+        
+        // SALVA NA SESSÃO
+        session.setAttribute("usuarioPendencia", usuario);
 
         return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
     }
