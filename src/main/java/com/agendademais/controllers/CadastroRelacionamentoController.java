@@ -45,9 +45,9 @@ public class CadastroRelacionamentoController {
     		                        Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioPendencia");
         
-     	System.out.println("****************************************************************************");
-     	System.out.println("*** CadastroRelacionamentoController.java /cadastro-relacionamentos  usuario=" + usuario ); 
-     	System.out.println("****************************************************************************");
+//     	System.out.println("****************************************************************************");
+//     	System.out.println("*** CadastroRelacionamentoController.java /cadastro-relacionamentos  usuario=" + usuario ); 
+//     	System.out.println("****************************************************************************");
     	
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro de sistema: Código de usuário não repassado.");
@@ -57,8 +57,8 @@ public class CadastroRelacionamentoController {
         model.addAttribute("codUsuario", usuario.getCodUsuario());
         model.addAttribute("nomeUsuario",
                 usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
-        model.addAttribute("instituicoes", instituicaoRepository.findAll());
-        model.addAttribute("subInstituicoes", subInstituicaoRepository.findAll());
+        model.addAttribute("instituicoes", instituicaoRepository.findBySituacaoInstituicao("A"));
+        model.addAttribute("subInstituicoes", subInstituicaoRepository.findBySituacaoSubInstituicao("A"));
 
         return "cadastro-relacionamentos";
     }
@@ -73,10 +73,10 @@ public class CadastroRelacionamentoController {
             RedirectAttributes redirectAttributes,
             Model model) {
     	
-    	System.out.println("=== CadastroRelacionamentoController - processarCadastroRelacionamentos  ====");
-    	System.out.println("======== DADOS ENVIADOS ========");
-    	allParams.forEach((k, v) -> System.out.println(k + ": " + v));
-    	System.out.println("====================================================================");
+//    	System.out.println("=== CadastroRelacionamentoController - processarCadastroRelacionamentos  ====");
+//    	System.out.println("======== DADOS ENVIADOS ========");
+//    	allParams.forEach((k, v) -> System.out.println(k + ": " + v));
+//    	System.out.println("====================================================================");
 
         String codUsuario = allParams.get("codUsuario");
         if (codUsuario == null || codUsuario.isEmpty()) {

@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/login")
@@ -39,9 +40,7 @@ public class LoginController {
 
     @GetMapping
     public String loginForm(Model model) {
-        if (!model.containsAttribute("instituicoes")) {
-            model.addAttribute("instituicoes", List.of());
-        }
+        model.addAttribute("instituicoes", instituicaoRepository.findBySituacaoInstituicao("A"));
         return "login";
     }
 
@@ -81,15 +80,23 @@ public class LoginController {
             return "redirect:/cadastro-relacionamentos";
         }
 
-        List<UsuarioInstituicao> vinculosAtivos = usuarioInstituicaoRepository
-                .findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A");
+        List<UsuarioInstituicao> vinculosAtivos =
+        	    usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A").stream()
+        	    .filter(v -> v.getInstituicao() != null && "A".equals(v.getInstituicao().getSituacaoInstituicao()))
+        	    .toList();
+
+        
+        List<Instituicao> instituicoesVinculadasAtivas = vinculosAtivos.stream()
+        	    .map(UsuarioInstituicao::getInstituicao)
+        	    .filter(inst -> "A".equalsIgnoreCase(inst.getSituacaoInstituicao()))
+        	    .collect(Collectors.toList());
         
      	System.out.println("****************************************************************************");
      	System.out.println("*** LoginController.java /login  usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
      	System.out.println("*** LoginController.java /login  vinculosAtivos.size()= " + vinculosAtivos.size()); 
      	System.out.println("****************************************************************************");
         
-        if (vinculosAtivos.isEmpty()) {
+        if (instituicoesVinculadasAtivas.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Seu acesso foi bloqueado ou cancelado. Consulte o administrador.");
             return "redirect:/login";
@@ -99,7 +106,7 @@ public class LoginController {
         if (usuario.getNivelAcessoUsuario() == 9) {
             redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
             redirectAttributes.addFlashAttribute("instituicoes", 
-            		vinculosAtivos.stream().map(UsuarioInstituicao::getInstituicao).toList());
+            		instituicoesVinculadasAtivas.stream().toList());
             redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
             redirectAttributes.addFlashAttribute("senha", senha);
             redirectAttributes.addFlashAttribute("exibirControleTotal", true);

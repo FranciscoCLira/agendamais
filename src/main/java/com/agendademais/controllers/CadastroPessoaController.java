@@ -99,9 +99,9 @@ public class CadastroPessoaController {
         try {
         	Pessoa emailExistente = pessoaRepository.findByEmailPessoa(pessoa.getEmailPessoa());
             
-         	System.out.println("****************************************************************************");
-         	System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  Emailexistente=" + emailExistente ); 
-         	System.out.println("****************************************************************************");
+//         	System.out.println("****************************************************************************");
+//         	System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  Emailexistente=" + emailExistente ); 
+//         	System.out.println("****************************************************************************");
 
         	if (emailExistente != null) {
                 redirectAttributes.addFlashAttribute("mensagemErro",
@@ -115,8 +115,8 @@ public class CadastroPessoaController {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro inesperado ao processar o cadastro.");
 
-            System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  =" + "Erro inesperado ao processar o cadastro."); 
-         	System.out.println("****************************************************************************");
+//          System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  =" + "Erro inesperado ao processar o cadastro."); 
+//         	System.out.println("****************************************************************************");
 
             
             return "redirect:/login";
