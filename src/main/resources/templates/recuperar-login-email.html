@@ -18,6 +18,8 @@
 
     <!-- Mensagem de erro -->
     <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
 
     <!-- Formulário -->
     <form th:action="@{/login/recuperar-login-email}" method="post">

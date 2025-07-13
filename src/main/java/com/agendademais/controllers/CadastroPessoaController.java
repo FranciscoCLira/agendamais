@@ -5,12 +5,14 @@ import com.agendademais.repositories.*;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -95,31 +97,20 @@ public class CadastroPessoaController {
             model.addAttribute("mensagemErro", "Usuário já existente.");
             return "cadastro-pessoa";
         }
+        
+        List<Pessoa> existentes = pessoaRepository.findAllByEmailPessoa(emailPessoa);
 
-        try {
-        	Pessoa emailExistente = pessoaRepository.findByEmailPessoa(pessoa.getEmailPessoa());
-            
-//         	System.out.println("****************************************************************************");
-//         	System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  Emailexistente=" + emailExistente ); 
-//         	System.out.println("****************************************************************************");
-
-        	if (emailExistente != null) {
-                redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Este Email já possui cadastro. <a href='/login/recuperar-login-email'>Quer recuperá-lo?</a>");
-                redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
-                redirectAttributes.addFlashAttribute("senha", senha);
-                redirectAttributes.addFlashAttribute("pessoa", pessoa); // Mantém os dados preenchidos
-                return "redirect:/cadastro-pessoa";
-            }
-        } catch (Exception e) {        
+        if (!existentes.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Erro inesperado ao processar o cadastro.");
-
+                "Este Email já possui cadastro. <a href='/login/recuperar-login-email'>Quer recuperá-lo?</a>");
+            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+            redirectAttributes.addFlashAttribute("senha", senha);
+            redirectAttributes.addFlashAttribute("pessoa", pessoa); // Mantém os dados preenchidos
+            
 //          System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  =" + "Erro inesperado ao processar o cadastro."); 
 //         	System.out.println("****************************************************************************");
 
-            
-            return "redirect:/login";
+            return "redirect:/cadastro-pessoa";
         }
         
         if (curriculoPessoal != null && curriculoPessoal.isBlank()) {
@@ -155,7 +146,8 @@ public class CadastroPessoaController {
 
         redirectAttributes.addFlashAttribute("mensagemSucesso",
                 "Informações salvas. Agora escolha suas instituições.");
-        redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+        // redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+        
         
         // SALVA NA SESSÃO
         session.setAttribute("usuarioPendencia", usuario);

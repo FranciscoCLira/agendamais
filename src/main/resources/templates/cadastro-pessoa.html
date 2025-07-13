@@ -30,7 +30,8 @@
     <h2>Informações Complementares</h2>
 
   <div style="text-align:center; margin-bottom:10px;">
-    <strong th:text="'Usuário: ' + ${codUsuario}" class=mensagem-sucesso></strong>
+    <strong th:if="${codUsuario}" th:text="'Usuário: ' + ${codUsuario}" class="mensagem-sucesso"></strong>
+
   </div>
 
     <p th:if="${mensagemErro}" th:utext="${mensagemErro}" class="mensagem-erro"></p>

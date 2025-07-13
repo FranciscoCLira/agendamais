@@ -78,12 +78,10 @@ public class AtividadeController {
     @PostMapping("/salvar")
     public String salvarAtividade(@ModelAttribute Atividade atividade,
                                   @RequestParam("emailSolicitante") String emailSolicitante) {
-        Pessoa solicitante = pessoaRepo.findByEmailPessoa(emailSolicitante);
 
-        if (solicitante == null) {
-            throw new IllegalArgumentException("Pessoa com e-mail '" + emailSolicitante + "' não encontrada.");
-        }
-
+        Pessoa solicitante = pessoaRepo.findByEmailPessoa(emailSolicitante)
+                .orElseThrow(() -> new IllegalArgumentException("Pessoa com e-mail '" + emailSolicitante + "' não encontrada."));
+    	
         atividade.setIdSolicitante(solicitante);
         atividade.setDataAtualizacao(LocalDate.now());
 

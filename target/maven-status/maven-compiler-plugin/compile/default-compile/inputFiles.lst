@@ -39,6 +39,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\UsuarioControll
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\SubInstituicaoRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ControleTotalController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\RecuperarSenhaController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\services\RecuperacaoLoginService.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\TipoAtividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Usuario.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\UsuarioRepository.java

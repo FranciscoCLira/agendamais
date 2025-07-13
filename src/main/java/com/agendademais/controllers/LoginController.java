@@ -7,6 +7,8 @@ import com.agendademais.repositories.InstituicaoRepository;
 import com.agendademais.repositories.PessoaInstituicaoRepository;
 import com.agendademais.repositories.UsuarioInstituicaoRepository;
 import com.agendademais.repositories.UsuarioRepository;
+import com.agendademais.services.RecuperacaoLoginService;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,21 +28,25 @@ public class LoginController {
     private final InstituicaoRepository instituicaoRepository;
     private final PessoaInstituicaoRepository pessoaInstituicaoRepository;
     private final UsuarioInstituicaoRepository usuarioInstituicaoRepository;
+    private final RecuperacaoLoginService recuperacaoLoginService;
 
     public LoginController(
             UsuarioRepository usuarioRepository,
             InstituicaoRepository instituicaoRepository,
             PessoaInstituicaoRepository pessoaInstituicaoRepository,
-            UsuarioInstituicaoRepository usuarioInstituicaoRepository) {
+            UsuarioInstituicaoRepository usuarioInstituicaoRepository,
+            RecuperacaoLoginService recuperacaoLoginService) {
         this.usuarioRepository = usuarioRepository;
         this.instituicaoRepository = instituicaoRepository;
         this.pessoaInstituicaoRepository = pessoaInstituicaoRepository;
         this.usuarioInstituicaoRepository = usuarioInstituicaoRepository;
+        this.recuperacaoLoginService = recuperacaoLoginService;
     }
 
     @GetMapping
     public String loginForm(Model model) {
-        model.addAttribute("instituicoes", instituicaoRepository.findBySituacaoInstituicao("A"));
+    	List<Instituicao> lista = instituicaoRepository.findBySituacaoInstituicao("A");
+    	     model.addAttribute("instituicoes", lista);
         return "login";
     }
 
@@ -237,7 +243,8 @@ public class LoginController {
     
     @PostMapping("/recuperar-login-email")
     public String recuperarLoginPorEmail(@RequestParam String email, 
-                                         RedirectAttributes redirectAttributes) {
+                                         RedirectAttributes redirectAttributes,
+                                         Model model) {
     	
     	List<Usuario> usuarios = usuarioRepository.findAllByPessoaEmailPessoa(email);
 
@@ -259,11 +266,19 @@ public class LoginController {
             redirectAttributes.addFlashAttribute("email", email); // mantém o valor
             return "redirect:/login/recuperar-login-email";
         }
+        
+        // Chamar o serviço de envio de email como já feito no RecuperacaoLoginController
+        recuperacaoLoginService.enviarLinkRecuperacao(email); 
+        // model.addAttribute("mensagemSucesso", "Enviamos uma mensagem para o e-mail informado com as instruções para recuperar sua senha.");
+        redirectAttributes.addFlashAttribute("mensagemErro",  
+        		"Enviamos uma mensagem com as instruções para recuperar sua senha, para o e-mail: " + email + ".");
+        return "redirect:/login/recuperar-login-email";
 
+        
         // Redireciona para a tela de redefinir senha com o CodUsuario já preenchido
-        Usuario usuario = usuarioOpt.get();
-        redirectAttributes.addFlashAttribute("codUsuario", usuario.getCodUsuario());
-        return "redirect:/recuperar-senha";
+//        Usuario usuario = usuarioOpt.get();
+//        redirectAttributes.addFlashAttribute("codUsuario", usuario.getCodUsuario());
+//        return "redirect:/recuperar-senha";
     }
     
     

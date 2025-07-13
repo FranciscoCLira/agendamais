@@ -40,23 +40,37 @@ public class CadastroRelacionamentoController {
     }
 
     @GetMapping
-    public String mostrarFormulario(HttpSession session,
+    public String mostrarFormulario(@RequestParam(required = false) String codUsuario,
+                                    HttpSession session,
                                     RedirectAttributes redirectAttributes,
-    		                        Model model) {
+                                    Model model) {
+    	
         Usuario usuario = (Usuario) session.getAttribute("usuarioPendencia");
         
 //     	System.out.println("****************************************************************************");
 //     	System.out.println("*** CadastroRelacionamentoController.java /cadastro-relacionamentos  usuario=" + usuario ); 
 //     	System.out.println("****************************************************************************");
     	
+        // Tentar recuperar via codUsuario se não estiver na session
+        if (usuario == null && codUsuario != null) {
+            Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
+            if (existente.isPresent()) {
+                usuario = existente.get();
+                session.setAttribute("usuarioPendencia", usuario);
+            }
+        }
+        
         if (usuario == null) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Erro de sistema: Código de usuário não repassado.");
-            return "redirect:/login";
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro não previsto. Consulte o gestor do sistema.");
+        	return "redirect:/login";
         }
 
         model.addAttribute("codUsuario", usuario.getCodUsuario());
         model.addAttribute("nomeUsuario",
                 usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
+        
+        // Listar somente instituições e subinstituições ativas
         model.addAttribute("instituicoes", instituicaoRepository.findBySituacaoInstituicao("A"));
         model.addAttribute("subInstituicoes", subInstituicaoRepository.findBySituacaoSubInstituicao("A"));
 

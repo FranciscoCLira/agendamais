@@ -21,6 +21,7 @@ com\agendademais\entities\Instituicao.class
 com\agendademais\controllers\PessoaSubInstituicaoController.class
 com\agendademais\repositories\UsuarioRepository.class
 com\agendademais\controllers\AdministradorController.class
+com\agendademais\services\RecuperacaoLoginService.class
 com\agendademais\controllers\AlterarSenhaController.class
 com\agendademais\repositories\TipoAtividadeRepository.class
 com\agendademais\controllers\CadastroUsuarioController.class
