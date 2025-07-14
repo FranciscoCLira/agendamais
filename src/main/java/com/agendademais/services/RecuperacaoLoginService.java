@@ -2,51 +2,52 @@ package com.agendademais.services;
 
 import com.agendademais.entities.Usuario;
 import com.agendademais.repositories.UsuarioRepository;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class RecuperacaoLoginService {
 
-    private final UsuarioRepository usuarioRepository;
-    private final JavaMailSender mailSender;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    // @Autowired
-    public RecuperacaoLoginService(UsuarioRepository usuarioRepository,
-                                   JavaMailSender mailSender) {
-        this.usuarioRepository = usuarioRepository;
-        this.mailSender = mailSender;
-    }
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
+    @Async
     public void enviarLinkRecuperacao(String email) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
+        Usuario usuario = usuarioRepository.findAllByPessoaEmailPessoa(email)
+                .stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
+        String token = UUID.randomUUID().toString();
+        usuario.setTokenRecuperacao(token);
+        usuario.setDataExpiracaoToken(LocalDateTime.now().plusHours(2));
+        usuario.setDataUltimaAtualizacao(LocalDate.now());
+        usuarioRepository.save(usuario);
 
-            // Cria o corpo do email com link para recuperação
-            String assunto = "Recuperação de Acesso - Agenda Mais";
-            String mensagem = String.format(
-                "Olá %s,\n\n"
-              + "Recebemos uma solicitação de recuperação de acesso ao sistema Agenda Mais.\n"
-              + "Clique no link abaixo para redefinir sua senha:\n\n"
-              + "http://localhost:8080/recuperar-senha?email=%s\n\n"
-              + "Se você não fez esta solicitação, ignore este e-mail.",
-                usuario.getPessoa().getNomePessoa(),
-                usuario.getPessoa().getEmailPessoa()
-            );
+        String link = "http://localhost:8080/recuperar-senha-por-token?token=" + token;
 
-            // Configura e envia o email
-            SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setTo(usuario.getPessoa().getEmailPessoa());
-            mailMessage.setSubject(assunto);
-            mailMessage.setText(mensagem);
+        String mensagem = "Olá!\n\n"
+            + "Recebemos uma solicitação para redefinir sua senha para o sistema AgendaMais.\n\n"
+            + "Seu código de usuário é: " + usuario.getCodUsuario() + "\n\n"
+            + "Clique no link abaixo para continuar o processo de recuperação:\n" + link + "\n\n"
+            + "⚠️ Este link expira em 2 horas.\n\n"
+            + "Se você não solicitou esta recuperação, ignore esta mensagem.";
 
-            mailSender.send(mailMessage);
-        }
+        SimpleMailMessage emailMsg = new SimpleMailMessage();
+        emailMsg.setTo(email);
+        emailMsg.setSubject("Recuperação de Senha - AgendaMais");
+        emailMsg.setText(mensagem);
+
+        mailSender.send(emailMsg);
     }
+
 }

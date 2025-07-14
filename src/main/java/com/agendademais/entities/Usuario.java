@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Usuario implements Serializable {
@@ -43,6 +44,12 @@ public class Usuario implements Serializable {
     private String situacaoUsuario; // A=Ativo, B=Bloqueado
 
     private LocalDate dataUltimaAtualizacao;
+    
+    @Column(name = "token_recuperacao", length = 36)
+    private String tokenRecuperacao;
+
+    @Column(name = "data_expiracao_token")
+    private LocalDateTime dataExpiracaoToken;
     
     
     // Getters e setters
@@ -98,6 +105,24 @@ public class Usuario implements Serializable {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
 	}
 
+	public String getTokenRecuperacao() {
+	    return tokenRecuperacao;
+	}
+
+	public void setTokenRecuperacao(String tokenRecuperacao) {
+	    this.tokenRecuperacao = tokenRecuperacao;
+	}
+
+	public LocalDateTime getDataExpiracaoToken() {
+	    return dataExpiracaoToken;
+	}
+
+	public void setDataExpiracaoToken(LocalDateTime dataExpiracaoToken) {
+	    this.dataExpiracaoToken = dataExpiracaoToken;
+	}
+	
+	
+	
 	@PreUpdate
 	public void onUpdate() {
 	    this.dataUltimaAtualizacao = LocalDate.now();

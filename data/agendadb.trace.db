@@ -5800,3 +5800,6 @@ org.h2.jdbc.JdbcSQLNonTransientConnectionException: Database is already closed (
 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:577)
 	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+2025-07-14 01:03:28 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "COD_USUARIO CHARACTER VARYING(25)": "'6170eef4-b54f-475a-bb56-66a662b3a299' (36)"; SQL statement:
+update usuario set cod_usuario=?,data_expiracao_token=?,data_ultima_atualizacao=?,nivel_acesso_usuario=?,pessoa_id=?,senha=?,situacao_usuario=?,token_recuperacao=? where id=? [22001-214]

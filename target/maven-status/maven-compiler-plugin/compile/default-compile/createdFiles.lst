@@ -8,6 +8,7 @@ com\agendademais\controllers\RecuperacaoLoginController.class
 com\agendademais\controllers\PessoaController.class
 com\agendademais\repositories\PessoaInstituicaoRepository.class
 com\agendademais\controllers\RecuperarSenhaController.class
+com\agendademais\entities\RecuperacaoToken.class
 com\agendademais\config\GlobalModelAttributes.class
 com\agendademais\controllers\ParticipanteController.class
 com\agendademais\entities\Pessoa.class
@@ -23,6 +24,7 @@ com\agendademais\repositories\UsuarioRepository.class
 com\agendademais\controllers\AdministradorController.class
 com\agendademais\services\RecuperacaoLoginService.class
 com\agendademais\controllers\AlterarSenhaController.class
+com\agendademais\repositories\RecuperacaoTokenRepository.class
 com\agendademais\repositories\TipoAtividadeRepository.class
 com\agendademais\controllers\CadastroUsuarioController.class
 com\agendademais\controllers\MenuController.class
@@ -45,4 +47,5 @@ com\agendademais\repositories\AutorRepository.class
 com\agendademais\controllers\CadastroPessoaController.class
 com\agendademais\config\DataLoader.class
 com\agendademais\controllers\ControleTotalController.class
+com\agendademais\controllers\RecuperarSenhaPorTokenController.class
 com\agendademais\entities\TipoAtividade.class
