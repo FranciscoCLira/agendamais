@@ -281,6 +281,33 @@ public class LoginController {
 //        return "redirect:/recuperar-senha";
     }
     
+    @PostMapping("/confirmar")
+    public String confirmarRecuperacao(@RequestParam String email,
+                                       RedirectAttributes redirectAttributes) {
+
+        List<Usuario> usuarios = usuarioRepository.findAllByPessoaEmailPessoa(email);
+
+        if (usuarios.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Email não cadastrado.");
+            redirectAttributes.addFlashAttribute("email", email);
+            return "redirect:/login";
+        } else if (usuarios.size() > 1) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                "Mais de um cadastro com esse email. Entre em contato com o suporte.");
+            redirectAttributes.addFlashAttribute("email", email);
+            return "redirect:/login";
+        }
+
+        // Envia o email com link e codUsuario
+        recuperacaoLoginService.enviarLinkRecuperacao(email);
+
+        redirectAttributes.addFlashAttribute("mensagemSucesso",
+            "Enviamos uma mensagem com as instruções para recuperar seu acesso para o email: " + email + ".");
+
+        return "redirect:/login";
+    }
+  
+    
     
     @GetMapping("/logout")
     public String logout(HttpSession session) {

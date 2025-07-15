@@ -23,10 +23,13 @@
         <input type="hidden" name="token" th:value="${token}" />
 
         <label>Nova Senha:</label>
-        <input type="password" name="novaSenha" required minlength="6" />
+  	    <input type="password" id="novaSenha" name="novaSenha" th:value="${novaSenha}" required minlength="6" />
+        <span onclick="toggleSenha('novaSenha')" class="olho">👁️</span>
 
         <label>Confirmar Senha:</label>
-        <input type="password" name="confirmarSenha" required minlength="6" />
+  	    <input type="password" id="confirmarSenha" name="confirmarSenha" th:value="${confirmarSenha}" required minlength="6" />
+        
+        <span onclick="toggleSenha('confirmarSenha')" class="olho">👁️</span>
 
         <div style="text-align: center; margin-top: 20px;">
             <button type="submit">Salvar Nova Senha</button>
@@ -34,5 +37,17 @@
         </div>
     </form>
 </div>
+  
+<script>
+function toggleSenha(idCampo) {
+  var input = document.getElementById(idCampo);
+  if (input.type === "password") {
+    input.type = "text";
+  } else {
+    input.type = "password";
+  }
+}
+</script>
+
 </body>
 </html>

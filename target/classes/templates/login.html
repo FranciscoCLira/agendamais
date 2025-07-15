@@ -70,8 +70,9 @@
   <!-- Recuperar login/senha -->
   <div class="recuperacao">
     <p>Para recuperar Usuário/Senha, informe seu Email:</p>
-    <form th:action="@{/recuperar-login}" method="post">
-      <input type="email" name="email" placeholder="seu@email.com" required/>
+    <form th:action="@{/login/confirmar}" method="post">
+      <label>Email:</label>
+      <input type="email" name="email"  th:value="${email}" placeholder="seu@email.com" required/>
       <button type="submit" style="width:150px; margin:10px auto; display:block;">Confirmar</button>
     </form>
     <p th:if="${mensagemRecuperacao}" th:text="${mensagemRecuperacao}" class="mensagem-sucesso"></p>
