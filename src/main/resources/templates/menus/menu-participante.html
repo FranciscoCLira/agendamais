@@ -17,8 +17,16 @@
       <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>
       <li><a href="/vinculo-instituicao">Vínculos com Instituições</a></li>
     </ul>
+    
+    
+    <form th:if="${session.usuarioLogado.pessoa.situacaoPessoa == 'C'}"
+       th:action="@{/excluir-cadastro}" method="post"
+       onsubmit="return confirm('Tem certeza que deseja excluir permanentemente seu cadastro? Esta ação não poderá ser desfeita.');">
+       <button type="submit" class="perigo">Excluir Cadastro</button>
+    </form>
 
     <p style="margin-top: 20px;"><a href="/login/logout">Sair</a></p>
+
   </main>
 </body>
 </html>

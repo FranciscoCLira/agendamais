@@ -37,7 +37,7 @@ public class Usuario implements Serializable {
 
     // // nullable = false exige obrigatoriedade
     
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "pessoa_id", referencedColumnName = "id", nullable = false)
     private Pessoa pessoa;
 
