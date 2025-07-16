@@ -16,132 +16,185 @@
   </style>
 </head>
 <body>
-  <header class="cabecalho">
-    <div class="titulo">
-      <h1>Agenda Mais</h1>
-      <h3>Agendando tudo e mais</h3>
-    </div>
-    <div class="logo">
-      <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
-    </div>
-  </header>
+<header class="cabecalho">
+  <div class="titulo">
+    <h1>Agenda Mais</h1>
+    <h3>Agendando tudo e mais</h3>
+  </div>
+</header>
 
-  <div class="form-container">
-    <h2>Informações Complementares</h2>
+<div class="form-container">
+  <h2>Informações Complementares</h2>
 
   <div style="text-align:center; margin-bottom:10px;">
     <strong th:if="${codUsuario}" th:text="'Usuário: ' + ${codUsuario}" class="mensagem-sucesso"></strong>
-
   </div>
 
-    <p th:if="${mensagemErro}" th:utext="${mensagemErro}" class="mensagem-erro"></p>
-    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+  <p th:if="${mensagemErro}" th:utext="${mensagemErro}" class="mensagem-erro"></p>
+  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
 
-    <form th:action="@{/cadastro-pessoa}" method="post">
-      <input type="hidden" name="codUsuario" th:value="${codUsuario}"/>
-      <input type="hidden" name="senha" th:value="${senha}"/>
+  <form th:action="@{/cadastro-pessoa}" method="post">
+    <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+    <input type="hidden" name="senha" th:value="${senha}" />
 
-      <label>Nome da Pessoa:</label>
-      <input type="text" name="nomePessoa" maxlength="80" th:value="${nomePessoa}" required pattern="[A-Za-z0-9\s]+" />
+    <label>Nome da Pessoa:</label>
+    <input type="text" name="nomePessoa" maxlength="80" th:value="${nomePessoa}" required pattern="[A-Za-z0-9\s]+" />
 
-      <label>Email:</label>
-      <input type="email" name="emailPessoa" required
-             placeholder="email@exemplo.com"
-             th:value="${pessoa.emailPessoa}" />
+    <label>Email:</label>
+    <input type="email" name="emailPessoa" th:value="${emailPessoa}" required placeholder="email@exemplo.com" />
 
-      <label>Celular:</label>
-      <input type="text" name="celularPessoa" th:value="${celularPessoa}" required placeholder="+55-21-99999-9999"
-             pattern="^\+\d{2}-\d{2}-\d{4,5}-\d{4}$" />
+    <label>Celular: (Ex. +55-99-99999-9999)</label>
+    <input type="text" name="celularPessoa" th:value="${celularPessoa}" required placeholder="+55-99-99999-9999"
+           pattern="^\+\d{2}-\d{2}-\d{4,5}-\d{4}$" />
 
-      <label>País:</label>
-      <select name="nomePaisSelect" id="paisSelect" required onchange="paisChange()">
-        <option value="">Selecione</option>
-        <option>Brasil</option>
-        <option>Portugal</option>
-        <option>Espanha</option>
-        <option>Estados Unidos</option>
-        <option>Chile</option>
-        <option>Argentina</option>
-        <option>Outro</option>
-      </select>
-      <input type="text" id="paisOutro" name="paisOutro" class="hidden" placeholder="Informe o País"/>
+    <label>País:</label>
+    <select name="nomePaisSelect" id="paisSelect" required onchange="paisChange()" th:value="${nomePaisSelect}">
+      <option value="">Selecione</option>
+      <option>Brasil</option>
+      <option>Portugal</option>
+      <option>Espanha</option>
+      <option>Estados Unidos</option>
+      <option>Chile</option>
+      <option>Argentina</option>
+      <option>Outro</option>
+    </select>
+    <input type="text" id="paisOutro" name="paisOutro" class="hidden" placeholder="Informe o País" th:value="${paisOutro}" />
 
-      <label>Estado:</label>
-      <select name="nomeEstadoSelect" id="estadoSelect" required>
-        <option value="">Selecione</option>
-        <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
-        <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
-        <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
-        <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
-        <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
-        <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
-        <option>SP</option><option>SE</option><option>TO</option>
-        <option>Outro</option>
-      </select>
-      <input type="text" id="estadoOutro" name="estadoOutro" class="hidden" placeholder="Informe o Estado"/>
+    <label>Estado:</label>
+    <select name="nomeEstadoSelect" id="estadoSelect" onchange="filtrarCidades()" th:value="${nomeEstadoSelect}">
+      <option value="">Selecione</option>
+      <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+      <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+      <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+      <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+      <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+      <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+      <option>SP</option><option>SE</option><option>TO</option>
+    </select>
+    <input type="text" id="estadoOutro" name="estadoOutro" class="hidden" placeholder="Informe o Estado" th:value="${estadoOutro}" />
 
-      <label>Cidade:</label>
-      <select name="cidadeSelect" id="cidadeSelect" required onchange="cidadeChange()">
-        <option value="">Selecione</option>
-        <option>São Paulo</option>
-        <option>São Bernardo do Campo</option>
-        <option>São Caetano do Sul</option>
-        <option>Santo André</option>
-        <option>Mauá</option>
-        <option>Osasco</option>
-        <option>Mogi das Cruzes</option>
-        <option>Santos</option>
-        <option>São Vicente</option>
-        <option>Mongaguá</option>
-        <option>Outro</option>
-      </select>
-      <input type="text" id="cidadeOutro" name="cidadeOutro" class="hidden" placeholder="Informe a Cidade"/>
+    <label>Cidade:</label>
+    <select name="cidadeSelect" id="cidadeSelect" onchange="cidadeChange()" th:value="${cidadeSelect}">
+      <option value="">Selecione</option>
+      <option>Outro</option>
+    </select>
+    <input type="text" id="cidadeOutro" name="cidadeOutro" class="hidden" placeholder="Informe a Cidade" th:value="${cidadeOutro}" />
 
-      <label>Currículo:</label>
-      <textarea name="curriculoPessoal" th:text="${curriculoPessoal}"></textarea>
+    <label>Currículo:</label>
+    <textarea name="curriculoPessoal" th:text="${curriculoPessoal}" placeholder="Opcional..."></textarea>
 
-      <label>Comentários:</label>
-      <textarea name="comentarios" th:text="${comentarios}"></textarea>
+    <label>Comentários:</label>
+    <textarea name="comentarios" th:text="${comentarios}" placeholder="Como chegou até aqui? Outros..."></textarea>
 
-      <div style="text-align:center; margin-top:20px;">
-        <button type="submit">Confirmar Cadastro</button>
-        <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
-        <a href="/login"><button type="button">Voltar ao Login</button></a>
-      </div>
-    </form>
-  </div>
+    <div style="text-align:center; margin-top:20px;">
+      <button type="submit">Confirmar Cadastro</button>
+      <a href="/cadastro-usuario"><button type="button">Novo Usuário</button></a>
+      <a href="/login"><button type="button">Voltar ao Login</button></a>
+    </div>
+  </form>
+</div>
 
 <script>
+const cidadesPorEstado = {
+  SP: ["São Paulo", "São Bernardo do Campo", "São Caetano do Sul", "Santo André", "Mauá", "Osasco", "Mogi das Cruzes", "Santos", "São Vicente"],
+  PR: ["Curitiba"],
+  SC: ["Florianópolis"],
+  MG: ["Belo Horizonte"]
+};
+
 function paisChange() {
   const pais = document.getElementById("paisSelect").value;
   const paisOutro = document.getElementById("paisOutro");
+
   const estadoSelect = document.getElementById("estadoSelect");
   const estadoOutro = document.getElementById("estadoOutro");
 
+  const cidadeSelect = document.getElementById("cidadeSelect");
+  const cidadeOutro = document.getElementById("cidadeOutro");
+
   if (pais === "Outro") {
     paisOutro.classList.remove("hidden");
-    paisOutro.required = true;
-    estadoSelect.classList.add("hidden");
     estadoOutro.classList.remove("hidden");
+    cidadeOutro.classList.remove("hidden");
+
+    paisOutro.required = true;
     estadoOutro.required = true;
+    cidadeOutro.required = true;
+
+    estadoSelect.classList.add("hidden");
+    cidadeSelect.classList.add("hidden");
+
+    estadoSelect.required = false;
+    cidadeSelect.required = false;
+
   } else if (pais === "Brasil") {
     paisOutro.classList.add("hidden");
-    paisOutro.required = false;
-    estadoSelect.classList.remove("hidden");
     estadoOutro.classList.add("hidden");
-    estadoOutro.required = false;
-  } else {
-    paisOutro.classList.add("hidden");
+    cidadeOutro.classList.add("hidden");
+
     paisOutro.required = false;
+    estadoOutro.required = false;
+    cidadeOutro.required = false;
+
+    estadoSelect.classList.remove("hidden");
+    cidadeSelect.classList.remove("hidden");
+
+    estadoSelect.required = true;
+    cidadeSelect.required = true;
+
+    filtrarCidades();  // carregar cidades
+
+  } else {
+    // País listado ≠ Brasil
+    paisOutro.classList.add("hidden");
     estadoSelect.classList.add("hidden");
+    cidadeSelect.classList.add("hidden");
+
     estadoOutro.classList.remove("hidden");
+    cidadeOutro.classList.remove("hidden");
+
     estadoOutro.required = true;
+    cidadeOutro.required = true;
+
+    estadoSelect.required = false;
+    cidadeSelect.required = false;
+  }
+}
+
+function filtrarCidades() {
+  const estado = document.getElementById("estadoSelect").value;
+  const cidadeSelect = document.getElementById("cidadeSelect");
+  const cidadeOutro = document.getElementById("cidadeOutro");
+
+  cidadeSelect.innerHTML = "<option value=''>Selecione</option>";
+
+  if (!cidadesPorEstado[estado]) {
+    cidadeSelect.classList.add("hidden");
+    cidadeOutro.classList.remove("hidden");
+    cidadeOutro.required = true;
+  } else {
+    cidadeSelect.classList.remove("hidden");
+    cidadeOutro.classList.add("hidden");
+    cidadeOutro.required = false;
+
+    cidadesPorEstado[estado].forEach(cidade => {
+      const option = document.createElement("option");
+      option.value = cidade;
+      option.text = cidade;
+      cidadeSelect.appendChild(option);
+    });
+
+    const outro = document.createElement("option");
+    outro.value = "Outro";
+    outro.text = "Outro";
+    cidadeSelect.appendChild(outro);
   }
 }
 
 function cidadeChange() {
   const cidade = document.getElementById("cidadeSelect").value;
   const cidadeOutro = document.getElementById("cidadeOutro");
+
   if (cidade === "Outro") {
     cidadeOutro.classList.remove("hidden");
     cidadeOutro.required = true;
@@ -150,6 +203,11 @@ function cidadeChange() {
     cidadeOutro.required = false;
   }
 }
+
+window.onload = function() {
+  paisChange();       // Aplica regras com base no país atual
+  filtrarCidades();   // Recarrega cidades se necessário
+};
 </script>
 </body>
 </html>

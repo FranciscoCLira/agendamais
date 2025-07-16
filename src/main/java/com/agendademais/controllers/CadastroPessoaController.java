@@ -58,9 +58,9 @@ public class CadastroPessoaController {
             @RequestParam String celularPessoa,
             @RequestParam String nomePaisSelect,
             @RequestParam(required = false) String paisOutro,
-            @RequestParam String nomeEstadoSelect,
+            @RequestParam(required = false) String nomeEstadoSelect,
             @RequestParam(required = false) String estadoOutro,
-            @RequestParam String cidadeSelect,
+            @RequestParam(required = false) String cidadeSelect,
             @RequestParam(required = false) String cidadeOutro,
             @RequestParam(required = false) String curriculoPessoal,
             @RequestParam(required = false) String comentarios,
@@ -68,20 +68,54 @@ public class CadastroPessoaController {
             Model model,
             HttpSession session) {
 
-        String paisFinal = "Outro".equals(nomePaisSelect) ? paisOutro : nomePaisSelect;
-        String estadoFinal = "Outro".equals(nomeEstadoSelect) ? estadoOutro : nomeEstadoSelect;
-        String cidadeFinal = "Outro".equals(cidadeSelect) ? cidadeOutro : cidadeSelect;
+    	String paisFinal = "Outro".equals(nomePaisSelect) ? paisOutro : nomePaisSelect;
 
+    	// String estadoFinal = (nomeEstadoSelect == null || "Outro".equals(nomeEstadoSelect)) && estadoOutro != null
+    	//        ? estadoOutro.trim()
+    	//        : nomeEstadoSelect;
+    	
+    	String estadoFinal;
+    	if ("Brasil".equals(nomePaisSelect)) {
+    	    estadoFinal = nomeEstadoSelect;
+    	} else {
+    	    estadoFinal = estadoOutro;
+    	}
+
+//    	String cidadeFinal = (cidadeSelect == null || "Outro".equals(cidadeSelect)) && cidadeOutro != null
+//    	        ? cidadeOutro.trim()
+//    	        : cidadeSelect;
+
+    	String cidadeFinal;
+    	if ("Brasil".equals(nomePaisSelect)) {
+    	    cidadeFinal = "Outro".equals(cidadeSelect) || cidadeSelect == null ? cidadeOutro : cidadeSelect;
+    	} else {
+    	    cidadeFinal = cidadeOutro;
+    	}
+    	
+        
         if (paisFinal == null || paisFinal.isBlank()) {
             model.addAttribute("mensagemErro", "Informe o País.");
+            preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
+                    nomePaisSelect, paisOutro, nomeEstadoSelect, estadoOutro, cidadeSelect, cidadeOutro,
+                    curriculoPessoal, comentarios);
             return "cadastro-pessoa";
         }
-        if (estadoFinal == null || estadoFinal.isBlank()) {
+
+//      if (estadoFinal == null || estadoFinal.isBlank()) {
+        if (estadoFinal == null || estadoFinal.trim().isEmpty()) {
             model.addAttribute("mensagemErro", "Informe o Estado.");
+            preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
+                    nomePaisSelect, paisOutro, nomeEstadoSelect, estadoOutro, cidadeSelect, cidadeOutro,
+                    curriculoPessoal, comentarios);
             return "cadastro-pessoa";
         }
-        if (cidadeFinal == null || cidadeFinal.isBlank()) {
+        
+//      if (cidadeFinal == null || cidadeFinal.isBlank()) {
+        if (cidadeFinal == null || cidadeFinal.trim().isEmpty()) {
             model.addAttribute("mensagemErro", "Informe a Cidade.");
+            preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
+                    nomePaisSelect, paisOutro, nomeEstadoSelect, estadoOutro, cidadeSelect, cidadeOutro,
+                    curriculoPessoal, comentarios);
             return "cadastro-pessoa";
         }
         
@@ -95,6 +129,9 @@ public class CadastroPessoaController {
                 return "redirect:/login";
             }
             model.addAttribute("mensagemErro", "Usuário já existente.");
+            preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
+                    nomePaisSelect, paisOutro, nomeEstadoSelect, estadoOutro, cidadeSelect, cidadeOutro,
+                    curriculoPessoal, comentarios);
             return "cadastro-pessoa";
         }
         
@@ -110,6 +147,9 @@ public class CadastroPessoaController {
 //          System.out.println("*** CadastroPessoaController.java /cadastro-pessoa  =" + "Erro inesperado ao processar o cadastro."); 
 //         	System.out.println("****************************************************************************");
 
+            preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
+                    nomePaisSelect, paisOutro, nomeEstadoSelect, estadoOutro, cidadeSelect, cidadeOutro,
+                    curriculoPessoal, comentarios);            
             return "redirect:/cadastro-pessoa";
         }
         
@@ -154,4 +194,33 @@ public class CadastroPessoaController {
 
         return "redirect:/cadastro-relacionamentos?codUsuario=" + codUsuario;
     }
+    
+    private void preencherModelComDadosForm(Model model,
+            String codUsuario,
+            String senha,
+            String nomePessoa,
+            String emailPessoa,
+            String celularPessoa,
+            String nomePaisSelect,
+            String paisOutro,
+            String nomeEstadoSelect,
+            String estadoOutro,
+            String cidadeSelect,
+            String cidadeOutro,
+            String curriculoPessoal,
+            String comentarios) {
+		model.addAttribute("codUsuario", codUsuario);
+		model.addAttribute("senha", senha);
+		model.addAttribute("nomePessoa", nomePessoa);
+		model.addAttribute("emailPessoa", emailPessoa);
+		model.addAttribute("celularPessoa", celularPessoa);
+		model.addAttribute("nomePaisSelect", nomePaisSelect);
+		model.addAttribute("paisOutro", paisOutro);
+		model.addAttribute("nomeEstadoSelect", nomeEstadoSelect);
+		model.addAttribute("estadoOutro", estadoOutro);
+		model.addAttribute("cidadeSelect", cidadeSelect);
+		model.addAttribute("cidadeOutro", cidadeOutro);
+		model.addAttribute("curriculoPessoal", curriculoPessoal);
+		model.addAttribute("comentarios", comentarios);
+     }
 }
