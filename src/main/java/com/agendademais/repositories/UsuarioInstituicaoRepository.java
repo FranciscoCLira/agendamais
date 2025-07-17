@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.agendademais.entities.Instituicao;
+import com.agendademais.entities.Usuario;
 import com.agendademais.entities.UsuarioInstituicao;
 
 @Repository
@@ -32,4 +33,9 @@ public interface UsuarioInstituicaoRepository extends JpaRepository<UsuarioInsti
     	       "AND ui.sitAcessoUsuarioInstituicao = 'A' " +
     	       "AND ui.instituicao.situacaoInstituicao = 'A'")
     	List<Instituicao> findInstituicoesAtivasPorUsuario(Long usuarioId);
+    
+    void deleteAllByUsuario(Usuario usuario);
+    
+    
+    
 }        

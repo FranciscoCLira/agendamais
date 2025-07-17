@@ -6,7 +6,6 @@ import com.agendademais.repositories.*;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -225,40 +224,40 @@ public class CadastroPessoaController {
 		model.addAttribute("comentarios", comentarios);
     }
     
-    @Controller
-    public class ExcluirCadastroController {
-
-        @Autowired
-        private UsuarioRepository usuarioRepository;
-
-//        @Autowired   => NAO PRECISA - DELECAO EM CASCATA DE USUARIO 
-//        private PessoaRepository pessoaRepository;
-
-        @PostMapping("/excluir-cadastro")
-        @Transactional
-        public String excluirCadastro(HttpSession session, RedirectAttributes redirectAttributes) {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-
-            if (usuario == null || usuario.getPessoa() == null) {
-                redirectAttributes.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-                return "redirect:/login";
-            }
-
-            Pessoa pessoa = usuario.getPessoa();
-
-            if (!"C".equals(pessoa.getSituacaoPessoa())) {
-                redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Cadastro só pode ser excluído após ser cancelado.");
-                return "redirect:/menus/menu-participante";
-            }
-
-            // Remove vínculos se houver (instituições, atividades, etc)
-            usuarioRepository.delete(usuario); // cascade deve remover a Pessoa também
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Cadastro excluído com sucesso.");
-            session.invalidate();
-
-            return "redirect:/login";
-        }
-    }
+//    @Controller
+//    public class ExcluirCadastroController {
+//
+//        @Autowired
+//        private UsuarioRepository usuarioRepository;
+//
+////        @Autowired   => NAO PRECISA - DELECAO EM CASCATA DE USUARIO 
+////        private PessoaRepository pessoaRepository;
+//
+//        @PostMapping("/excluir-cadastro")
+//        @Transactional
+//        public String excluirCadastro(HttpSession session, RedirectAttributes redirectAttributes) {
+//            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
+//
+//            if (usuario == null || usuario.getPessoa() == null) {
+//                redirectAttributes.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
+//                return "redirect:/login";
+//            }
+//
+//            Pessoa pessoa = usuario.getPessoa();
+//
+//            if (!"C".equals(pessoa.getSituacaoPessoa())) {
+//                redirectAttributes.addFlashAttribute("mensagemErro",
+//                    "Cadastro só pode ser excluído após ser cancelado.");
+//                return "redirect:/menus/menu-participante";
+//            }
+//
+//            // Remove vínculos se houver (instituições, atividades, etc)
+//            usuarioRepository.delete(usuario); // cascade deve remover a Pessoa também
+//            redirectAttributes.addFlashAttribute("mensagemSucesso", "Cadastro excluído com sucesso.");
+//            session.invalidate();
+//
+//            return "redirect:/login";
+//        }
+//    }
 
 }
