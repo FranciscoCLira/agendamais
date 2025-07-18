@@ -26,6 +26,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\LoginController
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\PessoaInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\UsuarioController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\SubInstituicaoRepository.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ExcluirCadastroController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ControleTotalController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\RecuperarSenhaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\TipoAtividade.java
@@ -45,6 +46,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Instituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\config\GlobalModelAttributes.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AutorController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\AlterarSenhaController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ExcluirVinculosInstituicaoController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\UsuarioInstituicao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\services\RecuperacaoLoginService.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\UsuarioRepository.java

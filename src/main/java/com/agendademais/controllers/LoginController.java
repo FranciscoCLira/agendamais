@@ -98,8 +98,11 @@ public class LoginController {
         	    .collect(Collectors.toList());
         
      	System.out.println("****************************************************************************");
-     	System.out.println("*** LoginController.java /login  usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
-     	System.out.println("*** LoginController.java /login  vinculosAtivos.size()= " + vinculosAtivos.size()); 
+     	System.out.println("*** LoginController.java /login/processarLogin usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
+     	System.out.println("*** LoginController.java /login/processarLogin vinculosAtivos.size()          = " + vinculosAtivos.size()); 
+     	System.out.println("*** LoginController.java /login/processarLogin temVinculos Pessoa             = " + temVinculos); 
+     	System.out.println("*** LoginController.java /login/processarLogin vinculosAtivos.stream()        = " + vinculosAtivos.stream()); 
+     	System.out.println("*** LoginController.java /login/processarLogin instituicoesVinculadasAtivas   = " + instituicoesVinculadasAtivas); 
      	System.out.println("****************************************************************************");
         
         if (instituicoesVinculadasAtivas.isEmpty()) {
@@ -135,11 +138,12 @@ public class LoginController {
         redirectAttributes.addFlashAttribute("senha", senha);
         redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
         
-        List<Instituicao> instituicoesDoVinculo = vinculosAtivos.stream()
-                .map(UsuarioInstituicao::getInstituicao)
-                .toList();
+//        List<Instituicao> instituicoesDoVinculo = vinculosAtivos.stream()
+//                .map(UsuarioInstituicao::getInstituicao)
+//                .toList();
+//        redirectAttributes.addFlashAttribute("instituicoes", instituicoesDoVinculo);
 
-        redirectAttributes.addFlashAttribute("instituicoes", instituicoesDoVinculo);
+        redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
 
         return "redirect:/login";
     }
@@ -168,8 +172,9 @@ public class LoginController {
         }
         
      	System.out.println("****************************************************************************");
-     	System.out.println("*** LoginController.java /login/entrar  usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
-     	System.out.println("*** LoginController.java /login/entrar  instituicao= " + instituicao); 
+     	System.out.println("*** LoginController.java /login/entrar         instituicao                    = " + instituicao); 
+     	System.out.println("*** LoginController.java /login/entrar         usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
+    //	System.out.println("*** LoginController.java /login/entrar         vinculosAtivos.size()= " + vinculosAtivos.size()); 
      	System.out.println("****************************************************************************");
         
         // ACESSO AO CONTROLE TOTAL (OPCAO VALOR 0)
@@ -222,13 +227,6 @@ public class LoginController {
 
         return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
     }
-
-//    @GetMapping("/recuperar-login-email")
-//    public String exibirFormularioRecuperacaoEmail(Model model) {
-//        model.addAttribute("email", "");
-//        model.addAttribute("mensagemErro", null);
-//        return "recuperar-login-email"; // view com input de e-mail
-//    }
 
       // exibe a tela 
       @GetMapping("/recuperar-login-email")

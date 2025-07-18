@@ -12,6 +12,10 @@
   <main class="main-content">
     <h2>Bem-vindo, SuperUsuário!</h2>
 
+  <!-- Mensagens -->
+  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
     <ul>
       <li><a href="/inscricao-tipo-atividade">Inscrição em Tipos de Atividades</a></li>
       <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>

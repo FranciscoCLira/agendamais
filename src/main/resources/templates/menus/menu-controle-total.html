@@ -12,6 +12,11 @@
 <div class="form-container">
     <h2 th:text="${tituloPagina}">Painel de Controle Total</h2>
 
+  <!-- Mensagens -->
+  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+    
+
     <ul class="menu-opcoes">
         <li><a th:href="@{/instituicoes}">Gerenciar Instituições</a></li>
         <li><a th:href="@{/usuarios/geral}">Gestão Geral de Usuários</a></li>

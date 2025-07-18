@@ -1,7 +1,16 @@
 package com.agendademais.repositories;
 
-import com.agendademais.entities.Inscricao;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.agendademais.entities.Inscricao;
+import com.agendademais.entities.Instituicao;
+import com.agendademais.entities.Pessoa;
+
 public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
+	
+    void deleteByIdPessoaAndIdInstituicao(Pessoa idPessoa, Instituicao idInstituicao);
+    
+    List<Inscricao> findByIdPessoaAndIdInstituicao(Pessoa idPessoa, Instituicao idInstituicao);
 }

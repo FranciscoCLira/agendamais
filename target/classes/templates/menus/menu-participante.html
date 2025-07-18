@@ -12,6 +12,10 @@
   <main class="main-content">
     <h2>Bem-vindo, Participante!</h2>
 
+    <!-- Mensagens -->
+    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
+    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+
     <ul>
       <li><a href="/inscricao-tipo-atividade">Inscrição em Tipos de Atividades</a></li>
       <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>
@@ -19,8 +23,8 @@
     </ul>
     
     
-    <form th:if="${session.usuarioLogado.pessoa.situacaoPessoa == 'C'}"
-       th:action="@{/excluir-cadastro}" method="post"
+    <form th:if="${session.usuarioLogado.pessoa.situacaoPessoa == 'A'}"
+       th:action="@{/excluir-vinculos-instituicao}" method="post"
        onsubmit="return confirm('Tem certeza que deseja excluir permanentemente seu cadastro? Esta ação não poderá ser desfeita.');">
        <button type="submit" class="perigo">Excluir Cadastro</button>
     </form>
