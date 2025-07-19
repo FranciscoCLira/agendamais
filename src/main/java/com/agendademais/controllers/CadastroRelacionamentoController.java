@@ -207,8 +207,9 @@ public class CadastroRelacionamentoController {
         session.removeAttribute("usuarioPendencia");
 
         redirectAttributes.addFlashAttribute("mensagemSucesso",
-                "Cadastro concluído com sucesso! Usuário: " + usuario.getCodUsuario()
-                        + " - " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : ""));
+                "Cadastro concluído com sucesso!<br>Usuário: " 
+                + usuario.getCodUsuario()
+                + " - " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : ""));
 
         return "redirect:/login";
     }
