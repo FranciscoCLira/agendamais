@@ -37,4 +37,13 @@ public class Instituicao {
 	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
 	}
+	
+	
+	@Override
+	public String toString() {
+		return "Instituicao [id=" + id + ", nomeInstituicao=" + nomeInstituicao + ", situacaoInstituicao="
+				+ situacaoInstituicao + ", dataUltimaAtualizacao=" + dataUltimaAtualizacao + "]";
+	}
+	
+	
 }

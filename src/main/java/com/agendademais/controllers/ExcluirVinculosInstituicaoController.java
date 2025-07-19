@@ -77,12 +77,25 @@ public class ExcluirVinculosInstituicaoController {
         List<UsuarioInstituicao> outrosVinculos = usuarioInstituicaoRepository.findByUsuario(usuario);
 
         if (outrosVinculos.isEmpty()) {
+            // Exclui todas as inscrições vinculadas à pessoa
+               inscricaoRepository.deleteByIdPessoa(pessoa);
+
+            // Exclui usuário e pessoa
             usuarioRepository.delete(usuario);
             pessoaRepository.delete(pessoa);
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Relacionamento com a Instituição excluído com sucesso. Nenhum outro vínculo restante. Cadastro geral removido.");
+            redirectAttributes.addFlashAttribute(
+               "mensagemSucesso",
+               "Relacionamento com a Instituição excluído com sucesso.\n"
+               + "Nenhum outro vínculo restante. Cadastro geral removido.\n"
+               + usuario.getCodUsuario() + " - " + pessoa.getNomePessoa()
+            );
+            
         } else {
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Relacionamento com a Instituição excluído com sucesso: "
-                    + usuario.getCodUsuario() + " - " + pessoa.getNomePessoa());
+            redirectAttributes.addFlashAttribute(
+            	"mensagemSucesso", 
+            	"Relacionamento com a Instituição excluído com sucesso: \n"
+                + usuario.getCodUsuario() + " - " + pessoa.getNomePessoa() + "\n"  
+                + instituicao.getNomeInstituicao());
         }     	
 
         session.invalidate();

@@ -18,7 +18,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/login")
@@ -45,8 +44,9 @@ public class LoginController {
 
     @GetMapping
     public String loginForm(Model model) {
-    	List<Instituicao> lista = instituicaoRepository.findBySituacaoInstituicao("A");
+/*     	List<Instituicao> lista = instituicaoRepository.findBySituacaoInstituicao("A");
     	     model.addAttribute("instituicoes", lista);
+ */
         return "login";
     }
 
@@ -94,16 +94,28 @@ public class LoginController {
         
         List<Instituicao> instituicoesVinculadasAtivas = vinculosAtivos.stream()
         	    .map(UsuarioInstituicao::getInstituicao)
-        	    .filter(inst -> "A".equalsIgnoreCase(inst.getSituacaoInstituicao()))
-        	    .collect(Collectors.toList());
+        	    .toList();
+        
+        instituicoesVinculadasAtivas.forEach(inst -> 
+        System.out.println("*** Instituição VÁLIDA: " + inst.getId() + " - " + inst.getNomeInstituicao()));
+
         
      	System.out.println("****************************************************************************");
-     	System.out.println("*** LoginController.java /login/processarLogin usuario.getNivelAcessoUsuario()= " + usuario.getNivelAcessoUsuario()); 
-     	System.out.println("*** LoginController.java /login/processarLogin vinculosAtivos.size()          = " + vinculosAtivos.size()); 
-     	System.out.println("*** LoginController.java /login/processarLogin temVinculos Pessoa             = " + temVinculos); 
-     	System.out.println("*** LoginController.java /login/processarLogin vinculosAtivos.stream()        = " + vinculosAtivos.stream()); 
-     	System.out.println("*** LoginController.java /login/processarLogin instituicoesVinculadasAtivas   = " + instituicoesVinculadasAtivas); 
+     	System.out.println("*** LoginController.java /login/processarLogin usuario.getNivelAcessoUsuario()  = " + usuario.getNivelAcessoUsuario()); 
+     	System.out.println("*** LoginController.java /login/processarLogin vinculosAtivos.size()            = " + vinculosAtivos.size()); 
+     	System.out.println("*** LoginController.java /login/processarLogin temVinculos Pessoa               = " + temVinculos); 
+     	System.out.println("*** LoginController.java /login/processarLogin vinculosAtivos.stream()          = " + vinculosAtivos.stream()); 
+     	System.out.println("*** LoginController.java /login/processarLogin instituicoesVinculadasAtivas.size= " + instituicoesVinculadasAtivas.size()); 
+     	System.out.println("*** LoginController.java /login/processarLogin instituicoesVinculadasAtivas     = " + instituicoesVinculadasAtivas); 
      	System.out.println("****************************************************************************");
+
+     	// usando o método toString():
+     	for (Instituicao inst : instituicoesVinculadasAtivas) {
+     	    System.out.println("*** Instituição vinculada: " + inst);
+     	}    
+     	    
+        System.out.println("****************************************************************************");
+     	
         
         if (instituicoesVinculadasAtivas.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro",
@@ -111,39 +123,30 @@ public class LoginController {
             return "redirect:/login";
         }
 
-        // Se for SuperUsuário, sempre exibe a escolha mesmo com 1 vínculo
+        // SuperUsuário, sempre exibe a escolha mesmo com 1 vínculo
         if (usuario.getNivelAcessoUsuario() == 9) {
             redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
-            redirectAttributes.addFlashAttribute("instituicoes", 
-            		instituicoesVinculadasAtivas.stream().toList());
+            redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
             redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
             redirectAttributes.addFlashAttribute("senha", senha);
             redirectAttributes.addFlashAttribute("exibirControleTotal", true);
             redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
             return "redirect:/login";
         }
-
-        if (vinculosAtivos.size() == 1) {
-            UsuarioInstituicao vinculo = vinculosAtivos.get(0);
+        
+        // APENAS 1 VINCULO ATIVO 
+        if (instituicoesVinculadasAtivas.size() == 1) {
             session.setAttribute("usuarioLogado", usuario);
-            session.setAttribute("instituicaoSelecionada", vinculo.getInstituicao());
+            session.setAttribute("instituicaoSelecionada", instituicoesVinculadasAtivas.get(0));
             return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
         }
 
-        // Exibe lista de instituições para escolha
+        // Mais de um vínculo ativo: exibir seleção - Lista
         redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
-        redirectAttributes.addFlashAttribute("instituicoes", vinculosAtivos.stream()
-                .map(UsuarioInstituicao::getInstituicao).toList());
+        redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
         redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
         redirectAttributes.addFlashAttribute("senha", senha);
         redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
-        
-//        List<Instituicao> instituicoesDoVinculo = vinculosAtivos.stream()
-//                .map(UsuarioInstituicao::getInstituicao)
-//                .toList();
-//        redirectAttributes.addFlashAttribute("instituicoes", instituicoesDoVinculo);
-
-        redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
 
         return "redirect:/login";
     }
@@ -199,22 +202,48 @@ public class LoginController {
         }
 
         // Valida vínculo com a instituição
-        boolean vinculoAtivo = usuarioInstituicaoRepository
-                .existsByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao);
+        
+        Optional<UsuarioInstituicao> vinculoOpt =
+        	    usuarioInstituicaoRepository.findByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao);
 
-        if (!vinculoAtivo) {
-            redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Você não tem vínculo ativo com esta instituição.");
-            redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
-            redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
-            redirectAttributes.addFlashAttribute("senha", senha);
-            redirectAttributes.addFlashAttribute("instituicoes",
-                    usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(
-                            usuario.getId(), "A"
-                    ).stream().map(UsuarioInstituicao::getInstituicao).toList());
-            return "redirect:/login";
+     	System.out.println("****************************************************************************");
+        System.out.println("*** LoginController.java /login/entrar           vinculoOpt= " +
+                usuarioInstituicaoRepository.findByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao));
+     	System.out.println("***  ");
+     	System.out.println("****************************************************************************");
+        
+        if (vinculoOpt.isEmpty()
+        	|| !"A".equals(vinculoOpt.get().getSitAcessoUsuarioInstituicao())
+        	|| !"A".equals(vinculoOpt.get().getInstituicao().getSituacaoInstituicao())) {
+
+            System.out.println("*** LoginController.java /login/entrar  Entrou => vinculoOpt Empty ou SitUsuarioInstitucao A ou Sit Institucao A");
+        	
+        	redirectAttributes.addFlashAttribute("mensagemErro",
+        	    "Você não tem vínculo ativo com esta instituição.");
+        	redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
+        	redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
+        	redirectAttributes.addFlashAttribute("senha", senha);
+        	redirectAttributes.addFlashAttribute("instituicoes",
+        	    usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(
+        	            usuario.getId(), "A"
+        	    ).stream()
+        	     .filter(v -> v.getInstituicao() != null && "A".equals(v.getInstituicao().getSituacaoInstituicao()))
+        	     .map(UsuarioInstituicao::getInstituicao)
+        	     .toList());
+        	
+         	System.out.println("*** LoginController.java /login/entrar         instituicoes= " + 
+            	    usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(
+            	            usuario.getId(), "A"
+            	    ).stream()
+            	     .filter(v -> v.getInstituicao() != null && "A".equals(v.getInstituicao().getSituacaoInstituicao()))
+            	     .map(UsuarioInstituicao::getInstituicao)
+            	     .toList());
+
+         			
+        	return "redirect:/login";
         }
 
+        
         // Acesso normal via instituição
         session.setAttribute("usuarioLogado", usuario);
         session.setAttribute("instituicaoSelecionada",
