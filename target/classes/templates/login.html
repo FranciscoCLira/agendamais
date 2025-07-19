@@ -21,7 +21,8 @@
 
       <!-- Mensagens -->
 <!--  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>  -->
-      <p th:if="${mensagemSucesso}" th:utext="${#strings.replace(mensagemSucesso, '\n', '<br/>')}" class="mensagem-sucesso"></p>
+<!--  <p th:if="${mensagemSucesso}" th:utext="${#strings.replace(mensagemSucesso, '\n', '<br/>')}" class="mensagem-sucesso"></p>   -->
+      <p th:if="${mensagemSucesso}" th:utext="${mensagemSucesso}" class="mensagem-sucesso"></p>
       
       <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro" ></p>
 
