@@ -80,14 +80,14 @@ mvn clean spring-boot:run
 
 ## 👥 Níveis de Acesso
 ```bash
------------------------------------------------------
-| Nível | Descrição     | Tela Inicial              |
-| ----- | ------------- | ------------------------- |
-| 1     | Participante  | `participante-form.html`  |
-| 2     | Autor         | `autor-form.html`         |
-| 5     | Administrador | `administrador-form.html` |
-| 9     | Superusuário  | `superusuario-form.html`  |
------------------------------------------------------
+----------------------------------------------------------
+| Nível | Descrição     | Tela Inicial                   |
+| ----- | ------------- | ------------------------------ |
+| 1     | Participante  | `menu-participante-form.html`  |
+| 2     | Autor         | `menu-autor-form.html`         |
+| 5     | Administrador | `menu-administrador-form.html` |
+| 9     | Superusuário  | `menu-superusuario-form.html`  |
+----------------------------------------------------------
 ```
 
 ## 📦 Dados de Exemplo (via `DataLoader.java`)
@@ -100,9 +100,9 @@ mvn clean spring-boot:run
 
 ## 📁 Modelo Entidade-Relacionamento (MER)
 
-Incluído em `src/main/resources/static/docs/agenda_mais_modelo_erd.png`
+Incluído em `src/main/resources/docs/agenda_mais_modelo_erd.png`
 
-![ERD](src/main/resources/static/docs/agenda_mais_erd.png)
+![ERD](src/main/resources/docs/agenda_mais_erd.png)
 
 ---
 

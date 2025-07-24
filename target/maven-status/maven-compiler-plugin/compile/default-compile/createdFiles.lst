@@ -44,6 +44,7 @@ com\agendademais\entities\LogPostagem.class
 com\agendademais\entities\PessoaSubInstituicao.class
 com\agendademais\controllers\PessoaInstituicaoController.class
 com\agendademais\controllers\LoginController.class
+com\agendademais\controllers\InscricaoController.class
 com\agendademais\controllers\SuperusuarioController.class
 com\agendademais\repositories\UsuarioInstituicaoRepository.class
 com\agendademais\entities\OcorrenciaAtividade.class

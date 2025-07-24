@@ -230,39 +230,6 @@ public class LoginController {
      		    session.setAttribute("usuarioPendencia", usuario);
      		    return "redirect:/cadastro-relacionamentos";
      		}
-     	
-//        if (vinculoOpt.isEmpty()
-//        	|| !"A".equals(vinculoOpt.get().getSitAcessoUsuarioInstituicao())
-//        	|| !"A".equals(vinculoOpt.get().getInstituicao().getSituacaoInstituicao())) {
-//
-//            System.out.println("*** LoginController.java /login/entrar  Entrou => vinculoOpt Empty ou SitUsuarioInstitucao A ou Sit Institucao A");
-//        	
-//        	redirectAttributes.addFlashAttribute("mensagemErro",
-//        	    "Você não tem vínculo ativo com esta instituição.");
-//        	
-//        	redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
-//        	redirectAttributes.addFlashAttribute("codUsuario", codUsuario);
-//        	redirectAttributes.addFlashAttribute("senha", senha);
-//        	redirectAttributes.addFlashAttribute("instituicoes",
-//        	    usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(
-//        	            usuario.getId(), "A"
-//        	    ).stream()
-//        	     .filter(v -> v.getInstituicao() != null && "A".equals(v.getInstituicao().getSituacaoInstituicao()))
-//        	     .map(UsuarioInstituicao::getInstituicao)
-//        	     .toList());
-//        	
-//         	System.out.println("*** LoginController.java /login/entrar         instituicoes= " + 
-//            	    usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(
-//            	            usuario.getId(), "A"
-//            	    ).stream()
-//            	     .filter(v -> v.getInstituicao() != null && "A".equals(v.getInstituicao().getSituacaoInstituicao()))
-//            	     .map(UsuarioInstituicao::getInstituicao)
-//            	     .toList());
-//
-//         			
-//        	return "redirect:/login";
-//        }
-
         
         // Acesso normal via instituição
         session.setAttribute("usuarioLogado", usuario);
