@@ -20,7 +20,10 @@ public class DataLoader implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PessoaRepository pessoaRepository;
     private final UsuarioInstituicaoRepository usuarioInstituicaoRepository;
+    private final PessoaInstituicaoRepository pessoaInstituicaoRepository;
+    private final PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository;
 
+    
     @Value("${app.reload-data:false}")
     private boolean reloadData;
 
@@ -32,13 +35,18 @@ public class DataLoader implements CommandLineRunner {
     	      	      TipoAtividadeRepository tipoAtividadeRepository, 
                       UsuarioRepository usuarioRepository,
                       PessoaRepository pessoaRepository,
-                      UsuarioInstituicaoRepository usuarioInstituicaoRepository) {
+                      UsuarioInstituicaoRepository usuarioInstituicaoRepository,
+                      PessoaInstituicaoRepository pessoaInstituicaoRepository,
+                      PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository
+                      ) {
         this.instituicaoRepository = instituicaoRepository;
         this.subInstituicaoRepository = subInstituicaoRepository;
         this.tipoAtividadeRepository = tipoAtividadeRepository;
         this.usuarioRepository = usuarioRepository;
         this.pessoaRepository = pessoaRepository;
         this.usuarioInstituicaoRepository = usuarioInstituicaoRepository;
+        this.pessoaInstituicaoRepository = pessoaInstituicaoRepository;
+        this.pessoaSubInstituicaoRepository = pessoaSubInstituicaoRepository;
     }
 
     @Transactional
@@ -236,11 +244,23 @@ public class DataLoader implements CommandLineRunner {
         user1.setPessoa(pessoaPersistida1);
         usuarioRepository.save(user1);
 
-        UsuarioInstituicao ui1 = new UsuarioInstituicao();
-        ui1.setUsuario(user1);
-        ui1.setInstituicao(inst1);
-        ui1.setSitAcessoUsuarioInstituicao("A");
-        usuarioInstituicaoRepository.save(ui1);
+        UsuarioInstituicao ui11 = new UsuarioInstituicao();
+        ui11.setUsuario(user1);
+        ui11.setInstituicao(inst1);
+        ui11.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui11);
+
+        UsuarioInstituicao ui12 = new UsuarioInstituicao();
+        ui12.setUsuario(user1);
+        ui12.setInstituicao(inst2);
+        ui12.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui12);
+
+        UsuarioInstituicao ui13 = new UsuarioInstituicao();
+        ui13.setUsuario(user1);
+        ui13.setInstituicao(inst3);
+        ui13.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui13);
         
         // PESSOA 2: ADMINISTRADOR - NIVEL 5 
         
@@ -268,11 +288,23 @@ public class DataLoader implements CommandLineRunner {
         user2.setPessoa(pessoaPersistida2);
         usuarioRepository.save(user2);
 
-        UsuarioInstituicao ui2 = new UsuarioInstituicao();
-        ui2.setUsuario(user2);
-        ui2.setInstituicao(inst1);
-        ui2.setSitAcessoUsuarioInstituicao("A");
-        usuarioInstituicaoRepository.save(ui2);
+        UsuarioInstituicao ui21 = new UsuarioInstituicao();
+        ui21.setUsuario(user2);
+        ui21.setInstituicao(inst1);
+        ui21.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui21);
+
+        UsuarioInstituicao ui22 = new UsuarioInstituicao();
+        ui22.setUsuario(user2);
+        ui22.setInstituicao(inst2);
+        ui22.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui22);
+
+        UsuarioInstituicao ui23 = new UsuarioInstituicao();
+        ui23.setUsuario(user2);
+        ui23.setInstituicao(inst3);
+        ui23.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui23);
 
         // PESSOA 3: SUPER-USUARIO - NIVEL 9 
 
@@ -300,12 +332,202 @@ public class DataLoader implements CommandLineRunner {
         user3.setPessoa(pessoaPersistida3);
         usuarioRepository.save(user3);
 
-        UsuarioInstituicao ui3 = new UsuarioInstituicao();
-        ui3.setUsuario(user3);
-        ui3.setInstituicao(inst3);
-        ui3.setSitAcessoUsuarioInstituicao("A");
-        usuarioInstituicaoRepository.save(ui3);
+        UsuarioInstituicao ui31 = new UsuarioInstituicao();
+        ui31.setUsuario(user3);
+        ui31.setInstituicao(inst1);
+        ui31.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui31);
 
+        UsuarioInstituicao ui32 = new UsuarioInstituicao();
+        ui32.setUsuario(user3);
+        ui32.setInstituicao(inst2);
+        ui32.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui32);
+
+        UsuarioInstituicao ui33 = new UsuarioInstituicao();
+        ui33.setUsuario(user3);
+        ui33.setInstituicao(inst3);
+        ui33.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui33);
+
+        // PESSOAINSTITUICAO E PESSOASUBINSTITUICAO 
+        
+        // PessoaInstituicao - 11
+        PessoaInstituicao psInst11 = new PessoaInstituicao();
+        psInst11.setPessoa(pessoa1);
+        psInst11.setInstituicao(inst1);
+        psInst11.setDataUltimaAtualizacao(LocalDate.now());
+        psInst11.setDataAfiliacao(LocalDate.now());
+        psInst11.setIdentificacaoPessoaInstituicao("psInst11");
+        pessoaInstituicaoRepository.save(psInst11);
+
+        // PessoaSubInstituicao - 11
+        PessoaSubInstituicao psSub11 = new PessoaSubInstituicao();
+        psSub11.setPessoa(pessoa1);
+        psSub11.setSubInstituicao(subInst11);
+        psSub11.setInstituicao(inst1);
+        psSub11.setDataUltimaAtualizacao(LocalDate.now());
+        psSub11.setDataAfiliacao(LocalDate.now());
+        psSub11.setIdentificacaoPessoaSubInstituicao("psSub11");
+        pessoaSubInstituicaoRepository.save(psSub11);        
+
+        // PessoaInstituicao - 12
+        PessoaInstituicao psInst12 = new PessoaInstituicao();
+        psInst12.setPessoa(pessoa1);
+        psInst12.setInstituicao(inst2);
+        psInst12.setDataUltimaAtualizacao(LocalDate.now());
+        psInst12.setDataAfiliacao(LocalDate.now());
+        psInst12.setIdentificacaoPessoaInstituicao("psInst12");
+        pessoaInstituicaoRepository.save(psInst12);
+
+        // PessoaSubInstituicao - 12
+        PessoaSubInstituicao psSub12 = new PessoaSubInstituicao();
+        psSub12.setPessoa(pessoa1);
+        psSub12.setSubInstituicao(subInst12);
+        psSub12.setInstituicao(inst2);
+        psSub12.setDataUltimaAtualizacao(LocalDate.now());
+        psSub12.setDataAfiliacao(LocalDate.now());
+        psSub12.setIdentificacaoPessoaSubInstituicao("psSub12");
+        pessoaSubInstituicaoRepository.save(psSub12);              
+
+        // PessoaInstituicao - 13
+        PessoaInstituicao psInst13 = new PessoaInstituicao();
+        psInst13.setPessoa(pessoa1);
+        psInst13.setInstituicao(inst3);
+        psInst13.setDataUltimaAtualizacao(LocalDate.now());
+        psInst13.setDataAfiliacao(LocalDate.now());
+        psInst13.setIdentificacaoPessoaInstituicao("psInst13");
+        pessoaInstituicaoRepository.save(psInst13);
+
+        // PessoaSubInstituicao - 13
+        PessoaSubInstituicao psSub13 = new PessoaSubInstituicao();
+        psSub13.setPessoa(pessoa1);
+        psSub13.setSubInstituicao(subInst13);
+        psSub13.setInstituicao(inst3);
+        psSub13.setDataUltimaAtualizacao(LocalDate.now());
+        psSub13.setDataAfiliacao(LocalDate.now());
+        psSub13.setIdentificacaoPessoaSubInstituicao("psSub13");
+        pessoaSubInstituicaoRepository.save(psSub13);        
+
+        
+        // PessoaInstituicao - 21
+        PessoaInstituicao psInst21 = new PessoaInstituicao();
+        psInst21.setPessoa(pessoa2);
+        psInst21.setInstituicao(inst1);
+        psInst21.setDataUltimaAtualizacao(LocalDate.now());
+        psInst21.setDataAfiliacao(LocalDate.now());
+        psInst21.setIdentificacaoPessoaInstituicao("psInst21");
+        pessoaInstituicaoRepository.save(psInst21);
+
+        // PessoaSubInstituicao - 21
+        PessoaSubInstituicao psSub21 = new PessoaSubInstituicao();
+        psSub21.setPessoa(pessoa2);
+        psSub21.setSubInstituicao(subInst21);
+        psSub21.setInstituicao(inst1);
+        psSub21.setDataUltimaAtualizacao(LocalDate.now());
+        psSub21.setDataAfiliacao(LocalDate.now());
+        psSub21.setIdentificacaoPessoaSubInstituicao("psSub21");
+        pessoaSubInstituicaoRepository.save(psSub21);        
+
+        // PessoaInstituicao - 22
+        PessoaInstituicao psInst22 = new PessoaInstituicao();
+        psInst22.setPessoa(pessoa2);
+        psInst22.setInstituicao(inst2);
+        psInst22.setDataUltimaAtualizacao(LocalDate.now());
+        psInst22.setDataAfiliacao(LocalDate.now());
+        psInst22.setIdentificacaoPessoaInstituicao("psInst22");
+        pessoaInstituicaoRepository.save(psInst22);
+
+        // PessoaSubInstituicao - 22
+        PessoaSubInstituicao psSub22 = new PessoaSubInstituicao();
+        psSub22.setPessoa(pessoa2);
+        psSub22.setSubInstituicao(subInst22);
+        psSub22.setInstituicao(inst2);
+        psSub22.setDataUltimaAtualizacao(LocalDate.now());
+        psSub22.setDataAfiliacao(LocalDate.now());
+        psSub22.setIdentificacaoPessoaSubInstituicao("psSub22");
+        pessoaSubInstituicaoRepository.save(psSub22);              
+
+        // PessoaInstituicao - 23
+        PessoaInstituicao psInst23 = new PessoaInstituicao();
+        psInst23.setPessoa(pessoa2);
+        psInst23.setInstituicao(inst3);
+        psInst23.setDataUltimaAtualizacao(LocalDate.now());
+        psInst23.setDataAfiliacao(LocalDate.now());
+        psInst23.setIdentificacaoPessoaInstituicao("psInst23");
+        pessoaInstituicaoRepository.save(psInst23);
+
+        // PessoaSubInstituicao - 23
+        PessoaSubInstituicao psSub23 = new PessoaSubInstituicao();
+        psSub23.setPessoa(pessoa2);
+        psSub23.setSubInstituicao(subInst23);
+        psSub23.setInstituicao(inst3);
+        psSub23.setDataUltimaAtualizacao(LocalDate.now());
+        psSub23.setDataAfiliacao(LocalDate.now());
+        psSub23.setIdentificacaoPessoaSubInstituicao("psSub23");
+        pessoaSubInstituicaoRepository.save(psSub23);        
+        
+        
+        // PessoaInstituicao - 31
+        PessoaInstituicao psInst31 = new PessoaInstituicao();
+        psInst31.setPessoa(pessoa3);
+        psInst31.setInstituicao(inst1);
+        psInst31.setDataUltimaAtualizacao(LocalDate.now());
+        psInst31.setDataAfiliacao(LocalDate.now());
+        psInst31.setIdentificacaoPessoaInstituicao("psInst31");
+        pessoaInstituicaoRepository.save(psInst31);
+
+        // PessoaSubInstituicao - 31
+        PessoaSubInstituicao psSub31 = new PessoaSubInstituicao();
+        psSub31.setPessoa(pessoa3);
+        psSub31.setSubInstituicao(subInst31);
+        psSub31.setInstituicao(inst1);
+        psSub31.setDataUltimaAtualizacao(LocalDate.now());
+        psSub31.setDataAfiliacao(LocalDate.now());
+        psSub31.setIdentificacaoPessoaSubInstituicao("psSub31");
+        pessoaSubInstituicaoRepository.save(psSub31);        
+
+        // PessoaInstituicao - 32
+        PessoaInstituicao psInst32 = new PessoaInstituicao();
+        psInst32.setPessoa(pessoa3);
+        psInst32.setInstituicao(inst2);
+        psInst32.setDataUltimaAtualizacao(LocalDate.now());
+        psInst32.setDataAfiliacao(LocalDate.now());
+        psInst32.setIdentificacaoPessoaInstituicao("psInst32");
+        pessoaInstituicaoRepository.save(psInst32);
+
+        // PessoaSubInstituicao - 32
+        PessoaSubInstituicao psSub32 = new PessoaSubInstituicao();
+        psSub32.setPessoa(pessoa3);
+        psSub32.setSubInstituicao(subInst32);
+        psSub32.setInstituicao(inst2);
+        psSub32.setDataUltimaAtualizacao(LocalDate.now());
+        psSub32.setDataAfiliacao(LocalDate.now());
+        psSub32.setIdentificacaoPessoaSubInstituicao("psSub32");
+        pessoaSubInstituicaoRepository.save(psSub32);              
+
+        // PessoaInstituicao - 33
+        PessoaInstituicao psInst33 = new PessoaInstituicao();
+        psInst33.setPessoa(pessoa3);
+        psInst33.setInstituicao(inst3);
+        psInst33.setDataUltimaAtualizacao(LocalDate.now());
+        psInst33.setDataAfiliacao(LocalDate.now());
+        psInst33.setIdentificacaoPessoaInstituicao("psInst33");
+        pessoaInstituicaoRepository.save(psInst33);
+
+        // PessoaSubInstituicao - 33
+        PessoaSubInstituicao psSub33 = new PessoaSubInstituicao();
+        psSub33.setPessoa(pessoa3);
+        psSub33.setSubInstituicao(subInst33);
+        psSub33.setInstituicao(inst3);
+        psSub33.setDataUltimaAtualizacao(LocalDate.now());
+        psSub33.setDataAfiliacao(LocalDate.now());
+        psSub33.setIdentificacaoPessoaSubInstituicao("psSub33");
+        pessoaSubInstituicaoRepository.save(psSub33);        
+        
+       
+        
+        
         System.out.println("****** Recarregou a base de dados     **************************************");
         System.out.println("****** ");
     }

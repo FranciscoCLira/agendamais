@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -83,8 +84,6 @@ public class InscricaoController {
         return "participante/inscricao-form";
     }
 
-
-    
     @PostMapping("/salvar")
     public String salvarInscricao(@ModelAttribute("inscricaoForm") InscricaoForm form, HttpSession session, RedirectAttributes ra) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
@@ -95,20 +94,29 @@ public class InscricaoController {
             return "redirect:/login";
         }
 
-        // 1. Verifica se selecionou pelo menos uma atividade
+        // Busca a inscrição atual, se já existe
+        Optional<Inscricao> optInscricao = inscricaoRepository.findByIdPessoaAndIdInstituicao(usuario.getPessoa(), instituicao);
+        Inscricao inscricao = optInscricao.orElse(null);
+
+        // Proteção: só tenta remover se já existe inscrição e nenhuma atividade foi selecionada
         if (form.getTiposAtividadeIds() == null || form.getTiposAtividadeIds().isEmpty()) {
+            if (inscricao != null) {
+                inscricao.getTiposAtividade().clear(); // Remove relações
+                inscricaoRepository.save(inscricao);   // Atualiza e dispara orphanRemoval
+                inscricaoRepository.delete(inscricao); // Remove o registro da inscrição
+            }
             ra.addFlashAttribute("mensagemErro", "Selecione uma ou mais atividades para se inscrever.");
             return "redirect:/participante/inscricao-form";
-        }
-
-        // 2. Busca inscrição existente OU cria nova
-        Optional<Inscricao> optInscricao = inscricaoRepository.findByIdPessoaAndIdInstituicao(usuario.getPessoa(), instituicao);
-        Inscricao inscricao;
+        }        
+        
+//        // Busca inscrição existente OU cria nova   
+//        Optional<Inscricao> optInscricao = inscricaoRepository.findByIdPessoaAndIdInstituicao(usuario.getPessoa(), instituicao);
+//
+//        Inscricao inscricao;
+        
         if (optInscricao.isPresent()) {
-            // Se já existe, atualiza a inscrição existente (adicionando/removendo atividades)
             inscricao = optInscricao.get();
         } else {
-            // Senão, cria nova inscrição
             inscricao = new Inscricao();
             inscricao.setIdPessoa(usuario.getPessoa());
             inscricao.setIdInstituicao(instituicao);
@@ -117,12 +125,28 @@ public class InscricaoController {
         inscricao.setDataUltimaAtualizacao(LocalDate.now());
         inscricao.setComentarios(form.getComentarios());
 
-        // 3. Atualiza atividades (marca/desmarca)
+        // **Se nada foi marcado, remove todos e retorna**
+        
+        if (form.getTiposAtividadeIds() == null || form.getTiposAtividadeIds().isEmpty()) {
+            // Remove TODAS as atividades associadas à inscrição
+            inscricao.getTiposAtividade().clear();
+            inscricaoRepository.save(inscricao); // Remove associações (garante orphanRemoval)
+
+            // Agora remove a própria inscrição, se ela já existe!
+            if (inscricao.getId() != null) { // Já persistida
+                inscricaoRepository.delete(inscricao);
+            }
+
+            ra.addFlashAttribute("mensagemErro", "Selecione uma ou mais atividades para se inscrever.");
+            return "redirect:/participante/inscricao-form";
+        }
+        // Atualiza atividades normalmente
+        
         Set<InscricaoTipoAtividade> novasAtividades = new HashSet<>();
+        
         for (Long idTipo : form.getTiposAtividadeIds()) {
             TipoAtividade tipo = tipoAtividadeRepository.findById(idTipo)
                 .orElseThrow(() -> new RuntimeException("Tipo não encontrado"));
-            // Checa se já está na inscrição (se sim, mantém, se não, adiciona)
             boolean jaExiste = inscricao.getTiposAtividade().stream()
                 .anyMatch(ita -> ita.getTipoAtividade().getId().equals(tipo.getId()));
             if (!jaExiste) {
@@ -132,6 +156,7 @@ public class InscricaoController {
                 novasAtividades.add(ita);
             }
         }
+        
         // Remove atividades desmarcadas
         inscricao.getTiposAtividade().removeIf(ita ->
             form.getTiposAtividadeIds().stream()
@@ -139,17 +164,11 @@ public class InscricaoController {
         );
         inscricao.getTiposAtividade().addAll(novasAtividades);
 
-        // 4. Não salvar se não ficou nenhuma atividade marcada!
-        if (inscricao.getTiposAtividade().isEmpty()) {
-            ra.addFlashAttribute("mensagemErro", "Selecione uma ou mais atividades para se inscrever.");
-            return "redirect:/participante/inscricao-form";
-        }
-
         inscricaoRepository.save(inscricao);
-
         ra.addFlashAttribute("mensagemSucesso", "Inscrição atualizada com sucesso.");
         return "redirect:/participante/inscricao-form";
     }
+    
     
     
     // método para adicionar tipo de atividade
