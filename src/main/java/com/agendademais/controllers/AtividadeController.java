@@ -79,7 +79,7 @@ public class AtividadeController {
     public String salvarAtividade(@ModelAttribute Atividade atividade,
                                   @RequestParam("emailSolicitante") String emailSolicitante) {
 
-        Pessoa solicitante = pessoaRepo.findByEmailPessoa(emailSolicitante)
+         Pessoa solicitante = pessoaRepo.findByEmailPessoa(emailSolicitante)
                 .orElseThrow(() -> new IllegalArgumentException("Pessoa com e-mail '" + emailSolicitante + "' não encontrada."));
     	
         atividade.setIdSolicitante(solicitante);

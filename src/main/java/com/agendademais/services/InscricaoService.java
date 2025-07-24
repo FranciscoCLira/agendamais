@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -44,7 +45,7 @@ public class InscricaoService {
         for (Long idTipo : form.getTiposAtividadeIds()) {
             TipoAtividade tipo = tipoAtividadeRepository.findById(idTipo)
                     .orElseThrow(() -> new BusinessException("Tipo de atividade não encontrado."));
-            if (!tipo.getInstituicao().getId().equals(instituicao.getId())) {
+            if (!Objects.equals(tipo.getInstituicao().getId(), instituicao.getId())) {
                 throw new BusinessException("Uma ou mais atividades não pertencem à sua instituição.");
             }
         }

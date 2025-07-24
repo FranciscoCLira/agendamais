@@ -15,12 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/participante/inscricao-form")
@@ -89,7 +85,7 @@ public class InscricaoController {
             @ModelAttribute("inscricaoForm") InscricaoForm form,
             HttpSession session,
             RedirectAttributes ra) {
-        // 1. Recupera o usuário e a instituição da sessão
+
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         Instituicao instituicao = (Instituicao) session.getAttribute("instituicaoSelecionada");
 
@@ -98,68 +94,12 @@ public class InscricaoController {
             return "redirect:/login";
         }
 
-        // 2. Busca inscrição já existente (caso exista)
-        Optional<Inscricao> optInscricao = inscricaoRepository.findByIdPessoaAndIdInstituicao(
-                usuario.getPessoa(), instituicao);
-        Inscricao inscricao = optInscricao.orElse(null);
-
-        // 3. SE nenhuma atividade foi selecionada, limpa relações e exclui inscrição (se existir)
-        if (form.getTiposAtividadeIds() == null || form.getTiposAtividadeIds().isEmpty()) {
-            if (inscricao != null) {
-                // Remove todas as atividades associadas (garante limpeza na tabela associativa)
-                inscricao.getTiposAtividade().clear();
-                inscricaoRepository.save(inscricao); // orfaniza/remover as relações
-                inscricaoRepository.delete(inscricao); // remove a inscrição em si
-            }
-            ra.addFlashAttribute("mensagemErro", "Selecione uma ou mais atividades para se inscrever.");
-            return "redirect:/participante/inscricao-form";
+        try {
+            inscricaoService.processarInscricao(usuario.getPessoa(), instituicao, form);
+            ra.addFlashAttribute("mensagemSucesso", "Inscrição atualizada com sucesso.");
+        } catch (BusinessException ex) {
+            ra.addFlashAttribute("mensagemErro", ex.getMessage());
         }
-
-        // 4. Valida se todas as atividades selecionadas pertencem à instituição do usuário
-        for (Long idTipo : form.getTiposAtividadeIds()) {
-            TipoAtividade tipo = tipoAtividadeRepository.findById(idTipo)
-                    .orElseThrow(() -> new RuntimeException("Tipo de atividade não encontrado"));
-            if (!tipo.getInstituicao().getId().equals(instituicao.getId())) {
-                ra.addFlashAttribute("mensagemErro", "Uma ou mais atividades não pertencem à sua instituição.");
-                return "redirect:/participante/inscricao-form";
-            }
-        }
-
-        // 5. Cria ou atualiza a inscrição normalmente
-        if (inscricao == null) {
-            inscricao = new Inscricao();
-            inscricao.setIdPessoa(usuario.getPessoa());
-            inscricao.setIdInstituicao(instituicao);
-            inscricao.setDataInclusao(LocalDate.now());
-        }
-        inscricao.setDataUltimaAtualizacao(LocalDate.now());
-        inscricao.setComentarios(form.getComentarios());
-
-        // 6. Atualiza atividades:
-        // a) Remove atividades desmarcadas
-        inscricao.getTiposAtividade().removeIf(ita ->
-                form.getTiposAtividadeIds().stream()
-                        .noneMatch(id -> id.equals(ita.getTipoAtividade().getId()))
-        );
-        // b) Adiciona novas atividades marcadas
-        for (Long idTipo : form.getTiposAtividadeIds()) {
-            boolean jaExiste = inscricao.getTiposAtividade().stream()
-                    .anyMatch(ita -> ita.getTipoAtividade().getId().equals(idTipo));
-            if (!jaExiste) {
-                TipoAtividade tipo = tipoAtividadeRepository.findById(idTipo)
-                        .orElseThrow(() -> new RuntimeException("Tipo de atividade não encontrado"));
-                InscricaoTipoAtividade ita = new InscricaoTipoAtividade();
-                ita.setInscricao(inscricao);
-                ita.setTipoAtividade(tipo);
-                inscricao.getTiposAtividade().add(ita);
-            }
-        }
-
-        // 7. Salva inscrição (inserindo ou atualizando)
-        inscricaoRepository.save(inscricao);
-
-        // 8. Mensagem de sucesso e redirect
-        ra.addFlashAttribute("mensagemSucesso", "Inscrição atualizada com sucesso.");
         return "redirect:/participante/inscricao-form";
     }
     
