@@ -159,6 +159,10 @@ function paisChange() {
     estadoSelect.required = false;
     cidadeSelect.required = false;
   }
+  
+  [estadoSelect, cidadeSelect, estadoOutro, cidadeOutro].forEach(function(campo) {
+    if (campo.classList.contains("hidden")) campo.required = false;
+  });
 }
 
 function filtrarCidades() {
@@ -189,6 +193,10 @@ function filtrarCidades() {
     outro.text = "Outro";
     cidadeSelect.appendChild(outro);
   }
+
+  [cidadeSelect, cidadeOutro].forEach(function(campo) {
+    if (campo.classList.contains("hidden")) campo.required = false;
+  });    
 }
 
 function cidadeChange() {
@@ -198,10 +206,17 @@ function cidadeChange() {
   if (cidade === "Outro") {
     cidadeOutro.classList.remove("hidden");
     cidadeOutro.required = true;
+    cidadeOutro.disabled = false;
   } else {
     cidadeOutro.classList.add("hidden");
     cidadeOutro.required = false;
+    cidadeOutro.disabled = true;
+    cidadeOutro.value = ""; // Limpa o valor!
   }
+    
+  [cidadeSelect, cidadeOutro].forEach(function(campo) {
+    if (campo.classList.contains("hidden")) campo.required = false;
+  });  
 }
 
 window.onload = function() {

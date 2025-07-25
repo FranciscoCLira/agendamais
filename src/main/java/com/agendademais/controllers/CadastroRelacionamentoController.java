@@ -18,6 +18,7 @@ import java.util.Optional;
 public class CadastroRelacionamentoController {
 
 	private final UsuarioRepository usuarioRepository;
+	private final PessoaRepository pessoaRepository;	
     private final InstituicaoRepository instituicaoRepository;
     private final SubInstituicaoRepository subInstituicaoRepository;
     private final PessoaInstituicaoRepository pessoaInstituicaoRepository;
@@ -26,12 +27,14 @@ public class CadastroRelacionamentoController {
 
     public CadastroRelacionamentoController(
     	    UsuarioRepository usuarioRepository,
+    	    PessoaRepository pessoaRepository,
             InstituicaoRepository instituicaoRepository,
             SubInstituicaoRepository subInstituicaoRepository,
             PessoaInstituicaoRepository pessoaInstituicaoRepository,
             PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository,
             UsuarioInstituicaoRepository usuarioInstituicaoRepository) {
     	this.usuarioRepository = usuarioRepository;
+    	this.pessoaRepository = pessoaRepository;
         this.instituicaoRepository = instituicaoRepository;
         this.subInstituicaoRepository = subInstituicaoRepository;
         this.pessoaInstituicaoRepository = pessoaInstituicaoRepository;
@@ -221,5 +224,36 @@ public class CadastroRelacionamentoController {
         model.addAttribute("nomeUsuario", usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
         model.addAttribute("parametrosForm", allParams);
     }
+    
+    @GetMapping("/cancelar")
+    @Transactional
+    public String cancelarCadastro(@RequestParam String codUsuario, RedirectAttributes redirectAttributes, HttpSession session) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            Pessoa pessoa = usuario.getPessoa();
+
+            // Remove todos os vínculos (se criados, por segurança)
+            usuarioInstituicaoRepository.deleteAllByUsuarioId(usuario.getId());
+            if (pessoa != null) {
+                pessoaInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
+                pessoaSubInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
+            }
+            // 1) Exclua o usuário antes!
+            usuarioRepository.delete(usuario);
+
+            // 2) Agora pode excluir pessoa
+            if (pessoa != null) {
+                pessoaRepository.delete(pessoa);
+            }
+        }
+
+        // Limpa sessão
+        session.removeAttribute("usuarioPendencia");
+
+        redirectAttributes.addFlashAttribute("mensagemErro", "Cadastramento cancelado.");
+        return "redirect:/login";
+    }
+
 
 }

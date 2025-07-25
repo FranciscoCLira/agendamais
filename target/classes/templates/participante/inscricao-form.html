@@ -27,9 +27,14 @@
 	        <br/><br/>
 	    </div>
 
-	    <div th:if="${statusMsg}">
-	        <span th:text="${statusMsg}" class="mensagem-status"></span>
-	    </div>
+		<div th:if="${statusMsg}">
+		    <span th:if="${#strings.contains(statusMsg, 'não está inscrito')}"
+		          th:text="${statusMsg}"
+		          class="mensagem-vermelha status-centralizado"></span>
+		    <span th:unless="${#strings.contains(statusMsg, 'não está inscrito')}"
+		          th:text="${statusMsg}"
+		          class="mensagem-verde status-centralizado"></span>
+		</div>
 
 	    <label>Comentários:</label>
 	    <textarea th:field="*{comentarios}" placeholder="Opcional..."></textarea>

@@ -69,30 +69,22 @@ public class CadastroPessoaController {
             HttpSession session) {
 
     	String paisFinal = "Outro".equals(nomePaisSelect) ? paisOutro : nomePaisSelect;
-
-    	// String estadoFinal = (nomeEstadoSelect == null || "Outro".equals(nomeEstadoSelect)) && estadoOutro != null
-    	//        ? estadoOutro.trim()
-    	//        : nomeEstadoSelect;
     	
     	String estadoFinal;
     	if ("Brasil".equals(nomePaisSelect)) {
-    	    estadoFinal = nomeEstadoSelect;
+    	    estadoFinal = (nomeEstadoSelect != null && !nomeEstadoSelect.isBlank()) ? nomeEstadoSelect : estadoOutro;
     	} else {
     	    estadoFinal = estadoOutro;
     	}
 
-//    	String cidadeFinal = (cidadeSelect == null || "Outro".equals(cidadeSelect)) && cidadeOutro != null
-//    	        ? cidadeOutro.trim()
-//    	        : cidadeSelect;
-
     	String cidadeFinal;
     	if ("Brasil".equals(nomePaisSelect)) {
-    	    cidadeFinal = "Outro".equals(cidadeSelect) || cidadeSelect == null ? cidadeOutro : cidadeSelect;
+    	    // Se o select está vazio, pega cidadeOutro (permite inscrição manual)
+    	    cidadeFinal = (cidadeSelect != null && !cidadeSelect.isBlank()) ? cidadeSelect : cidadeOutro;
     	} else {
     	    cidadeFinal = cidadeOutro;
     	}
     	
-        
         if (paisFinal == null || paisFinal.isBlank()) {
             model.addAttribute("mensagemErro", "Informe o País.");
             preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
@@ -101,7 +93,6 @@ public class CadastroPessoaController {
             return "cadastro-pessoa";
         }
 
-//      if (estadoFinal == null || estadoFinal.isBlank()) {
         if (estadoFinal == null || estadoFinal.trim().isEmpty()) {
             model.addAttribute("mensagemErro", "Informe o Estado.");
             preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
@@ -110,7 +101,6 @@ public class CadastroPessoaController {
             return "cadastro-pessoa";
         }
         
-//      if (cidadeFinal == null || cidadeFinal.isBlank()) {
         if (cidadeFinal == null || cidadeFinal.trim().isEmpty()) {
             model.addAttribute("mensagemErro", "Informe a Cidade.");
             preencherModelComDadosForm(model, codUsuario, senha, nomePessoa, emailPessoa, celularPessoa,
@@ -223,41 +213,4 @@ public class CadastroPessoaController {
 		model.addAttribute("curriculoPessoal", curriculoPessoal);
 		model.addAttribute("comentarios", comentarios);
     }
-    
-//    @Controller
-//    public class ExcluirCadastroController {
-//
-//        @Autowired
-//        private UsuarioRepository usuarioRepository;
-//
-////        @Autowired   => NAO PRECISA - DELECAO EM CASCATA DE USUARIO 
-////        private PessoaRepository pessoaRepository;
-//
-//        @PostMapping("/excluir-cadastro")
-//        @Transactional
-//        public String excluirCadastro(HttpSession session, RedirectAttributes redirectAttributes) {
-//            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-//
-//            if (usuario == null || usuario.getPessoa() == null) {
-//                redirectAttributes.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-//                return "redirect:/login";
-//            }
-//
-//            Pessoa pessoa = usuario.getPessoa();
-//
-//            if (!"C".equals(pessoa.getSituacaoPessoa())) {
-//                redirectAttributes.addFlashAttribute("mensagemErro",
-//                    "Cadastro só pode ser excluído após ser cancelado.");
-//                return "redirect:/menus/menu-participante";
-//            }
-//
-//            // Remove vínculos se houver (instituições, atividades, etc)
-//            usuarioRepository.delete(usuario); // cascade deve remover a Pessoa também
-//            redirectAttributes.addFlashAttribute("mensagemSucesso", "Cadastro excluído com sucesso.");
-//            session.invalidate();
-//
-//            return "redirect:/login";
-//        }
-//    }
-
 }

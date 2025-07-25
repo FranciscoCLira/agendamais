@@ -96,7 +96,7 @@
 
     <div style="text-align:center; margin-top:20px;">
       <button type="submit">Confirmar Cadastro</button>
-      <a href="/login"><button type="button">Voltar ao Login</button></a>
+	  <button type="button" onclick="confirmarCancelamento()" style="background:#c92e2e;color:#fff;">Cancelar</button>
     </div>
   </form>
 </div>
@@ -129,6 +129,16 @@ function toggleSubInstituicao(instId) {
   });
 </script>
 
+<script>
+function confirmarCancelamento() {
+  if (confirm("Escolha ao menos uma Instituição para concluir seu cadastro.\nDeseja realmente cancelar o cadastramento?\n\nSe confirmar, todo o cadastro será perdido.")) {
+    // Redireciona para o endpoint de cancelamento, passando codUsuario (por segurança, via GET mesmo)
+    var codUsuario = document.querySelector('input[name="codUsuario"]').value;
+    window.location.href = "/cadastro-relacionamentos/cancelar?codUsuario=" + encodeURIComponent(codUsuario);
+  }
+  // Se cancelar, permanece na tela
+}
+</script>
 
 </body>
 </html>

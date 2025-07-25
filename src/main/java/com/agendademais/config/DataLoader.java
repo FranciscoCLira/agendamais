@@ -235,13 +235,18 @@ public class DataLoader implements CommandLineRunner {
         // recupera-a do banco antes de associar ao usuário:
         Pessoa pessoaPersistida1 = pessoaRepository.findById(pessoa1.getId()).orElseThrow();
 
+        
         Usuario user1 = new Usuario();
-        user1.setCodUsuario("partic");
-        user1.setSenha("partic");
+        user1.setCodUsuario("parti1");
+        user1.setSenha("parti1$");
         user1.setNivelAcessoUsuario(1);
         user1.setSituacaoUsuario("A");
         user1.setDataUltimaAtualizacao(LocalDate.now());
         user1.setPessoa(pessoaPersistida1);
+        
+        System.out.println("*** ");
+        System.out.println("*** Persistindo Usuário: " + user1.getCodUsuario() + " com senha: '" + user1.getSenha() + "'");
+        
         usuarioRepository.save(user1);
 
         UsuarioInstituicao ui11 = new UsuarioInstituicao();
@@ -281,11 +286,15 @@ public class DataLoader implements CommandLineRunner {
 
         Usuario user2 = new Usuario();
         user2.setCodUsuario("admin1");
-        user2.setSenha("admin1");
+        user2.setSenha("admin1$");
         user2.setNivelAcessoUsuario(5);
         user2.setSituacaoUsuario("A");
         user2.setDataUltimaAtualizacao(LocalDate.now());
         user2.setPessoa(pessoaPersistida2);
+
+        System.out.println("*** Persistindo Usuário: " + user2.getCodUsuario() + " com senha: '" + user2.getSenha() + "'");
+        System.out.println("*** ");
+        
         usuarioRepository.save(user2);
 
         UsuarioInstituicao ui21 = new UsuarioInstituicao();
@@ -325,11 +334,15 @@ public class DataLoader implements CommandLineRunner {
 
         Usuario user3 = new Usuario();
         user3.setCodUsuario("superu");
-        user3.setSenha("superu");
+        user3.setSenha("superu1$");
         user3.setNivelAcessoUsuario(9);
         user3.setSituacaoUsuario("A");
         user3.setDataUltimaAtualizacao(LocalDate.now());
         user3.setPessoa(pessoaPersistida3);
+        
+        System.out.println("*** Persistindo Usuário: " + user3.getCodUsuario() + " com senha: '" + user3.getSenha() + "'");
+        System.out.println("*** ");
+        
         usuarioRepository.save(user3);
 
         UsuarioInstituicao ui31 = new UsuarioInstituicao();

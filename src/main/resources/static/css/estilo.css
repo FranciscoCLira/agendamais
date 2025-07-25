@@ -96,3 +96,19 @@ body {
 .hidden {
   display: none;
 }
+
+.mensagem-verde {
+    color: green;
+    font-weight: bold;
+}
+.mensagem-vermelha {
+    color: red;
+    font-weight: bold;
+}
+.status-centralizado {
+    display: block;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
