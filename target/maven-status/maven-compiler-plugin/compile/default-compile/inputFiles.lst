@@ -16,6 +16,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\InscricaoContro
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\LoginController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\MenuController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ParticipanteController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ParticipanteDadosController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\PessoaController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\PessoaInstituicaoController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\PessoaSubInstituicaoController.java
@@ -25,7 +26,8 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\RecuperarSenhaP
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\SuperusuarioController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\TipoAtividadeController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\UsuarioController.java
-C:\DEV-IA2\agendamais\src\main\java\com\agendademais\dto\InscricaoForm.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\dtos\InscricaoForm.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\dtos\PessoaForm.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Atividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Autor.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Inscricao.java

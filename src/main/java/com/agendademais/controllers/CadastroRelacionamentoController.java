@@ -114,6 +114,12 @@ public class CadastroRelacionamentoController {
             return "redirect:/login";
         }
 
+        if (instituicoesSelecionadas == null || instituicoesSelecionadas.length == 0) {
+            // Chama método de exclusão do cadastro
+            cancelarCadastro(codUsuario, redirectAttributes, session);
+            return "redirect:/login";
+        }        
+        
         // ===== 1) VALIDAÇÃO PRÉVIA - NÃO DELETA NADA AINDA =====
         for (String key : allParams.keySet()) {
             if (key.startsWith("instituicoesSelecionadas")) {

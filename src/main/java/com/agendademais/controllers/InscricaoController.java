@@ -1,6 +1,6 @@
 package com.agendademais.controllers;
 
-import com.agendademais.dto.InscricaoForm;
+import com.agendademais.dtos.InscricaoForm;
 import com.agendademais.entities.*;
 import com.agendademais.repositories.*;
 import com.agendademais.services.*;

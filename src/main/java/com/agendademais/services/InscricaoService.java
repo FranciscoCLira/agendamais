@@ -1,6 +1,6 @@
 package com.agendademais.services;
 
-import com.agendademais.dto.InscricaoForm;
+import com.agendademais.dtos.InscricaoForm;
 import com.agendademais.entities.*;
 import com.agendademais.exceptions.BusinessException;
 import com.agendademais.repositories.*;

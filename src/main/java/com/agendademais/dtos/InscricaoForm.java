@@ -1,4 +1,4 @@
-package com.agendademais.dto;
+package com.agendademais.dtos;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,5 +1,6 @@
 com\agendademais\entities\Usuario.class
 com\agendademais\repositories\AtividadeRepository.class
+com\agendademais\dtos\InscricaoForm.class
 com\agendademais\repositories\PessoaInstituicaoRepository.class
 com\agendademais\entities\RecuperacaoToken.class
 com\agendademais\config\GlobalModelAttributes.class
@@ -15,6 +16,7 @@ com\agendademais\controllers\AlterarSenhaController.class
 com\agendademais\repositories\TipoAtividadeRepository.class
 com\agendademais\controllers\CadastroUsuarioController.class
 com\agendademais\advice\GlobalExceptionHandler.class
+com\agendademais\controllers\ParticipanteDadosController.class
 com\agendademais\controllers\AtividadeController.class
 com\agendademais\repositories\InstituicaoRepository.class
 com\agendademais\entities\Atividade.class
@@ -55,8 +57,8 @@ com\agendademais\controllers\SuperusuarioController.class
 com\agendademais\repositories\UsuarioInstituicaoRepository.class
 com\agendademais\exceptions\BusinessException.class
 com\agendademais\entities\OcorrenciaAtividade.class
-com\agendademais\dto\InscricaoForm.class
 com\agendademais\AgendaMaisApplication.class
+com\agendademais\dtos\PessoaForm.class
 com\agendademais\repositories\OcorrenciaAtividadeRepository.class
 com\agendademais\controllers\ControleTotalController.class
 com\agendademais\entities\TipoAtividade.class
