@@ -1,0 +1,160 @@
+AgendaMais_ERD - PlantUML
+
+copiar codigo abaixo para gerar diagrama no https://plantuml.com/plantuml 
+
+@startuml AgendaMais_ERD
+
+entity Usuario {
+  *id : BIGINT
+  *codUsuario : VARCHAR(30)
+  *senha : VARCHAR(100)
+  *nivelAcessoUsuario : INT
+  pessoa_id : BIGINT
+}
+
+entity Pessoa {
+  *id : BIGINT
+  *nomePessoa : VARCHAR(80)
+  *emailPessoa : VARCHAR(150)
+  *celularPessoa : VARCHAR(25)
+  *nomePaisPessoa : VARCHAR(80)
+  *nomeEstadoPessoa : VARCHAR(80)
+  *nomeCidadePessoa : VARCHAR(80)
+  curriculoPessoal : VARCHAR(500)
+  comentarios : VARCHAR(500)
+  situacaoPessoa : CHAR(1)
+  dataInclusao : DATE
+  dataUltimaAtualizacao : DATE
+}
+
+entity Instituicao {
+  *id : BIGINT
+  *nomeInstituicao : VARCHAR(100)
+  situacaoInstituicao : CHAR(1)
+  dataUltimaAtualizacao : DATE
+}
+
+entity SubInstituicao {
+  *id : BIGINT
+  *nomeSubInstituicao : VARCHAR(100)
+  situacaoSubInstituicao : CHAR(1)
+  dataUltimaAtualizacao : DATE
+  id_instituicao : BIGINT
+}
+
+entity UsuarioInstituicao {
+  *id : BIGINT
+  id_usuario : BIGINT
+  id_instituicao : BIGINT
+  sitAcessoUsuarioInstituicao : CHAR(1)
+}
+
+entity PessoaInstituicao {
+  *id : BIGINT
+  id_pessoa : BIGINT
+  id_instituicao : BIGINT
+  identificacaoPessoaInstituicao : VARCHAR(50)
+  dataAssociacao : DATE
+  dataUltimaAtualizacao : DATE
+}
+
+entity PessoaSubInstituicao {
+  *id : BIGINT
+  id_pessoa : BIGINT
+  id_instituicao : BIGINT
+  id_sub_instituicao : BIGINT
+  identificacaoPessoaSubInstituicao : VARCHAR(50)
+  dataAssociacao : DATE
+  dataUltimaAtualizacao : DATE
+}
+
+entity TipoAtividade {
+  *id : BIGINT
+  tituloTipoAtividade : VARCHAR(80)
+  descricaoTipoAtividade : VARCHAR(250)
+}
+
+entity Atividade {
+  *id : BIGINT
+  tituloAtividade : VARCHAR(30)
+  situacaoAtividade : CHAR(1)
+  formaApresentacao : INT
+  publicoAlvo : INT
+  descricaoAtividade : VARCHAR(500)
+  comentariosAtividade : VARCHAR(500)
+  linkMaterialAtividade : VARCHAR(250)
+  linkAtividadeOnline : VARCHAR(250)
+  dataAtualizacao : DATE
+  tipoAtividade_id : BIGINT
+  id_solicitante : BIGINT
+  id_sub_instituicao : BIGINT
+}
+
+entity OcorrenciaAtividade {
+  *id : BIGINT
+  temaOcorrencia : VARCHAR(50)
+  situacaoOcorrencia : CHAR(1)
+  bibliografia : VARCHAR(500)
+  dataOcorrencia : DATE
+  horaInicioOcorrencia : TIME
+  horaFimOcorrencia : TIME
+  linkMaterialTema : VARCHAR(250)
+  assuntoDivulgacao : VARCHAR(250)
+  detalheDivulgacao : VARCHAR(500)
+  linkImgDivulgacao : VARCHAR(250)
+  qtdeParticipantes : INT
+  obsEncerramento : VARCHAR(500)
+  dataAtualizacao : DATE
+  id_atividade : BIGINT
+  id_autor : BIGINT
+}
+
+entity Autor {
+  *id : BIGINT
+  funcaoAutor : INT
+  situacaoAutor : CHAR(1)
+  curriculoFuncaoAutor : VARCHAR(500)
+  linkImgAutor : VARCHAR(250)
+  linkMaterialAutor : VARCHAR(250)
+  dataUltimaAtualizacao : DATE
+  id_pessoa : BIGINT
+}
+
+entity Inscricao {
+  *id : BIGINT
+  comentarios : VARCHAR(500)
+  dataInclusao : DATE
+  dataUltimaAtualizacao : DATE
+  id_pessoa : BIGINT
+  id_instituicao : BIGINT
+  tipo_atividade : BIGINT
+}
+
+entity LogPostagem {
+  *id : BIGINT
+  dataPostagem : DATE
+  horaPostagem : TIME
+  id_ocorrencia_atividade : BIGINT
+}
+
+Usuario }o--|| Pessoa
+UsuarioInstituicao }o--|| Usuario
+UsuarioInstituicao }o--|| Instituicao
+PessoaInstituicao }o--|| Pessoa
+PessoaInstituicao }o--|| Instituicao
+PessoaSubInstituicao }o--|| Pessoa
+PessoaSubInstituicao }o--|| Instituicao
+PessoaSubInstituicao }o--|| SubInstituicao
+SubInstituicao }o--|| Instituicao
+Atividade }o--|| TipoAtividade
+Atividade }o--|| Pessoa
+Atividade }o--|| SubInstituicao
+OcorrenciaAtividade }o--|| Atividade
+OcorrenciaAtividade }o--|| Autor
+Autor }o--|| Pessoa
+Inscricao }o--|| Pessoa
+Inscricao }o--|| Instituicao
+Inscricao }o--|| TipoAtividade
+LogPostagem }o--|| OcorrenciaAtividade
+
+@enduml

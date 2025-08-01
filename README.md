@@ -100,9 +100,17 @@ mvn clean spring-boot:run
 
 ## 📁 Modelo Entidade-Relacionamento (MER)
 
-Incluído em `src/main/resources/docs/agenda_mais_modelo_erd.png`
+Incluído em `docs/agenda_mais_modelo_erd.png`
 
-![ERD](src/main/resources/docs/agenda_mais_erd.png)
+![ERD](docs/agenda_mais_erd.png)
+
+---
+
+## 📚 Documentação Técnica
+
+* **[Implementação de Locais](docs/implementa-local.md)** - Normalização completa de País/Estado/Cidade
+* **[Modelo de Dados](docs/agenda_mais_modelo_erd.png)** - Diagrama Entidade-Relacionamento
+* **[ERD PlantUML](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código fonte do diagrama
 
 ---
 
