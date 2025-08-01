@@ -6,32 +6,33 @@
 
 ## 🚀 Funcionalidades
 
-* Login com validação de credenciais e vínculo com instituição
-* Redirecionamento automático por nível de acesso:
+- Login com validação de credenciais e vínculo com instituição
+- Redirecionamento automático por nível de acesso:
 
-  * Participante → `participante-form.html`
-  * Autor → `autor-form.html`
-  * Administrador → `administrador-form.html`
-  * Superusuário → `superusuario-form.html`
-* Cadastro de novo usuário com vínculo a uma ou mais instituições
-* Visualização e manutenção de atividades por nível de acesso
-* Interface moderna com cabeçalhos em roxo e azul, responsiva e clara
+  - Participante → `participante-form.html`
+  - Autor → `autor-form.html`
+  - Administrador → `administrador-form.html`
+  - Superusuário → `superusuario-form.html`
+
+- Cadastro de novo usuário com vínculo a uma ou mais instituições
+- Visualização e manutenção de atividades por nível de acesso
+- Interface moderna com cabeçalhos em roxo e azul, responsiva e clara
 
 ---
 
 ## 🏗️ Estrutura do Projeto
 
-* Backend: Java + Spring Boot
-* Frontend: HTML + Thymeleaf
-* Banco de dados: H2 (modo arquivo)
-* Estrutura de pacotes:
+- Backend: Java + Spring Boot
+- Frontend: HTML + Thymeleaf
+- Banco de dados: H2 (modo arquivo)
+- Estrutura de pacotes:
 
-  * `entities`: entidades JPA
-  * `repositories`: interfaces Spring Data JPA
-  * `controllers`: controladores Spring MVC
-  * `config`: configuração de dados iniciais (DataLoader)
-  * `templates`: páginas HTML (Thymeleaf)
-  * `static/css`: estilos visuais
+  - `entities`: entidades JPA
+  - `repositories`: interfaces Spring Data JPA
+  - `controllers`: controladores Spring MVC
+  - `config`: configuração de dados iniciais (DataLoader)
+  - `templates`: páginas HTML (Thymeleaf)
+  - `static/css`: estilos visuais
 
 ---
 
@@ -39,9 +40,9 @@
 
 ### 1. Pré-requisitos
 
-* Java 17+
-* Maven 3.8+
-* STS4 ou IntelliJ ou VS Code com suporte a Spring Boot
+- Java 17+
+- Maven 3.8+
+- STS4 ou IntelliJ ou VS Code com suporte a Spring Boot
 
 ### 2. Clonar o projeto
 
@@ -71,14 +72,15 @@ mvn clean spring-boot:run
 
 ### 5. Acessar o sistema
 
-* Acesse: [http://localhost:8080/](http://localhost:8080/)
-* Console do H2: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+- Acesse: [http://localhost:8080/](http://localhost:8080/)
+- Console do H2: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
-  * URL: `jdbc:h2:file:./data/agendadb`
+  - URL: `jdbc:h2:file:./data/agendadb`
 
 ---
 
 ## 👥 Níveis de Acesso
+
 ```bash
 ----------------------------------------------------------
 | Nível | Descrição     | Tela Inicial                   |
@@ -92,9 +94,9 @@ mvn clean spring-boot:run
 
 ## 📦 Dados de Exemplo (via `DataLoader.java`)
 
-* Usuário: `admin01` / Senha: `admin123` / Nível: 5
-* Instituições: `INSTITUTO LUZ`, `CENTRO ALVORADA`
-* Pessoas e vínculos iniciais criados automaticamente
+- Usuário: `admin01` / Senha: `admin123` / Nível: 5
+- Instituições: `INSTITUTO LUZ`, `CENTRO ALVORADA`
+- Pessoas e vínculos iniciais criados automaticamente
 
 ---
 
@@ -108,17 +110,17 @@ Incluído em `docs/agenda_mais_modelo_erd.png`
 
 ## 📚 Documentação Técnica
 
-* **[Implementação de Locais](docs/implementa-local.md)** - Normalização completa de País/Estado/Cidade
-* **[Modelo de Dados](docs/agenda_mais_modelo_erd.png)** - Diagrama Entidade-Relacionamento
-* **[ERD PlantUML](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código fonte do diagrama
+- **[Implementação de Locais](docs/implementa-local.md)** - Normalização completa de País/Estado/Cidade
+- **[Modelo de Dados](docs/agenda_mais_modelo_erd.png)** - Diagrama Entidade-Relacionamento
+- **[ERD PlantUML](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código fonte do diagrama
 
 ---
 
 ## ✅ TODO Futuro
 
-* Implementação de inscrições por participantes
-* Cadastro e edição de ocorrências
-* Dashboard para superusuário
+- Implementação de inscrições por participantes
+- Cadastro e edição de ocorrências
+- Dashboard para superusuário
 
 ---
 
@@ -126,17 +128,20 @@ Incluído em `docs/agenda_mais_modelo_erd.png`
 
 Projeto desenvolvido para fins acadêmicos e institucionais. Livre para uso interno.
 
+#
 
-# 
 ## Autor
-   Francisco Casemiro Lira
-    
-   https://www.linkedin.com/in/franciscoclira
 
-#  
-#  
-## Páginas web principais e IDE 
+Francisco Casemiro Lira
 
-##### IDE - restart app localHost 
+https://www.linkedin.com/in/franciscoclira
+
+#
+
+#
+
+## Páginas web principais e IDE
+
+##### IDE - restart app localHost
+
 ![IDE-STS4](assets/01A1-IDE-STS-4.jpg)
-

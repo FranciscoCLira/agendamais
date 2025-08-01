@@ -36,10 +36,10 @@ public class CadastroPessoaController {
     @GetMapping
     public String mostrarFormulario(Model model, HttpSession session) {
         System.out.println("*** DEBUG CadastroPessoaController.mostrarFormulario() ***");
-        
+
         Usuario usuario = (Usuario) session.getAttribute("usuarioCadastro");
         System.out.println("Usuário da sessão: " + (usuario != null ? usuario.getUsername() : "null"));
-        
+
         if (usuario == null) {
             // Se não está na sessão, volta ao cadastro de usuário
             System.out.println("Usuário não encontrado na sessão, redirecionando...");
@@ -49,7 +49,8 @@ public class CadastroPessoaController {
 
         // Se Pessoa já existe, carrega, senão crie nova
         Pessoa pessoa = usuario.getPessoa() != null ? usuario.getPessoa() : new Pessoa();
-        System.out.println("Pessoa carregada: " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : "nova pessoa"));
+        System.out.println(
+                "Pessoa carregada: " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : "nova pessoa"));
 
         String nomePais = pessoa.getNomePais() != null ? pessoa.getNomePais().trim() : null;
 
@@ -71,7 +72,7 @@ public class CadastroPessoaController {
         model.addAttribute("paises", paises);
         model.addAttribute("estados", estados);
         model.addAttribute("username", usuario.getUsername());
-        
+
         System.out.println("*** DEBUG antes de retornar template ***");
         System.out.println("Template: cadastro-pessoa");
         System.out.println("Username no model: " + usuario.getUsername());
