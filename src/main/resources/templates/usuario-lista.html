@@ -86,7 +86,7 @@
         <tbody>
             <tr th:each="usuario : ${usuarios}">
                 <td th:text="${usuario.id}"></td>
-                <td th:text="${usuario.codUsuario}"></td>
+                <td th:text="${usuario.username}"></td>
                 <td th:text="${usuario.nivelAcessoUsuario}"></td>
                 <td>
                     <form th:action="@{/usuarios/alterar-nivel}" method="post">

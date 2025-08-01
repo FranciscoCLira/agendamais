@@ -43,14 +43,14 @@
 
     <form th:action="@{/cadastro-usuario}" method="post">
       <label>Novo Código do Usuário:</label>
-      <input type="text" name="codUsuario" maxlength="25" th:value="${codUsuario}" required/>
+      <input type="text" name="username" maxlength="25" th:value="${username}" required/>
 
       <label>Senha:</label>
-      <input type="password" name="senha" th:value="${senha}" required/>
+      <input type="password" name="password" th:value="${password}" required/>
       <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
 
       <label>Confirmar Senha:</label>
-      <input type="password" name="confirmarSenha" required/>
+      <input type="password" name="confirmPassword" required/>
       <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
 
       <button type="submit">Avançar</button>

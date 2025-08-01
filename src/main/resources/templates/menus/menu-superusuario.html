@@ -1,30 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <title>Menu - SuperUsuário</title>
-  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
-<body>
-  <!-- CABECALHO PADRAO -->
-  <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Menu - SuperUsuário</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- CABECALHO PADRAO -->
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
 
-  <main class="main-content">
-    <h2>Bem-vindo, SuperUsuário!</h2>
+    <main class="main-content">
+      <h2>Bem-vindo, SuperUsuário!</h2>
 
-  <!-- Mensagens -->
-  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
+      <!-- Mensagens -->
+      <p
+        th:if="${mensagemErro}"
+        th:text="${mensagemErro}"
+        class="mensagem-erro"
+      ></p>
+      <p
+        th:if="${mensagemSucesso}"
+        th:text="${mensagemSucesso}"
+        class="mensagem-sucesso"
+      ></p>
 
-    <ul>
-      <li><a href="/inscricao-tipo-atividade">Inscrição em Tipos de Atividades</a></li>
-      <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>
-      <li><a href="/vinculo-instituicao">Vínculos com Instituições</a></li>
-      <li><a href="/autor-form">Informações de Autor</a></li>
-    </ul>
+      <ul>
+        <li>
+          <a href="/inscricao-tipo-atividade"
+            >Inscrição em Tipos de Atividades</a
+          >
+        </li>
+        <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>
+        <li><a href="/vinculo-instituicao">Vínculos com Instituições</a></li>
+        <li><a href="/autor-form">Informações de Autor</a></li>
+      </ul>
 
-    <p style="margin-top: 20px;"><a href="/login/logout">Sair</a></p>
-  </main>
-</body>
+      <p style="margin-top: 20px"><a href="/acesso/logout">Sair</a></p>
+    </main>
+  </body>
 </html>

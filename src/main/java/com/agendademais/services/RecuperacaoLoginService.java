@@ -37,7 +37,7 @@ public class RecuperacaoLoginService {
 
         String mensagem = "Olá!\n\n"
                 + "Recebemos uma solicitação para redefinir sua senha.\n\n"
-                + "Seu código de usuário é: " + usuario.getCodUsuario() + "\n\n"
+                + "Seu código de usuário é: " + usuario.getUsername() + "\n\n"
                 + "Acesse o link abaixo para continuar:\n" + link + "\n\n"
                 + "Esse link expira em 2 horas.\n\n"
                 + "Se você não solicitou, ignore esta mensagem.";

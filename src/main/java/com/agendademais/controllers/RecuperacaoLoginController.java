@@ -48,7 +48,7 @@ public class RecuperacaoLoginController {
                       + "<h2 style='color:#4A148C;'>Agenda Mais</h2>"
                       + "<p>Olá <strong>" + usuario.getPessoa().getNomePessoa() + "</strong>,</p>"
                       + "<p>Seu <strong>usuário</strong> é:</p>"
-                      + "<p style='font-size:18px; color:#4A148C;'><strong>" + usuario.getCodUsuario() + "</strong></p>"
+                      + "<p style='font-size:18px; color:#4A148C;'><strong>" + usuario.getUsername() + "</strong></p>"
                       + "<p>Por segurança, sua senha não é enviada.</p>"
                       + "<p>Para redefinir sua senha, clique no link abaixo:</p>"
                       + "<p><a href='http://localhost:8080/recuperar-senha' style='color:#4A148C;'>Recuperar Senha</a></p>"

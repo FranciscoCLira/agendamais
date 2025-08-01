@@ -2,6 +2,7 @@ package com.agendademais.advice;
 
 import com.agendademais.exceptions.BusinessException;
 import org.springframework.ui.Model;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -26,5 +27,12 @@ public class GlobalExceptionHandler {
         // Se não for redirect, mostra erro direto na página atual
         model.addAttribute("mensagemErro", ex.getMessage());
         return "erro";
+    }
+    
+    // Interceptar e tratar erro HTTP 405 (Method Not Allowed)
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public String handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex, Model model) {
+        model.addAttribute("mensagemErro", "Ação não permitida. Por favor, retorne à página inicial ou faça login novamente.");
+        return "acesso-negado"; // Use uma página amigável!
     }
 }

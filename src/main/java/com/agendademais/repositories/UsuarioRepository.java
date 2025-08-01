@@ -13,16 +13,14 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	
-	Optional<Usuario> findByCodUsuario(String codUsuario);
+	Optional<Usuario> findByUsername(String username);
 
-    Optional<Usuario> findByCodUsuarioAndSenha(String codUsuario, String senha);
+    Optional<Usuario> findByUsernameAndPassword(String username, String password);
 
 	List<Usuario> findAllByPessoaEmailPessoa(String email);
     
     @Query("SELECT u FROM Usuario u WHERE LOWER(u.pessoa.emailPessoa) = LOWER(:email)")
     Optional<Usuario> findByEmailPessoa(@Param("email") String email);
-    
-    // Optional<Usuario> findByEmailPessoa(String email);
     
     Optional<Usuario> findByTokenRecuperacao(String tokenRecuperacao);
 

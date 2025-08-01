@@ -43,7 +43,7 @@ public class CadastroRelacionamentoController {
     }
 
     @GetMapping
-    public String mostrarFormulario(@RequestParam(required = false) String codUsuario,
+    public String mostrarFormulario(@RequestParam(required = false) String username,
                                     HttpSession session,
                                     RedirectAttributes redirectAttributes,
                                     Model model) {
@@ -54,9 +54,9 @@ public class CadastroRelacionamentoController {
 //     	System.out.println("*** CadastroRelacionamentoController.java /cadastro-relacionamentos  usuario=" + usuario ); 
 //     	System.out.println("****************************************************************************");
     	
-        // Tentar recuperar via codUsuario se não estiver na session
-        if (usuario == null && codUsuario != null) {
-            Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
+        // Tentar recuperar via username se não estiver na session
+        if (usuario == null && username != null) {
+            Optional<Usuario> existente = usuarioRepository.findByUsername(username);
             if (existente.isPresent()) {
                 usuario = existente.get();
                 session.setAttribute("usuarioPendencia", usuario);
@@ -66,10 +66,10 @@ public class CadastroRelacionamentoController {
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro não previsto. Consulte o gestor do sistema.");
-        	return "redirect:/login";
+        	return "redirect:/acesso";
         }
 
-        model.addAttribute("codUsuario", usuario.getCodUsuario());
+        model.addAttribute("username", usuario.getUsername());
         model.addAttribute("nomeUsuario",
                 usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
         
@@ -95,29 +95,29 @@ public class CadastroRelacionamentoController {
 //    	allParams.forEach((k, v) -> System.out.println(k + ": " + v));
 //    	System.out.println("====================================================================");
 
-        String codUsuario = allParams.get("codUsuario");
-        if (codUsuario == null || codUsuario.isEmpty()) {
+        String username = allParams.get("username");
+        if (username == null || username.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Código de usuário não informado.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
         if (usuarioOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         Usuario usuario = usuarioOpt.get();
         Pessoa pessoa = usuario.getPessoa();
         if (pessoa == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não possui cadastro de pessoa.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         if (instituicoesSelecionadas == null || instituicoesSelecionadas.length == 0) {
             // Chama método de exclusão do cadastro
-            cancelarCadastro(codUsuario, redirectAttributes, session);
-            return "redirect:/login";
+            cancelarCadastro(username, redirectAttributes, session);
+            return "redirect:/acesso";
         }        
         
         // ===== 1) VALIDAÇÃO PRÉVIA - NÃO DELETA NADA AINDA =====
@@ -132,7 +132,7 @@ public class CadastroRelacionamentoController {
                     LocalDate dataAfiliacao = LocalDate.parse(dataAfiliacaoStr);
                     if (dataAfiliacao.isAfter(LocalDate.now())) {
                         model.addAttribute("mensagemErro", "A data de afiliação da instituição não pode ser no futuro.");
-                        prepararTela(model, codUsuario, usuario, allParams);
+                        prepararTela(model, username, usuario, allParams);
                         return "cadastro-relacionamentos";
                     }
                 }
@@ -145,7 +145,7 @@ public class CadastroRelacionamentoController {
                         LocalDate dataAfiliacaoSub = LocalDate.parse(dataAfiliacaoSubStr);
                         if (dataAfiliacaoSub.isAfter(LocalDate.now())) {
                             model.addAttribute("mensagemErro", "A data de afiliação da subinstituição não pode ser no futuro.");
-                            prepararTela(model, codUsuario, usuario, allParams);
+                            prepararTela(model, username, usuario, allParams);
                             return "cadastro-relacionamentos";
                         }
                     }
@@ -217,24 +217,24 @@ public class CadastroRelacionamentoController {
 
         redirectAttributes.addFlashAttribute("mensagemSucesso",
                 "Cadastro concluído com sucesso!<br>Usuário: " 
-                + usuario.getCodUsuario()
+                + usuario.getUsername()
                 + " - " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : ""));
 
-        return "redirect:/login";
+        return "redirect:/acesso";
     }
     
-    private void prepararTela(Model model, String codUsuario, Usuario usuario, Map<String, String> allParams) {
+    private void prepararTela(Model model, String username, Usuario usuario, Map<String, String> allParams) {
         model.addAttribute("instituicoes", instituicaoRepository.findAll());
         model.addAttribute("subInstituicoes", subInstituicaoRepository.findAll());
-        model.addAttribute("codUsuario", codUsuario);
+        model.addAttribute("username", username);
         model.addAttribute("nomeUsuario", usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
         model.addAttribute("parametrosForm", allParams);
     }
     
     @GetMapping("/cancelar")
     @Transactional
-    public String cancelarCadastro(@RequestParam String codUsuario, RedirectAttributes redirectAttributes, HttpSession session) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
+    public String cancelarCadastro(@RequestParam String username, RedirectAttributes redirectAttributes, HttpSession session) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             Pessoa pessoa = usuario.getPessoa();
@@ -258,8 +258,6 @@ public class CadastroRelacionamentoController {
         session.removeAttribute("usuarioPendencia");
 
         redirectAttributes.addFlashAttribute("mensagemErro", "Cadastramento cancelado.");
-        return "redirect:/login";
+        return "redirect:/acesso";
     }
-
-
 }

@@ -55,7 +55,7 @@ public class RecuperarSenhaPorTokenController {
         }
 
         Usuario usuario = usuarioOpt.get();
-        usuario.setSenha(novaSenha);
+        usuario.setPassword(novaSenha);
         usuario.setTokenRecuperacao(null); // Invalida token após uso
         usuario.setDataExpiracaoToken(null);
         usuarioRepository.save(usuario);

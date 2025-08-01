@@ -1,235 +1,246 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Meus Dados</title>
-    <link rel="stylesheet" href="/css/estilo.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/estilo.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
     <style>
-        .readonly input, .readonly select, .readonly textarea {
-            background: #f6f6f6;
-            pointer-events: none;
-            color: #555;
-        }
-        .mensagem-erro { color: #c00; text-align: center; }
-        .mensagem-sucesso { color: #080; text-align: center; }
-        .mensagem-info { color: #333; text-align: center; }
-        .hidden { display: none; }
+      .form-container {
+        max-width: 400px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .readonly input,
+      .readonly select,
+      .readonly textarea {
+        background: #f6f6f6;
+        pointer-events: none;
+        color: #555;
+      }
+      .mensagem-erro {
+        color: #c00;
+        text-align: center;
+      }
+      .mensagem-sucesso {
+        color: #080;
+        text-align: center;
+      }
+      .mensagem-info {
+        color: #333;
+        text-align: center;
+      }
     </style>
-</head>
-<body>
-<div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
-<div class="form-container">
-    <h2>Meus Dados</h2>
-    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
-    <p id="infoMsg" class="mensagem-info"></p>
+  </head>
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div class="form-container">
+      <h2>Meus Dados</h2>
 
-    <form th:object="${pessoaForm}" id="formMeusDados" th:action="@{/participante/meus-dados/salvar}" method="post">
+      <p
+        th:if="${mensagemErro}"
+        th:text="${mensagemErro}"
+        class="mensagem-erro"
+      ></p>
+      <p
+        th:if="${mensagemSucesso}"
+        th:text="${mensagemSucesso}"
+        class="mensagem-sucesso"
+      ></p>
+      <p id="infoMsg" class="mensagem-info"></p>
+
+      <form
+        th:action="@{/participante/meus-dados/salvar}"
+        th:object="${pessoa}"
+        method="post"
+        id="formMeusDados"
+      >
         <div id="formFields" class="readonly">
-            <label>Nome:</label>
-            <input type="text" th:field="*{nomePessoa}" maxlength="80" required />
+          <label>Nome:</label>
+          <input type="text" th:field="*{nomePessoa}" maxlength="80" required />
 
-            <label>E-mail:</label>
-            <input type="email" th:field="*{emailPessoa}" required placeholder="email@exemplo.com" />
+          <label>E-mail:</label>
+          <input
+            type="email"
+            th:field="*{emailPessoa}"
+            required
+            placeholder="email@exemplo.com"
+          />
 
-            <label>Celular:</label>
-            <input type="text" th:field="*{celularPessoa}" required placeholder="+55-99-99999-9999"
-                   pattern="^\+\d{2}-\d{2}-\d{4,5}-\d{4}$" />
+          <label>Celular: (Ex. +55-99-99999-9999)</label>
+          <input
+            type="text"
+            th:field="*{celularPessoa}"
+            required
+            placeholder="+55-99-99999-9999"
+            pattern="^\+\d{2}-\d{2}-\d{4,5}-\d{4}$"
+          />
 
-            <!-- País -->
-            <label>País:</label>
-            <select th:field="*{nomePaisSelect}" id="paisSelect" name="nomePaisSelect" required onchange="paisChange()">
-                <option value="">Selecione</option>
-                <option value="Brasil" th:selected="*{nomePaisSelect} == 'Brasil'">Brasil</option>
-                <option value="Portugal" th:selected="*{nomePaisSelect} == 'Portugal'">Portugal</option>
-                <option value="Espanha" th:selected="*{nomePaisSelect} == 'Espanha'">Espanha</option>
-                <option value="Estados Unidos" th:selected="*{nomePaisSelect} == 'Estados Unidos'">Estados Unidos</option>
-                <option value="Chile" th:selected="*{nomePaisSelect} == 'Chile'">Chile</option>
-                <option value="Argentina" th:selected="*{nomePaisSelect} == 'Argentina'">Argentina</option>
-                <option value="Outro" th:selected="*{nomePaisSelect} == 'Outro'">Outro</option>
-            </select>
-            <input type="text" th:field="*{paisOutro}" id="paisOutro" class="hidden" placeholder="Informe o País" />
+          <!-- País -->
+          <label>País:</label>
+          <select
+            id="paisSelect"
+            name="nomePaisPessoa"
+            onchange="paisChange(event)"
+            required
+          >
+            <option value="">Selecione o país</option>
+            <option
+              th:each="pais : ${paises}"
+              th:value="${pais.nomeLocal}"
+              th:text="${pais.nomeLocal}"
+              th:selected="${#strings.equalsIgnoreCase(pais.nomeLocal, pessoa.nomePais)}"
+            ></option>
+            <option value="Outro">Outro</option>
+          </select>
+          <input
+            type="text"
+            id="paisOutro"
+            name="paisOutro"
+            class="hidden"
+            placeholder="Informe o País"
+          />
 
-            <!-- Estado -->
-            <label>Estado:</label>
-			<select th:field="*{nomeEstadoSelect}" id="estadoSelect" name="nomeEstadoSelect" onchange="filtrarCidades()">
-			    <option value="">Selecione</option>
-			    <option th:each="uf : ${ufs}" th:value="${uf}" th:text="${uf}"></option>
-			</select>
-			
-            <input type="text" th:field="*{estadoOutro}" id="estadoOutro" class="hidden" placeholder="Informe o Estado" />
-			
-			<!-- 
-			<div>DEBUG cidade selecionada: [[${pessoaForm.nomeCidadeSelect}]]</div>
-			<div>DEBUG cidades: [[${cidades}]]</div>
-			-->
-									
-			<!-- Cidade -->
-			<label for="cidadeSelect">Cidade:</label>
-			<select th:field="*{nomeCidadeSelect}" id="cidadeSelect" onchange="cidadeChange()" name="nomeCidadeSelect">
-			    <option value="">Selecione</option>
-			    <option th:each="cid : ${cidades}" th:value="${cid}" th:text="${cid}"
-			        th:selected="${pessoaForm.nomeCidadeSelect == cid}"></option>
-			    <option value="Outro" th:selected="${pessoaForm.nomeCidadeSelect == 'Outro'}">Outro</option>
-			</select>
+          <!-- Estado -->
+          <label>Estado:</label>
+          <select
+            id="estadoSelect"
+            name="nomeEstadoPessoa"
+            onchange="estadoChange(event)"
+            required
+          >
+            <option value="">Selecione</option>
+            <option
+              th:each="estado : ${estados}"
+              th:value="${estado.nomeLocal}"
+              th:text="${estado.nomeLocal}"
+              th:selected="${#strings.equalsIgnoreCase(estado.nomeLocal, pessoa.nomeEstado)}"
+            ></option>
+            <!-- Outro será adicionado via JavaScript -->
+          </select>
+          <input
+            type="text"
+            id="estadoOutro"
+            name="estadoOutro"
+            class="hidden"
+            placeholder="Informe o Estado"
+          />
 
-			<!-- Só aparece se cidade = 'Outro' -->
-			<input type="text"
-			       th:field="*{cidadeOutro}"
-			       id="cidadeOutro"
-			       name="cidadeOutro"
-			       th:if="${pessoaForm.nomeCidadeSelect == 'Outro'}"
-			       placeholder="Informe a Cidade"
-			       th:value="${pessoaForm.cidadeOutro}"/>
-				
-				   		
-            <label>Currículo:</label>
-            <textarea th:field="*{curriculoPessoal}" placeholder="Opcional..."></textarea>
+          <!-- Cidade -->
+          <label>Cidade:</label>
+          <input
+            type="text"
+            id="cidade"
+            name="nomeCidadePessoa"
+            list="listaCidades"
+            th:value="${pessoa.nomeCidade}"
+            required
+            autocomplete="off"
+            placeholder="Digite o nome da cidade ou 'Outro' para cadastrar nova"
+          />
+          <datalist id="listaCidades">
+            <!-- Cidades são carregadas dinamicamente via JavaScript -->
+          </datalist>
+          <input
+            type="text"
+            id="cidadeOutro"
+            name="cidadeOutro"
+            class="hidden"
+            placeholder="Informe a Cidade"
+          />
 
-            <label>Comentários:</label>
-            <textarea th:field="*{comentarios}" placeholder="Como chegou até aqui? Outros..."></textarea>
+          <label>Currículo:</label>
+          <textarea
+            th:field="*{curriculoPessoal}"
+            placeholder="Opcional..."
+          ></textarea>
+
+          <label>Comentários:</label>
+          <textarea
+            th:field="*{comentarios}"
+            placeholder="Como chegou até aqui? Outros..."
+          ></textarea>
         </div>
-        <div style="text-align:center; margin-top:20px;">
-            <button type="button" id="btnEditar" onclick="alternarEdicao()">Editar</button>
-            <button type="submit" id="btnSalvar" style="display:none;">Salvar Alterações</button>
-            <a href="/menus/menu-participante"><button type="button">Retornar</button></a>
+
+        <div style="text-align: center; margin-top: 20px">
+          <button type="button" id="btnEditar" onclick="alternarEdicao()">
+            Editar
+          </button>
+          <button type="submit" id="btnSalvar" style="display: none">
+            Salvar Alterações
+          </button>
+          <a href="/menus/menu-participante"
+            ><button type="button">Retornar</button></a
+          >
         </div>
-    </form>
-</div>
-
-<script>
-const cidadesPorEstado = {
-    SP: ["São Paulo", "São Bernardo do Campo", "São Caetano do Sul", "Santo André", "Mauá", "Osasco", "Mogi das Cruzes", "Santos", "São Vicente"],
-    RJ: ["Rio de Janeiro", "Niterói"],
-    PR: ["Curitiba"],
-    SC: ["Florianópolis"],
-    MG: ["Belo Horizonte"]
-    // ... outros estados
-};
-
-function paisChange() {
-    const pais = document.getElementById("paisSelect").value;
-    const paisOutro = document.getElementById("paisOutro");
-    const estadoSelect = document.getElementById("estadoSelect");
-    const estadoOutro = document.getElementById("estadoOutro");
-    const cidadeSelect = document.getElementById("cidadeSelect");
-    const cidadeOutro = document.getElementById("cidadeOutro");
-
-    if (pais === "Outro") {
-        paisOutro.classList.remove("hidden");
-        estadoOutro.classList.remove("hidden");
-        cidadeOutro.classList.remove("hidden");
-
-        estadoSelect.classList.add("hidden");
-        cidadeSelect.classList.add("hidden");
-    } else if (pais === "Brasil") {
-        paisOutro.classList.add("hidden");
-        estadoOutro.classList.add("hidden");
-        cidadeOutro.classList.add("hidden");
-
-        estadoSelect.classList.remove("hidden");
-        cidadeSelect.classList.remove("hidden");
-        filtrarCidades();
-    } else if (pais) {
-        paisOutro.classList.add("hidden");
-        estadoSelect.classList.add("hidden");
-        cidadeSelect.classList.add("hidden");
-        estadoOutro.classList.remove("hidden");
-        cidadeOutro.classList.remove("hidden");
-    } else {
-        paisOutro.classList.add("hidden");
-        estadoOutro.classList.add("hidden");
-        cidadeOutro.classList.add("hidden");
-        estadoSelect.classList.remove("hidden");
-        cidadeSelect.classList.remove("hidden");
+      </form>
+    </div>
     }
-}
 
-function filtrarCidades() {
-    const estado = document.getElementById("estadoSelect").value;
-    const cidadeSelect = document.getElementById("cidadeSelect");
-    const cidadeOutro = document.getElementById("cidadeOutro");
-    cidadeSelect.innerHTML = "<option value=''>Selecione</option>";
-	
-    if (cidadesPorEstado[estado]) {
-        cidadesPorEstado[estado].forEach(cidade => {
-            const option = document.createElement("option");
-            option.value = cidade;
-            option.text = cidade;
-            cidadeSelect.appendChild(option);
-        });
-        const outro = document.createElement("option");
-        outro.value = "Outro";
-        outro.text = "Outro";
-        cidadeSelect.appendChild(outro);
-        cidadeSelect.classList.remove("hidden");
-        cidadeOutro.classList.add("hidden");
-    } else {
-        cidadeSelect.classList.add("hidden");
-        cidadeOutro.classList.remove("hidden");
-    }
-}
+    <!-- 
+O script local-form.js cuida de:
+- alternar campo "Outro" conforme seleção
+- carregar estados/cidades via AJAX se necessário
+-->
+    <script src="/js/local-form.js"></script>
 
-function cidadeChange() {
-    const select = document.getElementById("cidadeSelect");
-    const cidadeOutro = document.getElementById("cidadeOutro");
-    if (select.value === "Outro") {
-        // Cria input dinamicamente se não existir
-        if (!cidadeOutro) {
-            const input = document.createElement("input");
-            input.type = "text";
-            input.id = "cidadeOutro";
-            input.name = "cidadeOutro";
-            input.placeholder = "Informe a Cidade";
-            select.parentNode.insertBefore(input, select.nextSibling);
-        } else {
-            cidadeOutro.classList.remove("hidden");
-            cidadeOutro.disabled = false;
-        }
-    } else if (cidadeOutro) {
-        cidadeOutro.classList.add("hidden");
-        cidadeOutro.disabled = true;
-    }
-}
-window.onload = function() {
-    cidadeChange();
-}
-
-
-
-// Alterna modo readonly/edição
-function alternarEdicao() {
-    const fields = document.getElementById("formFields");
-    const btnEditar = document.getElementById("btnEditar");
-    const btnSalvar = document.getElementById("btnSalvar");
-    const infoMsg = document.getElementById("infoMsg");
-    if (fields.classList.contains("readonly")) {
-        fields.classList.remove("readonly");
-        Array.from(fields.querySelectorAll("input, select, textarea")).forEach(el => {
+    <script>
+      // Alternar modo edição/readonly
+      function alternarEdicao() {
+        const fields = document.getElementById("formFields");
+        const btnEditar = document.getElementById("btnEditar");
+        const btnSalvar = document.getElementById("btnSalvar");
+        const infoMsg = document.getElementById("infoMsg");
+        if (fields.classList.contains("readonly")) {
+          fields.classList.remove("readonly");
+          Array.from(
+            fields.querySelectorAll("input, select, textarea")
+          ).forEach((el) => {
             el.readOnly = false;
             el.disabled = false;
-        });
-        btnEditar.style.display = "none";
-        btnSalvar.style.display = "";
-        infoMsg.innerText = "Agora é possível editar seus dados.";
-    }
-}
-
-// Carregar selects com valores atuais da Pessoa ao abrir tela
-window.onload = function() {
-    paisChange();
-    filtrarCidades();
-};
-
-document.getElementById("formMeusDados").onsubmit = function(evt) {
-    const fields = document.getElementById("formFields");
-    if (!fields.classList.contains("readonly")) {
-        if (!confirm("Confirma as alterações?")) {
-            evt.preventDefault();
+          });
+          btnEditar.style.display = "none";
+          btnSalvar.style.display = "";
+          infoMsg.innerText = "Agora é possível editar seus dados.";
         }
-    }
-};
-</script>
-</body>
+      }
+      document.getElementById("formMeusDados").onsubmit = function (evt) {
+        const fields = document.getElementById("formFields");
+        if (!fields.classList.contains("readonly")) {
+          
+          // Corrige os valores quando país é "Outro"
+          const paisSelect = document.getElementById("paisSelect");
+          const paisOutro = document.getElementById("paisOutro");
+          const estadoSelect = document.getElementById("estadoSelect");
+          const estadoOutro = document.getElementById("estadoOutro");
+          
+          console.log("Antes da correção:");
+          console.log("País:", paisSelect.value);
+          console.log("Estado:", estadoSelect.value);
+          console.log("EstadoOutro:", estadoOutro.value);
+          
+          if (paisSelect.value === "Outro") {
+            // Se país é "Outro", garante que o estado seja enviado como "Outro"
+            estadoSelect.value = "Outro";
+            console.log("Definindo estado como 'Outro' porque país é 'Outro'");
+          }
+          
+          console.log("Depois da correção:");
+          console.log("País:", paisSelect.value);
+          console.log("Estado:", estadoSelect.value);
+          console.log("EstadoOutro:", estadoOutro.value);
+          
+          if (!confirm("Confirma as alterações?")) {
+            evt.preventDefault();
+          }
+        }
+      };
+    </script>
+    </script>
+  </body>
 </html>

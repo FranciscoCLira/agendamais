@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Escolher Instituições e Subinstituições</title>
   <link rel="stylesheet" th:href="@{/css/estilo.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     .hidden { display: none; }
     table { width:100%; border-collapse: collapse; margin-top:10px; }
@@ -18,23 +19,25 @@
     <h1>Agenda Mais</h1>
     <h3>Agendando tudo e mais</h3>
   </div>
-  <div class="logo">
-    <img src="/images/logo-mistico.svg" alt="Logo" style="height:40px;">
+
+  <div class="logo-central">
+  <i class="fas fa-moon"></i>
   </div>
+  
 </header>
 
 <div class="form-container">
   <h2>Escolher Instituições e Subinstituições</h2>
 
   <div style="text-align:center; margin-bottom:10px;">
-    <strong th:text="'Usuário: ' + ${codUsuario} + ' - ' + ${nomeUsuario}" class=mensagem-sucesso></strong>
+    <strong th:text="'Usuário: ' + ${username} + ' - ' + ${nomeUsuario}" class=mensagem-sucesso></strong>
   </div>
 
   <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
   <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
 
   <form th:action="@{/cadastro-relacionamentos}" method="post">
-    <input type="hidden" name="codUsuario" th:value="${codUsuario}" />
+    <input type="hidden" name="username" th:value="${username}" />
 
 	<table>
 	  <thead>
@@ -132,9 +135,9 @@ function toggleSubInstituicao(instId) {
 <script>
 function confirmarCancelamento() {
   if (confirm("Escolha ao menos uma Instituição para concluir seu cadastro.\nDeseja realmente cancelar o cadastramento?\n\nSe confirmar, todo o cadastro será perdido.")) {
-    // Redireciona para o endpoint de cancelamento, passando codUsuario (por segurança, via GET mesmo)
-    var codUsuario = document.querySelector('input[name="codUsuario"]').value;
-    window.location.href = "/cadastro-relacionamentos/cancelar?codUsuario=" + encodeURIComponent(codUsuario);
+    // Redireciona para o endpoint de cancelamento, passando username (por segurança, via GET mesmo)
+    var username = document.querySelector('input[name="username"]').value;
+    window.location.href = "/cadastro-relacionamentos/cancelar?username=" + encodeURIComponent(username);
   }
   // Se cancelar, permanece na tela
 }

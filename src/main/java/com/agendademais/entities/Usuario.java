@@ -21,16 +21,16 @@ public class Usuario implements Serializable {
     private Long id;
 
     @Column(length = 25, nullable = false, unique = true)
-    private String codUsuario;
-
+    @Size(min = 4, max = 25, message = "Usuário deve ter entre 4 e 25 caracteres.")
+    private String username;
     
+    @Column(nullable = false)
     @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
     @Pattern(
         regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{6,}$",
         message = "A senha deve conter letras, números e símbolos."
-    )    
-    private String senha;
-    
+    )
+    private String password;    
     
     // 1=Participante, 2=Autor, 5=Administrador, 9=SuperUsuario
     private int nivelAcessoUsuario;
@@ -58,20 +58,20 @@ public class Usuario implements Serializable {
         return id;
     }
 
-    public String getCodUsuario() {
-        return codUsuario;
+    public String getUsername() {
+        return username;
     }
 
-    public void setCodUsuario(String codUsuario) {
-        this.codUsuario = codUsuario;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getSenha() {
-        return senha;
+    public String getPassword() {
+        return password;
     }
 
-    public void setSenha(String senha) {
-        this.senha = senha;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public int getNivelAcessoUsuario() {

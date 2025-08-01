@@ -12,12 +12,16 @@ public class GlobalModelAttributes {
     @ModelAttribute
     public void adicionarVariaveisGlobais(HttpSession session, Model model) {
     	
-        // System.out.println("**************************************");
-        // System.out.println("✅ GlobalModelAttributes EXECUTANDO...");
-        // System.out.println("**************************************");
+        System.out.println("*** DEBUG GlobalModelAttributes ***");
+        System.out.println("Sessão ID: " + session.getId());
 
         Object usuario = session.getAttribute("usuarioLogado");
+        Object usuarioCadastro = session.getAttribute("usuarioCadastro");
         Object inst = session.getAttribute("instituicaoSelecionada");
+        
+        System.out.println("usuarioLogado: " + (usuario != null ? "existe" : "null"));
+        System.out.println("usuarioCadastro: " + (usuarioCadastro != null ? "existe" : "null"));
+        System.out.println("instituicaoSelecionada: " + (inst != null ? "existe" : "null"));
 
         model.addAttribute("usuarioLogado", usuario);
 

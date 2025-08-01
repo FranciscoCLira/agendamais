@@ -4,6 +4,7 @@ body {
     color: #333;
     margin: 0;
     padding: 0;
+    padding-top: 70px; /* Espaço para o cabeçalho fixo */
 }
 
 .cabecalho {
@@ -13,6 +14,13 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 5px 5px;
+    position: fixed; /* Fixar o cabeçalho */
+    top: 0; /* No topo da página */
+    left: 0; /* Alinhado à esquerda */
+    right: 0; /* Alinhado à direita */
+    width: 100%; /* Largura total */
+    z-index: 1000; /* Acima de outros elementos */
+    box-sizing: border-box; /* Incluir padding na largura */
 }
 
 .cabecalho .titulo h1 {
@@ -112,3 +120,45 @@ body {
     font-size: 1.1em;
 }
 
+.autocomplete-list {
+  background: #fff;
+  border: 1px solid #ccc;
+  max-height: 140px;
+  overflow-y: auto;
+  position: absolute;
+  z-index: 10;
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  width: 94%;
+}
+.autocomplete-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.autocomplete-list li:hover {
+  background: #f0f0f0;
+}
+
+.campo-cidade-container { position: relative; }
+
+#sugestoesCidade {
+    max-width: 400px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #888;
+    border-radius: 0 0 8px 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: absolute;  /* para não quebrar layout */
+    z-index: 10;
+    left: 0;
+}
+#sugestoesCidade li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+#sugestoesCidade li:hover {
+    background: #e8e8f8;
+}

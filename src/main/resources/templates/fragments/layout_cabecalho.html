@@ -30,7 +30,7 @@
 	    <!-- Usuário logado -->
 	    <p th:if="${usuarioLogado != null}">
 	      Cód.Usuário: 
-	      <span th:text="${#strings.abbreviate(usuarioLogado.codUsuario,25)}">usuario</span>
+	      <span th:text="${#strings.abbreviate(usuarioLogado.username,25)}">usuario</span>
 	    </p>
 	    <p th:if="${usuarioLogado != null}">
 	      <span th:text="${#strings.abbreviate(usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>

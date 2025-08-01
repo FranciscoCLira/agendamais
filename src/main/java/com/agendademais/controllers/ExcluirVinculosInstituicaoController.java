@@ -88,13 +88,13 @@ public class ExcluirVinculosInstituicaoController {
                     "mensagemSucesso",
                     "Relacionamento com a Instituição excluído com sucesso.<br>"
                             + "Nenhum outro vínculo restante. Cadastro geral removido.<br>"
-                            + usuario.getCodUsuario() + " - " + pessoa.getNomePessoa());
+                            + usuario.getUsername() + " - " + pessoa.getNomePessoa());
 
         } else {
             redirectAttributes.addFlashAttribute(
                     "mensagemSucesso",
                     "Relacionamento com a Instituição excluído com sucesso:<br>"
-                            + usuario.getCodUsuario() + " - " + pessoa.getNomePessoa() + "<br>"
+                            + usuario.getUsername() + " - " + pessoa.getNomePessoa() + "<br>"
                             + instituicao.getNomeInstituicao());
         }
 

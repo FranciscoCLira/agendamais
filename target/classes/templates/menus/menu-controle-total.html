@@ -1,27 +1,44 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Painel Controle Total</title>
-    <link rel="stylesheet" th:href="@{/css/estilo.css}">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
-<body>
-<div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
 
-<div class="form-container">
-    <h2 th:text="${tituloPagina}">Painel de Controle Total</h2>
+    <div class="form-container">
+      <h2 th:text="${tituloPagina}">Painel de Controle Total</h2>
 
-  <!-- Mensagens -->
-  <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-  <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="mensagem-sucesso"></p>
-    
+      <!-- Mensagens -->
+      <p
+        th:if="${mensagemErro}"
+        th:text="${mensagemErro}"
+        class="mensagem-erro"
+      ></p>
+      <p
+        th:if="${mensagemSucesso}"
+        th:text="${mensagemSucesso}"
+        class="mensagem-sucesso"
+      ></p>
 
-    <ul class="menu-opcoes">
+      <ul class="menu-opcoes">
         <li><a th:href="@{/instituicoes}">Gerenciar Instituições</a></li>
         <li><a th:href="@{/usuarios/geral}">Gestão Geral de Usuários</a></li>
-    </ul>
-</div>
-</body>
+        <li><a th:href="@{/gestao/locais}">🌍 Gestão de Locais</a></li>
+        <li>
+          <a th:href="@{/gestao/locais/relacao-pessoas}"
+            >🔗 Relação Local ↔ Pessoas</a
+          >
+        </li>
+      </ul>
+
+      <p style="margin-top: 20px"><a href="/acesso/logout">🚪 Sair</a></p>
+    </div>
+  </body>
 </html>

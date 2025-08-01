@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Erro interno - Agenda Mais</title>
+    <link rel="stylesheet" href="/css/estilo.css" />
+    <style>
+      .error-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 40px;
+        text-align: center;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .error-icon {
+        font-size: 4em;
+        margin-bottom: 20px;
+        color: #dc3545;
+      }
+      .error-code {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #6c757d;
+        margin-bottom: 10px;
+      }
+      .error-title {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        color: #333;
+      }
+      .error-message {
+        font-size: 1.1em;
+        margin-bottom: 30px;
+        color: #666;
+        line-height: 1.5;
+      }
+      .btn-home {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #7b2cbf;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 1.1em;
+        transition: background-color 0.3s;
+      }
+      .btn-home:hover {
+        background-color: #5a1a8a;
+        color: white;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <div class="error-code" th:text="${errorCode ?: '500'}">500</div>
+      <h1
+        class="error-title"
+        th:text="${errorTitle ?: 'Erro interno do servidor'}"
+      >
+        Erro interno do servidor
+      </h1>
+      <p
+        class="error-message"
+        th:text="${errorMessage ?: 'Ocorreu um erro interno no servidor. Tente novamente em alguns minutos.'}"
+      >
+        Ocorreu um erro interno no servidor. Tente novamente em alguns minutos.
+      </p>
+
+      <!-- Detalhes do erro (se disponíveis) -->
+      <div
+        th:if="${errorDetails != null and !#strings.isEmpty(errorDetails)}"
+        style="
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 5px;
+          margin: 20px 0;
+          text-align: left;
+          font-family: monospace;
+          font-size: 0.9em;
+          color: #666;
+          max-width: 100%;
+          word-break: break-all;
+        "
+      >
+        <strong>Detalhes técnicos:</strong><br />
+        <span
+          th:utext="${#strings.replace(errorDetails, '&#10;', '&lt;br&gt;')}"
+        ></span>
+      </div>
+      <a
+        th:href="${homeLink ?: '/acesso'}"
+        class="btn-home"
+        th:text="${homeLinkText ?: 'Voltar ao Início'}"
+        >Voltar ao Início</a
+      >
+    </div>
+  </body>
+</html>

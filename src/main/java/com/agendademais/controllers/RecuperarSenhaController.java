@@ -25,54 +25,54 @@ public class RecuperarSenhaController {
     }
 
     @PostMapping("/recuperar-senha")
-    public String processarRecuperacao(@RequestParam String codUsuario,
-                                       @RequestParam String novaSenha,
-                                       @RequestParam String confirmarSenha,
+    public String processarRecuperacao(@RequestParam String username,
+                                       @RequestParam String newPassword,
+                                       @RequestParam String confirmPassword,
                                        Model model) {
 
-        if (!novaSenha.equals(confirmarSenha)) {
-            model.addAttribute("mensagemErro", "As senhas não coincidem: " + codUsuario);
-            model.addAttribute("codUsuario", codUsuario);
-            model.addAttribute("novaSenha", novaSenha);
-            model.addAttribute("confirmarSenha", confirmarSenha);
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("mensagemErro", "As senhas não coincidem: " + username);
+            model.addAttribute("username", username);
+            model.addAttribute("newPassword", newPassword);
+            model.addAttribute("confirmPassword", confirmPassword);
             return "recuperar-senha";
         }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByCodUsuario(codUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
 
         if (usuarioOpt.isEmpty()) {
-            model.addAttribute("mensagemErro", "Usuário não encontrado: " + codUsuario);
-            model.addAttribute("codUsuario", codUsuario);
-            model.addAttribute("novaSenha", novaSenha);
-            model.addAttribute("confirmarSenha", confirmarSenha);
+            model.addAttribute("mensagemErro", "Usuário não encontrado: " + username);
+            model.addAttribute("username", username);
+            model.addAttribute("newPassword", newPassword);
+            model.addAttribute("confirmPassword", confirmPassword);
             return "recuperar-senha";
         }
         
-        if (!isSenhaSegura(novaSenha)) {
+        if (!ispasswordSegura(newPassword)) {
             model.addAttribute("mensagemErro", "A senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
-            model.addAttribute("codUsuario", codUsuario);
-            model.addAttribute("novaSenha", novaSenha);
-            model.addAttribute("confirmarSenha", confirmarSenha);
+            model.addAttribute("username", username);
+            model.addAttribute("newPassword", newPassword);
+            model.addAttribute("confirmPassword", confirmPassword);
             return "recuperar-senha";
         }
         
         Usuario usuario = usuarioOpt.get();
 
-        usuario.setSenha(novaSenha);
+        usuario.setPassword(newPassword);
         usuarioRepository.save(usuario);
-        model.addAttribute("mensagemSucesso", "Senha redefinida com sucesso! Usuário: " + codUsuario);
+        model.addAttribute("mensagemSucesso", "Senha redefinida com sucesso! Usuário: " + username);
 
         // Limpa campos após sucesso
-        model.addAttribute("codUsuario", "");
-        model.addAttribute("novaSenha", "");
-        model.addAttribute("confirmarSenha", "");
+        model.addAttribute("username", "");
+        model.addAttribute("newPassword", "");
+        model.addAttribute("confirmPassword", "");
 
         return "recuperar-senha";
     }
     
-    private boolean isSenhaSegura(String senha) {
-        if (senha == null || senha.length() < 6) return false;
-        return senha.matches(".*[a-zA-Z].*") && (senha.matches(".*\\d.*") || senha.matches(".*\\W.*"));
+    private boolean ispasswordSegura(String password) {
+        if (password == null || password.length() < 6) return false;
+        return password.matches(".*[a-zA-Z].*") && (password.matches(".*\\d.*") || password.matches(".*\\W.*"));
     }
 
 

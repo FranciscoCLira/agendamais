@@ -2,6 +2,9 @@ package com.agendademais.controllers;
 
 import com.agendademais.entities.Usuario;
 import com.agendademais.repositories.UsuarioRepository;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,56 +23,68 @@ public class CadastroUsuarioController {
     }
 
     @GetMapping
-    public String mostrarFormularioCadastroUsuario(Model model) {
+    public String exibirFormulario(Model model) {
+        if (!model.containsAttribute("usuario")) {
+            model.addAttribute("usuario", new Usuario());
+        }
         return "cadastro-usuario";
     }
 
+    
     @PostMapping
-    public String processarCadastroUsuario(@RequestParam String codUsuario,
-                                           @RequestParam String senha,
-                                           @RequestParam String confirmarSenha,
-                                           RedirectAttributes redirectAttributes,
-                                           Model model) {
-
-        if (codUsuario.length() < 6 || codUsuario.length() > 25) {
-            model.addAttribute("mensagemErro", "O Código do Usuário deve ter entre 6 e 25 caracteres.");
-            model.addAttribute("codUsuario", codUsuario);
-            return "cadastro-usuario";
+    public String cadastrarUsuario(
+            @ModelAttribute Usuario usuario,
+            @RequestParam String confirmPassword,  // Caso queira usar no form
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
+	
+        // Validar senha
+        if (usuario.getPassword() == null || usuario.getPassword().length() < 6) {
+           redirectAttributes.addFlashAttribute("mensagemErro", "Senha deve ter no mínimo 6 caracteres.");
+           redirectAttributes.addFlashAttribute("usuario", usuario);
+           return "redirect:/cadastro-usuario";
+        }
+	
+	    // Checa se usuário já existe
+        Optional<Usuario> existente = usuarioRepository.findByUsername(usuario.getUsername());
+        if (existente.isPresent()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário já existente. Escolha outro.");
+            redirectAttributes.addFlashAttribute("usuario", usuario);
+            return "redirect:/cadastro-usuario";
         }
 
-        if (!isSenhaSegura(senha)) {
-            model.addAttribute("mensagemErro", "A senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
-            model.addAttribute("codUsuario", codUsuario);
-            return "cadastro-usuario";
+        if (usuario.getUsername().length() < 6 || usuario.getUsername().length() > 25) {
+        	redirectAttributes.addFlashAttribute("mensagemErro", "O Código do Usuário deve ter entre 6 e 25 caracteres.");
+            redirectAttributes.addFlashAttribute("usuario", usuario);
+            return "redirect:/cadastro-usuario";
         }
         
-        if (!senha.equals(confirmarSenha)) {
-            model.addAttribute("mensagemErro", "As senhas não coincidem.");
-            model.addAttribute("codUsuario", codUsuario);
-            return "cadastro-usuario";
+        //  VALIDAR SENHA 
+        if (!isSenhaSegura(usuario.getPassword())) {
+        	redirectAttributes.addFlashAttribute("mensagemErro", "A senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
+            redirectAttributes.addFlashAttribute("usuario", usuario);
+            return "redirect:/cadastro-usuario";
+        }
+        
+        if (!usuario.getPassword().equals(confirmPassword)) {
+        	redirectAttributes.addFlashAttribute("mensagemErro", "As senhas não coincidem.");
+            redirectAttributes.addFlashAttribute("usuario", usuario);
+            return "redirect:/cadastro-usuario";
         }
 
-        Optional<Usuario> existente = usuarioRepository.findByCodUsuario(codUsuario);
-        if (existente.isPresent()) {
-            Usuario usuario = existente.get();
-            boolean temPessoa = usuario.getPessoa() != null;
-            if (!temPessoa) {
-                redirectAttributes.addFlashAttribute("mensagemErro",
-                        "Usuário já iniciado. Faça login para concluir seu cadastro.");
-                return "redirect:/login";
-            } else {
-                model.addAttribute("mensagemErro", "Já existe um usuário com esse código.");
-                return "cadastro-usuario";
-            }
-        }
+        // Aqui você pode validar/criptografar a senha se desejar!
+        // usuario.setSenha(criptografada...)
 
-
-        return "redirect:/cadastro-pessoa?codUsuario=" + codUsuario + "&senha=" + senha;
+        // Ainda não salva em banco: primeiro finaliza o cadastro da pessoa
+        session.setAttribute("usuarioCadastro", usuario);
+        
+        // Opcional: mensagem de instrução
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Usuário criado! Complete seus dados pessoais.");
+        return "redirect:/cadastro-pessoa";
     }
     
-    private boolean isSenhaSegura(String senha) {
-        if (senha == null || senha.length() < 6) return false;
-        return senha.matches(".*[a-zA-Z].*") && (senha.matches(".*\\d.*") || senha.matches(".*\\W.*"));
+    private boolean isSenhaSegura(String password) {
+        if (password == null || password.length() < 6) return false;
+        return password.matches(".*[a-zA-Z].*") && (password.matches(".*\\d.*") || password.matches(".*\\W.*"));
     }
-
 }
