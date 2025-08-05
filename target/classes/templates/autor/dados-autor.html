@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dados de Autor</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- CABECALHO PADRAO -->
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+
+    <main class="main-content">
+      <div class="form-container">
+        <h2><i class="fas fa-user-tie"></i> Dados de Autor</h2>
+
+        <p class="info-message">
+          <i class="fas fa-info-circle"></i>
+          Esta funcionalidade está em desenvolvimento. Em breve você poderá
+          gerenciar seus dados específicos como autor.
+        </p>
+
+        <div class="form-actions" style="text-align: center; margin-top: 20px">
+          <a th:href="${tipoUsuario == 'participante' ? '/participante' : 
+                      tipoUsuario == 'autor' ? '/autor' : 
+                      tipoUsuario == 'administrador' ? '/administrador' : 
+                      tipoUsuario == 'super-usuario' ? '/superusuario' : 
+                      tipoUsuario == 'controle-total' ? '/controle-total' : '/autor'}">
+            <button type="button">
+              <i class="fas fa-arrow-left"></i> Voltar ao Menu
+            </button>
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <style>
+      .info-message {
+        background: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 5px;
+        padding: 15px;
+        color: #1976d2;
+        text-align: center;
+      }
+      .form-container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+      }
+    </style>
+  </body>
+</html>

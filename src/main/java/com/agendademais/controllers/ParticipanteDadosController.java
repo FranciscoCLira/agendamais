@@ -17,8 +17,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@Controller
-@RequestMapping("/participante/meus-dados")
+// @Controller - DESABILITADO: conflito com MeusDadosController unificado
+@RequestMapping("/participante/dados-old")
 public class ParticipanteDadosController {
 
     private final PessoaRepository pessoaRepository;
@@ -154,6 +154,6 @@ public class ParticipanteDadosController {
         }
 
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Dados alterados com sucesso.");
-        return "redirect:/participante/meus-dados";
+        return "redirect:/meus-dados";
     }
 }

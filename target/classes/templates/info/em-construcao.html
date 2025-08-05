@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Em Construção</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- CABECALHO PADRAO -->
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+
+    <main class="main-content">
+      <div class="construction-container">
+        <div class="construction-icon">
+          <i class="fas fa-hard-hat"></i>
+        </div>
+        <h2>Página em Construção</h2>
+        <p class="construction-message">
+          <i class="fas fa-wrench"></i>
+          Esta funcionalidade está sendo desenvolvida e estará disponível em
+          breve.
+        </p>
+        <p class="construction-submessage">
+          Por favor, volte ao menu principal e explore outras funcionalidades
+          disponíveis.
+        </p>
+
+        <div class="form-actions" style="text-align: center; margin-top: 30px">
+          <button onclick="history.back()" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <style>
+      .construction-container {
+        max-width: 600px;
+        margin: 50px auto;
+        text-align: center;
+        background: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .construction-icon {
+        font-size: 4em;
+        color: #ff9800;
+        margin-bottom: 20px;
+      }
+
+      .construction-container h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 2em;
+      }
+
+      .construction-message {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 5px;
+        padding: 15px;
+        color: #856404;
+        margin: 20px 0;
+        font-size: 1.1em;
+      }
+
+      .construction-submessage {
+        color: #666;
+        font-style: italic;
+        margin: 15px 0;
+      }
+
+      .btn-back {
+        background: #6f42c1;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .btn-back:hover {
+        background: #5a32a3;
+      }
+    </style>
+  </body>
+</html>

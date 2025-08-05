@@ -214,13 +214,24 @@ public class CadastroRelacionamentoController {
 
         // Remove dados de sessão
         session.removeAttribute("usuarioPendencia");
+        
+        // Redireciona baseado na origem do cadastro
+        String origemCadastro = (String) session.getAttribute("origemCadastro");
+        session.removeAttribute("origemCadastro");
 
         redirectAttributes.addFlashAttribute("mensagemSucesso",
-                "Cadastro concluído com sucesso!<br>Usuário: " 
+                "Cadastro concluído com sucesso! Usuário: " 
                 + usuario.getUsername()
                 + " - " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : ""));
 
-        return "redirect:/acesso";
+        // Redireciona para onde o cadastro foi iniciado para permitir novos cadastros
+        if ("administrador".equals(origemCadastro)) {
+            return "redirect:/cadastro-usuario?origem=administrador";
+        } else if ("superusuario".equals(origemCadastro)) {
+            return "redirect:/cadastro-usuario?origem=superusuario";
+        } else {
+            return "redirect:/acesso";
+        }
     }
     
     private void prepararTela(Model model, String username, Usuario usuario, Map<String, String> allParams) {

@@ -37,8 +37,8 @@ public class ExcluirCadastroController {
 
         if (!"C".equalsIgnoreCase(pessoa.getSituacaoPessoa())) {
             redirectAttributes.addFlashAttribute("mensagemErro",
-                "Cadastro só pode ser excluído após ser cancelado.");
-            return "redirect:/menus/menu-participante";
+                    "Cadastro só pode ser excluído após ser cancelado.");
+            return "redirect:/participante";
         }
 
         // Excluir vínculos antes do usuário

@@ -117,6 +117,15 @@ Incluído em `docs/agenda_mais_modelo_erd.png`
 
 ---
 
+## 📖 Documentação
+
+- **[Estrutura de Níveis de Usuário](docs/estrutura-niveis-usuario.md)** - Definições completas dos níveis de acesso e funcionalidades
+- **[Implementação da Entidade Local](docs/implementa-local.md)** - Documentação da normalização de locais
+- **[ERD - Diagrama de Entidades](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Modelo de dados em PlantUML
+- **[Backup e Restore](backup-tools/README-backup-tools.md)** - Ferramentas de backup e restore
+
+---
+
 ## ✅ TODO Futuro
 
 - Implementação de inscrições por participantes

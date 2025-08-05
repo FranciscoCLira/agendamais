@@ -99,7 +99,7 @@ public class ExcluirVinculosInstituicaoController {
         }
 
         session.invalidate();
-        return "redirect:/login";
+        return "redirect:/acesso";
 
     }
 }

@@ -34,9 +34,84 @@
             >Inscrição em Tipos de Atividades</a
           >
         </li>
-        <li><a href="/cadastro-usuario">Cadastro (Usuário/Pessoa)</a></li>
         <li><a href="/vinculo-instituicao">Vínculos com Instituições</a></li>
-        <li><a href="/autor-form">Informações de Autor</a></li>
+        
+        <!-- Dados Pessoais -->
+        <h3 style="margin-top: 25px; margin-bottom: 10px;"><i class="fas fa-user"></i> Perfil</h3>
+        
+        <li style="margin: 5px 0; list-style: none;">&nbsp;</li>
+        
+        <li>
+          <a href="/meus-dados"><i class="fas fa-user-edit"></i> Meus Dados</a>
+        </li>
+        <li>
+          <a href="/dados-autor"><i class="fas fa-user-tie"></i> Meus dados de Autor</a>
+        </li>
+
+        <!-- Funcionalidades de gestão (SuperUsuário tem acesso administrativo) -->
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">Gestão da Instituição</h3>
+        
+        <!-- Espaço para destacar grupo de funcionalidades -->
+        <li style="margin: 5px 0; list-style: none;">&nbsp;</li>
+        
+        <li><a href="/cadastro-usuario?origem=superusuario">Cadastro (Usuário/Pessoa)</a></li>
+        <li>
+          <a href="/administrador/instituicoes"
+            ><i class="fas fa-university"></i> Gerenciar Instituição</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/subinstituicoes"
+            ><i class="fas fa-sitemap"></i> Gerenciar Sub-Instituições</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/atividades"
+            ><i class="fas fa-calendar-alt"></i> Gerenciar Atividades</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/tipos-atividade"
+            ><i class="fas fa-tags"></i> Tipos de Atividade</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/ocorrencias"
+            ><i class="fas fa-clock"></i> Ocorrências de Atividades</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/postagens"
+            ><i class="fas fa-newspaper"></i> Postagens</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/log-postagens"
+            ><i class="fas fa-list-ul"></i> Log de Postagens</a
+          >
+        </li>
+        <li>
+          <a href="/administrador/usuarios"
+            ><i class="fas fa-users"></i> Gestão de Usuários</a
+          >
+        </li>
+        
+        <!-- Funcionalidades específicas do SuperUsuário -->
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">Funcionalidades Avançadas da Instituição</h3>
+        
+        <!-- Espaço para destacar grupo de funcionalidades -->
+        <li style="margin: 5px 0; list-style: none;">&nbsp;</li>
+        
+        <li>
+          <a href="/superusuario/backup"
+            ><i class="fas fa-database"></i> Backup/Restore da Instituição</a
+          >
+        </li>
+        <li>
+          <a href="/superusuario/logs"
+            ><i class="fas fa-file-alt"></i> Logs da Instituição</a
+          >
+        </li>
       </ul>
 
       <p style="margin-top: 20px"><a href="/acesso/logout">Sair</a></p>

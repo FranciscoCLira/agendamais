@@ -45,7 +45,8 @@ public class LocalDataLoader implements CommandLineRunner {
                 // Carga de Países
                 Local brasil = localRepository.save(new Local(1, "Brasil", null));
                 Local portugal = localRepository.save(new Local(1, "Portugal", null));
-                Local argentina = localRepository.save(new Local(1, "Argentina", null));
+                Local franca = localRepository.save(new Local(1, "França", null));
+                // Local argentina = localRepository.save(new Local(1, "Argentina", null));
 
                 // Carga de Estados (exemplo Brasil)
                 // Local ac = localRepository.save(new Local(2, "AC", brasil));
@@ -121,6 +122,36 @@ public class LocalDataLoader implements CommandLineRunner {
                                 new Local(3, "Porto", po),
                                 new Local(3, "Vila Nova de Gaia", po),
                                 new Local(3, "Matosinhos", po)));
+
+                // Carga de Regiões da França
+                Local idf = localRepository.save(new Local(2, "Île-de-France", franca));
+                Local paca = localRepository.save(new Local(2, "Provence-Alpes-Côte d'Azur", franca));
+                Local ara = localRepository.save(new Local(2, "Auvergne-Rhône-Alpes", franca));
+                Local occ = localRepository.save(new Local(2, "Occitanie", franca));
+
+                // Cidades da Île-de-France
+                localRepository.saveAll(Arrays.asList(
+                                new Local(3, "Paris", idf),
+                                new Local(3, "Versailles", idf),
+                                new Local(3, "Boulogne-Billancourt", idf)));
+
+                // Cidades de Provence-Alpes-Côte d'Azur
+                localRepository.saveAll(Arrays.asList(
+                                new Local(3, "Marseille", paca),
+                                new Local(3, "Nice", paca),
+                                new Local(3, "Cannes", paca)));
+
+                // Cidades de Auvergne-Rhône-Alpes
+                localRepository.saveAll(Arrays.asList(
+                                new Local(3, "Lyon", ara),
+                                new Local(3, "Grenoble", ara),
+                                new Local(3, "Saint-Étienne", ara)));
+
+                // Cidades de Occitanie
+                localRepository.saveAll(Arrays.asList(
+                                new Local(3, "Toulouse", occ),
+                                new Local(3, "Montpellier", occ),
+                                new Local(3, "Perpignan", occ)));
 
                 System.out.println("*** ");
                 System.out.println("*** /config/LocalDataLoader.java: Dados iniciais da Tabela Local carregados.");

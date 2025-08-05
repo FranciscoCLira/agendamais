@@ -1,1 +1,3 @@
 com\agendademais\services\InscricaoServiceTest.class
+com\agendademais\test\SimpleStartupTest.class
+com\agendademais\test\TestStartup.class

@@ -56,23 +56,26 @@ public class LocalAdminController {
 
         System.out.println("Nível do usuário: " + usuario.getNivelAcessoUsuario());
 
-        // Deve ser SuperUsuário (nível 9)
-        if (usuario.getNivelAcessoUsuario() != 9) {
-            System.out.println("Usuário não é nível 9 - acesso negado");
+        // Deve ser SuperUsuário (nível 9) ou Controle Total (nível 0)
+        if (usuario.getNivelAcessoUsuario() != 9 && usuario.getNivelAcessoUsuario() != 0) {
+            System.out.println("Usuário não é nível 9 nem 0 - acesso negado");
             redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Acesso negado. Funcionalidade exclusiva para SuperUsuário.");
+                    "Acesso negado. Funcionalidade exclusiva para SuperUsuário ou Controle Total.");
             return false;
         }
 
-        // Deve estar no contexto de Controle Total (sem instituição selecionada)
-        Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
-        System.out.println("Instituição selecionada na sessão: " + instituicaoSelecionada);
+        // Para nível 9 (SuperUsuário), deve estar no contexto de Controle Total (sem instituição selecionada)
+        // Para nível 0 (Controle Total), não há essa restrição
+        if (usuario.getNivelAcessoUsuario() == 9) {
+            Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
+            System.out.println("Instituição selecionada na sessão: " + instituicaoSelecionada);
 
-        if (instituicaoSelecionada != null) {
-            System.out.println("Instituição selecionada não é null - acesso negado para Controle Total");
-            redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Acesso negado. Para acessar a Gestão de Locais, selecione 'Controle Total' no login.");
-            return false;
+            if (instituicaoSelecionada != null) {
+                System.out.println("Instituição selecionada não é null - acesso negado para SuperUsuário");
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Acesso negado. Para acessar a Gestão de Locais, selecione 'Controle Total' no login.");
+                return false;
+            }
         }
 
         System.out.println("Acesso autorizado para Controle Total");
@@ -97,10 +100,14 @@ public class LocalAdminController {
             Model model) {
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
-            // Se é SuperUsuário mas não está no contexto correto, volta para o menu dele
+            // Redirecionamento baseado no nível do usuário
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
-                return "redirect:/menus/menu-superusuario";
+            if (usuario != null) {
+                if (usuario.getNivelAcessoUsuario() == 9) {
+                    return "redirect:/superusuario";
+                } else if (usuario.getNivelAcessoUsuario() == 0) {
+                    return "redirect:/controle-total";
+                }
             }
             return "redirect:/acesso";
         }
@@ -259,7 +266,7 @@ public class LocalAdminController {
             // Se é SuperUsuário mas não está no contexto correto, volta para o menu dele
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
             if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
-                return "redirect:/menus/menu-superusuario";
+                return "redirect:/superusuario";
             }
             return "redirect:/acesso";
         }
@@ -307,7 +314,7 @@ public class LocalAdminController {
             // Se é SuperUsuário mas não está no contexto correto, volta para o menu dele
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
             if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
-                return "redirect:/menus/menu-superusuario";
+                return "redirect:/superusuario";
             }
             return "redirect:/acesso";
         }
@@ -436,7 +443,7 @@ public class LocalAdminController {
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
             if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
                 System.out.println("Redirecionando SuperUsuario para menu");
-                return "redirect:/menus/menu-superusuario";
+                return "redirect:/superusuario";
             }
             System.out.println("Redirecionando para acesso");
             return "redirect:/acesso";
@@ -486,7 +493,7 @@ public class LocalAdminController {
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
             if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
-                return "redirect:/menus/menu-superusuario";
+                return "redirect:/superusuario";
             }
             return "redirect:/acesso";
         }
@@ -628,7 +635,7 @@ public class LocalAdminController {
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
             if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
-                return "redirect:/menus/menu-superusuario";
+                return "redirect:/superusuario";
             }
             return "redirect:/acesso";
         }

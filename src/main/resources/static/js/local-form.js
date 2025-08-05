@@ -202,7 +202,7 @@ function buscarEstados(pais) {
     // Primeiro define o básico, depois busca os estados
     estadoSelect.innerHTML = '<option value="">Carregando...</option>';
 
-    fetch('/api/locais/estados?pais=' + encodeURIComponent(pais))
+    fetch('/api/locais/estados?paisNome=' + encodeURIComponent(pais))
         .then(resp => resp.json())
         .then(estados => {
             console.log("Estados encontrados:", estados.length);
@@ -256,7 +256,7 @@ function buscarCidadesPorEstado(estado, preservarValorCidade = false) {
         return;
     }
 
-    fetch('/api/locais/cidades?estado=' + encodeURIComponent(estado) + '&t=' + Date.now())
+    fetch('/api/locais/cidades?estadoNome=' + encodeURIComponent(estado) + '&t=' + Date.now())
         .then(resp => resp.json())
         .then(cidades => {
             console.log("Cidades encontradas para", estado + ":", cidades.length);

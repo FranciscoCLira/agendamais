@@ -7,7 +7,9 @@ import com.agendademais.services.LocalService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -39,14 +41,18 @@ public class LocalApiController {
 
     // Listar estados de um país pelo nome do país
     @GetMapping("/estados")
-    public List<LocalDTO> listarEstados(@RequestParam String pais) {
-        return localService.listarEstadosPorPaisNome(pais).stream().map(LocalDTO::new).toList();
+    public List<LocalDTO> listarEstados(@RequestParam String paisNome) {
+        return localService.listarEstadosPorPaisNome(paisNome).stream().map(LocalDTO::new).toList();
     }
 
-    // Listar cidades de um estado
+    // Listar cidades de um estado (com suporte a país e estado para maior precisão)
     @GetMapping("/cidades")
-    public List<LocalDTO> listarCidades(@RequestParam String estado) {
-        return localService.listarCidadesPorEstadoNome(estado).stream().map(LocalDTO::new).toList();
+    public List<LocalDTO> listarCidades(
+            @RequestParam(required = false) String paisNome,
+            @RequestParam String estadoNome) {
+        // Se o país for informado, podemos fazer uma busca mais específica
+        // Por enquanto, vamos usar apenas o estado como antes
+        return localService.listarCidadesPorEstadoNome(estadoNome).stream().map(LocalDTO::new).toList();
     }
 
     // Autocomplete cidade
@@ -71,4 +77,21 @@ public class LocalApiController {
         return localService.buscarOuCriar(tipoLocal, nomeLocal, localPai);
     }
 
+    // Debug endpoint to test API
+    @GetMapping("/debug")
+    public Map<String, Object> debug(@RequestParam(required = false) String pais) {
+        Map<String, Object> result = new HashMap<>();
+        
+        // Lista todos os países
+        List<Local> paises = localService.listarPorTipo(1);
+        result.put("paises", paises.stream().map(p -> p.getNomeLocal()).toList());
+        
+        if (pais != null) {
+            // Lista estados do país informado
+            List<Local> estados = localService.listarEstadosPorPaisNome(pais);
+            result.put("estados_" + pais, estados.stream().map(e -> e.getNomeLocal()).toList());
+        }
+        
+        return result;
+    }
 }

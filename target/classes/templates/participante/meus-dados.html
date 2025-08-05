@@ -15,6 +15,8 @@
         background: #fff;
         padding: 20px;
         border-radius: 8px;
+        min-height: auto;
+        overflow: visible;
       }
       .readonly input,
       .readonly select,
@@ -38,7 +40,7 @@
     </style>
   </head>
   <body>
-    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
     <div class="form-container">
       <h2>Meus Dados</h2>
 
@@ -55,7 +57,7 @@
       <p id="infoMsg" class="mensagem-info"></p>
 
       <form
-        th:action="@{/participante/meus-dados/salvar}"
+        th:action="@{/meus-dados}"
         th:object="${pessoa}"
         method="post"
         id="formMeusDados"
@@ -86,7 +88,6 @@
           <select
             id="paisSelect"
             name="nomePaisPessoa"
-            onchange="paisChange(event)"
             required
           >
             <option value="">Selecione o país</option>
@@ -111,7 +112,6 @@
           <select
             id="estadoSelect"
             name="nomeEstadoPessoa"
-            onchange="estadoChange(event)"
             required
           >
             <option value="">Selecione</option>
@@ -121,7 +121,7 @@
               th:text="${estado.nomeLocal}"
               th:selected="${#strings.equalsIgnoreCase(estado.nomeLocal, pessoa.nomeEstado)}"
             ></option>
-            <!-- Outro será adicionado via JavaScript -->
+            <option value="Outro">Outro</option>
           </select>
           <input
             type="text"
@@ -163,6 +163,7 @@
           <label>Comentários:</label>
           <textarea
             th:field="*{comentarios}"
+            name="comentarios"
             placeholder="Como chegou até aqui? Outros..."
           ></textarea>
         </div>
@@ -174,7 +175,11 @@
           <button type="submit" id="btnSalvar" style="display: none">
             Salvar Alterações
           </button>
-          <a href="/menus/menu-participante"
+          <a th:href="${tipoUsuario == 'participante' ? '/participante' : 
+                      tipoUsuario == 'autor' ? '/autor' : 
+                      tipoUsuario == 'administrador' ? '/administrador' : 
+                      tipoUsuario == 'super-usuario' ? '/superusuario' : 
+                      tipoUsuario == 'controle-total' ? '/controle-total' : '/participante'}"
             ><button type="button">Retornar</button></a
           >
         </div>
@@ -190,6 +195,71 @@ O script local-form.js cuida de:
     <script src="/js/local-form.js"></script>
 
     <script>
+      // Adiciona handlers específicos para edição
+      document.addEventListener("DOMContentLoaded", function() {
+        console.log("=== INIT: DOM carregado, configurando eventos ===");
+        
+        // Teste se o local-form.js foi carregado
+        if (typeof paisChange === 'function') {
+          console.log("✓ local-form.js carregado com sucesso");
+        } else {
+          console.error("✗ local-form.js NÃO foi carregado");
+        }
+        
+        // Configura eventos quando a página carrega
+        const paisSelect = document.getElementById("paisSelect");
+        const estadoSelect = document.getElementById("estadoSelect");
+        const cidadeInput = document.getElementById("cidade");
+        
+        if (paisSelect) {
+          console.log("✓ Configurando evento para país");
+          paisSelect.addEventListener("change", function(e) {
+            console.log(">>> Evento país disparado:", e.target.value);
+            if (typeof paisChange === 'function') {
+              paisChange(e);
+            } else {
+              console.error("Função paisChange não encontrada!");
+            }
+          });
+        } else {
+          console.error("✗ Elemento paisSelect não encontrado");
+        }
+        
+        if (estadoSelect) {
+          console.log("✓ Configurando evento para estado");
+          estadoSelect.addEventListener("change", function(e) {
+            console.log(">>> Evento estado disparado:", e.target.value);
+            if (typeof estadoChange === 'function') {
+              estadoChange(e);
+            } else {
+              console.error("Função estadoChange não encontrada!");
+            }
+          });
+        } else {
+          console.error("✗ Elemento estadoSelect não encontrado");
+        }
+        
+        if (cidadeInput) {
+          console.log("✓ Configurando evento para cidade");
+          cidadeInput.addEventListener("input", function(e) {
+            console.log(">>> Evento cidade disparado:", e.target.value);
+            if (typeof cidadeChange === 'function') {
+              cidadeChange(e);
+            } else {
+              console.error("Função cidadeChange não encontrada!");
+            }
+          });
+        } else {
+          console.error("✗ Elemento cidadeInput não encontrado");
+        }
+        
+        // Log do estado atual dos selects
+        console.log("País atual:", paisSelect?.value);
+        console.log("Estado atual:", estadoSelect?.value);
+        console.log("Cidade atual:", cidadeInput?.value);
+        console.log("=== FIM INIT ===");
+      });
+
       // Alternar modo edição/readonly
       function alternarEdicao() {
         const fields = document.getElementById("formFields");
@@ -212,6 +282,15 @@ O script local-form.js cuida de:
       document.getElementById("formMeusDados").onsubmit = function (evt) {
         const fields = document.getElementById("formFields");
         if (!fields.classList.contains("readonly")) {
+          
+          // Debug: Log all form values before submission
+          const formData = new FormData(this);
+          console.log("=== FORM DATA DEBUG ===");
+          for (let [key, value] of formData.entries()) {
+            console.log(`${key}: '${value}'`);
+          }
+          console.log("Comentários field value:", document.querySelector('textarea[name="comentarios"]')?.value);
+          console.log("=======================");
           
           // Corrige os valores quando país é "Outro"
           const paisSelect = document.getElementById("paisSelect");
@@ -240,7 +319,6 @@ O script local-form.js cuida de:
           }
         }
       };
-    </script>
     </script>
   </body>
 </html>

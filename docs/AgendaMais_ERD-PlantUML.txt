@@ -1,6 +1,12 @@
-AgendaMais_ERD - PlantUML
-
-copiar codigo abaixo para gerar diagrama no https://plantuml.com/plantuml 
+'=======================================================================
+' AgendaMais_ERD - PlantUML com entidade Local normalizada
+' 
+' Copie e cole no https://plantuml.com/plantuml para gerar o novo diagrama
+'
+' Entidade Local: tipoLocal = 1 (País), 2 (Estado), 3 (Cidade)
+' Hierarquia: País -> Estado -> Cidade via localPai_id
+' Pessoa possui 3 relacionamentos com Local: pais_id, estado_id, cidade_id
+'=======================================================================
 
 @startuml AgendaMais_ERD
 
@@ -17,14 +23,24 @@ entity Pessoa {
   *nomePessoa : VARCHAR(80)
   *emailPessoa : VARCHAR(150)
   *celularPessoa : VARCHAR(25)
-  *nomePaisPessoa : VARCHAR(80)
-  *nomeEstadoPessoa : VARCHAR(80)
-  *nomeCidadePessoa : VARCHAR(80)
   curriculoPessoal : VARCHAR(500)
   comentarios : VARCHAR(500)
   situacaoPessoa : CHAR(1)
   dataInclusao : DATE
   dataUltimaAtualizacao : DATE
+  pais_id : BIGINT
+  estado_id : BIGINT
+  cidade_id : BIGINT
+}
+
+entity Local {
+  *id : BIGINT
+  *nomeLocal : VARCHAR(100)
+  *tipoLocal : INT
+  revisado : BOOLEAN
+  dataInclusao : DATE
+  dataUltimaAtualizacao : DATE
+  localPai_id : BIGINT
 }
 
 entity Instituicao {
@@ -72,6 +88,7 @@ entity TipoAtividade {
   *id : BIGINT
   tituloTipoAtividade : VARCHAR(80)
   descricaoTipoAtividade : VARCHAR(250)
+  id_instituicao : BIGINT
 }
 
 entity Atividade {
@@ -137,24 +154,29 @@ entity LogPostagem {
   id_ocorrencia_atividade : BIGINT
 }
 
-Usuario }o--|| Pessoa
-UsuarioInstituicao }o--|| Usuario
-UsuarioInstituicao }o--|| Instituicao
-PessoaInstituicao }o--|| Pessoa
-PessoaInstituicao }o--|| Instituicao
-PessoaSubInstituicao }o--|| Pessoa
-PessoaSubInstituicao }o--|| Instituicao
-PessoaSubInstituicao }o--|| SubInstituicao
-SubInstituicao }o--|| Instituicao
-Atividade }o--|| TipoAtividade
-Atividade }o--|| Pessoa
-Atividade }o--|| SubInstituicao
-OcorrenciaAtividade }o--|| Atividade
-OcorrenciaAtividade }o--|| Autor
-Autor }o--|| Pessoa
-Inscricao }o--|| Pessoa
-Inscricao }o--|| Instituicao
-Inscricao }o--|| TipoAtividade
-LogPostagem }o--|| OcorrenciaAtividade
+Usuario ||--o{ Pessoa
+Local ||--o{ Local
+Pessoa }o--|| Local
+Pessoa }o--|| Local
+Pessoa }o--|| Local
+Usuario ||--o{ UsuarioInstituicao
+Instituicao ||--o{ UsuarioInstituicao
+Pessoa ||--o{ PessoaInstituicao
+Instituicao ||--o{ PessoaInstituicao
+Pessoa ||--o{ PessoaSubInstituicao
+Instituicao ||--o{ PessoaSubInstituicao
+SubInstituicao ||--o{ PessoaSubInstituicao
+Instituicao ||--o{ SubInstituicao
+Instituicao ||--o{ TipoAtividade
+TipoAtividade ||--o{ Atividade
+Pessoa ||--o{ Atividade
+SubInstituicao ||--o{ Atividade
+Atividade ||--o{ OcorrenciaAtividade
+Autor ||--o{ OcorrenciaAtividade
+Pessoa ||--o{ Autor
+Pessoa ||--o{ Inscricao
+Instituicao ||--o{ Inscricao
+TipoAtividade ||--o{ Inscricao
+OcorrenciaAtividade ||--o{ LogPostagem
 
 @enduml

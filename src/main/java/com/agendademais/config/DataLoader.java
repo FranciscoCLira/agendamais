@@ -229,7 +229,7 @@ public class DataLoader implements CommandLineRunner {
         System.out.println("SP (estado): " + (spEstado != null ? spEstado.getId() : "null"));
         System.out.println("São Paulo (cidade): " + (spCidade != null ? spCidade.getId() : "null"));
 
-        // PESSOA 1: PARTICIPANTE - NIVEL 1
+        // PESSOA id=1: PARTICIPANTE - NIVEL 1
 
         Pessoa pessoa1 = new Pessoa();
         pessoa1.setNomePessoa("Carlos Silva");
@@ -285,10 +285,12 @@ public class DataLoader implements CommandLineRunner {
         ui13.setSitAcessoUsuarioInstituicao("A");
         usuarioInstituicaoRepository.save(ui13);
 
-        // PESSOA 2: ADMINISTRADOR - NIVEL 5
+        // #############################################################################
+
+        // PESSOA id=2: AUTOR - NIVEL 2
 
         Pessoa pessoa2 = new Pessoa();
-        pessoa2.setNomePessoa("João de Souza");
+        pessoa2.setNomePessoa("João de Souza Autor");
         pessoa2.setEmailPessoa("joao@email.com");
         pessoa2.setCelularPessoa("+55-11-99999-9999");
         // Associar aos locais normalizados se disponíveis
@@ -298,8 +300,8 @@ public class DataLoader implements CommandLineRunner {
             pessoa2.setEstado(spEstado);
         if (spCidade != null)
             pessoa2.setCidade(spCidade);
-        pessoa2.setCurriculoPessoal("Em confecção");
-        pessoa2.setComentarios("Sem comentarios por enquanto");
+        pessoa2.setCurriculoPessoal("Em confecção pelo autor da materia");
+        pessoa2.setComentarios("O autor irá fazer suas consideracoes sobre sua atividade");
         pessoa2.setSituacaoPessoa("A");
         pessoa2.setDataInclusao(LocalDate.now());
         pessoa2.setDataUltimaAtualizacao(LocalDate.now());
@@ -307,9 +309,9 @@ public class DataLoader implements CommandLineRunner {
         Pessoa pessoaPersistida2 = pessoaRepository.findById(pessoa2.getId()).orElseThrow();
 
         Usuario user2 = new Usuario();
-        user2.setUsername("admin1");
-        user2.setPassword("admin1$");
-        user2.setNivelAcessoUsuario(5);
+        user2.setUsername("autor1");
+        user2.setPassword("autor1$");
+        user2.setNivelAcessoUsuario(2);
         user2.setSituacaoUsuario("A");
         user2.setDataUltimaAtualizacao(LocalDate.now());
         user2.setPessoa(pessoaPersistida2);
@@ -338,7 +340,9 @@ public class DataLoader implements CommandLineRunner {
         ui23.setSitAcessoUsuarioInstituicao("A");
         usuarioInstituicaoRepository.save(ui23);
 
-        // PESSOA 3: SUPER-USUARIO - NIVEL 9
+        // #############################################################################
+
+        // PESSOA id=3: ADMINISTRADOR - NIVEL 5
 
         Pessoa pessoa3 = new Pessoa();
         pessoa3.setNomePessoa("Maria dos Santos");
@@ -351,8 +355,8 @@ public class DataLoader implements CommandLineRunner {
             pessoa3.setEstado(spEstado);
         if (spCidade != null)
             pessoa3.setCidade(spCidade);
-        pessoa3.setCurriculoPessoal("Comentario será adiconado em breve");
-        pessoa3.setComentarios("Comentarios em elaboracao");
+        pessoa3.setCurriculoPessoal("Comentario será adiconado pelo administrador");
+        pessoa3.setComentarios("Comentarios em elaboracao pelo administrador");
         pessoa3.setSituacaoPessoa("A");
         pessoa3.setDataInclusao(LocalDate.now());
         pessoa3.setDataUltimaAtualizacao(LocalDate.now());
@@ -360,9 +364,9 @@ public class DataLoader implements CommandLineRunner {
         Pessoa pessoaPersistida3 = pessoaRepository.findById(pessoa3.getId()).orElseThrow();
 
         Usuario user3 = new Usuario();
-        user3.setUsername("superu");
-        user3.setPassword("superu1$");
-        user3.setNivelAcessoUsuario(9);
+        user3.setUsername("admin1");
+        user3.setPassword("admin1$");
+        user3.setNivelAcessoUsuario(5);
         user3.setSituacaoUsuario("A");
         user3.setDataUltimaAtualizacao(LocalDate.now());
         user3.setPessoa(pessoaPersistida3);
@@ -390,6 +394,63 @@ public class DataLoader implements CommandLineRunner {
         ui33.setInstituicao(inst3);
         ui33.setSitAcessoUsuarioInstituicao("A");
         usuarioInstituicaoRepository.save(ui33);
+
+        // #############################################################################
+
+        // PESSOA id=4: SUPER-USUARIO - NIVEL 9
+
+        Pessoa pessoa4 = new Pessoa();
+        pessoa4.setNomePessoa("Luz Carlos dos Reis");
+        pessoa4.setEmailPessoa("luizcarlos@email.com");
+        pessoa4.setCelularPessoa("+55-11-99999-9999");
+        // Associar aos locais normalizados se disponíveis
+        if (brasilPais != null)
+            pessoa4.setPais(brasilPais);
+        if (spEstado != null)
+            pessoa4.setEstado(spEstado);
+        if (spCidade != null)
+            pessoa4.setCidade(spCidade);
+        pessoa4.setCurriculoPessoal("Curriculo em preparacao");
+        pessoa4.setComentarios("sem comentarios neste momento");
+        pessoa4.setSituacaoPessoa("A");
+        pessoa4.setDataInclusao(LocalDate.now());
+        pessoa4.setDataUltimaAtualizacao(LocalDate.now());
+        pessoaRepository.save(pessoa4);
+        Pessoa pessoaPersistida4 = pessoaRepository.findById(pessoa4.getId()).orElseThrow();
+
+        Usuario user4 = new Usuario();
+        user4.setUsername("superu");
+        user4.setPassword("superu1$");
+        user4.setNivelAcessoUsuario(9);
+        user4.setSituacaoUsuario("A");
+        user4.setDataUltimaAtualizacao(LocalDate.now());
+        user4.setPessoa(pessoaPersistida4);
+
+        System.out.println(
+                "*** Persistindo Usuário: " + user4.getUsername() + " com senha: '" + user4.getPassword() + "'");
+        System.out.println("*** ");
+
+        usuarioRepository.save(user4);
+
+        UsuarioInstituicao ui41 = new UsuarioInstituicao();
+        ui41.setUsuario(user4);
+        ui41.setInstituicao(inst1);
+        ui41.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui41);
+
+        UsuarioInstituicao ui42 = new UsuarioInstituicao();
+        ui42.setUsuario(user4);
+        ui42.setInstituicao(inst2);
+        ui42.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui42);
+
+        UsuarioInstituicao ui43 = new UsuarioInstituicao();
+        ui43.setUsuario(user4);
+        ui43.setInstituicao(inst3);
+        ui43.setSitAcessoUsuarioInstituicao("A");
+        usuarioInstituicaoRepository.save(ui43);
+
+        // #############################################################################
 
         // PESSOAINSTITUICAO E PESSOASUBINSTITUICAO
 
@@ -450,6 +511,8 @@ public class DataLoader implements CommandLineRunner {
         psSub13.setIdentificacaoPessoaSubInstituicao("psSub13");
         pessoaSubInstituicaoRepository.save(psSub13);
 
+        // #############################################################################
+
         // PessoaInstituicao - 21
         PessoaInstituicao psInst21 = new PessoaInstituicao();
         psInst21.setPessoa(pessoa2);
@@ -506,6 +569,8 @@ public class DataLoader implements CommandLineRunner {
         psSub23.setDataAfiliacao(LocalDate.now());
         psSub23.setIdentificacaoPessoaSubInstituicao("psSub23");
         pessoaSubInstituicaoRepository.save(psSub23);
+
+        // #############################################################################
 
         // PessoaInstituicao - 31
         PessoaInstituicao psInst31 = new PessoaInstituicao();
@@ -564,6 +629,67 @@ public class DataLoader implements CommandLineRunner {
         psSub33.setIdentificacaoPessoaSubInstituicao("psSub33");
         pessoaSubInstituicaoRepository.save(psSub33);
 
+        // #############################################################################
+
+        // PessoaInstituicao - 41
+        PessoaInstituicao psInst41 = new PessoaInstituicao();
+        psInst41.setPessoa(pessoa4);
+        psInst41.setInstituicao(inst1);
+        psInst41.setDataUltimaAtualizacao(LocalDate.now());
+        psInst41.setDataAfiliacao(LocalDate.now());
+        psInst41.setIdentificacaoPessoaInstituicao("psInst41");
+        pessoaInstituicaoRepository.save(psInst41);
+
+        // PessoaSubInstituicao - 41
+        PessoaSubInstituicao psSub41 = new PessoaSubInstituicao();
+        psSub41.setPessoa(pessoa4);
+        psSub41.setSubInstituicao(subInst31);
+        psSub41.setInstituicao(inst1);
+        psSub41.setDataUltimaAtualizacao(LocalDate.now());
+        psSub41.setDataAfiliacao(LocalDate.now());
+        psSub41.setIdentificacaoPessoaSubInstituicao("psSub41");
+        pessoaSubInstituicaoRepository.save(psSub41);
+
+        // PessoaInstituicao - 42
+        PessoaInstituicao psInst42 = new PessoaInstituicao();
+        psInst42.setPessoa(pessoa4);
+        psInst42.setInstituicao(inst2);
+        psInst42.setDataUltimaAtualizacao(LocalDate.now());
+        psInst42.setDataAfiliacao(LocalDate.now());
+        psInst42.setIdentificacaoPessoaInstituicao("psInst42");
+        pessoaInstituicaoRepository.save(psInst42);
+
+        // PessoaSubInstituicao - 42
+        PessoaSubInstituicao psSub42 = new PessoaSubInstituicao();
+        psSub42.setPessoa(pessoa4);
+        psSub42.setSubInstituicao(subInst32);
+        psSub42.setInstituicao(inst2);
+        psSub42.setDataUltimaAtualizacao(LocalDate.now());
+        psSub42.setDataAfiliacao(LocalDate.now());
+        psSub42.setIdentificacaoPessoaSubInstituicao("psSub42");
+        pessoaSubInstituicaoRepository.save(psSub42);
+
+        // PessoaInstituicao - 43
+        PessoaInstituicao psInst43 = new PessoaInstituicao();
+        psInst43.setPessoa(pessoa4);
+        psInst43.setInstituicao(inst3);
+        psInst43.setDataUltimaAtualizacao(LocalDate.now());
+        psInst43.setDataAfiliacao(LocalDate.now());
+        psInst43.setIdentificacaoPessoaInstituicao("psInst43");
+        pessoaInstituicaoRepository.save(psInst43);
+
+        // PessoaSubInstituicao - 43
+        PessoaSubInstituicao psSub43 = new PessoaSubInstituicao();
+        psSub43.setPessoa(pessoa4);
+        psSub43.setSubInstituicao(subInst33);
+        psSub43.setInstituicao(inst3);
+        psSub43.setDataUltimaAtualizacao(LocalDate.now());
+        psSub43.setDataAfiliacao(LocalDate.now());
+        psSub43.setIdentificacaoPessoaSubInstituicao("psSub43");
+        pessoaSubInstituicaoRepository.save(psSub43);
+
+        // #############################################################################
+
         // // LOCAL - PAISES
         // Local pais1 = new Local();
         // pais1.setTipoLocal(1);
@@ -577,7 +703,7 @@ public class DataLoader implements CommandLineRunner {
         // pais2.setLocalPai(null);
         // localRepository.save(pais2);
 
-        System.out.println("****** /config/DataLoader.java - Recarregou a base de dados     *******");
+        System.out.println("****** /config/DataLoader.java - Recarregou a base de dados principal    *******");
         System.out.println("****** ");
     }
 }

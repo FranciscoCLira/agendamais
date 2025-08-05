@@ -23,7 +23,20 @@ public class CadastroUsuarioController {
     }
 
     @GetMapping
-    public String exibirFormulario(Model model) {
+    public String exibirFormulario(
+            @RequestParam(required = false) String origem,
+            Model model, 
+            HttpSession session) {
+        
+        // Salva a origem do cadastro na sessão
+        if (origem != null) {
+            session.setAttribute("origemCadastro", origem);
+        }
+        
+        // Passa a origem para o template também
+        String origemAtual = (String) session.getAttribute("origemCadastro");
+        model.addAttribute("origem", origemAtual);
+        
         if (!model.containsAttribute("usuario")) {
             model.addAttribute("usuario", new Usuario());
         }
