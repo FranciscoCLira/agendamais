@@ -117,7 +117,7 @@ public class MenuController {
 
     // Endpoints para funcionalidades do administrador
     @GetMapping("/administrador/instituicoes")
-    public String gerenciarInstituicoes() {
+    public String administradorInstituicoes() {
         return "info/em-construcao";
     }
 
@@ -154,6 +154,18 @@ public class MenuController {
     @GetMapping("/administrador/usuarios")
     public String gerenciarUsuarios() {
         return "info/em-construcao";
+    }
+
+    // === ENDPOINTS EM CONSTRUÇÃO PARA SUPERUSUARIO ===
+
+    @GetMapping("/superusuario/backup")
+    public String backupInstituicao() {
+        return "info/em-construcao"; // Página em construção
+    }
+
+    @GetMapping("/superusuario/logs")
+    public String logsInstituicao() {
+        return "info/em-construcao"; // Página em construção
     }
 
     /**
