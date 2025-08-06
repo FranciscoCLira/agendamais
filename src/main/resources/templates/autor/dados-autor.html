@@ -24,11 +24,13 @@
         </p>
 
         <div class="form-actions" style="text-align: center; margin-top: 20px">
-          <a th:href="${tipoUsuario == 'participante' ? '/participante' : 
+          <a
+            th:href="${tipoUsuario == 'participante' ? '/participante' : 
                       tipoUsuario == 'autor' ? '/autor' : 
                       tipoUsuario == 'administrador' ? '/administrador' : 
                       tipoUsuario == 'super-usuario' ? '/superusuario' : 
-                      tipoUsuario == 'controle-total' ? '/controle-total' : '/autor'}">
+                      tipoUsuario == 'controle-total' ? '/controle-total' : '/autor'}"
+          >
             <button type="button">
               <i class="fas fa-arrow-left"></i> Voltar ao Menu
             </button>

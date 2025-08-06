@@ -3,9 +3,11 @@
 ## Problemas Corrigidos
 
 ### 1. Redirecionamentos Incorretos após "Meus Dados"
+
 **Problema**: Todos os usuários eram redirecionados para `/participante` após salvar "Meus Dados".
 
-**Solução**: 
+**Solução**:
+
 - Atualizado `MeusDadosController` para redirecionar baseado no tipo de usuário
 - Atualizado botão "Retornar" no template para ser dinâmico
 - Redirecionamentos corretos:
@@ -16,9 +18,11 @@
   - Controle Total → `/controle-total`
 
 ### 2. Fluxo de Cadastro com Origem Incorreta
+
 **Problema**: Cadastro sempre redirecionava para `/acesso`, independente de onde foi iniciado.
 
 **Solução**:
+
 - Adicionado parâmetro `origem` no `CadastroUsuarioController`
 - Atualizado link no menu do administrador: `/cadastro-usuario?origem=administrador`
 - Corrigido `CadastroRelacionamentoController` para redirecionar baseado na origem:
@@ -26,9 +30,11 @@
   - Origem "acesso" → `/acesso`
 
 ### 3. Funcionalidades Faltantes
+
 **Problema**: Páginas gerando erro 404 ou stack traces para o usuário.
 
 **Solução**: Adicionados endpoints no `MenuController`:
+
 - `/participante/inscricao-form` → "Em Construção"
 - `/administrador/instituicoes` → "Em Construção"
 - `/administrador/subinstituicoes` → "Em Construção"
@@ -40,29 +46,35 @@
 - `/administrador/usuarios` → "Em Construção"
 
 ### 4. Botão "Voltar" Hardcoded em "Dados de Autor"
+
 **Problema**: Sempre redirecionava para `/autor`, mesmo quando acessado por administrador.
 
 **Solução**:
+
 - Atualizado controller para passar `tipoUsuario` para o template
 - Template agora usa redirecionamento dinâmico baseado no nível do usuário
 
 ### 5. Espaçamentos nos Menus
+
 **Problema**: Falta de separação visual entre grupos de funcionalidades.
 
 **Solução**: Adicionados espaçamentos nos menus:
+
 - **Menu Autor**: Espaço entre "Vínculos com Instituições" e "Meus Dados"
-- **Menu Administrador**: 
+- **Menu Administrador**:
   - Espaço entre "Vínculos com Instituições" e "Meus Dados"
   - Espaço após "Gestão da Instituição"
 
 ## Estrutura dos Menus Corrigida
 
 ### Menu /participante:
+
 - (A) Inscrição em Tipos de Atividades → `/participante/inscricao-form` ✅
 - (B) Vínculos com Instituições → `/vinculo-instituicao` ✅
 - (C) Meus Dados → `/meus-dados` ✅
 
 ### Menu /autor:
+
 - (A) Inscrição em Tipos de Atividades → `/inscricao-tipo-atividade` ✅
 - (B) Vínculos com Instituições → `/vinculo-instituicao` ✅
 - **[ESPAÇO]**
@@ -70,6 +82,7 @@
 - (D) Meus dados de Autor → `/dados-autor` ✅ (redireciona para /autor)
 
 ### Menu /administrador:
+
 - (A) Inscrição em Tipos de Atividades → `/inscricao-tipo-atividade` ✅
 - (B) Vínculos com Instituições → `/vinculo-instituicao` ✅
 - **[ESPAÇO]**
@@ -83,12 +96,14 @@
 ## Arquivos Modificados
 
 ### Controllers
+
 - `MeusDadosController.java` - Redirecionamentos dinâmicos
 - `MenuController.java` - Novos endpoints e tipo de usuário
 - `CadastroUsuarioController.java` - Parâmetro origem
 - `CadastroRelacionamentoController.java` - Redirecionamento baseado na origem
 
 ### Templates
+
 - `participante/meus-dados.html` - Botão "Retornar" dinâmico
 - `menus/menu-autor.html` - Espaçamentos adicionados
 - `menus/menu-administrador.html` - Espaçamentos e origem no cadastro
@@ -101,7 +116,7 @@
 ✅ **Páginas "Em Construção"** para funcionalidades não implementadas  
 ✅ **Navegação consistente** entre diferentes tipos de usuário  
 ✅ **Espaçamentos visuais** nos menus para melhor organização  
-✅ **Tratamento de erros** sem exposição de stack traces  
+✅ **Tratamento de erros** sem exposição de stack traces
 
 ## Benefícios
 

@@ -301,7 +301,9 @@
           )
             .then((response) => {
               if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(
+                  `HTTP ${response.status}: ${response.statusText}`
+                );
               }
               return response.json();
             })
@@ -324,8 +326,10 @@
             });
         } else {
           // Se não há país selecionado, limpa os selects
-          estadoSelect.innerHTML = '<option value="">Selecione um estado</option>';
-          cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+          estadoSelect.innerHTML =
+            '<option value="">Selecione um estado</option>';
+          cidadeSelect.innerHTML =
+            '<option value="">Selecione uma cidade</option>';
         }
       }
 
@@ -351,9 +355,9 @@
         ) {
           console.log("Carregando cidades para:", {
             pais: paisSelect.value,
-            estado: estadoSelect.value
+            estado: estadoSelect.value,
           });
-          
+
           fetch(
             `/api/locais/cidades?paisNome=${encodeURIComponent(
               paisSelect.value
@@ -361,7 +365,9 @@
           )
             .then((response) => {
               if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(
+                  `HTTP ${response.status}: ${response.statusText}`
+                );
               }
               return response.json();
             })
@@ -384,14 +390,15 @@
                 estado: estadoSelect.value,
                 url: `/api/locais/cidades?paisNome=${encodeURIComponent(
                   paisSelect.value
-                )}&estadoNome=${encodeURIComponent(estadoSelect.value)}`
+                )}&estadoNome=${encodeURIComponent(estadoSelect.value)}`,
               });
               cidadeSelect.innerHTML =
                 '<option value="">Erro ao carregar cidades</option>';
             });
         } else {
           // Se não há estado/país válido selecionado, limpa o select de cidades
-          cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+          cidadeSelect.innerHTML =
+            '<option value="">Selecione uma cidade</option>';
         }
       }
 

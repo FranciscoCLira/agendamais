@@ -1,115 +1,123 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Teste AJAX Cidades</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Teste Carregamento de Cidades</h1>
-    
+
     <label>País:</label>
     <select id="paisSelect">
-        <option value="">Selecione</option>
-        <option value="Brasil">Brasil</option>
-        <option value="Outro">Outro</option>
+      <option value="">Selecione</option>
+      <option value="Brasil">Brasil</option>
+      <option value="Outro">Outro</option>
     </select>
-    
-    <br><br>
-    
+
+    <br /><br />
+
     <label>Estado:</label>
     <select id="estadoSelect">
-        <option value="">Selecione</option>
+      <option value="">Selecione</option>
     </select>
-    
-    <br><br>
-    
+
+    <br /><br />
+
     <label>Cidade:</label>
-    <input type="text" id="cidade" list="listaCidades" placeholder="Digite a cidade">
+    <input
+      type="text"
+      id="cidade"
+      list="listaCidades"
+      placeholder="Digite a cidade"
+    />
     <datalist id="listaCidades"></datalist>
-    
-    <br><br>
-    
-    <div id="log" style="background: #f0f0f0; padding: 10px; margin-top: 20px;">
-        <strong>Log:</strong><br>
-        <div id="logContent"></div>
+
+    <br /><br />
+
+    <div id="log" style="background: #f0f0f0; padding: 10px; margin-top: 20px">
+      <strong>Log:</strong><br />
+      <div id="logContent"></div>
     </div>
-    
+
     <script>
-        function log(msg) {
-            const logDiv = document.getElementById("logContent");
-            logDiv.innerHTML += new Date().toLocaleTimeString() + ": " + msg + "<br>";
-            console.log(msg);
-        }
-        
-        document.addEventListener("DOMContentLoaded", function() {
-            log("Página carregada");
-            
-            const paisSelect = document.getElementById("paisSelect");
-            const estadoSelect = document.getElementById("estadoSelect");
-            const cidadeInput = document.getElementById("cidade");
-            
-            paisSelect.addEventListener("change", function() {
-                const pais = this.value;
-                log("País selecionado: " + pais);
-                
-                if (pais === "Brasil") {
-                    log("Buscando estados do Brasil...");
-                    
-                    fetch('/api/locais/estados?paisNome=' + encodeURIComponent(pais))
-                        .then(resp => {
-                            log("Resposta recebida: " + resp.status);
-                            return resp.json();
-                        })
-                        .then(estados => {
-                            log("Estados encontrados: " + estados.length);
-                            
-                            estadoSelect.innerHTML = '<option value="">Selecione</option>';
-                            estados.forEach(estado => {
-                                log("Adicionando estado: " + estado.nomeLocal);
-                                const opt = document.createElement("option");
-                                opt.value = estado.nomeLocal;
-                                opt.text = estado.nomeLocal;
-                                estadoSelect.appendChild(opt);
-                            });
-                        })
-                        .catch(err => {
-                            log("ERRO ao buscar estados: " + err.message);
-                        });
-                }
-            });
-            
-            estadoSelect.addEventListener("change", function() {
-                const estado = this.value;
-                log("Estado selecionado: " + estado);
-                
-                if (estado && estado !== "") {
-                    log("Buscando cidades do estado " + estado + "...");
-                    
-                    fetch('/api/locais/cidades?estadoNome=' + encodeURIComponent(estado))
-                        .then(resp => {
-                            log("Resposta recebida: " + resp.status);
-                            return resp.json();
-                        })
-                        .then(cidades => {
-                            log("Cidades encontradas: " + cidades.length);
-                            
-                            const datalist = document.getElementById("listaCidades");
-                            datalist.innerHTML = '';
-                            
-                            cidades.forEach(cidade => {
-                                log("Adicionando cidade: " + cidade.nomeLocal);
-                                const opt = document.createElement("option");
-                                opt.value = cidade.nomeLocal;
-                                datalist.appendChild(opt);
-                            });
-                            
-                            log("Total de opções no datalist: " + datalist.children.length);
-                        })
-                        .catch(err => {
-                            log("ERRO ao buscar cidades: " + err.message);
-                        });
-                }
-            });
+      function log(msg) {
+        const logDiv = document.getElementById("logContent");
+        logDiv.innerHTML +=
+          new Date().toLocaleTimeString() + ": " + msg + "<br>";
+        console.log(msg);
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        log("Página carregada");
+
+        const paisSelect = document.getElementById("paisSelect");
+        const estadoSelect = document.getElementById("estadoSelect");
+        const cidadeInput = document.getElementById("cidade");
+
+        paisSelect.addEventListener("change", function () {
+          const pais = this.value;
+          log("País selecionado: " + pais);
+
+          if (pais === "Brasil") {
+            log("Buscando estados do Brasil...");
+
+            fetch("/api/locais/estados?paisNome=" + encodeURIComponent(pais))
+              .then((resp) => {
+                log("Resposta recebida: " + resp.status);
+                return resp.json();
+              })
+              .then((estados) => {
+                log("Estados encontrados: " + estados.length);
+
+                estadoSelect.innerHTML = '<option value="">Selecione</option>';
+                estados.forEach((estado) => {
+                  log("Adicionando estado: " + estado.nomeLocal);
+                  const opt = document.createElement("option");
+                  opt.value = estado.nomeLocal;
+                  opt.text = estado.nomeLocal;
+                  estadoSelect.appendChild(opt);
+                });
+              })
+              .catch((err) => {
+                log("ERRO ao buscar estados: " + err.message);
+              });
+          }
         });
+
+        estadoSelect.addEventListener("change", function () {
+          const estado = this.value;
+          log("Estado selecionado: " + estado);
+
+          if (estado && estado !== "") {
+            log("Buscando cidades do estado " + estado + "...");
+
+            fetch(
+              "/api/locais/cidades?estadoNome=" + encodeURIComponent(estado)
+            )
+              .then((resp) => {
+                log("Resposta recebida: " + resp.status);
+                return resp.json();
+              })
+              .then((cidades) => {
+                log("Cidades encontradas: " + cidades.length);
+
+                const datalist = document.getElementById("listaCidades");
+                datalist.innerHTML = "";
+
+                cidades.forEach((cidade) => {
+                  log("Adicionando cidade: " + cidade.nomeLocal);
+                  const opt = document.createElement("option");
+                  opt.value = cidade.nomeLocal;
+                  datalist.appendChild(opt);
+                });
+
+                log("Total de opções no datalist: " + datalist.children.length);
+              })
+              .catch((err) => {
+                log("ERRO ao buscar cidades: " + err.message);
+              });
+          }
+        });
+      });
     </script>
-</body>
+  </body>
 </html>

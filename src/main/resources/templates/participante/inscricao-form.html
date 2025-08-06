@@ -31,7 +31,8 @@
         method="post"
         th:object="${inscricaoForm}"
       >
-        <label>Selecione as atividades:</label><br />
+        <label>Selecione os Tipos de Atividades que deseja participar:</label
+        ><br />
         <div th:each="atividade : ${atividades}">
           <label>
             <input

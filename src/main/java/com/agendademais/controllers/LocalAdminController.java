@@ -64,7 +64,8 @@ public class LocalAdminController {
             return false;
         }
 
-        // Para nível 9 (SuperUsuário), deve estar no contexto de Controle Total (sem instituição selecionada)
+        // Para nível 9 (SuperUsuário), deve estar no contexto de Controle Total (sem
+        // instituição selecionada)
         // Para nível 0 (Controle Total), não há essa restrição
         if (usuario.getNivelAcessoUsuario() == 9) {
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");

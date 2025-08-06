@@ -18,7 +18,7 @@ public class LocalApiController {
 
     @Autowired
     private LocalService localService;
-    
+
     // Exemplo: GET /api/locais/cidades/auto?estado=SP&query=São
     @GetMapping("/cidades/auto")
     public List<Local> autocompleteCidades(
@@ -27,11 +27,12 @@ public class LocalApiController {
 
         // Busca o objeto do estado pelo nome (você pode melhorar, p.ex. cacheando)
         Optional<Local> estadoObj = localService.buscarPorNomeETipo(estado, 2);
-        if (estadoObj.isEmpty()) return List.of();
+        if (estadoObj.isEmpty())
+            return List.of();
 
         // Filtra cidades que comecem com o texto digitado (case insensitive)
         return localService.autocompleteCidades(estadoObj.get(), query);
-    }    
+    }
 
     // Listar todos os países
     @GetMapping("/paises")
@@ -61,14 +62,14 @@ public class LocalApiController {
         return localService.buscarPorNomeParcial(tipoLocal, termo)
                 .stream().map(LocalDTO::new).toList();
     }
-	
+
     // 5. Criar Local por API (para testes ou admin)
-    
+
     @PostMapping("/novo")
     public Local criarLocal(
-        @RequestParam int tipoLocal,
-        @RequestParam String nomeLocal,
-        @RequestParam(required = false) Long idPai // se houver
+            @RequestParam int tipoLocal,
+            @RequestParam String nomeLocal,
+            @RequestParam(required = false) Long idPai // se houver
     ) {
         Local localPai = null;
         if (idPai != null) {
@@ -81,17 +82,17 @@ public class LocalApiController {
     @GetMapping("/debug")
     public Map<String, Object> debug(@RequestParam(required = false) String pais) {
         Map<String, Object> result = new HashMap<>();
-        
+
         // Lista todos os países
         List<Local> paises = localService.listarPorTipo(1);
         result.put("paises", paises.stream().map(p -> p.getNomeLocal()).toList());
-        
+
         if (pais != null) {
             // Lista estados do país informado
             List<Local> estados = localService.listarEstadosPorPaisNome(pais);
             result.put("estados_" + pais, estados.stream().map(e -> e.getNomeLocal()).toList());
         }
-        
+
         return result;
     }
 }

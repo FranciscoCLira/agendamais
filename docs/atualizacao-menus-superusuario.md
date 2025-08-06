@@ -3,12 +3,14 @@
 ## Definição dos Níveis de Acesso
 
 ### Super-Usuário (nível 9)
+
 - **Participante**: Pode se inscrever em tipos de atividades
 - **Autor**: Pode gerenciar dados de autor
 - **Administrador**: Tem todas as funcionalidades administrativas de instituição
 - **Super-Usuário**: Funcionalidades avançadas específicas
 
 ### Controle Total (nível 0)
+
 - **Acesso restrito**: Funcionalidades específicas de sistema
 - **Administração total**: Controle completo sobre todas as instituições
 - **Configurações de sistema**: Backup, logs, migrações
@@ -17,6 +19,7 @@
 ## Menu Super-Usuário Atualizado
 
 ### Funcionalidades de Participante/Autor
+
 - (A) Inscrição em Tipos de Atividades → `/inscricao-tipo-atividade`
 - (B) Vínculos com Instituições → `/vinculo-instituicao`
 - **[ESPAÇO]**
@@ -24,6 +27,7 @@
 - (D) Meus dados de Autor → `/dados-autor`
 
 ### Gestão da Instituição (como Administrador)
+
 - **[ESPAÇO]**
 - **Gestão da Instituição**
 - Cadastro (Usuário/Pessoa) → `/cadastro-usuario?origem=superusuario`
@@ -37,6 +41,7 @@
 - Gestão de Usuários → `/administrador/usuarios`
 
 ### Funcionalidades Avançadas (Específicas)
+
 - **[ESPAÇO]**
 - **Funcionalidades Avançadas**
 - Gerenciar Locais → `/superusuario/locais`
@@ -46,6 +51,7 @@
 ## Menu Controle Total Atualizado
 
 ### Administração do Sistema
+
 - **Administração do Sistema**
 - **[ESPAÇO]**
 - Gerenciar Todas as Instituições → `/controle-total/instituicoes`
@@ -54,6 +60,7 @@
 - Relação Local ↔ Pessoas → `/gestao/locais/relacao-pessoas`
 
 ### Configurações do Sistema
+
 - **[ESPAÇO]**
 - **Configurações do Sistema**
 - **[ESPAÇO]**
@@ -64,6 +71,7 @@
 - Modo Manutenção → `/controle-total/manutencao`
 
 ### Relatórios e Auditoria
+
 - **[ESPAÇO]**
 - **Relatórios e Auditoria**
 - **[ESPAÇO]**
@@ -72,6 +80,7 @@
 - Estatísticas do Sistema → `/controle-total/estatisticas`
 
 ### Perfil
+
 - **[ESPAÇO]**
 - **Perfil**
 - **[ESPAÇO]**
@@ -80,6 +89,7 @@
 ## Fluxos de Cadastro Atualizados
 
 ### Origem do Cadastro
+
 - **Administrador**: `/cadastro-usuario?origem=administrador` → retorna para `/administrador`
 - **Super-Usuário**: `/cadastro-usuario?origem=superusuario` → retorna para `/superusuario`
 - **Link "Não tem cadastro?"**: `/cadastro-usuario` → retorna para `/acesso`
@@ -87,11 +97,13 @@
 ## Endpoints Implementados
 
 ### Super-Usuário
+
 - `/superusuario/locais` → "Em Construção"
 - `/superusuario/backup` → "Em Construção"
 - `/superusuario/logs` → "Em Construção"
 
 ### Controle Total
+
 - `/controle-total/instituicoes` → "Em Construção"
 - `/controle-total/usuarios` → "Em Construção"
 - `/controle-total/backup` → "Em Construção"
@@ -106,10 +118,12 @@
 ## Arquivos Modificados
 
 ### Templates
+
 - `menus/menu-superusuario.html` - Expandido com todas as funcionalidades
 - `menus/menu-controle-total.html` - Reorganizado com categorias claras
 
 ### Controllers
+
 - `MenuController.java` - Adicionados novos endpoints
 - `CadastroRelacionamentoController.java` - Suporte a origem "superusuario"
 
@@ -118,7 +132,7 @@
 ```
 Participante (nível 1)
 ├── Inscrição em atividades
-├── Vínculos com instituições  
+├── Vínculos com instituições
 └── Meus dados
 
 Autor (nível 2)

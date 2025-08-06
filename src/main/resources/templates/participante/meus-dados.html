@@ -85,11 +85,7 @@
 
           <!-- País -->
           <label>País:</label>
-          <select
-            id="paisSelect"
-            name="nomePaisPessoa"
-            required
-          >
+          <select id="paisSelect" name="nomePaisPessoa" required>
             <option value="">Selecione o país</option>
             <option
               th:each="pais : ${paises}"
@@ -109,11 +105,7 @@
 
           <!-- Estado -->
           <label>Estado:</label>
-          <select
-            id="estadoSelect"
-            name="nomeEstadoPessoa"
-            required
-          >
+          <select id="estadoSelect" name="nomeEstadoPessoa" required>
             <option value="">Selecione</option>
             <option
               th:each="estado : ${estados}"
@@ -175,7 +167,8 @@
           <button type="submit" id="btnSalvar" style="display: none">
             Salvar Alterações
           </button>
-          <a th:href="${tipoUsuario == 'participante' ? '/participante' : 
+          <a
+            th:href="${tipoUsuario == 'participante' ? '/participante' : 
                       tipoUsuario == 'autor' ? '/autor' : 
                       tipoUsuario == 'administrador' ? '/administrador' : 
                       tipoUsuario == 'super-usuario' ? '/superusuario' : 
@@ -196,26 +189,26 @@ O script local-form.js cuida de:
 
     <script>
       // Adiciona handlers específicos para edição
-      document.addEventListener("DOMContentLoaded", function() {
+      document.addEventListener("DOMContentLoaded", function () {
         console.log("=== INIT: DOM carregado, configurando eventos ===");
-        
+
         // Teste se o local-form.js foi carregado
-        if (typeof paisChange === 'function') {
+        if (typeof paisChange === "function") {
           console.log("✓ local-form.js carregado com sucesso");
         } else {
           console.error("✗ local-form.js NÃO foi carregado");
         }
-        
+
         // Configura eventos quando a página carrega
         const paisSelect = document.getElementById("paisSelect");
         const estadoSelect = document.getElementById("estadoSelect");
         const cidadeInput = document.getElementById("cidade");
-        
+
         if (paisSelect) {
           console.log("✓ Configurando evento para país");
-          paisSelect.addEventListener("change", function(e) {
+          paisSelect.addEventListener("change", function (e) {
             console.log(">>> Evento país disparado:", e.target.value);
-            if (typeof paisChange === 'function') {
+            if (typeof paisChange === "function") {
               paisChange(e);
             } else {
               console.error("Função paisChange não encontrada!");
@@ -224,12 +217,12 @@ O script local-form.js cuida de:
         } else {
           console.error("✗ Elemento paisSelect não encontrado");
         }
-        
+
         if (estadoSelect) {
           console.log("✓ Configurando evento para estado");
-          estadoSelect.addEventListener("change", function(e) {
+          estadoSelect.addEventListener("change", function (e) {
             console.log(">>> Evento estado disparado:", e.target.value);
-            if (typeof estadoChange === 'function') {
+            if (typeof estadoChange === "function") {
               estadoChange(e);
             } else {
               console.error("Função estadoChange não encontrada!");
@@ -238,12 +231,12 @@ O script local-form.js cuida de:
         } else {
           console.error("✗ Elemento estadoSelect não encontrado");
         }
-        
+
         if (cidadeInput) {
           console.log("✓ Configurando evento para cidade");
-          cidadeInput.addEventListener("input", function(e) {
+          cidadeInput.addEventListener("input", function (e) {
             console.log(">>> Evento cidade disparado:", e.target.value);
-            if (typeof cidadeChange === 'function') {
+            if (typeof cidadeChange === "function") {
               cidadeChange(e);
             } else {
               console.error("Função cidadeChange não encontrada!");
@@ -252,7 +245,7 @@ O script local-form.js cuida de:
         } else {
           console.error("✗ Elemento cidadeInput não encontrado");
         }
-        
+
         // Log do estado atual dos selects
         console.log("País atual:", paisSelect?.value);
         console.log("Estado atual:", estadoSelect?.value);
@@ -282,38 +275,40 @@ O script local-form.js cuida de:
       document.getElementById("formMeusDados").onsubmit = function (evt) {
         const fields = document.getElementById("formFields");
         if (!fields.classList.contains("readonly")) {
-          
           // Debug: Log all form values before submission
           const formData = new FormData(this);
           console.log("=== FORM DATA DEBUG ===");
           for (let [key, value] of formData.entries()) {
             console.log(`${key}: '${value}'`);
           }
-          console.log("Comentários field value:", document.querySelector('textarea[name="comentarios"]')?.value);
+          console.log(
+            "Comentários field value:",
+            document.querySelector('textarea[name="comentarios"]')?.value
+          );
           console.log("=======================");
-          
+
           // Corrige os valores quando país é "Outro"
           const paisSelect = document.getElementById("paisSelect");
           const paisOutro = document.getElementById("paisOutro");
           const estadoSelect = document.getElementById("estadoSelect");
           const estadoOutro = document.getElementById("estadoOutro");
-          
+
           console.log("Antes da correção:");
           console.log("País:", paisSelect.value);
           console.log("Estado:", estadoSelect.value);
           console.log("EstadoOutro:", estadoOutro.value);
-          
+
           if (paisSelect.value === "Outro") {
             // Se país é "Outro", garante que o estado seja enviado como "Outro"
             estadoSelect.value = "Outro";
             console.log("Definindo estado como 'Outro' porque país é 'Outro'");
           }
-          
+
           console.log("Depois da correção:");
           console.log("País:", paisSelect.value);
           console.log("Estado:", estadoSelect.value);
           console.log("EstadoOutro:", estadoOutro.value);
-          
+
           if (!confirm("Confirma as alterações?")) {
             evt.preventDefault();
           }
