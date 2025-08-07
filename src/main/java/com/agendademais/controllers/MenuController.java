@@ -11,7 +11,13 @@ public class MenuController {
 
     // Endpoints principais para cada nível de usuário
     @GetMapping("/participante")
-    public String participante() {
+    public String participante(HttpSession session, Model model) {
+        System.out.println("*** MenuController.participante() - Entrada ***");
+        System.out.println("*** Sessão ID: " + session.getId());
+        System.out.println("*** usuarioLogado: " + (session.getAttribute("usuarioLogado") != null ? "existe" : "null"));
+        System.out.println("*** instituicaoSelecionada: " + (session.getAttribute("instituicaoSelecionada") != null ? "existe" : "null"));
+        System.out.println("*** nivelAcessoAtual: " + session.getAttribute("nivelAcessoAtual"));
+        
         return "menus/menu-participante";
     }
 
@@ -101,10 +107,10 @@ public class MenuController {
     public String dadosAutor(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         if (usuario == null) {
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
-        String tipoUsuario = determinaTipoUsuario(usuario);
+        String tipoUsuario = determinaTipoUsuario(session);
         model.addAttribute("tipoUsuario", tipoUsuario);
 
         return "autor/dados-autor"; // Template para dados de autor
@@ -113,6 +119,30 @@ public class MenuController {
     @GetMapping("/vinculo-instituicao")
     public String vinculoInstituicao() {
         return "info/em-construcao"; // Página em construção
+    }
+
+    /**
+     * Determina o tipo de usuário baseado no nível de acesso da sessão
+     */
+    private String determinaTipoUsuario(HttpSession session) {
+        Integer nivel = (Integer) session.getAttribute("nivelAcessoAtual");
+        
+        if (nivel == null) {
+            return "participante";
+        }
+
+        switch (nivel) {
+            case 2:
+                return "autor";
+            case 5:
+                return "administrador";
+            case 9:
+                return "superusuario";
+            case 0:
+                return "controle-total";
+            default:
+                return "participante";
+        }
     }
 
     // Endpoints para funcionalidades do administrador
@@ -166,26 +196,6 @@ public class MenuController {
     @GetMapping("/superusuario/logs")
     public String logsInstituicao() {
         return "info/em-construcao"; // Página em construção
-    }
-
-    /**
-     * Determina o tipo de usuário baseado no perfil
-     */
-    private String determinaTipoUsuario(Usuario usuario) {
-        int nivel = usuario.getNivelAcessoUsuario();
-
-        switch (nivel) {
-            case 2:
-                return "autor";
-            case 5:
-                return "administrador";
-            case 9:
-                return "super-usuario";
-            case 0:
-                return "controle-total";
-            default:
-                return "participante";
-        }
     }
 
     // Endpoint de teste para debug AJAX

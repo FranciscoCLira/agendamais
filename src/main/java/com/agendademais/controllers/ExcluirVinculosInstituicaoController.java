@@ -46,7 +46,7 @@ public class ExcluirVinculosInstituicaoController {
 
         if (usuario == null || instituicao == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         Pessoa pessoa = usuario.getPessoa();

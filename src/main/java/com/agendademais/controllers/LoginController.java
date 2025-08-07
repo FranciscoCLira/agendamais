@@ -113,8 +113,10 @@ public class LoginController {
                         + inst.getId() + " - " + inst.getNomeInstituicao()));
         System.out.println("*** ");
 
-        System.out.println("*** 4. LoginController.java POST /acesso/processarLogin usuario.getNivelAcessoUsuario()  = "
-                + usuario.getNivelAcessoUsuario());
+        // REMOVIDO: usuario.getNivelAcessoUsuario() - agora está em UsuarioInstituicao
+        // System.out.println("*** 4. LoginController.java POST /acesso/processarLogin
+        // usuario.getNivelAcessoUsuario() = "
+        // + usuario.getNivelAcessoUsuario());
         System.out.println("*** 4. LoginController.java POST /acesso/processarLogin vinculosAtivos.size()            = "
                 + vinculosAtivos.size());
         System.out.println("*** 4. LoginController.java POST /acesso/processarLogin temVinculos Pessoa               = "
@@ -138,22 +140,31 @@ public class LoginController {
             return "redirect:/acesso";
         }
 
+        // Verificar se é SuperUsuário (nível 9) em alguma instituição
+        boolean ehSuperUsuario = vinculosAtivos.stream()
+                .anyMatch(v -> v.getNivelAcessoUsuarioInstituicao() == 9);
+
         // SuperUsuário, sempre exibe a escolha mesmo com 1 vínculo
-        if (usuario.getNivelAcessoUsuario() == 9) {
+        if (ehSuperUsuario) {
             redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
             redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
             redirectAttributes.addFlashAttribute("username", username);
             redirectAttributes.addFlashAttribute("password", password);
             redirectAttributes.addFlashAttribute("exibirControleTotal", true);
-            redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
+            redirectAttributes.addFlashAttribute("nivelAcesso", 9); // SuperUsuário
             return "redirect:/acesso";
         }
 
         // APENAS 1 VINCULO ATIVO
         if (instituicoesVinculadasAtivas.size() == 1) {
+            UsuarioInstituicao vinculoUnico = vinculosAtivos.get(0);
+            int nivelAcessoUnico = vinculoUnico.getNivelAcessoUsuarioInstituicao();
+
             session.setAttribute("usuarioLogado", usuario);
             session.setAttribute("instituicaoSelecionada", instituicoesVinculadasAtivas.get(0));
-            return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
+            session.setAttribute("nivelAcessoAtual", nivelAcessoUnico);
+
+            return redirecionarPorNivel(nivelAcessoUnico);
         }
 
         // Mais de um vínculo ativo: exibir seleção - Lista
@@ -161,7 +172,8 @@ public class LoginController {
         redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
         redirectAttributes.addFlashAttribute("username", username);
         redirectAttributes.addFlashAttribute("password", password);
-        redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
+        // Nível será determinado após escolha da instituição
+        redirectAttributes.addFlashAttribute("nivelAcesso", "multiplos");
 
         System.out.println(
                 "*** 5. LoginController.java POST /acesso  processarLogin - Mais de um vínculo ativo: exibir seleção - Lista ");
@@ -207,18 +219,24 @@ public class LoginController {
         // System.out.println("****************************************************************************");
 
         // ACESSO AO CONTROLE TOTAL (OPCAO VALOR 0)
-        if (instituicao == 0 && usuario.getNivelAcessoUsuario() == 9) {
+        // Verificar se usuário tem nível 9 (SuperUsuário) em alguma instituição
+        boolean ehSuperUsuarioGlobal = usuarioInstituicaoRepository.findByUsuario(usuario).stream()
+                .anyMatch(v -> v.getNivelAcessoUsuarioInstituicao() == 9
+                        && "A".equals(v.getSitAcessoUsuarioInstituicao()));
+
+        if (instituicao == 0 && ehSuperUsuarioGlobal) {
             session.setAttribute("usuarioLogado", usuario);
             session.removeAttribute("instituicaoSelecionada");
+            session.setAttribute("nivelAcessoAtual", 0); // Controle Total
             return "redirect:/controle-total";
         }
 
-        if (instituicao == 0 && usuario.getNivelAcessoUsuario() != 9) {
+        if (instituicao == 0 && !ehSuperUsuarioGlobal) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Acesso ao Controle Total não permitido.");
             redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
             redirectAttributes.addFlashAttribute("username", username);
             redirectAttributes.addFlashAttribute("password", password);
-            redirectAttributes.addFlashAttribute("nivelAcesso", usuario.getNivelAcessoUsuario());
+            redirectAttributes.addFlashAttribute("nivelAcesso", "negado");
 
             redirectAttributes.addFlashAttribute("instituicoes",
                     usuarioInstituicaoRepository.findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A")
@@ -255,15 +273,20 @@ public class LoginController {
         }
 
         // Acesso normal via instituição
+        UsuarioInstituicao vinculoSelecionado = vinculoOpt.get();
         session.setAttribute("usuarioLogado", usuario);
         session.setAttribute("instituicaoSelecionada",
                 instituicaoRepository.findById(instituicao).orElse(null));
 
-        if (usuario.getNivelAcessoUsuario() == 9) {
+        // NOVO: Armazenar o nível de acesso da instituição selecionada
+        int nivelAcessoAtual = vinculoSelecionado.getNivelAcessoUsuarioInstituicao();
+        session.setAttribute("nivelAcessoAtual", nivelAcessoAtual);
+
+        if (nivelAcessoAtual == 9) {
             return "redirect:/superusuario";
         }
 
-        return redirecionarPorNivel(usuario.getNivelAcessoUsuario());
+        return redirecionarPorNivel(nivelAcessoAtual);
     }
 
     // exibe a tela

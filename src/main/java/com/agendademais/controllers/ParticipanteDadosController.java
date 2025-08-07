@@ -43,7 +43,7 @@ public class ParticipanteDadosController {
 
         if (usuario == null || usuario.getPessoa() == null) {
             model.addAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
         Pessoa pessoa = usuario.getPessoa();
 
@@ -88,7 +88,7 @@ public class ParticipanteDadosController {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
 
         if (usuario == null || usuario.getPessoa() == null) {
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         // Processa campos "Outro"

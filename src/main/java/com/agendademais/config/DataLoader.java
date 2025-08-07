@@ -30,7 +30,7 @@ public class DataLoader implements CommandLineRunner {
     @Value("${app.reload-data:false}")
     private boolean reloadData;
 
-    @Value("${spring.jpa.hibernate.ddl-auto}")
+    @Value("${spring.jpa.hibernate.ddl-auto:create}")
     private String ddlAuto;
 
     public DataLoader(InstituicaoRepository instituicaoRepository,
@@ -256,7 +256,7 @@ public class DataLoader implements CommandLineRunner {
         Usuario user1 = new Usuario();
         user1.setUsername("parti1");
         user1.setPassword("parti1$");
-        user1.setNivelAcessoUsuario(1);
+        // REMOVIDO: setNivelAcessoUsuario - agora está em UsuarioInstituicao
         user1.setSituacaoUsuario("A");
         user1.setDataUltimaAtualizacao(LocalDate.now());
         user1.setPessoa(pessoaPersistida1);
@@ -271,18 +271,21 @@ public class DataLoader implements CommandLineRunner {
         ui11.setUsuario(user1);
         ui11.setInstituicao(inst1);
         ui11.setSitAcessoUsuarioInstituicao("A");
+        ui11.setNivelAcessoUsuarioInstituicao(1); // Participante
         usuarioInstituicaoRepository.save(ui11);
 
         UsuarioInstituicao ui12 = new UsuarioInstituicao();
         ui12.setUsuario(user1);
         ui12.setInstituicao(inst2);
         ui12.setSitAcessoUsuarioInstituicao("A");
+        ui12.setNivelAcessoUsuarioInstituicao(1); // Participante
         usuarioInstituicaoRepository.save(ui12);
 
         UsuarioInstituicao ui13 = new UsuarioInstituicao();
         ui13.setUsuario(user1);
         ui13.setInstituicao(inst3);
         ui13.setSitAcessoUsuarioInstituicao("A");
+        ui13.setNivelAcessoUsuarioInstituicao(1); // Participante
         usuarioInstituicaoRepository.save(ui13);
 
         // #############################################################################
@@ -311,7 +314,7 @@ public class DataLoader implements CommandLineRunner {
         Usuario user2 = new Usuario();
         user2.setUsername("autor1");
         user2.setPassword("autor1$");
-        user2.setNivelAcessoUsuario(2);
+        // REMOVIDO: setNivelAcessoUsuario - agora está em UsuarioInstituicao
         user2.setSituacaoUsuario("A");
         user2.setDataUltimaAtualizacao(LocalDate.now());
         user2.setPessoa(pessoaPersistida2);
@@ -326,18 +329,21 @@ public class DataLoader implements CommandLineRunner {
         ui21.setUsuario(user2);
         ui21.setInstituicao(inst1);
         ui21.setSitAcessoUsuarioInstituicao("A");
+        ui21.setNivelAcessoUsuarioInstituicao(2); // Autor
         usuarioInstituicaoRepository.save(ui21);
 
         UsuarioInstituicao ui22 = new UsuarioInstituicao();
         ui22.setUsuario(user2);
         ui22.setInstituicao(inst2);
         ui22.setSitAcessoUsuarioInstituicao("A");
+        ui22.setNivelAcessoUsuarioInstituicao(2); // Autor
         usuarioInstituicaoRepository.save(ui22);
 
         UsuarioInstituicao ui23 = new UsuarioInstituicao();
         ui23.setUsuario(user2);
         ui23.setInstituicao(inst3);
         ui23.setSitAcessoUsuarioInstituicao("A");
+        ui23.setNivelAcessoUsuarioInstituicao(2); // Autor
         usuarioInstituicaoRepository.save(ui23);
 
         // #############################################################################
@@ -366,7 +372,7 @@ public class DataLoader implements CommandLineRunner {
         Usuario user3 = new Usuario();
         user3.setUsername("admin1");
         user3.setPassword("admin1$");
-        user3.setNivelAcessoUsuario(5);
+        // REMOVIDO: setNivelAcessoUsuario - agora está em UsuarioInstituicao
         user3.setSituacaoUsuario("A");
         user3.setDataUltimaAtualizacao(LocalDate.now());
         user3.setPessoa(pessoaPersistida3);
@@ -381,18 +387,21 @@ public class DataLoader implements CommandLineRunner {
         ui31.setUsuario(user3);
         ui31.setInstituicao(inst1);
         ui31.setSitAcessoUsuarioInstituicao("A");
+        ui31.setNivelAcessoUsuarioInstituicao(5); // Administrador
         usuarioInstituicaoRepository.save(ui31);
 
         UsuarioInstituicao ui32 = new UsuarioInstituicao();
         ui32.setUsuario(user3);
         ui32.setInstituicao(inst2);
         ui32.setSitAcessoUsuarioInstituicao("A");
+        ui32.setNivelAcessoUsuarioInstituicao(5); // Administrador
         usuarioInstituicaoRepository.save(ui32);
 
         UsuarioInstituicao ui33 = new UsuarioInstituicao();
         ui33.setUsuario(user3);
         ui33.setInstituicao(inst3);
         ui33.setSitAcessoUsuarioInstituicao("A");
+        ui33.setNivelAcessoUsuarioInstituicao(5); // Administrador
         usuarioInstituicaoRepository.save(ui33);
 
         // #############################################################################
@@ -421,7 +430,7 @@ public class DataLoader implements CommandLineRunner {
         Usuario user4 = new Usuario();
         user4.setUsername("superu");
         user4.setPassword("superu1$");
-        user4.setNivelAcessoUsuario(9);
+        // REMOVIDO: setNivelAcessoUsuario - agora está em UsuarioInstituicao
         user4.setSituacaoUsuario("A");
         user4.setDataUltimaAtualizacao(LocalDate.now());
         user4.setPessoa(pessoaPersistida4);
@@ -436,18 +445,21 @@ public class DataLoader implements CommandLineRunner {
         ui41.setUsuario(user4);
         ui41.setInstituicao(inst1);
         ui41.setSitAcessoUsuarioInstituicao("A");
+        ui41.setNivelAcessoUsuarioInstituicao(9); // SuperUsuário
         usuarioInstituicaoRepository.save(ui41);
 
         UsuarioInstituicao ui42 = new UsuarioInstituicao();
         ui42.setUsuario(user4);
         ui42.setInstituicao(inst2);
         ui42.setSitAcessoUsuarioInstituicao("A");
+        ui42.setNivelAcessoUsuarioInstituicao(9); // SuperUsuário
         usuarioInstituicaoRepository.save(ui42);
 
         UsuarioInstituicao ui43 = new UsuarioInstituicao();
         ui43.setUsuario(user4);
         ui43.setInstituicao(inst3);
         ui43.setSitAcessoUsuarioInstituicao("A");
+        ui43.setNivelAcessoUsuarioInstituicao(9); // SuperUsuário
         usuarioInstituicaoRepository.save(ui43);
 
         // #############################################################################

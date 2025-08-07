@@ -183,7 +183,7 @@ public class CadastroPessoaController {
         pessoa.setDataUltimaAtualizacao(LocalDate.now());
         pessoaRepository.save(pessoa);
 
-        usuario.setNivelAcessoUsuario(1);
+        // REMOVIDO: setNivelAcessoUsuario - agora está em UsuarioInstituicao
         usuario.setSituacaoUsuario("A");
         usuario.setDataUltimaAtualizacao(LocalDate.now());
 

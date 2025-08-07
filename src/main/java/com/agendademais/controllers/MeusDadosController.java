@@ -85,11 +85,11 @@ public class MeusDadosController {
 
         if (usuario == null || usuario.getPessoa() == null) {
             model.addAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         Pessoa pessoa = usuario.getPessoa();
-        String tipoUsuario = determinaTipoUsuario(usuario);
+        String tipoUsuario = determinaTipoUsuario(session);
 
         // Carrega dados atuais da pessoa
         String nomePais = pessoa.getNomePais() != null ? pessoa.getNomePais().trim() : null;
@@ -124,10 +124,10 @@ public class MeusDadosController {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         if (usuario == null || usuario.getPessoa() == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
-        String tipoUsuario = determinaTipoUsuario(usuario);
+        String tipoUsuario = determinaTipoUsuario(session);
         Pessoa pessoaAtual = usuario.getPessoa();
 
         // Processa campos "Outro"
@@ -203,10 +203,11 @@ public class MeusDadosController {
     }
 
     /**
-     * Determina o tipo de usuário baseado no perfil
+     * Determina o tipo de usuário baseado no nível de acesso da sessão
      */
-    private String determinaTipoUsuario(Usuario usuario) {
-        int nivel = usuario.getNivelAcessoUsuario();
+    private String determinaTipoUsuario(HttpSession session) {
+        Integer nivelAtual = (Integer) session.getAttribute("nivelAcessoAtual");
+        int nivel = (nivelAtual != null) ? nivelAtual : 1; // Default: Participante
 
         switch (nivel) {
             case 2:

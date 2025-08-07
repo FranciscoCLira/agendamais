@@ -30,7 +30,7 @@ public class ExcluirCadastroController {
 
         if (usuario == null || usuario.getPessoa() == null) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         Pessoa pessoa = usuario.getPessoa();
@@ -50,6 +50,6 @@ public class ExcluirCadastroController {
         // Finaliza sessão
         session.invalidate();
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Cadastro excluído com sucesso.");
-        return "redirect:/login";
+        return "redirect:/acesso";
     }
 }

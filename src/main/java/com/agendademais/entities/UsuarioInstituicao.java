@@ -19,6 +19,9 @@ public class UsuarioInstituicao {
 
     private String sitAcessoUsuarioInstituicao; // A=Ativo, B=Bloqueado, C=Cancelado
 
+    // 1=Participante, 2=Autor, 5=Administrador, 9=SuperUsuario
+    private int nivelAcessoUsuarioInstituicao;
+
     public Long getId() {
         return id;
     }
@@ -50,4 +53,12 @@ public class UsuarioInstituicao {
     public void setSitAcessoUsuarioInstituicao(String sitAcessoUsuarioInstituicao) {
         this.sitAcessoUsuarioInstituicao = sitAcessoUsuarioInstituicao;
     }
-}        
+
+    public int getNivelAcessoUsuarioInstituicao() {
+        return nivelAcessoUsuarioInstituicao;
+    }
+
+    public void setNivelAcessoUsuarioInstituicao(int nivelAcessoUsuarioInstituicao) {
+        this.nivelAcessoUsuarioInstituicao = nivelAcessoUsuarioInstituicao;
+    }
+}

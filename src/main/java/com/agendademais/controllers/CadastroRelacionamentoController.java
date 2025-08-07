@@ -187,6 +187,7 @@ public class CadastroRelacionamentoController {
             ui.setUsuario(usuario);
             ui.setInstituicao(psi.getInstituicao());
             ui.setSitAcessoUsuarioInstituicao("A");
+            ui.setNivelAcessoUsuarioInstituicao(1); // Nível padrão: Participante
             usuarioInstituicaoRepository.save(ui);
 
             // SubInstituição

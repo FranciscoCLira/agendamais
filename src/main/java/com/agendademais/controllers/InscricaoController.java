@@ -48,7 +48,7 @@ public class InscricaoController {
 
         if (usuario == null || instituicao == null) {
             ra.addFlashAttribute("mensagemErro", "Sessão inválida. Faça login novamente.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         List<TipoAtividade> atividades = tipoAtividadeRepository.findByInstituicaoId(instituicao.getId());
@@ -91,7 +91,7 @@ public class InscricaoController {
 
         if (usuario == null || instituicao == null) {
             ra.addFlashAttribute("mensagemErro", "Sessão inválida.");
-            return "redirect:/login";
+            return "redirect:/acesso";
         }
 
         try {

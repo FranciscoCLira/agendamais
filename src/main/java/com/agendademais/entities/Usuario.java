@@ -12,31 +12,27 @@ import java.time.LocalDateTime;
 public class Usuario implements Serializable {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(length = 25, nullable = false, unique = true)
     @Size(min = 4, max = 25, message = "Usuário deve ter entre 4 e 25 caracteres.")
     private String username;
-    
+
     @Column(nullable = false)
     @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
-    @Pattern(
-        regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{6,}$",
-        message = "A senha deve conter letras, números e símbolos."
-    )
-    private String password;    
-    
-    // 1=Participante, 2=Autor, 5=Administrador, 9=SuperUsuario
-    private int nivelAcessoUsuario;
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{6,}$", message = "A senha deve conter letras, números e símbolos.")
+    private String password;
+
+    // REMOVIDO: nivelAcessoUsuario - agora está em UsuarioInstituicao
 
     // // nullable = false exige obrigatoriedade
-    
+
     // @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "pessoa_id", referencedColumnName = "id", nullable = false)
@@ -45,14 +41,13 @@ public class Usuario implements Serializable {
     private String situacaoUsuario; // A=Ativo, B=Bloqueado
 
     private LocalDate dataUltimaAtualizacao;
-    
+
     @Column(name = "token_recuperacao", length = 36)
     private String tokenRecuperacao;
 
     @Column(name = "data_expiracao_token")
     private LocalDateTime dataExpiracaoToken;
-    
-    
+
     // Getters e setters
     public Long getId() {
         return id;
@@ -74,14 +69,6 @@ public class Usuario implements Serializable {
         this.password = password;
     }
 
-    public int getNivelAcessoUsuario() {
-        return nivelAcessoUsuario;
-    }
-
-    public void setNivelAcessoUsuario(int nivelAcessoUsuario) {
-        this.nivelAcessoUsuario = nivelAcessoUsuario;
-    }
-
     public Pessoa getPessoa() {
         return pessoa;
     }
@@ -90,42 +77,40 @@ public class Usuario implements Serializable {
         this.pessoa = pessoa;
     }
 
-	public String getSituacaoUsuario() {
-		return situacaoUsuario;
-	}
+    public String getSituacaoUsuario() {
+        return situacaoUsuario;
+    }
 
-	public void setSituacaoUsuario(String situacaoUsuario) {
-		this.situacaoUsuario = situacaoUsuario;
-	}
+    public void setSituacaoUsuario(String situacaoUsuario) {
+        this.situacaoUsuario = situacaoUsuario;
+    }
 
-	public LocalDate getDataUltimaAtualizacao() {
-		return dataUltimaAtualizacao;
-	}
+    public LocalDate getDataUltimaAtualizacao() {
+        return dataUltimaAtualizacao;
+    }
 
-	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
-		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
-	}
+    public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
+        this.dataUltimaAtualizacao = dataUltimaAtualizacao;
+    }
 
-	public String getTokenRecuperacao() {
-	    return tokenRecuperacao;
-	}
+    public String getTokenRecuperacao() {
+        return tokenRecuperacao;
+    }
 
-	public void setTokenRecuperacao(String tokenRecuperacao) {
-	    this.tokenRecuperacao = tokenRecuperacao;
-	}
+    public void setTokenRecuperacao(String tokenRecuperacao) {
+        this.tokenRecuperacao = tokenRecuperacao;
+    }
 
-	public LocalDateTime getDataExpiracaoToken() {
-	    return dataExpiracaoToken;
-	}
+    public LocalDateTime getDataExpiracaoToken() {
+        return dataExpiracaoToken;
+    }
 
-	public void setDataExpiracaoToken(LocalDateTime dataExpiracaoToken) {
-	    this.dataExpiracaoToken = dataExpiracaoToken;
-	}
-	
-	
-	
-	@PreUpdate
-	public void onUpdate() {
-	    this.dataUltimaAtualizacao = LocalDate.now();
-	}
+    public void setDataExpiracaoToken(LocalDateTime dataExpiracaoToken) {
+        this.dataExpiracaoToken = dataExpiracaoToken;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.dataUltimaAtualizacao = LocalDate.now();
+    }
 }

@@ -54,10 +54,14 @@ public class LocalAdminController {
             return false;
         }
 
-        System.out.println("Nível do usuário: " + usuario.getNivelAcessoUsuario());
+        // Buscar nível de acesso da sessão atual
+        Integer nivelAcessoAtual = (Integer) session.getAttribute("nivelAcessoAtual");
+        int nivel = (nivelAcessoAtual != null) ? nivelAcessoAtual : 1;
+
+        System.out.println("Nível de acesso atual da sessão: " + nivel);
 
         // Deve ser SuperUsuário (nível 9) ou Controle Total (nível 0)
-        if (usuario.getNivelAcessoUsuario() != 9 && usuario.getNivelAcessoUsuario() != 0) {
+        if (nivel != 9 && nivel != 0) {
             System.out.println("Usuário não é nível 9 nem 0 - acesso negado");
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Acesso negado. Funcionalidade exclusiva para SuperUsuário ou Controle Total.");
@@ -67,7 +71,7 @@ public class LocalAdminController {
         // Para nível 9 (SuperUsuário), deve estar no contexto de Controle Total (sem
         // instituição selecionada)
         // Para nível 0 (Controle Total), não há essa restrição
-        if (usuario.getNivelAcessoUsuario() == 9) {
+        if (nivel == 9) {
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
             System.out.println("Instituição selecionada na sessão: " + instituicaoSelecionada);
 
@@ -81,6 +85,15 @@ public class LocalAdminController {
 
         System.out.println("Acesso autorizado para Controle Total");
         return true;
+    }
+
+    /**
+     * Método auxiliar para verificar se o usuário atual tem nível 9 (SuperUsuário)
+     * baseado na sessão atual
+     */
+    private boolean ehSuperUsuario(HttpSession session) {
+        Integer nivelAcessoAtual = (Integer) session.getAttribute("nivelAcessoAtual");
+        return nivelAcessoAtual != null && nivelAcessoAtual == 9;
     }
 
     /**
@@ -101,12 +114,12 @@ public class LocalAdminController {
             Model model) {
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
-            // Redirecionamento baseado no nível do usuário
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null) {
-                if (usuario.getNivelAcessoUsuario() == 9) {
-                    return "redirect:/superusuario";
-                } else if (usuario.getNivelAcessoUsuario() == 0) {
+            // Redirecionamento baseado no nível do usuário da sessão
+            if (ehSuperUsuario(session)) {
+                return "redirect:/superusuario";
+            } else {
+                Integer nivel = (Integer) session.getAttribute("nivelAcessoAtual");
+                if (nivel != null && nivel == 0) {
                     return "redirect:/controle-total";
                 }
             }
@@ -265,8 +278,7 @@ public class LocalAdminController {
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
             // Se é SuperUsuário mas não está no contexto correto, volta para o menu dele
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
+            if (ehSuperUsuario(session)) {
                 return "redirect:/superusuario";
             }
             return "redirect:/acesso";
@@ -313,8 +325,7 @@ public class LocalAdminController {
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
             // Se é SuperUsuário mas não está no contexto correto, volta para o menu dele
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
+            if (ehSuperUsuario(session)) {
                 return "redirect:/superusuario";
             }
             return "redirect:/acesso";
@@ -381,8 +392,7 @@ public class LocalAdminController {
     @GetMapping("/api/estados/{paisId}")
     @ResponseBody
     public List<Local> buscarEstadosPorPais(@PathVariable Long paisId, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuario == null || usuario.getNivelAcessoUsuario() != 9) {
+        if (!ehSuperUsuario(session)) {
             return List.of();
         }
 
@@ -433,16 +443,16 @@ public class LocalAdminController {
         // Debug da sessão
         Usuario usuarioSessao = (Usuario) session.getAttribute("usuarioLogado");
         Object instSelecionada = session.getAttribute("instituicaoSelecionada");
+        Integer nivelAcessoAtual = (Integer) session.getAttribute("nivelAcessoAtual");
         System.out.println("Usuario da sessão: " + (usuarioSessao != null
-                ? usuarioSessao.getUsername() + " (nível " + usuarioSessao.getNivelAcessoUsuario() + ")"
+                ? usuarioSessao.getUsername() + " (nível " + nivelAcessoAtual + ")"
                 : "null"));
         System.out.println("Instituição selecionada: " + instSelecionada);
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
             System.out.println("FALHA: Acesso negado em revisar multiplos");
             // Se é SuperUsuário mas não está no contexto correto, volta para o menu dele
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
+            if (ehSuperUsuario(session)) {
                 System.out.println("Redirecionando SuperUsuario para menu");
                 return "redirect:/superusuario";
             }
@@ -492,8 +502,7 @@ public class LocalAdminController {
             Model model) {
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
+            if (ehSuperUsuario(session)) {
                 return "redirect:/superusuario";
             }
             return "redirect:/acesso";
@@ -609,8 +618,7 @@ public class LocalAdminController {
     @GetMapping("/api/estados-filtro/{paisId}")
     @ResponseBody
     public List<Local> buscarEstadosParaFiltro(@PathVariable Long paisId, HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuario == null || usuario.getNivelAcessoUsuario() != 9) {
+        if (!ehSuperUsuario(session)) {
             return List.of();
         }
 
@@ -634,8 +642,7 @@ public class LocalAdminController {
             Model model) {
 
         if (!verificarAcessoControleTotal(session, redirectAttributes)) {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-            if (usuario != null && usuario.getNivelAcessoUsuario() == 9) {
+            if (ehSuperUsuario(session)) {
                 return "redirect:/superusuario";
             }
             return "redirect:/acesso";
