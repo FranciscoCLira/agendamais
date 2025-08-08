@@ -27,10 +27,9 @@ public class InscricaoController {
 
     @Autowired
     private TipoAtividadeRepository tipoAtividadeRepository;
-    
-    
-    // INJETAR OS SERVICOS 
-    
+
+    // INJETAR OS SERVICOS
+
     @Autowired
     private InscricaoService inscricaoService;
 
@@ -39,8 +38,7 @@ public class InscricaoController {
 
     @Autowired
     private InscricaoTipoAtividadeService inscricaoTipoAtividadeService;
-    
-    
+
     @GetMapping
     public String exibirFormulario(Model model, HttpSession session, RedirectAttributes ra) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
@@ -55,15 +53,16 @@ public class InscricaoController {
         model.addAttribute("atividades", atividades);
 
         // Busca inscrição existente
-        Optional<Inscricao> optInscricao = inscricaoRepository.findByIdPessoaAndIdInstituicao(usuario.getPessoa(), instituicao);
+        Optional<Inscricao> optInscricao = inscricaoRepository.findByIdPessoaAndIdInstituicao(usuario.getPessoa(),
+                instituicao);
 
         InscricaoForm form = new InscricaoForm();
         if (optInscricao.isPresent()) {
             Inscricao inscricao = optInscricao.get();
             // Preenche os IDs já inscritos para marcar os checkboxes
             List<Long> jaInscritas = inscricao.getTiposAtividade().stream()
-                .map(ita -> ita.getTipoAtividade().getId())
-                .toList();
+                    .map(ita -> ita.getTipoAtividade().getId())
+                    .toList();
             form.setTiposAtividadeIds(jaInscritas);
             form.setComentarios(inscricao.getComentarios());
         }
@@ -102,16 +101,14 @@ public class InscricaoController {
         }
         return "redirect:/participante/inscricao-form";
     }
-    
-    
+
     // método para adicionar tipo de atividade
-    
+
     @PostMapping("/{id}/adicionar-tipo")
     public String adicionarTipoAtividade(
-        @PathVariable Long id,
-        @RequestParam Long tipoAtividadeId,
-        RedirectAttributes redirectAttributes
-    ) {
+            @PathVariable Long id,
+            @RequestParam Long tipoAtividadeId,
+            RedirectAttributes redirectAttributes) {
         Inscricao inscricao = inscricaoService.findById(id);
         TipoAtividade tipoAtividade = tipoAtividadeService.findById(tipoAtividadeId);
 

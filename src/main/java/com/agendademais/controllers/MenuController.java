@@ -15,9 +15,10 @@ public class MenuController {
         System.out.println("*** MenuController.participante() - Entrada ***");
         System.out.println("*** Sessão ID: " + session.getId());
         System.out.println("*** usuarioLogado: " + (session.getAttribute("usuarioLogado") != null ? "existe" : "null"));
-        System.out.println("*** instituicaoSelecionada: " + (session.getAttribute("instituicaoSelecionada") != null ? "existe" : "null"));
+        System.out.println("*** instituicaoSelecionada: "
+                + (session.getAttribute("instituicaoSelecionada") != null ? "existe" : "null"));
         System.out.println("*** nivelAcessoAtual: " + session.getAttribute("nivelAcessoAtual"));
-        
+
         return "menus/menu-participante";
     }
 
@@ -126,7 +127,7 @@ public class MenuController {
      */
     private String determinaTipoUsuario(HttpSession session) {
         Integer nivel = (Integer) session.getAttribute("nivelAcessoAtual");
-        
+
         if (nivel == null) {
             return "participante";
         }

@@ -1,0 +1,124 @@
+@startuml agenda_mais_erd_v2_simples
+!define ACCENT #6366f1
+!define LIGHT #e0e7ff  
+
+skinparam entity {
+  BackgroundColor LIGHT
+  BorderColor ACCENT
+  FontColor black
+}
+
+skinparam note {
+  BackgroundColor #fff3cd
+  BorderColor #ffc107
+}
+
+' === ENTIDADES PRINCIPAIS ===
+
+entity "Usuario" as u {
+  + id : Long <<PK>>
+  --
+  username : String
+  email : String
+  password : String
+}
+
+entity "Pessoa" as p {
+  + id : Long <<PK>>
+  --
+  nome : String
+  telefone : String
+  paisId : Long <<FK>>
+  estadoId : Long <<FK>>
+  cidadeId : Long <<FK>>
+}
+
+entity "UsuarioInstituicao" as ui {
+  + id : Long <<PK>>
+  --
+  **nivelAcessoUsuarioInstituicao : int**
+  ativo : boolean
+  usuarioId : Long <<FK>>
+  instituicaoId : Long <<FK>>
+}
+
+entity "Instituicao" as i {
+  + id : Long <<PK>>
+  --
+  nomeInstituicao : String
+  ativa : boolean
+}
+
+entity "Local" as l {
+  + id : Long <<PK>>
+  --
+  nomeLocal : String
+  tipoLocal : int
+  localPaiId : Long <<FK>>
+}
+
+entity "TipoAtividade" as ta {
+  + id : Long <<PK>>
+  --
+  tituloTipoAtividade : String
+  descricaoTipoAtividade : String
+  instituicaoId : Long <<FK>>
+}
+
+entity "Atividade" as a {
+  + id : Long <<PK>>
+  --
+  tituloAtividade : String
+  situacaoAtividade : String
+  tipoAtividadeId : Long <<FK>>
+  instituicaoId : Long <<FK>>
+  idSolicitante : Long <<FK>>
+}
+
+entity "OcorrenciaAtividade" as oa {
+  + id : Long <<PK>>
+  --
+  temaOcorrencia : String
+  dataOcorrencia : LocalDate
+  idAtividade : Long <<FK>>
+}
+
+entity "LogPostagem" as lp {
+  + id : Long <<PK>>
+  --
+  dataPostagem : LocalDate
+  idOcorrenciaAtividade : Long <<FK>>
+}
+
+entity "Inscricao" as ins {
+  + id : Long <<PK>>
+  --
+  idPessoa : Long <<FK>>
+  idInstituicao : Long <<FK>>
+}
+
+' === RELACIONAMENTOS ===
+
+u ||--|| p : "1:1"
+u ||--o{ ui : "1:N"
+i ||--o{ ui : "1:N"
+l ||--o{ l : "hierarquia"
+l ||--o{ p : "localização"
+i ||--o{ ta : "1:N"
+ta ||--o{ a : "1:N"
+a ||--o{ oa : "1:N"
+oa ||--o{ lp : "1:N"
+p ||--o{ ins : "1:N"
+i ||--o{ ins : "1:N"
+
+' === NOTAS ===
+
+note top of ui : **NOVA ARQUITETURA V2.0**\nNíveis por instituição:\n• 1=Participante\n• 2=Autor\n• 5=Administrador\n• 9=SuperUsuário\n• 0=Controle Total
+
+note bottom of l : **Hierarquia Geográfica**\n• 1=País\n• 2=Estado\n• 3=Cidade
+
+note right of u : **Usuario limpo**\nRemoção do campo\n~~nivelAcessoUsuario~~
+
+note left of a : **Fluxo Completo**\nAtividade → Ocorrência\n→ LogPostagem
+
+@enduml

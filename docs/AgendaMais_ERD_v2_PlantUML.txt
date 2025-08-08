@@ -1,0 +1,310 @@
+@startuml AgendaMais_ERD_V2
+!define ENTITY class
+!define PRIMARY_KEY <<PK>>
+!define FOREIGN_KEY <<FK>>
+
+title AgendaMais - Modelo ER V2.0\n(Pós-refatoração: Níveis de acesso por instituição)
+
+' =================================
+' ENTIDADES PRINCIPAIS
+' =================================
+
+ENTITY Usuario {
+  + id : Long PRIMARY_KEY
+  --
+  username : String [unique, 4-25 chars]
+  password : String [min 6 chars, pattern]
+  situacaoUsuario : String [A/B]
+  dataUltimaAtualizacao : LocalDate
+  tokenRecuperacao : String [36 chars]
+  dataExpiracaoToken : LocalDateTime
+  --
+  pessoa_id : Long FOREIGN_KEY [obrigatório]
+  ==
+  **REMOVIDO:** nivelAcessoUsuario
+  **MIGRADO PARA:** UsuarioInstituicao
+}
+
+ENTITY UsuarioInstituicao {
+  + id : Long PRIMARY_KEY
+  --
+  sitAcessoUsuarioInstituicao : String [A/B/C]
+  nivelAcessoUsuarioInstituicao : Integer
+  --
+  usuario_id : Long FOREIGN_KEY
+  instituicao_id : Long FOREIGN_KEY
+  ==
+  **NOVO CAMPO PRINCIPAL:**
+  Níveis: 1=Participante, 2=Autor
+          5=Administrador, 9=SuperUsuário
+}
+
+ENTITY Pessoa {
+  + id : Long PRIMARY_KEY
+  --
+  nomePessoa : String
+  emailPessoa : String [unique, obrigatório]
+  celularPessoa : String
+  situacaoPessoa : String [A/B/C]
+  comentarios : String
+  curriculoPessoal : String
+  dataInclusao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+  --
+  id_pais : Long FOREIGN_KEY
+  id_estado : Long FOREIGN_KEY
+  id_cidade : Long FOREIGN_KEY
+}
+
+ENTITY Instituicao {
+  + id : Long PRIMARY_KEY
+  --
+  nomeInstituicao : String
+  situacaoInstituicao : String [A/B]
+  dataUltimaAtualizacao : LocalDate
+}
+
+ENTITY SubInstituicao {
+  + id : Long PRIMARY_KEY
+  --
+  nomeSubInstituicao : String
+  situacaoSubInstituicao : String [A/B]
+  dataUltimaAtualizacao : LocalDate
+  --
+  instituicao_id : Long FOREIGN_KEY
+}
+
+' =================================
+' LOCALIZAÇÃO NORMALIZADA
+' =================================
+
+ENTITY Local {
+  + id : Long PRIMARY_KEY
+  --
+  tipoLocal : Integer [1=País, 2=Estado, 3=Cidade]
+  nomeLocal : String
+  revisadoLocal : String [s/n, default='n']
+  dataUltimaAtualizacao : LocalDate
+  --
+  id_pai : Long FOREIGN_KEY [auto-referencial]
+}
+
+' =================================
+' RELACIONAMENTOS PESSOA-INSTITUIÇÃO
+' =================================
+
+ENTITY PessoaInstituicao {
+  + id : Long PRIMARY_KEY
+  --
+  identificacaoPessoaInstituicao : String [20 chars]
+  dataAfiliacao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+  --
+  pessoa_id : Long FOREIGN_KEY
+  instituicao_id : Long FOREIGN_KEY
+}
+
+ENTITY PessoaSubInstituicao {
+  + id : Long PRIMARY_KEY
+  --
+  identificacaoPessoaSubInstituicao : String [20 chars]
+  dataAfiliacao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+  --
+  pessoa_id : Long FOREIGN_KEY
+  instituicao_id : Long FOREIGN_KEY
+  sub_instituicao_id : Long FOREIGN_KEY
+}
+
+' =================================
+' ATIVIDADES E INSCRIÇÕES
+' =================================
+
+ENTITY TipoAtividade {
+  + id : Long PRIMARY_KEY
+  --
+  tituloTipoAtividade : String
+  descricaoTipoAtividade : String
+  --
+  instituicao_id : Long FOREIGN_KEY [obrigatório]
+}
+
+ENTITY Inscricao {
+  + id : Long PRIMARY_KEY
+  --
+  comentarios : String
+  dataInclusao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+  --
+  id_pessoa : Long FOREIGN_KEY
+  id_instituicao : Long FOREIGN_KEY
+  ==
+  UNIQUE(id_pessoa, id_instituicao)
+}
+
+ENTITY InscricaoTipoAtividade {
+  + id : Long PRIMARY_KEY
+  --
+  inscricao_id : Long FOREIGN_KEY
+  tipo_atividade_id : Long FOREIGN_KEY
+}
+
+' =================================
+' ATIVIDADES COMPLETAS (ENTIDADES FALTANTES)
+' =================================
+
+ENTITY Atividade {
+  + id : Long PRIMARY_KEY
+  --
+  tituloAtividade : String [30 chars max]
+  situacaoAtividade : String [A/B/C]
+  formaApresentacao : Integer
+  publicoAlvo : Integer
+  descricaoAtividade : String
+  comentariosAtividade : String
+  linkMaterialAtividade : String
+  linkAtividadeOnLine : String
+  dataAtualizacao : LocalDate
+  --
+  tipo_atividade_id : Long FOREIGN_KEY [obrigatório]
+  instituicao_id : Long FOREIGN_KEY [obrigatório]
+  sub_instituicao_id : Long FOREIGN_KEY [opcional]
+  id_solicitante : Long FOREIGN_KEY [obrigatório]
+}
+
+ENTITY Autor {
+  + id : Long PRIMARY_KEY
+  --
+  funcaoAutor : Integer
+  situacaoAutor : String [A/B/C]
+  curriculoFuncaoAutor : String
+  linkImgAutor : String
+  linkMaterialAutor : String
+  dataUltimaAtualizacao : LocalDate
+  --
+  id_pessoa : Long FOREIGN_KEY [obrigatório]
+}
+
+ENTITY OcorrenciaAtividade {
+  + id : Long PRIMARY_KEY
+  --
+  temaOcorrencia : String
+  situacaoOcorrencia : String [A/B/C]
+  bibliografia : String
+  dataOcorrencia : LocalDate
+  horaInicioOcorrencia : LocalTime
+  horaFimOcorrencia : LocalTime
+  linkMaterialTema : String
+  assuntoDivulgacao : String
+  detalheDivulgacao : String
+  linkImgDivulgacao : String
+  qtdeParticipantes : Integer
+  obsEncerramento : String
+  dataAtualizacao : LocalDate
+  --
+  id_atividade : Long FOREIGN_KEY [obrigatório]
+  id_autor : Long FOREIGN_KEY [obrigatório]
+}
+
+ENTITY LogPostagem {
+  + id : Long PRIMARY_KEY
+  --
+  dataPostagem : LocalDate
+  horaPostagem : LocalTime
+  --
+  id_ocorrencia_atividade : Long FOREIGN_KEY [obrigatório]
+}
+
+' =================================
+' RELACIONAMENTOS ADICIONAIS (ATIVIDADES)
+' =================================
+
+' Fluxo completo de atividades
+TipoAtividade ||--o{ Atividade : "1:N\natividades\ndo tipo"
+Instituicao ||--o{ Atividade : "1:N\natividades\nda instituição"
+SubInstituicao ||--o{ Atividade : "1:N\natividades\nda sub-inst"
+Pessoa ||--o{ Atividade : "1:N\nsolicitante\nda atividade"
+
+' Autores
+Pessoa ||--o{ Autor : "1:N\nautores"
+
+' Ocorrências
+Atividade ||--o{ OcorrenciaAtividade : "1:N\nocorrências\nda atividade"
+Autor ||--o{ OcorrenciaAtividade : "1:N\nocorrências\ndo autor"
+
+' Log de postagens
+OcorrenciaAtividade ||--o{ LogPostagem : "1:N\nlogs de\npostagem"
+
+' =================================
+' RELACIONAMENTOS PRINCIPAIS
+' =================================
+
+' Usuário e Pessoa (1:1 obrigatório)
+Usuario ||--|| Pessoa : "1:1\nobrigatório"
+
+' Níveis de Acesso por Instituição (NOVA ARQUITETURA)
+Usuario ||--o{ UsuarioInstituicao : "1:N\n**NOVO:** níveis\npor instituição"
+Instituicao ||--o{ UsuarioInstituicao : "1:N"
+
+' Hierarquia Institucional
+Instituicao ||--o{ SubInstituicao : "1:N"
+
+' Localização Normalizada (Hierárquica)
+Local ||--o{ Local : "1:N\nhierarquia\ngeográfica"
+Local ||--o{ Pessoa : "1:N\npaís"
+Local ||--o{ Pessoa : "1:N\nestado"  
+Local ||--o{ Pessoa : "1:N\ncidade"
+
+' Relacionamentos Pessoa-Instituição
+Pessoa ||--o{ PessoaInstituicao : "1:N"
+Instituicao ||--o{ PessoaInstituicao : "1:N"
+
+Pessoa ||--o{ PessoaSubInstituicao : "1:N"
+Instituicao ||--o{ PessoaSubInstituicao : "1:N"
+SubInstituicao ||--o{ PessoaSubInstituicao : "1:N"
+
+' Atividades por Instituição
+Instituicao ||--o{ TipoAtividade : "1:N\natividades\npor instituição"
+
+' Inscrições
+Pessoa ||--o{ Inscricao : "1:N"
+Instituicao ||--o{ Inscricao : "1:N"
+Inscricao ||--o{ InscricaoTipoAtividade : "1:N"
+TipoAtividade ||--o{ InscricaoTipoAtividade : "1:N"
+
+' =================================
+' NOTAS IMPORTANTES
+' =================================
+
+note top of UsuarioInstituicao : **PRINCIPAL MUDANÇA V2.0**\nNíveis de acesso agora são\npor instituição, permitindo:\n- Participante em Inst. A\n- Administrador em Inst. B\n- Flexibilidade total
+
+note bottom of Usuario : **REMOVIDO em V2.0:**\nnivelAcessoUsuario\n(migrado para UsuarioInstituicao)
+
+note right of Local : **Sistema Normalizado:**\nEstrutura hierárquica\nPaís -> Estado -> Cidade\ncom controle de revisão
+
+note left of Inscricao : **Constraint Único:**\nUma inscrição por pessoa\npor instituição
+
+note right of Atividade : **FLUXO COMPLETO:**\n1. TipoAtividade\n2. Atividade\n3. Autor designado\n4. OcorrenciaAtividade\n5. LogPostagem
+
+note bottom of OcorrenciaAtividade : **GESTÃO DE EVENTOS:**\nOcorrências específicas\ncom data/hora, bibliografia\ne material de apoio
+
+note top of LogPostagem : **AUDITORIA:**\nLog completo de\ntodas as postagens\ndas ocorrências
+
+' =================================
+' LEGENDA
+' =================================
+
+legend bottom
+|= Símbolo |= Significado |
+| PK | Primary Key |
+| FK | Foreign Key |
+| ||--|| | Relacionamento 1:1 |
+| ||--o{ | Relacionamento 1:N |
+| **NOVO** | Funcionalidade V2.0 |
+| **REMOVIDO** | Campo/funcionalidade removida |
+
+**Versão:** 2.0 - Agosto 2025
+**Mudança Principal:** Migração de níveis de acesso globais para níveis por instituição
+endlegend
+
+@enduml

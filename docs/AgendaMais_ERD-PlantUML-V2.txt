@@ -1,0 +1,248 @@
+@startuml AgendaMais_ERD_V2_Completo
+!define ACCENT #6366f1
+!define LIGHT #e0e7ff
+!define HIGHLIGHT #fbbf24
+!define SUCCESS #10b981
+
+skinparam entity {
+  BackgroundColor LIGHT
+  BorderColor ACCENT
+  FontColor black
+}
+
+skinparam note {
+  BackgroundColor #fff3cd
+  BorderColor #ffc107
+}
+
+' === ENTIDADES PRINCIPAIS (USUÁRIOS E AUTENTICAÇÃO) ===
+
+entity "Usuario" as u {
+  + id : Long <<PK>>
+  --
+  username : String
+  email : String
+  password : String
+  tokenRecuperacao : String
+  dataExpiracaoToken : LocalDateTime
+}
+
+entity "Pessoa" as p {
+  + id : Long <<PK>>
+  --
+  nome : String
+  telefone : String
+  emailPessoa : String
+  paisId : Long <<FK>>
+  estadoId : Long <<FK>>
+  cidadeId : Long <<FK>>
+}
+
+entity "UsuarioInstituicao" as ui {
+  + id : Long <<PK>>
+  --
+  **nivelAcessoUsuarioInstituicao : int**
+  sitAcessoUsuarioInstituicao : String
+  ativo : boolean
+  usuarioId : Long <<FK>>
+  instituicaoId : Long <<FK>>
+}
+
+' === ENTIDADES ORGANIZACIONAIS ===
+
+entity "Instituicao" as i {
+  + id : Long <<PK>>
+  --
+  nomeInstituicao : String
+  ativa : boolean
+}
+
+entity "SubInstituicao" as si {
+  + id : Long <<PK>>
+  --
+  nomeSubInstituicao : String
+  ativa : boolean
+  instituicaoId : Long <<FK>>
+}
+
+entity "Local" as l {
+  + id : Long <<PK>>
+  --
+  nomeLocal : String
+  tipoLocal : int
+  localPaiId : Long <<FK>>
+  dataUltimaAtualizacao : LocalDate
+}
+
+' === ENTIDADES DE RELACIONAMENTO ===
+
+entity "PessoaInstituicao" as pi {
+  + id : Long <<PK>>
+  --
+  pessoaId : Long <<FK>>
+  instituicaoId : Long <<FK>>
+  identificacaoPessoaInstituicao : String
+  dataAfiliacao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+}
+
+entity "PessoaSubInstituicao" as psi {
+  + id : Long <<PK>>
+  --
+  pessoaId : Long <<FK>>
+  subInstituicaoId : Long <<FK>>
+  instituicaoId : Long <<FK>>
+  identificacaoPessoaSubInstituicao : String
+  dataAfiliacao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+}
+
+' === ENTIDADES DE ATIVIDADES E TIPOS ===
+
+entity "TipoAtividade" as ta {
+  + id : Long <<PK>>
+  --
+  tituloTipoAtividade : String
+  descricaoTipoAtividade : String
+  instituicaoId : Long <<FK>>
+}
+
+entity "Atividade" as a {
+  + id : Long <<PK>>
+  --
+  tituloAtividade : String
+  situacaoAtividade : String
+  formaApresentacao : Integer
+  publicoAlvo : Integer
+  descricaoAtividade : String
+  comentariosAtividade : String
+  linkMaterialAtividade : String
+  linkAtividadeOnLine : String
+  dataAtualizacao : LocalDate
+  --
+  tipoAtividadeId : Long <<FK>>
+  instituicaoId : Long <<FK>>
+  subInstituicaoId : Long <<FK>>
+  idSolicitante : Long <<FK>>
+}
+
+entity "Autor" as au {
+  + id : Long <<PK>>
+  --
+  funcaoAutor : Integer
+  situacaoAutor : String
+  curriculoFuncaoAutor : String
+  linkImgAutor : String
+  linkMaterialAutor : String
+  dataUltimaAtualizacao : LocalDate
+  --
+  idPessoa : Long <<FK>>
+}
+
+entity "OcorrenciaAtividade" as oa {
+  + id : Long <<PK>>
+  --
+  temaOcorrencia : String
+  situacaoOcorrencia : String
+  bibliografia : String
+  dataOcorrencia : LocalDate
+  horaInicioOcorrencia : LocalTime
+  horaFimOcorrencia : LocalTime
+  linkMaterialTema : String
+  assuntoDivulgacao : String
+  detalheDivulgacao : String
+  linkImgDivulgacao : String
+  qtdeParticipantes : Integer
+  obsEncerramento : String
+  dataAtualizacao : LocalDate
+  --
+  idAtividade : Long <<FK>>
+  idAutor : Long <<FK>>
+}
+
+entity "LogPostagem" as lp {
+  + id : Long <<PK>>
+  --
+  dataPostagem : LocalDate
+  horaPostagem : LocalTime
+  --
+  idOcorrenciaAtividade : Long <<FK>>
+}
+
+' === ENTIDADES DE INSCRIÇÃO ===
+
+entity "Inscricao" as ins {
+  + id : Long <<PK>>
+  --
+  comentarios : String
+  dataInclusao : LocalDate
+  dataUltimaAtualizacao : LocalDate
+  --
+  idPessoa : Long <<FK>>
+  idInstituicao : Long <<FK>>
+}
+
+entity "InscricaoTipoAtividade" as ita {
+  + id : Long <<PK>>
+  --
+  inscricaoId : Long <<FK>>
+  tipoAtividadeId : Long <<FK>>
+}
+
+' === RELACIONAMENTOS PRINCIPAIS ===
+
+' Usuário e Pessoa (1:1)
+u ||--|| p : "1:1"
+
+' Níveis de acesso por instituição (N:N via UsuarioInstituicao)
+u ||--o{ ui : "1:N"
+i ||--o{ ui : "1:N"
+
+' Hierarquia geográfica
+l ||--o{ l : "hierarquia\n(país→estado→cidade)"
+l ||--o{ p : "localização"
+
+' Hierarquia institucional
+i ||--o{ si : "1:N"
+
+' Relacionamentos pessoa-instituição
+p ||--o{ pi : "1:N"
+i ||--o{ pi : "1:N"
+p ||--o{ psi : "1:N" 
+si ||--o{ psi : "1:N"
+i ||--o{ psi : "1:N"
+
+' Atividades e tipos
+i ||--o{ ta : "1:N"
+ta ||--o{ a : "1:N"
+i ||--o{ a : "1:N"
+si ||--o{ a : "1:N"
+p ||--o{ a : "solicitante\n1:N"
+
+' Autores e ocorrências
+p ||--o{ au : "1:N"
+a ||--o{ oa : "1:N"
+au ||--o{ oa : "1:N"
+
+' Log de postagens
+oa ||--o{ lp : "1:N"
+
+' Inscrições
+p ||--o{ ins : "1:N"
+i ||--o{ ins : "1:N"
+ins ||--o{ ita : "1:N"
+ta ||--o{ ita : "1:N"
+
+' === NOTAS EXPLICATIVAS ===
+
+note top of ui : **ARQUITETURA V2.0**\n✅ Níveis por instituição:\n• 1=Participante\n• 2=Autor\n• 5=Administrador\n• 9=SuperUsuário\n• 0=Controle Total
+
+note bottom of l : **Hierarquia Geográfica**\n• 1=País\n• 2=Estado\n• 3=Cidade\n\nNormalização completa\nde localização
+
+note right of u : **Usuario (V2.0)**\n✅ Campo removido:\n~~nivelAcessoUsuario~~\n\nTodos os níveis agora\nsão por instituição
+
+note left of a : **Fluxo de Atividades**\n1. Atividade criada\n2. Ocorrências agendadas\n3. Autores designados\n4. Postagens logadas
+
+note bottom of ins : **Sistema de Inscrições**\nInscrição por instituição\ncom múltiplos tipos\nde atividade
+
+@enduml

@@ -79,41 +79,90 @@ mvn clean spring-boot:run
 
 ---
 
-## 👥 Níveis de Acesso
+## 👥 Níveis de Acesso - **ARQUITETURA V2.0**
+
+> **🚀 NOVA FUNCIONALIDADE**: Níveis de acesso **por instituição** (não mais globais)
 
 ```bash
-----------------------------------------------------------
-| Nível | Descrição     | Tela Inicial                   |
-| ----- | ------------- | ------------------------------ |
-| 1     | Participante  | `menu-participante-form.html`  |
-| 2     | Autor         | `menu-autor-form.html`         |
-| 5     | Administrador | `menu-administrador-form.html` |
-| 9     | Superusuário  | `menu-superusuario-form.html`  |
-----------------------------------------------------------
+------------------------------------------------------------------------
+| Nível | Descrição     | Tela Inicial                   | Contexto   |
+| ----- | ------------- | ------------------------------ | ---------- |
+| 1     | Participante  | `menu-participante-form.html`  | Por Inst.  |
+| 2     | Autor         | `menu-autor-form.html`         | Por Inst.  |
+| 5     | Administrador | `menu-administrador-form.html` | Por Inst.  |
+| 9     | Superusuário  | `menu-superusuario-form.html`  | Por Inst.  |
+| 0     | Controle Total| `superusuario-form.html`       | Global     |
+------------------------------------------------------------------------
 ```
 
-## 📦 Dados de Exemplo (via `DataLoader.java`)
+### 🎯 **Casos de Uso Suportados (V2.0)**
 
-- Usuário: `admin01` / Senha: `admin123` / Nível: 5
-- Instituições: `INSTITUTO LUZ`, `CENTRO ALVORADA`
-- Pessoas e vínculos iniciais criados automaticamente
+- **Multi-institucional**: Usuário pode ser Autor na Universidade A e Administrador na Empresa B
+- **Seleção de Contexto**: Login permite escolher instituição quando usuário tem múltiplos vínculos
+- **Flexibilidade Total**: Diferentes responsabilidades em diferentes organizações
+
+## 📦 Dados de Exemplo (via `DataLoader.java`) - **V2.0**
+
+- **Usuário**: `admin01` / **Senha**: `admin123`
+- **Níveis por Instituição**:
+  - INSTITUTO LUZ: Nível 5 (Administrador)
+  - CENTRO ALVORADA: Nível 5 (Administrador)
+  - INSTITUTO CRUZ: Nível 5 (Administrador)
+- **Arquitetura**: Cada usuário pode ter níveis diferentes em cada instituição
+- **Login**: Sistema detecta múltiplos vínculos e permite seleção de contexto institucional
 
 ---
 
-## 📁 Modelo Entidade-Relacionamento (MER)
+## 📁 Modelo Entidade-Relacionamento (MER) - **V2.0**
 
-Incluído em `docs/agenda_mais_modelo_erd.png`
+> **🔄 ARQUITETURA ATUALIZADA**: Migração de níveis globais para níveis por instituição
 
-![ERD](docs/agenda_mais_modelo_erd.png)
+**Diagrama Atual (V2.0)**:  
+![ERD V2.0](docs/agenda_mais_erd_v2.1.png)
+
+### 📚 Documentação Completa V2.0:
+
+- **[📊 Modelo ER V2.0 - Completo](docs/agenda_mais_modelo_er_v2.md)** - Documentação textual detalhada
+- **[🔧 Diagrama PlantUML V2.0 - Completo](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código PlantUML com todas as entidades
+- **[📈 Diagrama Mermaid V2.0 - Completo](docs/AgendaMais_ERD_V2_Mermaid_COMPLETO.md)** - Diagrama Mermaid com 15 entidades  
+- **[🔄 Comparativo V1→V2](docs/Migracao_Arquitetural_V1_V2_Comparativo.md)** - Análise antes/depois
+- **[🛠️ Como Gerar Imagens](docs/gerar_diagramas.md)** - Instruções para gerar PNG
+
+### 🎯 **Principais Mudanças V2.0**:
+
+1. **Usuario.nivelAcessoUsuario** → **REMOVIDO** ❌
+2. **UsuarioInstituicao.nivelAcessoUsuarioInstituicao** → **ADICIONADO** ✅
+3. **Contexto Multi-institucional** → **SUPORTADO** ✅
+4. **Seleção de Instituição no Login** → **IMPLEMENTADO** ✅
+
+### 🏗️ **Entidades do Sistema Completo**:
+
+- **Core**: Usuario, Pessoa, UsuarioInstituicao, Instituicao, Local
+- **Atividades**: TipoAtividade, Atividade, Autor, OcorrenciaAtividade, LogPostagem
+- **Inscrições**: Inscricao, InscricaoTipoAtividade
+- **Relacionamentos**: PessoaInstituicao, PessoaSubInstituicao
 
 ---
 
-## 📚 Documentação Técnica
+## 📚 Documentação Técnica - **V2.0**
+
+### 🏗️ **Arquitetura e Modelo de Dados**
+
+- **[📊 Modelo ER V2.0 - Completo](docs/agenda_mais_modelo_er_v2.md)** - Documentação completa do modelo
+- **[🔄 Migração V1→V2](docs/Migracao_Arquitetural_V1_V2_Comparativo.md)** - Análise comparativa das mudanças
+- **[🔧 Diagrama PlantUML V2.0 - Completo](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código fonte do diagrama completo
+- **[📈 Diagrama Mermaid V2.0](docs/AgendaMais_ERD_V2_Mermaid.md)** - Diagrama ER moderno
+
+### 🚀 **Funcionalidades e Implementação**
 
 - **[Implementação de Locais](docs/implementa-local.md)** - Normalização completa de País/Estado/Cidade
+- **[Estrutura de Níveis V2.0](docs/estrutura-niveis-usuario.md)** - Sistema de permissões por instituição
 - **[Atualização do Diagrama ER](docs/atualizacao-diagrama-local.md)** - Mudanças no modelo de dados
-- **[Modelo de Dados](docs/agenda_mais_modelo_erd.png)** - Diagrama Entidade-Relacionamento
-- **[ERD PlantUML](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código fonte do diagrama
+
+### 🛠️ **Ferramentas e Manutenção**
+
+- **[Backup e Restore](backup-tools/README-backup-tools.md)** - Ferramentas de backup e restore
+- **[Como Gerar Diagramas](docs/gerar_diagramas.md)** - Instruções para gerar PNG dos diagramas
 
 ---
 
