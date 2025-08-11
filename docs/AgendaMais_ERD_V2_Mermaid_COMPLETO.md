@@ -238,15 +238,19 @@ erDiagram
 ### 📊 Entidades por Categoria
 
 #### **Core do Sistema (5 entidades)**
+
 - Usuario, Pessoa, UsuarioInstituicao, Instituicao, Local
 
 #### **Sistema de Atividades (5 entidades)**
+
 - TipoAtividade, **Atividade**, **Autor**, **OcorrenciaAtividade**, **LogPostagem**
 
 #### **Relacionamentos (4 entidades)**
+
 - PessoaInstituicao, PessoaSubInstituicao, Inscricao, InscricaoTipoAtividade
 
 #### **Organizacional (1 entidade)**
+
 - SubInstituicao
 
 **Total**: **15 entidades** no sistema completo

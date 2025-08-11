@@ -14,8 +14,7 @@ public class SecurityConfig {
 				)
 				.formLogin(form -> form.disable()) // Desabilitar completamente o form login do Spring
 				.logout(logout -> logout.permitAll())
-				.csrf(csrf -> csrf
-						.ignoringRequestMatchers("/h2-console/**"))
+				.csrf(csrf -> csrf.disable()) // Desabilitar CSRF completamente
 				.headers(headers -> headers
 						.frameOptions(frame -> frame.disable()))
 				.exceptionHandling(eh -> eh

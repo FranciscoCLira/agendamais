@@ -42,11 +42,6 @@ public class MenuController {
         return "menus/menu-controle-total";
     }
 
-    @GetMapping("/inscricao-tipo-atividade")
-    public String inscricaoTipoAtividade() {
-        return "info/em-construcao"; // Página em construção
-    }
-
     // === ENDPOINTS EM CONSTRUÇÃO PARA CONTROLE TOTAL ===
 
     @GetMapping("/gerenciar-instituicoes")
@@ -101,24 +96,6 @@ public class MenuController {
 
     @GetMapping("/vinculos-instituicoes")
     public String vinculosInstituicoes() {
-        return "info/em-construcao"; // Página em construção
-    }
-
-    @GetMapping("/dados-autor")
-    public String dadosAutor(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuario == null) {
-            return "redirect:/acesso";
-        }
-
-        String tipoUsuario = determinaTipoUsuario(session);
-        model.addAttribute("tipoUsuario", tipoUsuario);
-
-        return "autor/dados-autor"; // Template para dados de autor
-    }
-
-    @GetMapping("/vinculo-instituicao")
-    public String vinculoInstituicao() {
         return "info/em-construcao"; // Página em construção
     }
 

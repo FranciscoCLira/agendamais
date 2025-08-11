@@ -124,7 +124,7 @@ mvn clean spring-boot:run
 
 - **[📊 Modelo ER V2.0 - Completo](docs/agenda_mais_modelo_er_v2.md)** - Documentação textual detalhada
 - **[🔧 Diagrama PlantUML V2.0 - Completo](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Código PlantUML com todas as entidades
-- **[📈 Diagrama Mermaid V2.0 - Completo](docs/AgendaMais_ERD_V2_Mermaid_COMPLETO.md)** - Diagrama Mermaid com 15 entidades  
+- **[📈 Diagrama Mermaid V2.0 - Completo](docs/AgendaMais_ERD_V2_Mermaid_COMPLETO.md)** - Diagrama Mermaid com 15 entidades
 - **[🔄 Comparativo V1→V2](docs/Migracao_Arquitetural_V1_V2_Comparativo.md)** - Análise antes/depois
 - **[🛠️ Como Gerar Imagens](docs/gerar_diagramas.md)** - Instruções para gerar PNG
 

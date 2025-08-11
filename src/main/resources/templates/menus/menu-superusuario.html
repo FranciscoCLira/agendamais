@@ -11,7 +11,7 @@
   </head>
   <body>
     <!-- CABECALHO PADRAO -->
-    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
 
     <main class="main-content">
       <h2>Bem-vindo, SuperUsuário!</h2>
@@ -38,22 +38,17 @@
           <a href="/meus-dados"><i class="fas fa-user-edit"></i> Meus Dados</a>
         </li>
         <li>
-          <a href="/dados-autor"
-            ><i class="fas fa-user-tie"></i> Meus dados de Autor</a
+          <a href="/dados-autor?origem=superusuario"
+            ><i class="fas fa-user-tie"></i> Meus Dados de Autor</a
           >
         </li>
 
         <li style="margin: 0.5px 0; list-style: none">&nbsp;</li>
 
         <li>
-          <a href="/vinculos-instituicoes"
-            ><i class="fas fa-link"></i> Vínculos com Instituições</a
-          >
-        </li>
-        <li>
-          <a href="/inscricao-tipo-atividade"
-            ><i class="fas fa-clipboard-check"></i> Inscrição em Tipos de
-            Atividades</a
+          <a href="/inscricao-tipo-atividade?origem=superusuario"
+            ><i class="fas fa-clipboard-check"></i> Minhas Inscrições em Tipos
+            de Atividades</a
           >
         </li>
 

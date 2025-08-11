@@ -615,7 +615,7 @@ public class DataLoader implements CommandLineRunner {
         // PessoaSubInstituicao - 32
         PessoaSubInstituicao psSub32 = new PessoaSubInstituicao();
         psSub32.setPessoa(pessoa3);
-        psSub32.setSubInstituicao(subInst32);
+        psSub32.setSubInstituicao(subInst22); // CORRIGIDO: era subInst32 (inst3), agora é subInst22 (inst2)
         psSub32.setInstituicao(inst2);
         psSub32.setDataUltimaAtualizacao(LocalDate.now());
         psSub32.setDataAfiliacao(LocalDate.now());
@@ -655,7 +655,7 @@ public class DataLoader implements CommandLineRunner {
         // PessoaSubInstituicao - 41
         PessoaSubInstituicao psSub41 = new PessoaSubInstituicao();
         psSub41.setPessoa(pessoa4);
-        psSub41.setSubInstituicao(subInst31);
+        psSub41.setSubInstituicao(subInst13); // AJUSTE: usar subInst13 para evitar conflito com psSub11
         psSub41.setInstituicao(inst1);
         psSub41.setDataUltimaAtualizacao(LocalDate.now());
         psSub41.setDataAfiliacao(LocalDate.now());
@@ -674,7 +674,7 @@ public class DataLoader implements CommandLineRunner {
         // PessoaSubInstituicao - 42
         PessoaSubInstituicao psSub42 = new PessoaSubInstituicao();
         psSub42.setPessoa(pessoa4);
-        psSub42.setSubInstituicao(subInst32);
+        psSub42.setSubInstituicao(subInst21); // AJUSTE: usar subInst21 para evitar conflito e melhor distribuição
         psSub42.setInstituicao(inst2);
         psSub42.setDataUltimaAtualizacao(LocalDate.now());
         psSub42.setDataAfiliacao(LocalDate.now());

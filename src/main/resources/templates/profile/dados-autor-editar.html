@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar Dados de Autor - AgendaMais</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <!-- Cabeçalho -->
+      <div class="row bg-primary text-white p-3 mb-4">
+        <div class="col-md-6">
+          <h4 class="mb-0">
+            <i class="fas fa-university me-2"></i>
+            <span th:text="${nomeInstituicao}">Nome da Instituição</span>
+          </h4>
+        </div>
+        <div class="col-md-6 text-end">
+          <span class="me-3">
+            <i class="fas fa-user me-1"></i>
+            <span th:text="${nomeUsuario}">usuario</span>
+          </span>
+          <span>
+            <i class="fas fa-id-badge me-1"></i>
+            <span th:text="${nomePessoa}">Nome da Pessoa</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      <div
+        th:if="${mensagemSucesso}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${mensagemSucesso}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <div
+        th:if="${mensagemErro}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${mensagemErro}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <!-- Título da Página -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h2>
+            <i class="fas fa-edit me-2 text-primary"></i>
+            Editar Dados de Autor
+          </h2>
+          <p class="text-muted">
+            Atualize suas informações como autor no sistema.
+          </p>
+        </div>
+      </div>
+
+      <!-- Formulário de Edição -->
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-user-edit me-2"></i>
+                Informações do Autor
+              </h5>
+            </div>
+            <div class="card-body">
+              <form
+                th:action="@{/dados-autor/salvar}"
+                th:object="${autor}"
+                method="post"
+              >
+                <!-- Campo hidden para ID -->
+                <input th:field="*{id}" type="hidden" />
+                <input th:field="*{idPessoa}" type="hidden" />
+
+                <!-- Dados Pessoais (apenas visualização) -->
+                <div class="row mb-3">
+                  <div class="col-12">
+                    <div class="border p-3 bg-light rounded">
+                      <h6 class="text-primary mb-2">
+                        <i class="fas fa-user me-2"></i>Dados Pessoais e Vinculação
+                      </h6>
+                      <div class="row mb-2">
+                        <div class="col-sm-3">
+                          <strong>Nome:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                          <span th:text="${nomePessoa}">Nome da Pessoa</span>
+                        </div>
+                      </div>
+                      <div class="row" th:if="${possuiVinculoSubInstituicao}">
+                        <div class="col-sm-3">
+                          <strong>Sub-Instituição:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                          <span class="badge bg-success me-2" th:text="${vinculoSubInstituicao.subInstituicao.nomeSubInstituicao}">Nome da Sub-Instituição</span>
+                          <div class="mt-1">
+                            <small class="text-muted">
+                              <i class="fas fa-university me-1"></i>
+                              <span th:text="${vinculoSubInstituicao.instituicao.nomeInstituicao}">Instituição Principal</span>
+                            </small>
+                          </div>
+                          <div th:if="${vinculoSubInstituicao.identificacaoPessoaSubInstituicao != null and vinculoSubInstituicao.identificacaoPessoaSubInstituicao != ''}" class="mt-1">
+                            <small class="text-muted">
+                              <i class="fas fa-id-card me-1"></i>
+                              ID: <span th:text="${vinculoSubInstituicao.identificacaoPessoaSubInstituicao}">Identificação</span>
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row" th:if="${!possuiVinculoSubInstituicao}">
+                        <div class="col-sm-3">
+                          <strong>Sub-Instituição:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                          <span class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Não vinculado a uma sub-instituição
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Função do Autor -->
+                <div class="row mb-3">
+                  <div class="col-sm-3">
+                    <label for="funcaoAutor" class="form-label">
+                      <strong>Função:</strong>
+                    </label>
+                  </div>
+                  <div class="col-sm-9">
+                    <input
+                      type="text"
+                      th:field="*{funcaoAutor}"
+                      id="funcaoAutor"
+                      class="form-control"
+                      placeholder="Ex: Professor, Pesquisador, Coordenador"
+                      maxlength="100"
+                    />
+                    <div class="form-text">
+                      Especifique sua função principal como autor (até 100
+                      caracteres).
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Currículo da Função -->
+                <div class="row mb-3">
+                  <div class="col-sm-3">
+                    <label for="curriculoFuncaoAutor" class="form-label">
+                      <strong>Currículo da Função:</strong>
+                    </label>
+                  </div>
+                  <div class="col-sm-9">
+                    <textarea
+                      th:field="*{curriculoFuncaoAutor}"
+                      id="curriculoFuncaoAutor"
+                      class="form-control"
+                      rows="6"
+                      placeholder="Descreva sua experiência, formação, publicações e outras informações relevantes como autor..."
+                    ></textarea>
+                    <div class="form-text">
+                      Inclua informações sobre sua formação, experiência e
+                      contribuições relevantes.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Link da Imagem -->
+                <div class="row mb-3">
+                  <div class="col-sm-3">
+                    <label for="linkImgAutor" class="form-label">
+                      <strong>Link da Imagem:</strong>
+                    </label>
+                  </div>
+                  <div class="col-sm-9">
+                    <input
+                      type="url"
+                      th:field="*{linkImgAutor}"
+                      id="linkImgAutor"
+                      class="form-control"
+                      placeholder="https://exemplo.com/minha-foto.jpg"
+                    />
+                    <div class="form-text">
+                      URL para uma foto sua que será exibida em perfis e
+                      apresentações.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Link do Material -->
+                <div class="row mb-4">
+                  <div class="col-sm-3">
+                    <label for="linkMaterialAutor" class="form-label">
+                      <strong>Link do Material:</strong>
+                    </label>
+                  </div>
+                  <div class="col-sm-9">
+                    <input
+                      type="url"
+                      th:field="*{linkMaterialAutor}"
+                      id="linkMaterialAutor"
+                      class="form-control"
+                      placeholder="https://exemplo.com/meus-materiais"
+                    />
+                    <div class="form-text">
+                      URL para um site, blog ou repositório com seus materiais e
+                      trabalhos.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botões do Formulário -->
+                <div class="row">
+                  <div class="col-12 d-flex justify-content-between">
+                    <a th:href="${origem == 'administrador' ? '/administrador' : (origem == 'superusuario' ? '/superusuario' : '/autor')}" class="btn btn-secondary">
+                      <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                      <i class="fas fa-save me-2"></i>Salvar Dados
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Painel Lateral com Informações -->
+        <div class="col-md-4">
+          <!-- Dicas para Preenchimento -->
+          <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+              <h6 class="mb-0">
+                <i class="fas fa-lightbulb me-2"></i>
+                Dicas para Preenchimento
+              </h6>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-0">
+                <li class="mb-3">
+                  <strong>Função:</strong>
+                  <br /><small class="text-muted"
+                    >Seja específico sobre seu papel (ex: "Professor Doutor em
+                    História", "Coordenador de Projetos").</small
+                  >
+                </li>
+                <li class="mb-3">
+                  <strong>Currículo:</strong>
+                  <br /><small class="text-muted"
+                    >Inclua formação acadêmica, experiência profissional,
+                    publicações principais e prêmios relevantes.</small
+                  >
+                </li>
+                <li class="mb-3">
+                  <strong>Link da Imagem:</strong>
+                  <br /><small class="text-muted"
+                    >Use uma foto profissional em formato JPG ou PNG. Tamanho
+                    recomendado: 300x400 pixels.</small
+                  >
+                </li>
+                <li>
+                  <strong>Link do Material:</strong>
+                  <br /><small class="text-muted"
+                    >Pode ser um site pessoal, perfil acadêmico, ou repositório
+                    de trabalhos (ex: Lattes, ResearchGate).</small
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Exemplo de URLs -->
+          <div class="card">
+            <div class="card-header bg-secondary text-white">
+              <h6 class="mb-0">
+                <i class="fas fa-link me-2"></i>
+                Exemplos de URLs
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <strong>Imagem:</strong>
+                <br /><small class="text-muted font-monospace"
+                  >https://exemplo.com/foto.jpg</small
+                >
+              </div>
+              <div class="mb-3">
+                <strong>Currículo Lattes:</strong>
+                <br /><small class="text-muted font-monospace"
+                  >http://lattes.cnpq.br/123456789</small
+                >
+              </div>
+              <div class="mb-3">
+                <strong>Site Pessoal:</strong>
+                <br /><small class="text-muted font-monospace"
+                  >https://meusite.com.br</small
+                >
+              </div>
+              <div>
+                <strong>ResearchGate:</strong>
+                <br /><small class="text-muted font-monospace"
+                  >https://researchgate.net/profile/nome</small
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botões de Ação Inferior -->
+      <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+          <a th:href="@{/dados-autor(origem=${origem})}" class="btn btn-outline-secondary me-3">
+            <i class="fas fa-eye me-2"></i>Visualizar Dados Atuais
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script para validação de URLs -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const urlInputs = document.querySelectorAll('input[type="url"]');
+
+        urlInputs.forEach((input) => {
+          input.addEventListener("blur", function () {
+            if (this.value && !this.value.startsWith("http")) {
+              this.value = "https://" + this.value;
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
