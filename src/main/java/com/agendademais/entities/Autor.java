@@ -1,5 +1,6 @@
 package com.agendademais.entities;
 
+import com.agendademais.enums.FuncaoAutor;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -11,7 +12,12 @@ public class Autor {
     @ManyToOne
     private Pessoa idPessoa;
 
-    private Integer funcaoAutor;
+    @Enumerated(EnumType.STRING)
+    private FuncaoAutor funcaoAutor;
+    private String funcaoAutorOutra; // Para quando funcaoAutor = OUTRA
+    
+    @ManyToOne
+    private FuncaoAutorCustomizada funcaoAutorCustomizada; // Para funções personalizadas
     private String situacaoAutor;
     private String curriculoFuncaoAutor;
     private String linkImgAutor;
@@ -33,10 +39,10 @@ public class Autor {
 	public void setIdPessoa(Pessoa idPessoa) {
 		this.idPessoa = idPessoa;
 	}
-	public Integer getFuncaoAutor() {
+	public FuncaoAutor getFuncaoAutor() {
 		return funcaoAutor;
 	}
-	public void setFuncaoAutor(Integer funcaoAutor) {
+	public void setFuncaoAutor(FuncaoAutor funcaoAutor) {
 		this.funcaoAutor = funcaoAutor;
 	}
 	public String getSituacaoAutor() {
@@ -68,6 +74,22 @@ public class Autor {
 	}
 	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
+	}
+
+	public String getFuncaoAutorOutra() {
+		return funcaoAutorOutra;
+	}
+
+	public void setFuncaoAutorOutra(String funcaoAutorOutra) {
+		this.funcaoAutorOutra = funcaoAutorOutra;
+	}
+
+	public FuncaoAutorCustomizada getFuncaoAutorCustomizada() {
+		return funcaoAutorCustomizada;
+	}
+
+	public void setFuncaoAutorCustomizada(FuncaoAutorCustomizada funcaoAutorCustomizada) {
+		this.funcaoAutorCustomizada = funcaoAutorCustomizada;
 	}
 
 

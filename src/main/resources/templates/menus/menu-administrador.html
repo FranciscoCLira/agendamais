@@ -1,14 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thy        <li style="margin-top: 0 0; list-style: none">&nbsp;</li>
-
-        <li>
-          <a th:href="@{/inscricao-tipo-atividade?origem=administrador}"
-            ><i class="fas fa-clipboard-check"></i> Minhas Inscrições em Tipos de Atividades</a
-          >
-        </li>g">
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title>Menu - SuperUsuário</title>
+    <title>Menu - Administrador</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
     <link
       rel="stylesheet"
@@ -34,9 +28,7 @@
         class="mensagem-sucesso"
       ></p>
 
-      <ul>
-        <!-- Funcionalidades compartilhadas do autor -->
-
+      <ul class="menu-opcoes">
         <!-- Dados Pessoais -->
         <h3 style="margin-top: 30px; margin-bottom: 10px">
           <i class="fas fa-user"></i> Perfil
@@ -51,17 +43,18 @@
           >
         </li>
 
-        <li style="margin-top: 0 0; list-style: none">&nbsp;</li>
+        <li style="margin: 5px 0; list-style: none">&nbsp;</li>
 
         <li>
-          <a href="/inscricao-tipo-atividade?origem=administrador"
+          <a th:href="@{/inscricao-tipo-atividade?origem=administrador}"
             ><i class="fas fa-clipboard-check"></i> Minhas Inscrições em Tipos de Atividades</a
           >
         </li>
-          <h3 style="margin-top: 30px; margin-bottom: 10px">
-            Gestão da Instituição
-          </h3>
-        </li>
+
+        <!-- Gestão da Instituição -->
+        <h3 style="margin-top: 30px; margin-bottom: 10px">
+          <i class="fas fa-university"></i> Gestão da Instituição
+        </h3>
 
         <li>
           <a href="/administrador/instituicoes"
@@ -89,7 +82,7 @@
           >
         </li>
 
-        <li style="margin: 0 0; list-style: none">&nbsp;</li>
+        <li style="margin: 5px 0; list-style: none">&nbsp;</li>
 
         <li>
           <a href="/administrador/postagens"
@@ -102,9 +95,9 @@
           >
         </li>
 
-        <!-- Funcionalidades específicas do administrador - Usuarios -->
+        <!-- Gestão de Usuários -->
         <h3 style="margin-top: 30px; margin-bottom: 10px">
-          Gestão de Usuários
+          <i class="fas fa-users"></i> Gestão de Usuários
         </h3>
 
         <li>

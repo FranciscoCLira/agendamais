@@ -18,6 +18,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\DadosAutorContr
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\DebugController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ExcluirCadastroController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\ExcluirVinculosInstituicaoController.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\FuncaoAutorController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\HierarchyNode.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\HomeController.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\controllers\InscricaoTipoAtividadeController.java
@@ -45,6 +46,7 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\dtos\InscricaoForm.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\dtos\LocalDTO.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Atividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Autor.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\FuncaoAutorCustomizada.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Inscricao.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\InscricaoTipoAtividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Instituicao.java
@@ -59,9 +61,11 @@ C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\SubInstituicao.jav
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\TipoAtividade.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\Usuario.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\entities\UsuarioInstituicao.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\enums\FuncaoAutor.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\exceptions\BusinessException.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\AtividadeRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\AutorRepository.java
+C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\FuncaoAutorCustomizadaRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\InscricaoRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\InscricaoTipoAtividadeRepository.java
 C:\DEV-IA2\agendamais\src\main\java\com\agendademais\repositories\InstituicaoRepository.java

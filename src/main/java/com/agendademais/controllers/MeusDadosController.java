@@ -91,6 +91,7 @@ public class MeusDadosController {
 
         return atualizarMeusDados(pessoa, paisOutro, estadoOutro, cidadeOutro,
                 nomePaisPessoa, nomeEstadoPessoa, nomeCidadePessoa,
+                null, null, false, false,
                 session, model, redirectAttributes);
     }
 

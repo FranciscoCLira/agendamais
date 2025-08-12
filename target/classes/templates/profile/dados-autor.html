@@ -73,12 +73,12 @@
               Meus Dados de Autor
             </h2>
             <p class="text-muted">
-              Gerencie suas informações como autor no sistema.
+              Atualize suas informações de autor
             </p>
           </div>
           <div>
             <a th:href="@{/dados-autor/editar(origem=${origem})}" class="btn btn-warning">
-              <i class="fas fa-edit me-2"></i>Editar Dados
+              <i class="fas fa-edit me-2"></i>Editar Meus Dados de Autor
             </a>
           </div>
         </div>
@@ -86,7 +86,7 @@
 
       <!-- Dados do Autor -->
       <div class="row">
-        <div class="col-md-8">
+        <div class="col-12">
           <div class="card">
             <div
               class="card-header bg-light d-flex justify-content-between align-items-center"
@@ -106,70 +106,36 @@
               </span>
             </div>
             <div class="card-body">
-              <!-- Dados Pessoais -->
-              <div class="row mb-3">
-                <div class="col-sm-3">
-                  <strong>Nome:</strong>
-                </div>
-                <div class="col-sm-9">
-                  <span th:text="${nomePessoa}">Nome da Pessoa</span>
-                </div>
-              </div>
-
-              <!-- Vínculo com Sub-Instituição -->
-              <div class="row mb-3">
-                <div class="col-sm-3">
-                  <strong>Sub-Instituição:</strong>
-                </div>
-                <div class="col-sm-9">
-                  <div th:if="${possuiVinculoSubInstituicao}">
-                    <span class="badge bg-success me-2" th:text="${vinculoSubInstituicao.subInstituicao.nomeSubInstituicao}">Nome da Sub-Instituição</span>
-                    <div class="mt-1">
-                      <small class="text-muted">
-                        <i class="fas fa-university me-1"></i>
-                        <span th:text="${vinculoSubInstituicao.instituicao.nomeInstituicao}">Instituição Principal</span>
-                      </small>
-                    </div>
-                    <div th:if="${vinculoSubInstituicao.identificacaoPessoaSubInstituicao != null and vinculoSubInstituicao.identificacaoPessoaSubInstituicao != ''}" class="mt-1">
-                      <small class="text-muted">
-                        <i class="fas fa-id-card me-1"></i>
-                        Identificação: <span th:text="${vinculoSubInstituicao.identificacaoPessoaSubInstituicao}">ID</span>
-                      </small>
-                    </div>
-                    <div class="mt-1">
-                      <small class="text-muted">
-                        <i class="fas fa-calendar me-1"></i>
-                        Desde: <span th:text="${#temporals.format(vinculoSubInstituicao.dataAfiliacao, 'dd/MM/yyyy')}">Data</span>
-                      </small>
-                    </div>
-                  </div>
-                  <div th:if="${!possuiVinculoSubInstituicao}">
-                    <span class="text-muted">
-                      <i class="fas fa-info-circle me-1"></i>
-                      Não vinculado a uma sub-instituição desta instituição
-                    </span>
-                    <div class="mt-1">
-                      <small class="text-muted">
-                        O vínculo com sub-instituição é definido durante o cadastro inicial.
-                      </small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <!-- Função do Autor -->
               <div class="row mb-3">
                 <div class="col-sm-3">
-                  <strong>Função:</strong>
+                  <strong>Função do Autor:</strong>
                 </div>
                 <div class="col-sm-9">
+                  <!-- Função Padrão (Enum) -->
                   <span
-                    th:if="${autor.funcaoAutor != null and autor.funcaoAutor != ''}"
-                    th:text="${autor.funcaoAutor}"
+                    th:if="${autor.funcaoAutor != null}"
                     class="badge bg-primary"
-                  ></span>
+                  >
+                    <span th:if="${autor.funcaoAutor.name() == 'OUTRA' and autor.funcaoAutorOutra != null and autor.funcaoAutorOutra != ''}"
+                          th:text="${autor.funcaoAutorOutra}"></span>
+                    <span th:if="${autor.funcaoAutor.name() != 'OUTRA'}"
+                          th:text="${autor.funcaoAutor.descricao}"></span>
+                    <span th:if="${autor.funcaoAutor.name() == 'OUTRA' and (autor.funcaoAutorOutra == null or autor.funcaoAutorOutra == '')}"
+                          th:text="${autor.funcaoAutor.descricao}"></span>
+                  </span>
+                  
+                  <!-- Função Personalizada -->
                   <span
-                    th:if="${autor.funcaoAutor == null or autor.funcaoAutor == ''}"
+                    th:if="${autor.funcaoAutorCustomizada != null}"
+                    class="badge bg-success"
+                  >
+                    <span th:text="${autor.funcaoAutorCustomizada.nomeFuncao}"></span>
+                  </span>
+                  
+                  <!-- Nenhuma função informada -->
+                  <span
+                    th:if="${autor.funcaoAutor == null and autor.funcaoAutorCustomizada == null}"
                     class="text-muted"
                     >Não informado</span
                   >
@@ -281,87 +247,13 @@
             </div>
           </div>
         </div>
-
-        <!-- Painel Lateral com Informações -->
-        <div class="col-md-4">
-          <!-- Status Card -->
-          <div class="card mb-3">
-            <div class="card-header bg-info text-white">
-              <h6 class="mb-0">
-                <i class="fas fa-info-circle me-2"></i>
-                Status do Cadastro
-              </h6>
-            </div>
-            <div class="card-body">
-              <div th:if="${possuiDadosAutor}" class="text-center">
-                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                <h6 class="text-success">Cadastro Completo</h6>
-                <p class="text-muted small">
-                  Seus dados de autor estão registrados no sistema.
-                </p>
-              </div>
-              <div th:if="${!possuiDadosAutor}" class="text-center">
-                <i
-                  class="fas fa-exclamation-triangle fa-3x text-warning mb-3"
-                ></i>
-                <h6 class="text-warning">Cadastro Pendente</h6>
-                <p class="text-muted small">
-                  Complete seu cadastro de autor clicando em "Editar Dados".
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dicas -->
-          <div class="card">
-            <div class="card-header bg-secondary text-white">
-              <h6 class="mb-0">
-                <i class="fas fa-lightbulb me-2"></i>
-                Dicas
-              </h6>
-            </div>
-            <div class="card-body">
-              <ul class="list-unstyled mb-0">
-                <li class="mb-2">
-                  <i class="fas fa-arrow-right me-2 text-primary"></i>
-                  <small
-                    >Mantenha seus dados de autor sempre atualizados.</small
-                  >
-                </li>
-                <li class="mb-2">
-                  <i class="fas fa-arrow-right me-2 text-primary"></i>
-                  <small
-                    >Use URLs válidas para links de imagem e materiais.</small
-                  >
-                </li>
-                <li class="mb-2">
-                  <i class="fas fa-arrow-right me-2 text-primary"></i>
-                  <small
-                    >O currículo da função é usado em relatórios e
-                    apresentações.</small
-                  >
-                </li>
-                <li>
-                  <i class="fas fa-arrow-right me-2 text-primary"></i>
-                  <small
-                    >Seus dados são visíveis para administradores da
-                    instituição.</small
-                  >
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Botões de Ação -->
       <div class="row mt-4 mb-4">
-        <div class="col-12 d-flex justify-content-between">
+        <div class="col-12">
           <a th:href="${origem == 'administrador' ? '/administrador' : (origem == 'superusuario' ? '/superusuario' : '/autor')}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-2"></i>Voltar ao Menu
-          </a>
-          <a th:href="@{/dados-autor/editar(origem=${origem})}" class="btn btn-warning">
-            <i class="fas fa-edit me-2"></i>Editar Dados de Autor
           </a>
         </div>
       </div>

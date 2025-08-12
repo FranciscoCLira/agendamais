@@ -1,6 +1,7 @@
 package com.agendademais.controllers;
 
 import com.agendademais.entities.*;
+import com.agendademais.enums.FuncaoAutor;
 import com.agendademais.repositories.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +9,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.web.bind.WebDataBinder;
 
 import jakarta.servlet.http.HttpSession;
+import java.beans.PropertyEditorSupport;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -29,6 +33,41 @@ public class DadosAutorController {
 
     @Autowired
     private SubInstituicaoRepository subInstituicaoRepository;
+    
+    @Autowired
+    private FuncaoAutorCustomizadaRepository funcaoCustomizadaRepository;
+
+    /**
+     * Configura os editores de propriedades para conversão de tipos
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+        
+        // Converter personalizado para FuncaoAutor
+        binder.registerCustomEditor(FuncaoAutor.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.trim().isEmpty()) {
+                    setValue(null);
+                } else {
+                    try {
+                        // Tentar converter diretamente pelo nome do enum
+                        setValue(FuncaoAutor.valueOf(text.trim()));
+                    } catch (IllegalArgumentException e) {
+                        // Se falhar, tentar encontrar pela descrição
+                        for (FuncaoAutor funcao : FuncaoAutor.values()) {
+                            if (funcao.getDescricao().equals(text.trim())) {
+                                setValue(funcao);
+                                return;
+                            }
+                        }
+                        setValue(null);
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * Exibe os dados de autor do usuário
@@ -107,6 +146,8 @@ public class DadosAutorController {
     @PostMapping("/salvar")
     public String salvarDadosAutor(
             @ModelAttribute Autor autor,
+            @RequestParam(value = "funcaoAutor", required = false) String funcaoAutorParam,
+            @RequestParam(value = "origem", required = false, defaultValue = "autor") String origem,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -126,6 +167,36 @@ public class DadosAutorController {
         }
 
         try {
+            // Processar função do autor
+            if (funcaoAutorParam != null) {
+                if (funcaoAutorParam.startsWith("CUSTOM_")) {
+                    // É uma função personalizada
+                    Long customId = Long.parseLong(funcaoAutorParam.substring(7));
+                    FuncaoAutorCustomizada customFunc = funcaoCustomizadaRepository
+                        .findById(customId).orElse(null);
+                    if (customFunc != null) {
+                        autor.setFuncaoAutorCustomizada(customFunc);
+                        autor.setFuncaoAutor(null); // Limpar a enum
+                        autor.setFuncaoAutorOutra(null); // Limpar "outra" quando for personalizada
+                    }
+                } else {
+                    // É uma função padrão (enum)
+                    try {
+                        FuncaoAutor funcaoEnum = FuncaoAutor.valueOf(funcaoAutorParam);
+                        autor.setFuncaoAutor(funcaoEnum);
+                        autor.setFuncaoAutorCustomizada(null); // Limpar a personalizada
+                        // Se não for "OUTRA", limpar o campo funcaoAutorOutra
+                        if (funcaoEnum != FuncaoAutor.OUTRA) {
+                            autor.setFuncaoAutorOutra(null);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // Valor inválido, usar null
+                        autor.setFuncaoAutor(null);
+                        autor.setFuncaoAutorCustomizada(null);
+                    }
+                }
+            }
+
             Pessoa pessoa = usuario.getPessoa();
 
             // Buscar autor existente ou criar novo
@@ -135,6 +206,8 @@ public class DadosAutorController {
                 // Atualizar autor existente
                 Autor autorExistente = autorExistenteOpt.get();
                 autorExistente.setFuncaoAutor(autor.getFuncaoAutor());
+                autorExistente.setFuncaoAutorCustomizada(autor.getFuncaoAutorCustomizada());
+                autorExistente.setFuncaoAutorOutra(autor.getFuncaoAutorOutra());
                 autorExistente.setSituacaoAutor("A"); // SEMPRE ATIVO - campo removido da view
                 autorExistente.setCurriculoFuncaoAutor(autor.getCurriculoFuncaoAutor());
                 autorExistente.setLinkImgAutor(autor.getLinkImgAutor());
@@ -159,7 +232,7 @@ public class DadosAutorController {
                     "Erro ao salvar dados de autor: " + ex.getMessage());
         }
 
-        return "redirect:/dados-autor";
+        return "redirect:/dados-autor?origem=" + origem;
     }
 
     /**
@@ -228,6 +301,9 @@ public class DadosAutorController {
         } else {
             model.addAttribute("possuiVinculoSubInstituicao", false);
         }
+
+        // Buscar funções personalizadas ativas
+        model.addAttribute("funcoesPersonalizadas", funcaoCustomizadaRepository.findByAtivaTrue());
 
         return "profile/dados-autor-editar";
     }
