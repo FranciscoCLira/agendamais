@@ -22,12 +22,38 @@ public class CustomErrorController implements ErrorController {
         System.out.println("Status: " + status);
         System.out.println("ErrorMessage: " + errorMessage);
         System.out.println("RequestUri: " + requestUri);
-        System.out.println("Exception: " + (exception != null ? exception.getClass().getSimpleName() : "null"));
+        System.out.println("Exception: " + exception);
+        
+        // Se há uma exceção, imprimir stack trace completo
+        if (exception instanceof Exception) {
+            System.out.println("*** STACK TRACE COMPLETO ***");
+            ((Exception) exception).printStackTrace();
+        }
 
         // Valores padrão
         String errorCode = "Desconhecido";
         String errorTitle = "Erro";
         String errorDescription = "Ocorreu um erro inesperado.";
+        
+        // Adicionar informações específicas do erro no template
+        if (status != null) {
+            errorCode = status.toString();
+            model.addAttribute("httpStatus", status);
+        }
+        
+        if (exception instanceof Exception) {
+            Exception ex = (Exception) exception;
+            errorDescription = "Erro: " + ex.getClass().getSimpleName();
+            if (ex.getMessage() != null) {
+                errorDescription += " - " + ex.getMessage();
+            }
+            model.addAttribute("exceptionType", ex.getClass().getSimpleName());
+            model.addAttribute("exceptionMessage", ex.getMessage());
+        }
+        
+        if (requestUri != null) {
+            model.addAttribute("requestUri", requestUri);
+        }
         String errorDetails = "";
 
         if (status != null) {

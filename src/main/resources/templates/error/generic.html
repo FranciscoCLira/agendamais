@@ -73,6 +73,16 @@
         Ocorreu um erro inesperado.
       </p>
 
+      <!-- Informações de Debug -->
+      <div th:if="${httpStatus != null or exceptionType != null or requestUri != null}" 
+           style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: left;">
+        <h4 style="color: #495057; margin-top: 0;">Informações de Debug:</h4>
+        <div th:if="${httpStatus != null}"><strong>Status HTTP:</strong> <span th:text="${httpStatus}">-</span></div>
+        <div th:if="${exceptionType != null}"><strong>Tipo de Exceção:</strong> <span th:text="${exceptionType}">-</span></div>
+        <div th:if="${exceptionMessage != null}"><strong>Mensagem:</strong> <span th:text="${exceptionMessage}">-</span></div>
+        <div th:if="${requestUri != null}"><strong>URI Solicitada:</strong> <span th:text="${requestUri}">-</span></div>
+      </div>
+
       <!-- Detalhes do erro (se disponíveis) -->
       <div
         th:if="${errorDetails != null and !#strings.isEmpty(errorDetails)}"
