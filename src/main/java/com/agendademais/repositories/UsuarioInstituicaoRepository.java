@@ -30,6 +30,21 @@ public interface UsuarioInstituicaoRepository extends JpaRepository<UsuarioInsti
     
     List<UsuarioInstituicao> findByUsuarioId(Long usuarioId);
     
+    // Buscar usuários por instituição ordenados por nível de acesso
+    List<UsuarioInstituicao> findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(Instituicao instituicao);
+    
+    // Buscar usuários por instituição com nível de acesso menor ou igual ao especificado
+    List<UsuarioInstituicao> findByInstituicaoAndNivelAcessoUsuarioInstituicaoLessThanEqualOrderByNivelAcessoUsuarioInstituicaoAsc(
+            Instituicao instituicao, Integer nivelMaximo);
+    
+    // Buscar todos os usuários (para controle total)
+    @Query("SELECT ui FROM UsuarioInstituicao ui " +
+           "JOIN FETCH ui.usuario u " +
+           "JOIN FETCH u.pessoa p " +
+           "JOIN FETCH ui.instituicao i " +
+           "ORDER BY i.nomeInstituicao, ui.nivelAcessoUsuarioInstituicao")
+    List<UsuarioInstituicao> findAllWithDetails();
+    
     
     @Query("SELECT ui.instituicao FROM UsuarioInstituicao ui " +
     	       "WHERE ui.usuario.id = :usuarioId " +

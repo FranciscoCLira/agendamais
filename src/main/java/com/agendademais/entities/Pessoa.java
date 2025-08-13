@@ -34,6 +34,10 @@ public class Pessoa {
 	private LocalDate dataUltimaAtualizacao;
 	private String curriculoPessoal;
 
+	// Relacionamento com Sub-Instituições
+	@OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY)
+	private java.util.List<PessoaSubInstituicao> pessoaSubInstituicao;
+
 	// GETTERS AND SETTERS
 
 	public Long getId() {
@@ -131,6 +135,14 @@ public class Pessoa {
 
 	public void setCurriculoPessoal(String curriculoPessoal) {
 		this.curriculoPessoal = curriculoPessoal;
+	}
+
+	public java.util.List<PessoaSubInstituicao> getPessoaSubInstituicao() {
+		return pessoaSubInstituicao;
+	}
+
+	public void setPessoaSubInstituicao(java.util.List<PessoaSubInstituicao> pessoaSubInstituicao) {
+		this.pessoaSubInstituicao = pessoaSubInstituicao;
 	}
 
 	// --- Métodos auxiliares para obter nomes dos locais ---
