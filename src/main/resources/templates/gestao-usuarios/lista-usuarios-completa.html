@@ -204,12 +204,12 @@
                                 <th>Cód.</th>
                                 <th>Nome</th>
                                 <th>Email</th>
+                                <th>Celular</th>
                                 <th>Sub-Instituição</th>
                                 <th>Cidade/Estado</th>
                                 <th>País</th>
                                 <th>Nível</th>
                                 <th>Status</th>
-                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -223,6 +223,11 @@
                                 <td>
                                     <i class="fas fa-envelope text-muted"></i>
                                     <span th:text="${usuarioInst.usuario.pessoa.emailPessoa}">Email</span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-mobile-alt text-muted"></i>
+                                    <span th:text="${usuarioInst.usuario.pessoa.celularPessoa}" th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}">Celular</span>
+                                    <span th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}" class="text-muted"><em>Não informado</em></span>
                                 </td>
                                 <td>
                                     <span th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() > 0}"
@@ -251,12 +256,6 @@
                                     <span class="badge"
                                           th:classappend="${usuarioInst.sitAcessoUsuarioInstituicao == 'ATIVO'} ? 'bg-success' : 'bg-danger'"
                                           th:text="${usuarioInst.sitAcessoUsuarioInstituicao}">Status</span>
-                                </td>
-                                <td>
-                                    <a th:href="@{/administrador/usuarios}" class="btn btn-sm btn-outline-primary"
-                                       title="Gerenciar Usuário">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
                                 </td>
                             </tr>
                         </tbody>

@@ -117,6 +117,7 @@
                   <th><i class="fas fa-hashtag"></i> Código</th>
                   <th><i class="fas fa-user"></i> Nome</th>
                   <th><i class="fas fa-envelope"></i> Email</th>
+                  <th><i class="fas fa-mobile-alt"></i> Celular</th>
                   <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
                   <th><i class="fas fa-user-tag"></i> Nível</th>
                   <th><i class="fas fa-toggle-on"></i> Situação</th>
@@ -133,6 +134,10 @@
                   </td>
                   <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">
                     email@exemplo.com
+                  </td>
+                  <td>
+                    <span th:text="${usuarioInst.usuario.pessoa.celularPessoa}" th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}">Celular</span>
+                    <span th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}" class="text-muted"><em>Não informado</em></span>
                   </td>
                   <td>
                     <span class="text-muted">Sub-instituição</span>

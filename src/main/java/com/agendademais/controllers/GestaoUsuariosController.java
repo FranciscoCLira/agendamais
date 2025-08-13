@@ -43,7 +43,12 @@ public class GestaoUsuariosController {
         Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
 
         // Verificar permissões
-        if (usuarioLogado == null || nivelAcesso == null || nivelAcesso < 5) {
+        if (usuarioLogado == null || nivelAcesso == null) {
+            // Sessão expirada - redirecionar para login sem mensagem
+            return "redirect:/login";
+        }
+        
+        if (nivelAcesso < 5) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Acesso negado. Funcionalidade disponível apenas para Administradores e SuperUsuários.");
             return "redirect:/acesso";
@@ -209,7 +214,12 @@ public class GestaoUsuariosController {
             Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
 
             // Verificar permissões
-            if (usuarioLogado == null || nivelAcesso == null || nivelAcesso < 5) {
+            if (usuarioLogado == null || nivelAcesso == null) {
+                // Sessão expirada - redirecionar para login sem mensagem
+                return "redirect:/login";
+            }
+            
+            if (nivelAcesso < 5) {
                 redirectAttributes.addFlashAttribute("mensagemErro",
                         "Acesso negado. Funcionalidade disponível apenas para Administradores e SuperUsuários.");
                 return "redirect:/acesso";
