@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gestão de Usuários - Controle Total</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+    <div class="container-fluid mt-4">
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="/controle-total">
+              <i class="fas fa-home"></i> Controle Total
+            </a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-users"></i> Gestão de Usuários
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Título da Página -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h2>
+            <i class="fas fa-users me-2 text-danger"></i>
+            Gestão de Usuários - Controle Total
+          </h2>
+          <p class="text-muted">
+            Gerencie todos os usuários de todas as instituições
+          </p>
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      <div
+        th:if="${mensagemSucesso}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${mensagemSucesso}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <div
+        th:if="${mensagemErro}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${mensagemErro}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              id="filtroUsuario"
+              placeholder="Buscar por nome, código, email ou instituição..."
+            />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <select class="form-select" id="filtroInstituicao">
+            <option value="">Todas as Instituições</option>
+            <!-- Opções serão populadas dinamicamente -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabela de Usuários -->
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Lista Completa de Usuários (<span th:text="${#lists.size(usuarios)}"
+              >0</span
+            >
+            usuários)
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabelaUsuarios">
+              <thead class="table-dark">
+                <tr>
+                  <th><i class="fas fa-hashtag"></i> Código</th>
+                  <th><i class="fas fa-user"></i> Nome</th>
+                  <th><i class="fas fa-envelope"></i> Email</th>
+                  <th><i class="fas fa-university"></i> Instituição</th>
+                  <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
+                  <th><i class="fas fa-user-tag"></i> Nível</th>
+                  <th><i class="fas fa-toggle-on"></i> Sit. Usuário</th>
+                  <th><i class="fas fa-user-check"></i> Sit. Pessoa</th>
+                  <th><i class="fas fa-cogs"></i> Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="usuarioInst : ${usuarios}" class="linha-usuario">
+                  <td th:text="${usuarioInst.usuario.username}">U001</td>
+                  <td>
+                    <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
+                      >Nome do Usuário</strong
+                    >
+                  </td>
+                  <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">
+                    email@exemplo.com
+                  </td>
+                  <td>
+                    <span
+                      class="badge bg-primary"
+                      th:text="${usuarioInst.instituicao.nomeInstituicao}"
+                      >Instituição</span
+                    >
+                  </td>
+                  <td>
+                    <th:block
+                      th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() > 0}"
+                    >
+                      <span
+                        th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao}"
+                        class="badge bg-info"
+                      >
+                      </span>
+                    </th:block>
+                    <span
+                      th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao == null or usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() == 0}"
+                      class="text-muted"
+                      >Sem vínculo</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      th:switch="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                    >
+                      <span th:case="1" class="badge bg-secondary"
+                        >Participante</span
+                      >
+                      <span th:case="2" class="badge bg-primary">Autor</span>
+                      <span th:case="5" class="badge bg-warning text-dark"
+                        >Administrador</span
+                      >
+                      <span th:case="9" class="badge bg-danger"
+                        >SuperUsuário</span
+                      >
+                      <span
+                        th:case="*"
+                        class="badge bg-dark"
+                        th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                        >Outros</span
+                      >
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                    >
+                      <span th:case="'A'" class="badge bg-success">Ativo</span>
+                      <span th:case="'B'" class="badge bg-warning text-dark"
+                        >Bloqueado</span
+                      >
+                      <span th:case="'C'" class="badge bg-danger"
+                        >Cancelado</span
+                      >
+                      <span
+                        th:case="*"
+                        class="badge bg-secondary"
+                        th:text="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                        >Indefinido</span
+                      >
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      th:switch="${usuarioInst.usuario.pessoa.situacaoPessoa}"
+                    >
+                      <span th:case="'A'" class="badge bg-success">Ativo</span>
+                      <span th:case="'B'" class="badge bg-warning text-dark"
+                        >Bloqueado</span
+                      >
+                      <span th:case="'C'" class="badge bg-danger"
+                        >Cancelado</span
+                      >
+                      <span
+                        th:case="*"
+                        class="badge bg-secondary"
+                        th:text="${usuarioInst.usuario.pessoa.situacaoPessoa}"
+                        >Indefinido</span
+                      >
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEditarUsuarioControlTotal"
+                      th:onclick="'carregarDadosUsuario(' + ${usuarioInst.id} + ', ' + ${usuarioInst.nivelAcessoUsuarioInstituicao} + ', \'' + ${usuarioInst.sitAcessoUsuarioInstituicao} + '\', \'' + ${usuarioInst.usuario.pessoa.situacaoPessoa} + '\', \'' + ${usuarioInst.usuario.pessoa.nomePessoa} + '\')'"
+                    >
+                      <i class="fas fa-edit"></i> Editar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navegação -->
+      <div class="mt-4">
+        <a href="/controle-total" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Voltar ao Menu Controle Total
+        </a>
+      </div>
+    </div>
+
+    <!-- Modal para Editar Usuário (Controle Total) -->
+    <div class="modal fade" id="modalEditarUsuarioControlTotal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-user-edit me-2"></i>Editar Usuário - Controle
+              Total
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <form action="/controle-total/atualizar-usuario" method="post">
+            <div class="modal-body">
+              <input
+                type="hidden"
+                id="usuarioInstituicaoIdCT"
+                name="usuarioInstituicaoId"
+              />
+
+              <div class="mb-3">
+                <label for="nomeUsuarioModalCT" class="form-label"
+                  >Nome do Usuário:</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nomeUsuarioModalCT"
+                  readonly
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="nivelAcessoUsuarioInstituicaoCT" class="form-label"
+                  >Nível de Acesso:</label
+                >
+                <select
+                  class="form-select"
+                  id="nivelAcessoUsuarioInstituicaoCT"
+                  name="nivelAcessoUsuarioInstituicao"
+                  required
+                >
+                  <option value="1">Participante</option>
+                  <option value="2">Autor</option>
+                  <option value="5">Administrador</option>
+                  <option value="9">SuperUsuário</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="sitAcessoUsuarioInstituicaoCT" class="form-label"
+                  >Situação de Acesso (Usuário):</label
+                >
+                <select
+                  class="form-select"
+                  id="sitAcessoUsuarioInstituicaoCT"
+                  name="sitAcessoUsuarioInstituicao"
+                  required
+                >
+                  <option value="A">Ativo</option>
+                  <option value="B">Bloqueado</option>
+                  <option value="C">Cancelado</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="situacaoPessoaCT" class="form-label"
+                  >Situação da Pessoa:</label
+                >
+                <select
+                  class="form-select"
+                  id="situacaoPessoaCT"
+                  name="situacaoPessoa"
+                  required
+                >
+                  <option value="A">Ativo</option>
+                  <option value="B">Bloqueado</option>
+                  <option value="C">Cancelado</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                <i class="fas fa-times me-2"></i>Cancelar
+              </button>
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-save me-2"></i>Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Filtro de busca
+      document
+        .getElementById("filtroUsuario")
+        .addEventListener("keyup", function () {
+          filtrarTabela();
+        });
+
+      document
+        .getElementById("filtroInstituicao")
+        .addEventListener("change", function () {
+          filtrarTabela();
+        });
+
+      function filtrarTabela() {
+        const filtroTexto = document
+          .getElementById("filtroUsuario")
+          .value.toLowerCase();
+        const filtroInst = document
+          .getElementById("filtroInstituicao")
+          .value.toLowerCase();
+        const linhas = document.querySelectorAll(".linha-usuario");
+
+        linhas.forEach(function (linha) {
+          const texto = linha.textContent.toLowerCase();
+          const mostraTexto = filtroTexto === "" || texto.includes(filtroTexto);
+          const mostraInst = filtroInst === "" || texto.includes(filtroInst);
+
+          linha.style.display = mostraTexto && mostraInst ? "" : "none";
+        });
+      }
+
+      // Carregar dados no modal (Controle Total)
+      function carregarDadosUsuario(
+        id,
+        nivel,
+        situacaoUsuario,
+        situacaoPessoa,
+        nome
+      ) {
+        document.getElementById("usuarioInstituicaoIdCT").value = id;
+        document.getElementById("nomeUsuarioModalCT").value = nome;
+        document.getElementById("nivelAcessoUsuarioInstituicaoCT").value =
+          nivel;
+        document.getElementById("sitAcessoUsuarioInstituicaoCT").value =
+          situacaoUsuario;
+        document.getElementById("situacaoPessoaCT").value = situacaoPessoa;
+      }
+
+      // Popular filtro de instituições
+      document.addEventListener("DOMContentLoaded", function () {
+        const filtroInstituicao = document.getElementById("filtroInstituicao");
+        const instituicoes = new Set();
+
+        // Coletar todas as instituições da tabela
+        document.querySelectorAll(".linha-usuario").forEach(function (linha) {
+          const badgeInstituicao = linha.querySelector(".badge.bg-primary");
+          if (badgeInstituicao) {
+            instituicoes.add(badgeInstituicao.textContent.trim());
+          }
+        });
+
+        // Adicionar as opções ao select
+        instituicoes.forEach(function (instituicao) {
+          const option = document.createElement("option");
+          option.value = instituicao.toLowerCase();
+          option.textContent = instituicao;
+          filtroInstituicao.appendChild(option);
+        });
+      });
+    </script>
+  </body>
+</html>

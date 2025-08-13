@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Usuários - Teste</title>
+</head>
+<body>
+    <h1>Teste Lista de Usuários</h1>
+    
+    <div th:if="${instituicaoSelecionada != null}">
+        <p>Instituição: <span th:text="${instituicaoSelecionada.nomeInstituicao}">Nome da Instituição</span></p>
+    </div>
+    
+    <div th:if="${nivelAcessoLogado != null}">
+        <p>Nível de Acesso: <span th:text="${nivelAcessoLogado}">0</span></p>
+    </div>
+    
+    <div th:if="${usuarios != null}">
+        <h2>Usuários encontrados: <span th:text="${#lists.size(usuarios)}">0</span></h2>
+        
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Nível</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="usuarioInst : ${usuarios}">
+                    <td th:text="${usuarioInst.usuario.username}">username</td>
+                    <td th:text="${usuarioInst.usuario.pessoa.nomePessoa}">Nome</td>
+                    <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">email</td>
+                    <td th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div th:if="${usuarios == null}">
+        <p>Nenhum usuário carregado.</p>
+    </div>
+    
+    <a href="/administrador">Voltar</a>
+</body>
+</html>

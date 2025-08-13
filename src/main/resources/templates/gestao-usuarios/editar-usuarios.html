@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Editar Usuários</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+    <div class="container mt-4">
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="/administrador" th:if="${nivelAcessoLogado == 5}">
+              <i class="fas fa-home"></i> Administrador
+            </a>
+            <a href="/superusuario" th:if="${nivelAcessoLogado == 9}">
+              <i class="fas fa-home"></i> SuperUsuário
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="/administrador/usuarios">
+              <i class="fas fa-users"></i> Gestão de Usuários
+            </a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-user-edit"></i> Editar Usuários
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Título da Página -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h2>
+            <i class="fas fa-user-edit me-2 text-warning"></i>
+            Editar Usuários -
+            <span th:text="${instituicaoSelecionada.nomeInstituicao}"
+              >Instituição</span
+            >
+          </h2>
+          <p class="text-muted">
+            Selecione usuários para edição de dados administrativos
+          </p>
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      <div
+        th:if="${mensagemSucesso}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${mensagemSucesso}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <div
+        th:if="${mensagemErro}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${mensagemErro}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">
+            <i class="fas fa-search me-2"></i>Filtros de Busca
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <label for="filtroCodigo" class="form-label"
+                >Código do Usuário:</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="filtroCodigo"
+                placeholder="Digite o código..."
+                list="listaCodigos"
+              />
+              <datalist id="listaCodigos">
+                <option
+                  th:each="usuarioInst : ${usuarios}"
+                  th:value="${usuarioInst.usuario.username}"
+                ></option>
+              </datalist>
+            </div>
+            <div class="col-md-4">
+              <label for="filtroNome" class="form-label"
+                >Nome do Usuário:</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="filtroNome"
+                placeholder="Digite o nome..."
+                list="listaNomes"
+              />
+              <datalist id="listaNomes">
+                <option
+                  th:each="usuarioInst : ${usuarios}"
+                  th:value="${usuarioInst.usuario.pessoa.nomePessoa}"
+                ></option>
+              </datalist>
+            </div>
+            <div class="col-md-4">
+              <label for="filtroSubInstituicao" class="form-label"
+                >Sub-Instituição:</label
+              >
+              <select class="form-select" id="filtroSubInstituicao">
+                <option value="">Todas as Sub-Instituições</option>
+                <option value="sem-vinculo">Sem Vínculo</option>
+                <!-- Aqui seria necessário carregar as sub-instituições dinamicamente -->
+              </select>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-12">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="aplicarFiltros()"
+              >
+                <i class="fas fa-search me-2"></i>Buscar
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary ms-2"
+                onclick="limparFiltros()"
+              >
+                <i class="fas fa-eraser me-2"></i>Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Usuários para Edição -->
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Selecionar Usuários para Edição
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabelaUsuarios">
+              <thead class="table-light">
+                <tr>
+                  <th width="50px">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="selecionarTodos"
+                      />
+                      <label class="form-check-label" for="selecionarTodos">
+                        <i class="fas fa-check-square"></i>
+                      </label>
+                    </div>
+                  </th>
+                  <th><i class="fas fa-hashtag"></i> Código</th>
+                  <th><i class="fas fa-user"></i> Nome</th>
+                  <th><i class="fas fa-envelope"></i> Email</th>
+                  <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
+                  <th><i class="fas fa-user-tag"></i> Nível Atual</th>
+                  <th><i class="fas fa-toggle-on"></i> Situação Atual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="usuarioInst : ${usuarios}" class="linha-usuario">
+                  <td>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input usuario-checkbox"
+                        type="checkbox"
+                        th:id="'usuario_' + ${usuarioInst.id}"
+                        th:value="${usuarioInst.id}"
+                        th:data-nome="${usuarioInst.usuario.pessoa.nomePessoa}"
+                        th:data-nivel="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                        th:data-situacao="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                      />
+                    </div>
+                  </td>
+                  <td th:text="${usuarioInst.usuario.username}">U001</td>
+                  <td>
+                    <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
+                      >Nome do Usuário</strong
+                    >
+                  </td>
+                  <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">
+                    email@exemplo.com
+                  </td>
+                  <td>
+                    <span class="text-muted">Sub-instituição</span>
+                  </td>
+                  <td>
+                    <span
+                      th:switch="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                    >
+                      <span th:case="1" class="badge bg-secondary"
+                        >Participante</span
+                      >
+                      <span th:case="2" class="badge bg-primary">Autor</span>
+                      <span th:case="5" class="badge bg-warning text-dark"
+                        >Administrador</span
+                      >
+                      <span th:case="9" class="badge bg-danger"
+                        >SuperUsuário</span
+                      >
+                      <span
+                        th:case="*"
+                        class="badge bg-dark"
+                        th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                        >Outros</span
+                      >
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                    >
+                      <span th:case="'A'" class="badge bg-success">Ativo</span>
+                      <span th:case="'B'" class="badge bg-warning text-dark"
+                        >Bloqueado</span
+                      >
+                      <span th:case="'C'" class="badge bg-danger"
+                        >Cancelado</span
+                      >
+                      <span
+                        th:case="*"
+                        class="badge bg-secondary"
+                        th:text="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                        >Indefinido</span
+                      >
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel de Edição -->
+      <div class="card mt-4" id="painelEdicao" style="display: none">
+        <div class="card-header bg-warning">
+          <h5 class="mb-0 text-dark">
+            <i class="fas fa-edit me-2"></i>Editar Usuários Selecionados
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="formEdicaoUsuarios">
+            <div class="row">
+              <div class="col-md-6">
+                <label for="novoNivelAcesso" class="form-label"
+                  >Novo Nível de Acesso:</label
+                >
+                <select class="form-select" id="novoNivelAcesso">
+                  <option value="">Manter atual</option>
+                  <option value="1">Participante</option>
+                  <option value="2">Autor</option>
+                  <option value="5">Administrador</option>
+                  <option value="9" th:if="${nivelAcessoLogado == 9}">
+                    SuperUsuário
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="novaSituacao" class="form-label"
+                  >Nova Situação:</label
+                >
+                <select class="form-select" id="novaSituacao">
+                  <option value="">Manter atual</option>
+                  <option value="A">Ativo</option>
+                  <option value="B">Bloqueado</option>
+                  <option value="C">Cancelado</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-12">
+                <h6>Usuários selecionados:</h6>
+                <div id="listaUsuariosSelecionados" class="alert alert-info">
+                  <!-- Lista será preenchida dinamicamente -->
+                </div>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-12">
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  onclick="aplicarEdicoes()"
+                >
+                  <i class="fas fa-save me-2"></i>Aplicar Alterações
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary ms-2"
+                  onclick="cancelarEdicao()"
+                >
+                  <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Navegação -->
+      <div class="mt-4">
+        <a href="/administrador/usuarios" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Voltar à Lista de Usuários
+        </a>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Controle de seleção
+      document
+        .getElementById("selecionarTodos")
+        .addEventListener("change", function () {
+          const checkboxes = document.querySelectorAll(".usuario-checkbox");
+          checkboxes.forEach((checkbox) => {
+            checkbox.checked = this.checked;
+          });
+          atualizarPainelEdicao();
+        });
+
+      // Adicionar event listener para checkboxes individuais
+      document.querySelectorAll(".usuario-checkbox").forEach((checkbox) => {
+        checkbox.addEventListener("change", atualizarPainelEdicao);
+      });
+
+      function atualizarPainelEdicao() {
+        const selecionados = document.querySelectorAll(
+          ".usuario-checkbox:checked"
+        );
+        const painel = document.getElementById("painelEdicao");
+        const lista = document.getElementById("listaUsuariosSelecionados");
+
+        if (selecionados.length > 0) {
+          painel.style.display = "block";
+          let html = '<ul class="mb-0">';
+          selecionados.forEach((checkbox) => {
+            const nome = checkbox.getAttribute("data-nome");
+            html += `<li>${nome}</li>`;
+          });
+          html += "</ul>";
+          lista.innerHTML = html;
+        } else {
+          painel.style.display = "none";
+        }
+      }
+
+      function aplicarFiltros() {
+        const filtroTexto =
+          document.getElementById("filtroCodigo").value.toLowerCase() +
+          " " +
+          document.getElementById("filtroNome").value.toLowerCase();
+        const linhas = document.querySelectorAll(".linha-usuario");
+
+        linhas.forEach(function (linha) {
+          const texto = linha.textContent.toLowerCase();
+          linha.style.display = texto.includes(filtroTexto.trim())
+            ? ""
+            : "none";
+        });
+      }
+
+      function limparFiltros() {
+        document.getElementById("filtroCodigo").value = "";
+        document.getElementById("filtroNome").value = "";
+        document.getElementById("filtroSubInstituicao").value = "";
+
+        const linhas = document.querySelectorAll(".linha-usuario");
+        linhas.forEach((linha) => (linha.style.display = ""));
+      }
+
+      function aplicarEdicoes() {
+        const selecionados = document.querySelectorAll(
+          ".usuario-checkbox:checked"
+        );
+        const novoNivel = document.getElementById("novoNivelAcesso").value;
+        const novaSituacao = document.getElementById("novaSituacao").value;
+
+        if (selecionados.length === 0) {
+          alert("Selecione pelo menos um usuário.");
+          return;
+        }
+
+        if (!novoNivel && !novaSituacao) {
+          alert("Selecione pelo menos uma alteração a ser aplicada.");
+          return;
+        }
+
+        if (
+          confirm(
+            `Confirma a aplicação das alterações em ${selecionados.length} usuário(s)?`
+          )
+        ) {
+          // Aplicar as alterações uma por uma
+          let processados = 0;
+          selecionados.forEach((checkbox, index) => {
+            setTimeout(() => {
+              const form = document.createElement("form");
+              form.method = "POST";
+              form.action = "/administrador/atualizar-usuario";
+
+              // Campo ID
+              const inputId = document.createElement("input");
+              inputId.type = "hidden";
+              inputId.name = "usuarioInstituicaoId";
+              inputId.value = checkbox.value;
+              form.appendChild(inputId);
+
+              // Nível de acesso
+              const inputNivel = document.createElement("input");
+              inputNivel.type = "hidden";
+              inputNivel.name = "nivelAcessoUsuarioInstituicao";
+              inputNivel.value =
+                novoNivel || checkbox.getAttribute("data-nivel");
+              form.appendChild(inputNivel);
+
+              // Situação
+              const inputSituacao = document.createElement("input");
+              inputSituacao.type = "hidden";
+              inputSituacao.name = "sitAcessoUsuarioInstituicao";
+              inputSituacao.value =
+                novaSituacao || checkbox.getAttribute("data-situacao");
+              form.appendChild(inputSituacao);
+
+              document.body.appendChild(form);
+
+              if (index === selecionados.length - 1) {
+                // Último usuário - submeter o formulário
+                form.submit();
+              } else {
+                // Não é o último - apenas enviar via fetch
+                fetch(form.action, {
+                  method: "POST",
+                  body: new FormData(form),
+                });
+              }
+            }, index * 100); // Pequeno delay entre requisições
+          });
+        }
+      }
+
+      function cancelarEdicao() {
+        document.querySelectorAll(".usuario-checkbox").forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+        document.getElementById("selecionarTodos").checked = false;
+        atualizarPainelEdicao();
+      }
+    </script>
+  </body>
+</html>
