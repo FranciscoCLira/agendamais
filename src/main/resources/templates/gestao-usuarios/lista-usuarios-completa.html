@@ -230,9 +230,14 @@
                                     <span th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}" class="text-muted"><em>Não informado</em></span>
                                 </td>
                                 <td>
-                                    <span th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() > 0}"
-                                          th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao}"
-                                          class="badge bg-info">Sub-Instituição</span>
+                                    <!-- Buscar sub-instituição da instituição atual -->
+                                    <span th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() > 0}">
+                                        <th:block th:each="psi : ${usuarioInst.usuario.pessoa.pessoaSubInstituicao}">
+                                            <span th:if="${psi.instituicao.id == instituicaoSelecionada.id}"
+                                                  th:text="${psi.subInstituicao.nomeSubInstituicao}"
+                                                  class="badge bg-info">Sub-Instituição</span>
+                                        </th:block>
+                                    </span>
                                     <span th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao == null or usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() == 0}"
                                           class="text-muted"><em>Não informado</em></span>
                                 </td>

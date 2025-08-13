@@ -317,22 +317,29 @@ public class GestaoUsuariosController {
                     ui -> ui.getUsuario().getPessoa().getNomePais(),
                     java.util.stream.Collectors.counting()));
 
-            // Estatísticas por sub-instituição
+            // Estatísticas por sub-instituição (filtrando pela instituição atual)
             java.util.Map<String, Long> estatisticasSubInstituicao = usuarios.stream()
                 .filter(ui -> {
                     try {
                         return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&
                             !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&
-                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&
-                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0).getSubInstituicao() != null &&
-                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0).getSubInstituicao().getNomeSubInstituicao() != null;
+                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
+                                .anyMatch(psi -> psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()) &&
+                                               psi.getSubInstituicao() != null &&
+                                               psi.getSubInstituicao().getNomeSubInstituicao() != null);
                     } catch (Exception e) {
                         return false;
                     }
                 })
                 .collect(java.util.stream.Collectors.groupingBy(
-                    ui -> ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
-                        .getSubInstituicao().getNomeSubInstituicao(),
+                    ui -> {
+                        // Encontrar a sub-instituição da instituição atual
+                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
+                            .filter(psi -> psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
+                            .map(psi -> psi.getSubInstituicao().getNomeSubInstituicao())
+                            .findFirst()
+                            .orElse("Não informado");
+                    },
                     java.util.stream.Collectors.counting()));
 
             // Adicionar ao modelo
