@@ -159,11 +159,6 @@ public class MenuController {
         return "info/em-construcao";
     }
 
-    @GetMapping("/administrador/usuarios")
-    public String gerenciarUsuarios() {
-        return "info/em-construcao";
-    }
-
     // === ENDPOINTS EM CONSTRUÇÃO PARA SUPERUSUARIO ===
 
     @GetMapping("/superusuario/backup")
