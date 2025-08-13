@@ -1,0 +1,29 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Database
+data/
+*.mv.db
+*.trace.db
+
+# IDE
+.vscode/
+*.iml
+.idea/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.backup
