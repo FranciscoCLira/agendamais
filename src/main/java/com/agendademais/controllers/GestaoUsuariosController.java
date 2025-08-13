@@ -223,8 +223,7 @@ public class GestaoUsuariosController {
                 usuarios = usuarioInstituicaoRepository.findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
             }
 
-            // Excluir o usuário logado da lista
-            usuarios.removeIf(ui -> ui.getUsuario().getId().equals(usuarioLogado.getId()));
+            // NOTA: Incluindo o usuário logado na lista pois esta é uma view apenas de consulta
 
             // Aplicar filtros
             if (codigoUsuario != null && !codigoUsuario.trim().isEmpty()) {
