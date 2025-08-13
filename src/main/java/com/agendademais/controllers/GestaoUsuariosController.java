@@ -331,6 +331,8 @@ public class GestaoUsuariosController {
             model.addAttribute("estatisticasEstado", estatisticasEstado);
             model.addAttribute("estatisticasPais", estatisticasPais);
             model.addAttribute("estatisticasSubInstituicao", estatisticasSubInstituicao);
+            model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
+            model.addAttribute("nivelAcessoLogado", nivelAcesso);
             
             // Manter valores dos filtros para exibição
             model.addAttribute("codigoUsuario", codigoUsuario);

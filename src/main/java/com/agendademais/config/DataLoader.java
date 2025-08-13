@@ -596,7 +596,7 @@ public class DataLoader implements CommandLineRunner {
         // PessoaSubInstituicao - 31
         PessoaSubInstituicao psSub31 = new PessoaSubInstituicao();
         psSub31.setPessoa(pessoa3);
-        psSub31.setSubInstituicao(subInst31);
+        psSub31.setSubInstituicao(subInst13); // CORRIGIDO: usar subInst13 (da inst1) em vez de subInst31 (da inst3)
         psSub31.setInstituicao(inst1);
         psSub31.setDataUltimaAtualizacao(LocalDate.now());
         psSub31.setDataAfiliacao(LocalDate.now());
