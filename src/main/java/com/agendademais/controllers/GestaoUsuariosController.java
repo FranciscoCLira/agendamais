@@ -1,5 +1,6 @@
 package com.agendademais.controllers;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +45,9 @@ public class GestaoUsuariosController {
 
         // Verificar permissões
         if (usuarioLogado == null || nivelAcesso == null) {
-            // Sessão expirada - redirecionar para login sem mensagem
-            return "redirect:/login";
+            // Sessão expirada - redirecionar para acesso com mensagem amigável
+            redirectAttributes.addFlashAttribute("mensagemErro", "Sessão expirou. Faça login novamente.");
+            return "redirect:/acesso";
         }
         
         if (nivelAcesso < 5) {
@@ -215,8 +217,9 @@ public class GestaoUsuariosController {
 
             // Verificar permissões
             if (usuarioLogado == null || nivelAcesso == null) {
-                // Sessão expirada - redirecionar para login sem mensagem
-                return "redirect:/login";
+                // Sessão expirada - redirecionar para acesso com mensagem amigável
+                redirectAttributes.addFlashAttribute("mensagemErro", "Sessão expirou. Faça login novamente.");
+                return "redirect:/acesso";
             }
             
             if (nivelAcesso < 5) {
@@ -243,9 +246,10 @@ public class GestaoUsuariosController {
             }
 
             if (nome != null && !nome.trim().isEmpty()) {
+                String nomeFiltro = removerAcentos(nome);
                 usuarios = usuarios.stream()
-                    .filter(ui -> ui.getUsuario().getPessoa().getNomePessoa().toLowerCase()
-                        .contains(nome.toLowerCase()))
+                    .filter(ui -> removerAcentos(ui.getUsuario().getPessoa().getNomePessoa())
+                        .contains(nomeFiltro))
                     .collect(java.util.stream.Collectors.toList());
             }
 
@@ -257,30 +261,34 @@ public class GestaoUsuariosController {
             }
 
             if (estado != null && !estado.trim().isEmpty()) {
+                String estadoFiltro = removerAcentos(estado);
                 usuarios = usuarios.stream()
                     .filter(ui -> ui.getUsuario().getPessoa().getNomeEstado() != null &&
-                        ui.getUsuario().getPessoa().getNomeEstado().toLowerCase()
-                        .contains(estado.toLowerCase()))
+                        removerAcentos(ui.getUsuario().getPessoa().getNomeEstado())
+                        .contains(estadoFiltro))
                     .collect(java.util.stream.Collectors.toList());
             }
 
             if (cidade != null && !cidade.trim().isEmpty()) {
+                String cidadeFiltro = removerAcentos(cidade);
                 usuarios = usuarios.stream()
                     .filter(ui -> ui.getUsuario().getPessoa().getNomeCidade() != null &&
-                        ui.getUsuario().getPessoa().getNomeCidade().toLowerCase()
-                        .contains(cidade.toLowerCase()))
+                        removerAcentos(ui.getUsuario().getPessoa().getNomeCidade())
+                        .contains(cidadeFiltro))
                     .collect(java.util.stream.Collectors.toList());
             }
 
             if (pais != null && !pais.trim().isEmpty()) {
+                String paisFiltro = removerAcentos(pais);
                 usuarios = usuarios.stream()
                     .filter(ui -> ui.getUsuario().getPessoa().getNomePais() != null &&
-                        ui.getUsuario().getPessoa().getNomePais().toLowerCase()
-                        .contains(pais.toLowerCase()))
+                        removerAcentos(ui.getUsuario().getPessoa().getNomePais())
+                        .contains(paisFiltro))
                     .collect(java.util.stream.Collectors.toList());
             }
 
             if (subInstituicao != null && !subInstituicao.trim().isEmpty()) {
+                String subInstituicaoFiltro = removerAcentos(subInstituicao);
                 usuarios = usuarios.stream()
                     .filter(ui -> {
                         try {
@@ -290,9 +298,9 @@ public class GestaoUsuariosController {
                                 ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0).getSubInstituicao() != null &&
                                 ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
                                 .getSubInstituicao().getNomeSubInstituicao() != null &&
-                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
-                                .getSubInstituicao().getNomeSubInstituicao().toLowerCase()
-                                .contains(subInstituicao.toLowerCase());
+                                removerAcentos(ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                .getSubInstituicao().getNomeSubInstituicao())
+                                .contains(subInstituicaoFiltro);
                         } catch (Exception e) {
                             return false;
                         }
@@ -338,7 +346,7 @@ public class GestaoUsuariosController {
                             .filter(psi -> psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
                             .map(psi -> psi.getSubInstituicao().getNomeSubInstituicao())
                             .findFirst()
-                            .orElse("Não informado");
+                            .orElse("Nenhuma");
                     },
                     java.util.stream.Collectors.counting()));
 
@@ -372,5 +380,17 @@ public class GestaoUsuariosController {
                     "Erro ao carregar lista de usuários: " + e.getMessage());
             return "redirect:/administrador";
         }
+    }
+
+    /**
+     * Remove acentos e caracteres especiais de uma string para facilitar busca
+     */
+    private String removerAcentos(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        return Normalizer.normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .toLowerCase();
     }
 }
