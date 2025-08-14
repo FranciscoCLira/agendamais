@@ -94,7 +94,7 @@
             </div>
             <div class="col-md-4">
                 <div class="stats-card">
-                    <h5><i class="fas fa-map-marker-alt"></i> Por Estado</h5>
+                    <h5><i class="fas fa-map-marker-alt"></i> Por País/Estado</h5>
                     <div th:each="entry : ${estatisticasEstado}" class="stats-item">
                         <span th:text="${entry.key}">Estado</span>: 
                         <strong th:text="${entry.value}">0</strong>
@@ -163,6 +163,11 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-3">
+                        <label for="pais" class="form-label">País</label>
+                        <input type="text" class="form-control" id="pais" name="pais"
+                               th:value="${pais}" placeholder="Ex: Brasil">
+                    </div>
+                    <div class="col-md-3">
                         <label for="estado" class="form-label">Estado</label>
                         <input type="text" class="form-control" id="estado" name="estado"
                                th:value="${estado}" placeholder="Ex: São Paulo">
@@ -171,11 +176,6 @@
                         <label for="cidade" class="form-label">Cidade</label>
                         <input type="text" class="form-control" id="cidade" name="cidade"
                                th:value="${cidade}" placeholder="Ex: São Paulo">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="pais" class="form-label">País</label>
-                        <input type="text" class="form-control" id="pais" name="pais"
-                               th:value="${pais}" placeholder="Ex: Brasil">
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary me-2">

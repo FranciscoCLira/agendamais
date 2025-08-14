@@ -311,11 +311,13 @@ public class GestaoUsuariosController {
             // Calcular estatísticas
             long totalUsuarios = usuarios.size();
             
-            // Estatísticas por estado
+            // Estatísticas por país/estado
             java.util.Map<String, Long> estatisticasEstado = usuarios.stream()
-                .filter(ui -> ui.getUsuario().getPessoa().getNomeEstado() != null)
+                .filter(ui -> ui.getUsuario().getPessoa().getNomeEstado() != null && 
+                             ui.getUsuario().getPessoa().getNomePais() != null)
                 .collect(java.util.stream.Collectors.groupingBy(
-                    ui -> ui.getUsuario().getPessoa().getNomeEstado(),
+                    ui -> ui.getUsuario().getPessoa().getNomePais() + "/" + 
+                          ui.getUsuario().getPessoa().getNomeEstado(),
                     java.util.stream.Collectors.counting()));
 
             // Estatísticas por país
@@ -325,28 +327,21 @@ public class GestaoUsuariosController {
                     ui -> ui.getUsuario().getPessoa().getNomePais(),
                     java.util.stream.Collectors.counting()));
 
-            // Estatísticas por sub-instituição (filtrando pela instituição atual)
+            // Estatísticas por sub-instituição (incluindo usuários sem sub-instituição)
             java.util.Map<String, Long> estatisticasSubInstituicao = usuarios.stream()
-                .filter(ui -> {
-                    try {
-                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&
-                            !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&
-                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
-                                .anyMatch(psi -> psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()) &&
-                                               psi.getSubInstituicao() != null &&
-                                               psi.getSubInstituicao().getNomeSubInstituicao() != null);
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
                 .collect(java.util.stream.Collectors.groupingBy(
                     ui -> {
-                        // Encontrar a sub-instituição da instituição atual
-                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
-                            .filter(psi -> psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
-                            .map(psi -> psi.getSubInstituicao().getNomeSubInstituicao())
-                            .findFirst()
-                            .orElse("Nenhuma");
+                        try {
+                            // Encontrar a sub-instituição da instituição atual
+                            return ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
+                                .filter(psi -> psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
+                                .map(psi -> psi.getSubInstituicao() != null ? 
+                                           psi.getSubInstituicao().getNomeSubInstituicao() : "Nenhuma")
+                                .findFirst()
+                                .orElse("Nenhuma");
+                        } catch (Exception e) {
+                            return "Nenhuma";
+                        }
                     },
                     java.util.stream.Collectors.counting()));
 
