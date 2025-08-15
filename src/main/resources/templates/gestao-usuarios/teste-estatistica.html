@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Estatísticas - AgendaMais</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="text-primary">Teste de Estatísticas</h1>
+                <p th:text="${teste}">Teste</p>
+                
+                <div th:if="${erro}" class="alert alert-danger">
+                    <p th:text="${erro}">Erro</p>
+                </div>
+                
+                <div th:unless="${erro}">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Estatísticas Básicas</h3>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Total de usuários:</strong> <span th:text="${totalUsuarios}">0</span></p>
+                            
+                            <h4>Por País:</h4>
+                            <ul>
+                                <li th:each="entry : ${estatisticasPais}">
+                                    <span th:text="${entry.key}">País</span>: 
+                                    <span th:text="${entry.value}">0</span> usuários
+                                </li>
+                            </ul>
+                            
+                            <div th:if="${#maps.isEmpty(estatisticasPais)}" class="text-muted">
+                                Nenhuma estatística por país disponível
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

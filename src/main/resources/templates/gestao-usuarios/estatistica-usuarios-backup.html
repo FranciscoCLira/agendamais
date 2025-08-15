@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas de Usuários - AgendaMais</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            text-align: center;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .metric-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+    <div class="container-fluid mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/administrador">
+                        <i class="fas fa-home"></i> Administrador
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fas fa-chart-bar"></i> Estatísticas de Usuários
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Título da Página -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2>
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>
+                    Estatísticas de Usuários
+                </h2>
+                <p class="text-muted">Análise completa dos usuários do sistema</p>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${mensagem}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${erro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Estatísticas Básicas -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-users fa-2x mb-3"></i>
+                    <div class="metric-value" th:text="${totalUsuarios ?: 0}">0</div>
+                    <div class="metric-label">Total de Usuários</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-building fa-2x mb-3"></i>
+                    <div class="metric-value" th:text="${totalInstituicoes ?: 0}">0</div>
+                    <div class="metric-label">Total de Instituições</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-link fa-2x mb-3"></i>
+                    <div class="metric-value" th:text="${totalVinculos ?: 0}">0</div>
+                    <div class="metric-label">Total de Vínculos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="row">
+            <!-- Gráfico por Níveis -->
+            <div class="col-md-6 mb-4" th:if="${niveisLabels != null and !#lists.isEmpty(niveisLabels)}">
+                <div class="chart-container">
+                    <h5><i class="fas fa-user-cog"></i> Usuários por Nível</h5>
+                    <canvas id="chartNiveis" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico por Status -->
+            <div class="col-md-6 mb-4" th:if="${statusLabels != null and !#lists.isEmpty(statusLabels)}">
+                <div class="chart-container">
+                    <h5><i class="fas fa-toggle-on"></i> Usuários por Status</h5>
+                    <canvas id="chartStatus" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico por Instituições -->
+        <div class="row" th:if="${instituicoesLabels != null and !#lists.isEmpty(instituicoesLabels)}">
+            <div class="col-12 mb-4">
+                <div class="chart-container">
+                    <h5><i class="fas fa-building"></i> Usuários por Instituição</h5>
+                    <canvas id="chartInstituicoes" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 10 Usuários -->
+        <div class="row" th:if="${topUsuarios != null and !#lists.isEmpty(topUsuarios)}">
+            <div class="col-12 mb-4">
+                <div class="table-container">
+                    <h5><i class="fas fa-star"></i> Top 10 - Usuários Mais Ativos</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Posição</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Nível</th>
+                                    <th>Total de Vínculos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entrada, iterStat : ${topUsuarios}">
+                                    <td th:text="${iterStat.count}">1</td>
+                                    <td th:text="${entrada.key.nome}">Nome</td>
+                                    <td th:text="${entrada.key.email}">email@exemplo.com</td>
+                                    <td>
+                                        <span th:switch="${entrada.key.nivelUsuario}">
+                                            <span th:case="0" class="badge bg-secondary">Usuário Comum</span>
+                                            <span th:case="1" class="badge bg-info">Moderador</span>
+                                            <span th:case="2" class="badge bg-warning">Admin Local</span>
+                                            <span th:case="3" class="badge bg-danger">Super Admin</span>
+                                            <span th:case="*" class="badge bg-light text-dark" th:text="'Nível ' + ${entrada.key.nivelUsuario}">Nível</span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${entrada.value}">0</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabelas de Resumo -->
+        <div class="row">
+            <!-- Resumo por Níveis -->
+            <div class="col-md-6 mb-4" th:if="${usuariosPorNivel != null and !#maps.isEmpty(usuariosPorNivel)}">
+                <div class="table-container">
+                    <h5><i class="fas fa-user-cog"></i> Resumo por Níveis</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nível</th>
+                                    <th>Quantidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry : ${usuariosPorNivel}">
+                                    <td th:text="${entry.key}">Nível</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${entry.value}">0</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo por Status -->
+            <div class="col-md-6 mb-4" th:if="${usuariosPorStatus != null and !#maps.isEmpty(usuariosPorStatus)}">
+                <div class="table-container">
+                    <h5><i class="fas fa-toggle-on"></i> Resumo por Status</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Quantidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry : ${usuariosPorStatus}">
+                                    <td th:text="${entry.key}">Status</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${entry.value}">0</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo por Instituições -->
+        <div class="row" th:if="${usuariosPorInstituicao != null and !#maps.isEmpty(usuariosPorInstituicao)}">
+            <div class="col-12 mb-4">
+                <div class="table-container">
+                    <h5><i class="fas fa-building"></i> Resumo por Instituições</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Instituição</th>
+                                    <th>Quantidade de Usuários</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry : ${usuariosPorInstituicao}">
+                                    <td th:text="${entry.key}">Instituição</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${entry.value}">0</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script th:inline="javascript">
+        // Dados para os gráficos
+        var niveisLabels = /*[[${niveisLabels}]]*/ [];
+        var niveisValues = /*[[${niveisValues}]]*/ [];
+        var statusLabels = /*[[${statusLabels}]]*/ [];
+        var statusValues = /*[[${statusValues}]]*/ [];
+        var instituicoesLabels = /*[[${instituicoesLabels}]]*/ [];
+        var instituicoesValues = /*[[${instituicoesValues}]]*/ [];
+
+        // Gráfico de Níveis
+        if (niveisLabels.length > 0) {
+            var ctxNiveis = document.getElementById('chartNiveis').getContext('2d');
+            new Chart(ctxNiveis, {
+                type: 'doughnut',
+                data: {
+                    labels: niveisLabels,
+                    datasets: [{
+                        data: niveisValues,
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Status
+        if (statusLabels.length > 0) {
+            var ctxStatus = document.getElementById('chartStatus').getContext('2d');
+            new Chart(ctxStatus, {
+                type: 'pie',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: [
+                            '#28a745',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Instituições
+        if (instituicoesLabels.length > 0) {
+            var ctxInstituicoes = document.getElementById('chartInstituicoes').getContext('2d');
+            new Chart(ctxInstituicoes, {
+                type: 'bar',
+                data: {
+                    labels: instituicoesLabels,
+                    datasets: [{
+                        label: 'Usuários',
+                        data: instituicoesValues,
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

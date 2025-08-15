@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Diagnóstico</title>
+</head>
+<body>
+    <h1>Teste de Template - Funcionando</h1>
+    
+    <h2>Dados Básicos:</h2>
+    <p>Total de Usuários: <span th:text="${totalUsuarios}">0</span></p>
+    <p>Total de Vínculos: <span th:text="${totalVinculos}">0</span></p>
+    <p>Total de Países: <span th:text="${totalPaises}">0</span></p>
+    
+    <h2>Teste de Maps:</h2>
+    <div th:if="${usuariosPorPais != null}">
+        <p>Map de países está disponível</p>
+    </div>
+    <div th:if="${usuariosPorPais == null}">
+        <p>Map de países é nulo</p>
+    </div>
+    
+    <p><a href="/administrador">Voltar</a></p>
+</body>
+</html>

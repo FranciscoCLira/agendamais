@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas - Teste</title>
+</head>
+<body>
+    <h1>Estatísticas de Usuários - Teste Simples</h1>
+    <p>Total de usuários: <span th:text="${totalUsuarios}">0</span></p>
+    <div th:if="${estatisticasPais}">
+        <h3>Usuários por País:</h3>
+        <ul>
+            <li th:each="pais : ${estatisticasPais}" th:text="${pais.key + ': ' + pais.value}">País: quantidade</li>
+        </ul>
+    </div>
+    <p>Teste funcionando!</p>
+</body>
+</html>
