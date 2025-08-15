@@ -7,293 +7,90 @@
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Chart.js para gráficos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
-        }
-        .hierarchy-card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid #dee2e6;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-        }
-        .chart-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        .hierarchy-item {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .country-header {
-            font-weight: bold;
-            color: #495057;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-        .state-item {
-            margin-left: 20px;
-            padding: 8px 15px;
-            background: #e9ecef;
-            border-radius: 6px;
-            margin: 5px 0;
-        }
-        .city-item {
-            margin-left: 40px;
-            padding: 5px 12px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            margin: 3px 0;
-            font-size: 0.9em;
-        }
-        .total-badge {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: inline-block;
-        }
-        .sub-inst-item {
-            background: white;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin: 8px 0;
-            border-left: 4px solid #28a745;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-    </style>
 </head>
 <body>
     <!-- CABEÇALHO PADRÃO -->
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
 
     <div class="container-fluid mt-4">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="/administrador" th:if="${nivelAcessoLogado == 5}">
-                        <i class="fas fa-home"></i> Administrador
-                    </a>
-                    <a href="/superusuario" th:if="${nivelAcessoLogado == 9}">
-                        <i class="fas fa-home"></i> SuperUsuário
-                    </a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    <i class="fas fa-chart-bar"></i> Estatísticas de Usuários
-                </li>
-            </ol>
-        </nav>
-
         <!-- Título da Página -->
         <div class="row mb-4">
             <div class="col-12">
                 <h2>
                     <i class="fas fa-chart-bar me-2 text-primary"></i>
-                    Estatísticas de Usuários -
-                    <span th:text="${instituicaoSelecionada.nomeInstituicao}">Instituição</span>
+                    Estatísticas de Usuários
                 </h2>
-                <p class="text-muted">Análise completa da distribuição de usuários por localização e sub-instituições</p>
+                <p class="text-muted">Análise dos usuários do sistema</p>
             </div>
         </div>
 
         <!-- Alertas -->
-        <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> <span th:text="${mensagemSucesso}"></span>
+        <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${mensagem}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> <span th:text="${mensagemErro}"></span>
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${erro}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <!-- Estatística Total -->
+        <!-- Estatísticas Básicas -->
         <div class="row mb-4">
-            <div class="col-12">
-                <div class="stats-card text-center">
-                    <h3><i class="fas fa-users"></i> Total de Usuários</h3>
-                    <h1 class="display-3" th:text="${totalUsuarios}">0</h1>
-                    <p class="mb-0">usuários cadastrados na instituição</p>
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x mb-3"></i>
+                        <h3 th:text="${totalUsuarios ?: 0}">0</h3>
+                        <p>Total de Usuários</p>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Estatísticas por Sub-Instituição -->
-        <div class="row mb-4" th:if="${!#maps.isEmpty(estatisticasSubInstituicao)}">
-            <div class="col-12">
-                <div class="hierarchy-card">
-                    <h4><i class="fas fa-building text-primary"></i> Distribuição por Sub-Instituição</h4>
-                    <div class="row">
-                        <div class="col-md-6" th:each="entry : ${estatisticasSubInstituicao}">
-                            <div class="sub-inst-item">
-                                <span>
-                                    <i class="fas fa-building-user me-2"></i>
-                                    <span th:text="${entry.key}">Sub-Instituição</span>
-                                </span>
-                                <span class="total-badge" th:text="${entry.value}">0</span>
-                            </div>
-                        </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-building fa-2x mb-3"></i>
+                        <h3 th:text="${totalInstituicoes ?: 0}">0</h3>
+                        <p>Total de Instituições</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-link fa-2x mb-3"></i>
+                        <h3 th:text="${totalVinculos ?: 0}">0</h3>
+                        <p>Total de Vínculos</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Estatísticas Hierárquicas (País → Estado → Cidade) -->
-        <div class="row mb-4" th:if="${!#maps.isEmpty(estatisticasHierarquicas)}">
-            <div class="col-12">
-                <div class="hierarchy-card">
-                    <h4><i class="fas fa-globe text-primary"></i> Distribuição Hierárquica por Localização</h4>
-                    
-                    <div th:each="paisEntry : ${estatisticasHierarquicas}">
-                        <div class="hierarchy-item">
-                            <div class="country-header">
-                                <i class="fas fa-flag me-2"></i>
-                                <span th:text="${paisEntry.key}">País</span>
-                                <span class="float-end total-badge" 
-                                      th:text="${paisEntry.value.values().stream().flatMap(estadoMap -> estadoMap.values().stream()).mapToLong(Long::longValue).sum()}">0</span>
-                            </div>
-                            
-                            <div th:each="estadoEntry : ${paisEntry.value}">
-                                <div class="state-item">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
-                                    <strong th:text="${estadoEntry.key}">Estado</strong>
-                                    <span class="float-end badge bg-info" 
-                                          th:text="${estadoEntry.value.values().stream().mapToLong(Long::longValue).sum()}">0</span>
-                                </div>
-                                
-                                <div th:each="cidadeEntry : ${estadoEntry.value}">
-                                    <div class="city-item">
-                                        <i class="fas fa-city me-2"></i>
-                                        <span th:text="${cidadeEntry.key}">Cidade</span>
-                                        <span class="float-end badge bg-secondary" th:text="${cidadeEntry.value}">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráficos -->
+        <!-- Informações da Sessão (Debug) -->
         <div class="row">
-            <!-- Gráfico por País -->
-            <div class="col-md-6 mb-4" th:if="${!#maps.isEmpty(estatisticasPais)}">
-                <div class="chart-container">
-                    <h5><i class="fas fa-chart-pie text-primary"></i> Distribuição por País</h5>
-                    <canvas id="chartPaises" width="400" height="300"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico por Sub-Instituição -->
-            <div class="col-md-6 mb-4" th:if="${!#maps.isEmpty(estatisticasSubInstituicao)}">
-                <div class="chart-container">
-                    <h5><i class="fas fa-chart-doughnut text-primary"></i> Distribuição por Sub-Instituição</h5>
-                    <canvas id="chartSubInstituicoes" width="400" height="300"></canvas>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Informações de Debug</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Usuário Logado:</strong> <span th:text="${usuarioLogado?.nome ?: 'N/A'}">N/A</span></p>
+                        <p><strong>Instituição:</strong> <span th:text="${instituicaoSelecionada?.nomeInstituicao ?: 'N/A'}">N/A</span></p>
+                        <p><strong>Nível de Acesso:</strong> <span th:text="${nivelAcessoAtual ?: 'N/A'}">N/A</span></p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Ações -->
+        <!-- Botões de Ação -->
         <div class="row mt-4">
             <div class="col-12 text-center">
-                <a href="/administrador/lista-usuarios" class="btn btn-primary me-3">
-                    <i class="fas fa-list"></i> Ver Lista Completa
-                </a>
                 <a href="/administrador" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> Voltar ao Painel
                 </a>
             </div>
         </div>
     </div>
-
-    <!-- Scripts para Gráficos -->
-    <script th:inline="javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-            // Dados do servidor
-            /*<![CDATA[*/
-            const estatisticasPais = /*[[${estatisticasPais}]]*/ {};
-            const estatisticasSubInstituicao = /*[[${estatisticasSubInstituicao}]]*/ {};
-            /*]]>*/
-
-            // Gráfico de Países
-            if (Object.keys(estatisticasPais).length > 0) {
-                const ctxPaises = document.getElementById('chartPaises').getContext('2d');
-                new Chart(ctxPaises, {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(estatisticasPais),
-                        datasets: [{
-                            data: Object.values(estatisticasPais),
-                            backgroundColor: [
-                                '#667eea', '#764ba2', '#f093fb', '#f5576c',
-                                '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico de Sub-Instituições
-            if (Object.keys(estatisticasSubInstituicao).length > 0) {
-                const ctxSub = document.getElementById('chartSubInstituicoes').getContext('2d');
-                new Chart(ctxSub, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(estatisticasSubInstituicao),
-                        datasets: [{
-                            data: Object.values(estatisticasSubInstituicao),
-                            backgroundColor: [
-                                '#28a745', '#17a2b8', '#ffc107', '#dc3545',
-                                '#6f42c1', '#e83e8c', '#fd7e14', '#20c997'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
