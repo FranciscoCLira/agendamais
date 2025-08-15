@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas de Usuários - AgendaMais</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .estado-nome, .cidade-nome {
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+        .estado-item, .cidade-item {
+            transition: all 0.3s ease;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .estado-item:last-child, .cidade-item:last-child {
+            border-bottom: none;
+        }
+        .estado-item:hover, .cidade-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding-left: 10px;
+        }
+        .hierarquia-separador {
+            color: #6c757d;
+            margin: 0 5px;
+        }
+        .filtro-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Cabeçalho com informações do usuário -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="fas fa-chart-bar me-2"></i>
+                AgendaMais - Estatísticas de Usuários
+            </span>
+            
+            <!-- Informações do usuário logado -->
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i>
+                        <span th:text="${usuarioLogado}">Usuário</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><span class="dropdown-item-text"><strong>Instituição:</strong> <span th:text="${instituicaoSelecionada}">N/A</span></span></li>
+                        <li><span class="dropdown-item-text"><strong>Nível:</strong> <span th:text="${nivelAcessoAtual}">N/A</span></span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/administrador"><i class="fas fa-tachometer-alt me-1"></i> Painel</a></li>
+                        <li><a class="dropdown-item" href="/acesso/logout"><i class="fas fa-sign-out-alt me-1"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Nome da Instituição Destacado -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-info border-0 shadow-sm text-center py-2 mb-0" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+                    <h4 class="mb-0 fw-bold" th:text="${instituicaoSelecionada}">
+                        <i class="fas fa-university me-2"></i>Nome da Instituição
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards de Estatísticas Principais -->
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card text-white bg-primary h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <h2 id="totalUsuariosCard" th:text="${totalUsuarios}">0</h2>
+                        <p class="card-text">Total de Usuários</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card text-white bg-success h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-globe-americas fa-3x mb-3"></i>
+                        <h2 id="totalPaisesCard" th:text="${totalPaises}">0</h2>
+                        <p class="card-text">Países Representados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="card text-white bg-info h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-building fa-3x mb-3"></i>
+                        <h2 id="usuariosComSubCard" th:text="${usuariosComSubInstituicoes}">0</h2>
+                        <p class="card-text">Sub-Instituições em uso</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção: Usuários por Sub-Instituição -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-sitemap me-2"></i>Usuários por Sub-Instituição</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${usuariosPorSubInstituicao != null and !usuariosPorSubInstituicao.isEmpty()}">
+                            <!-- Lista Simples de Sub-Instituições -->
+                            <div th:each="subInst : ${usuariosPorSubInstituicao}" class="d-flex align-items-center mb-2 p-2 border-bottom">
+                                <div class="d-flex" style="min-width: 120px;">
+                                    <span class="fw-bold text-primary" th:text="${#numbers.formatInteger(subInst.value, 4)}">0000</span>
+                                    <span class="text-muted mx-2">-</span>
+                                    <span class="text-muted" th:text="${#numbers.formatDecimal((subInst.value * 100.0) / totalUsuarios, 1, 1)} + '%'">00.0%</span>
+                                </div>
+                                <span class="text-muted mx-2">-</span>
+                                <span th:text="${subInst.key}" class="flex-grow-1">Sub-Instituição</span>
+                            </div>
+                        </div>
+                        <div th:if="${usuariosPorSubInstituicao == null or usuariosPorSubInstituicao.isEmpty()}" class="text-muted text-center">
+                            <i class="fas fa-info-circle"></i> Dados não disponíveis
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nova Interface Hierárquica de Filtros -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros de Localização</h5>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- Seção: Usuários por País -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary border-bottom pb-2">
+                                <i class="fas fa-globe me-2"></i>Usuários por País:
+                            </h6>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Pesquisar a partir de:</label>
+                                <input type="text" id="searchPais" class="form-control form-control-sm" placeholder="Nome parcial do país...">
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="10%"></th>
+                                            <th width="15%">Qtd.</th>
+                                            <th width="15%">Perc.</th>
+                                            <th width="60%">País</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="paisesTableBody">
+                                        <tr th:each="pais : ${usuariosPorPais}" class="pais-row" th:attr="data-pais=${pais.key}">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input pais-checkbox" th:attr="data-pais=${pais.key}">
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary" th:text="${pais.value}">0</span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted" th:text="${#numbers.formatDecimal((pais.value * 100.0) / totalUsuarios, 1, 1)} + '%'">0.0%</small>
+                                            </td>
+                                            <td>
+                                                <span th:text="${pais.key}">País</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Usuários por Estado (inicialmente oculta) -->
+                        <div id="estadosSection" class="mb-4" style="display: none;">
+                            <h6 class="fw-bold text-success border-bottom pb-2">
+                                <i class="fas fa-map me-2"></i>Usuários por Estado do País: <span id="paisSelecionado" class="text-primary">-</span>
+                            </h6>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Pesquisar a partir de:</label>
+                                <input type="text" id="searchEstado" class="form-control form-control-sm" placeholder="Nome parcial do estado...">
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="10%"></th>
+                                            <th width="15%">Qtd.</th>
+                                            <th width="15%">Perc.</th>
+                                            <th width="60%">Estado/Distrito</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="estadosTableBody">
+                                        <!-- Estados serão inseridos dinamicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Usuários por Cidade (inicialmente oculta) -->
+                        <div id="cidadesSection" class="mb-4" style="display: none;">
+                            <h6 class="fw-bold text-info border-bottom pb-2">
+                                <i class="fas fa-building me-2"></i>Usuários por Cidade do País: <span id="paisSelecionadoCidade" class="text-primary">-</span> Estado: <span id="estadoSelecionado" class="text-success">-</span>
+                            </h6>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Pesquisar a partir de:</label>
+                                <input type="text" id="searchCidade" class="form-control form-control-sm" placeholder="Nome parcial da cidade...">
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="20%">Qtd.</th>
+                                            <th width="20%">Perc.</th>
+                                            <th width="60%">Cidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cidadesTableBody">
+                                        <!-- Cidades serão inseridas dinamicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas por Localização -->
+        <div class="row mb-4">
+            <!-- Países -->
+            <div class="col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Por País</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${usuariosPorPais != null and !usuariosPorPais.isEmpty()}">
+                            <div th:each="pais : ${usuariosPorPais}" class="d-flex justify-content-between align-items-center mb-2 pais-item">
+                                <span th:text="${pais.key}">País</span>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2" th:text="${pais.value}">0</span>
+                                    <small class="text-muted" th:text="${#numbers.formatDecimal((pais.value * 100.0) / totalUsuarios, 1, 1)} + '%'">0.0%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${usuariosPorPais == null or usuariosPorPais.isEmpty()}" class="text-muted text-center">
+                            <i class="fas fa-info-circle"></i> Dados não disponíveis
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estados -->
+            <div class="col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-map me-2"></i>Por País / Estado</h5>
+                        <small class="opacity-75">Formato: País / Estado</small>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${usuariosPorEstado != null and !usuariosPorEstado.isEmpty()}">
+                            <div th:each="estado : ${usuariosPorEstado}" class="d-flex justify-content-between align-items-center mb-2 estado-item">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                                    <span th:text="${estado.key}" class="estado-nome">Estado</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2" th:text="${estado.value}">0</span>
+                                    <small class="text-muted" th:text="${#numbers.formatDecimal((estado.value * 100.0) / totalUsuarios, 1, 1)} + '%'">0.0%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${usuariosPorEstado == null or usuariosPorEstado.isEmpty()}" class="text-muted text-center">
+                            <i class="fas fa-info-circle"></i> Dados não disponíveis
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cidades -->
+            <div class="col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-city me-2"></i>Por País / Estado / Cidade</h5>
+                        <small class="opacity-75">Formato: País / Estado / Cidade</small>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${usuariosPorCidade != null and !usuariosPorCidade.isEmpty()}">
+                            <div th:each="cidade : ${usuariosPorCidade}" class="d-flex justify-content-between align-items-center mb-2 cidade-item">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-building me-2 text-muted"></i>
+                                    <span th:text="${cidade.key}" class="cidade-nome">Cidade</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2" th:text="${cidade.value}">0</span>
+                                    <small class="text-muted" th:text="${#numbers.formatDecimal((cidade.value * 100.0) / totalUsuarios, 1, 1)} + '%'">0.0%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${usuariosPorCidade == null or usuariosPorCidade.isEmpty()}" class="text-muted text-center">
+                            <i class="fas fa-info-circle"></i> Dados não disponíveis
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row">
+            <div class="col-12 d-flex justify-content-between">
+                <a href="/administrador" class="btn btn-secondary">
+                    <i class="fas fa-home me-1"></i> Voltar ao Administrador
+                </a>
+                <a href="/administrador/lista-usuarios" class="btn btn-primary">
+                    <i class="fas fa-list me-1"></i> Lista de Usuários
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Scripts para nova interface hierárquica -->
+    <script th:inline="javascript">
+        // === NOVO SISTEMA HIERÁRQUICO DE FILTROS ===
+        
+        // Dados do servidor
+        const estadosPorPais = /*[[${estadosPorPais}]]*/ {};
+        const cidadesPorEstado = /*[[${cidadesPorEstado}]]*/ {};
+        const usuariosPorEstado = /*[[${usuariosPorEstado}]]*/ {};
+        const usuariosPorCidade = /*[[${usuariosPorCidade}]]*/ {};
+        
+        // === FUNCIONALIDADE DE CHECKBOX PARA PAÍSES ===
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Adicionar eventos aos checkboxes de países
+            document.querySelectorAll('.pais-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const paisSelecionado = this.dataset.pais;
+                    
+                    if (this.checked) {
+                        // Desmarcar outros países
+                        document.querySelectorAll('.pais-checkbox').forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                        
+                        expandirEstados(paisSelecionado);
+                    } else {
+                        ocultarEstados();
+                    }
+                });
+            });
+            
+            // === PESQUISA FUNCIONAL SIMPLES ===
+            const searchPaisInput = document.getElementById('searchPais');
+            if (searchPaisInput) {
+                searchPaisInput.addEventListener('input', function() {
+                    const termo = this.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll('#paisesTableBody tr.pais-row');
+                    
+                    rows.forEach(row => {
+                        const paisCell = row.cells[3]; // 4ª coluna (índice 3) contém o nome do país
+                        if (paisCell) {
+                            const nomePais = paisCell.textContent.toLowerCase().trim();
+                            row.style.display = (termo === '' || nomePais.includes(termo)) ? '' : 'none';
+                        }
+                    });
+                });
+            }
+            
+        });
+        
+        function expandirEstados(paisSelecionado) {
+            const estadosSection = document.getElementById('estadosSection');
+            const paisSelecionadoSpan = document.getElementById('paisSelecionado');
+            const estadosTableBody = document.getElementById('estadosTableBody');
+            
+            // Mostrar seção de estados
+            estadosSection.style.display = 'block';
+            paisSelecionadoSpan.textContent = paisSelecionado;
+            
+            // Limpar tabela de estados
+            estadosTableBody.innerHTML = '';
+            
+            // Buscar estados do país selecionado
+            const estadosDoPais = Object.keys(usuariosPorEstado).filter(estado => 
+                estado.startsWith(paisSelecionado + ' / ')
+            );
+            
+            // Calcular total de usuários do país para percentuais
+            const totalUsuariosPais = estadosDoPais.reduce((total, estado) => 
+                total + (usuariosPorEstado[estado] || 0), 0
+            );
+            
+            // Adicionar linha para cada estado
+            estadosDoPais.forEach(estado => {
+                const nomeEstado = estado.replace(paisSelecionado + ' / ', '');
+                const qtdUsuarios = usuariosPorEstado[estado] || 0;
+                const percentual = totalUsuariosPais > 0 ? (qtdUsuarios / totalUsuariosPais * 100).toFixed(1) : 0;
+                
+                const row = document.createElement('tr');
+                row.className = 'estado-row';
+                row.dataset.estado = estado;
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="form-check-input estado-checkbox" data-estado="${estado}">
+                    </td>
+                    <td>
+                        <span class="badge bg-success">${qtdUsuarios}</span>
+                    </td>
+                    <td>
+                        <small class="text-muted">${percentual}%</small>
+                    </td>
+                    <td>
+                        <span>${nomeEstado}</span>
+                    </td>
+                `;
+                
+                estadosTableBody.appendChild(row);
+            });
+            
+            // Adicionar eventos aos novos checkboxes de estados
+            document.querySelectorAll('.estado-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const estadoSelecionado = this.dataset.estado;
+                    
+                    if (this.checked) {
+                        // Desmarcar outros estados
+                        document.querySelectorAll('.estado-checkbox').forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                        
+                        expandirCidades(paisSelecionado, estadoSelecionado);
+                    } else {
+                        ocultarCidades();
+                    }
+                });
+            });
+            
+            // Funcionalidade de pesquisa para estados
+            const searchEstadoInput = document.getElementById('searchEstado');
+            if (searchEstadoInput) {
+                // Remover event listeners antigos
+                const newSearchEstado = searchEstadoInput.cloneNode(true);
+                searchEstadoInput.parentNode.replaceChild(newSearchEstado, searchEstadoInput);
+                
+                newSearchEstado.addEventListener('input', function() {
+                    const termo = this.value.toLowerCase();
+                    document.querySelectorAll('.estado-row').forEach(row => {
+                        const nomeEstadoCell = row.querySelector('td:nth-child(4)'); // 4ª coluna tem o nome do estado
+                        if (nomeEstadoCell) {
+                            const nomeEstado = nomeEstadoCell.textContent.toLowerCase();
+                            const mostra = termo === '' || nomeEstado.includes(termo);
+                            row.style.display = mostra ? '' : 'none';
+                        }
+                    });
+                });
+            }
+        }
+        
+        function expandirCidades(paisSelecionado, estadoSelecionado) {
+            const cidadesSection = document.getElementById('cidadesSection');
+            const paisSelecionadoCidadeSpan = document.getElementById('paisSelecionadoCidade');
+            const estadoSelecionadoSpan = document.getElementById('estadoSelecionado');
+            const cidadesTableBody = document.getElementById('cidadesTableBody');
+            
+            // Mostrar seção de cidades
+            cidadesSection.style.display = 'block';
+            paisSelecionadoCidadeSpan.textContent = paisSelecionado;
+            estadoSelecionadoSpan.textContent = estadoSelecionado.replace(paisSelecionado + ' / ', '');
+            
+            // Limpar tabela de cidades
+            cidadesTableBody.innerHTML = '';
+            
+            // Buscar cidades do estado selecionado
+            const cidadesDoEstado = Object.keys(usuariosPorCidade).filter(cidade => 
+                cidade.startsWith(estadoSelecionado + ' / ')
+            );
+            
+            // Calcular total de usuários do estado para percentuais
+            const totalUsuariosEstado = cidadesDoEstado.reduce((total, cidade) => 
+                total + (usuariosPorCidade[cidade] || 0), 0
+            );
+            
+            // Adicionar linha para cada cidade
+            cidadesDoEstado.forEach(cidade => {
+                const nomeCidade = cidade.replace(estadoSelecionado + ' / ', '');
+                const qtdUsuarios = usuariosPorCidade[cidade] || 0;
+                const percentual = totalUsuariosEstado > 0 ? (qtdUsuarios / totalUsuariosEstado * 100).toFixed(1) : 0;
+                
+                const row = document.createElement('tr');
+                row.className = 'cidade-row';
+                row.innerHTML = `
+                    <td>
+                        <span class="badge bg-info">${qtdUsuarios}</span>
+                    </td>
+                    <td>
+                        <small class="text-muted">${percentual}%</small>
+                    </td>
+                    <td>
+                        <span>${nomeCidade}</span>
+                    </td>
+                `;
+                
+                cidadesTableBody.appendChild(row);
+            });
+            
+            // Funcionalidade de pesquisa para cidades
+            const searchCidadeInput = document.getElementById('searchCidade');
+            if (searchCidadeInput) {
+                // Remover event listeners antigos
+                const newSearchCidade = searchCidadeInput.cloneNode(true);
+                searchCidadeInput.parentNode.replaceChild(newSearchCidade, searchCidadeInput);
+                
+                newSearchCidade.addEventListener('input', function() {
+                    const termo = this.value.toLowerCase();
+                    document.querySelectorAll('.cidade-row').forEach(row => {
+                        const nomeCidade = row.querySelector('span').textContent.toLowerCase();
+                        const mostra = nomeCidade.includes(termo);
+                        row.style.display = mostra ? '' : 'none';
+                    });
+                });
+            }
+        }
+        
+        function ocultarEstados() {
+            document.getElementById('estadosSection').style.display = 'none';
+            ocultarCidades();
+        }
+        
+        function ocultarCidades() {
+            document.getElementById('cidadesSection').style.display = 'none';
+        }
+        
+    </script>
+</body>
+</html>
+    </script>
+</body>
+</html>

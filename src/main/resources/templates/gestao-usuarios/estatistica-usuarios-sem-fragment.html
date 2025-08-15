@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas de Usuários - AgendaMais</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- CABEÇALHO SIMPLES SEM FRAGMENT -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-calendar-alt me-2"></i>
+                AgendaMais - Estatísticas
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Título da Página -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2>
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>
+                    Estatísticas de Usuários
+                </h2>
+                <p class="text-muted">Análise dos usuários do sistema</p>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${mensagem}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${erro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Estatísticas Básicas -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x mb-3"></i>
+                        <h3 th:text="${totalUsuarios ?: 0}">0</h3>
+                        <p>Total de Usuários</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-building fa-2x mb-3"></i>
+                        <h3 th:text="${totalInstituicoes ?: 0}">0</h3>
+                        <p>Total de Instituições</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-link fa-2x mb-3"></i>
+                        <h3 th:text="${totalVinculos ?: 0}">0</h3>
+                        <p>Total de Vínculos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações da Sessão (Debug) -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Informações de Debug</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Usuário Logado:</strong> <span th:text="${usuarioLogado?.nome ?: 'N/A'}">N/A</span></p>
+                        <p><strong>Instituição:</strong> <span th:text="${instituicaoSelecionada?.nomeInstituicao ?: 'N/A'}">N/A</span></p>
+                        <p><strong>Nível de Acesso:</strong> <span th:text="${nivelAcessoAtual ?: 'N/A'}">N/A</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="/administrador" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Painel
+                </a>
+                <a href="/acesso/logout" class="btn btn-outline-danger ms-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

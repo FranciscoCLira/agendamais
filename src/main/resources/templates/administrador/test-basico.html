@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Básico - AgendaMais</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="success">
+        <h1>✅ Teste Básico - SUCESSO!</h1>
+        <p>O controller está funcionando perfeitamente!</p>
+    </div>
+    
+    <div class="info">
+        <h3>Informações da Sessão:</h3>
+        <p><strong>Session ID:</strong> <span th:text="${sessionId}">-</span></p>
+        <p><strong>Login Usuário:</strong> <span th:text="${usuarioLogado != null ? 'LOGADO' : 'NÃO LOGADO'}">-</span></p>
+        <p><strong>Sessão Nova:</strong> <span th:text="${isNewSession}">-</span></p>
+    </div>
+    
+    <div>
+        <h3>Links de Teste:</h3>
+        <a href="/administrador" style="background: #007bff; color: white; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px;">Voltar Administrador</a>
+        <a href="/administrador/estatistica-simples" style="background: #28a745; color: white; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px;">Teste Simples</a>
+        <a href="/administrador/estatistica-usuarios" style="background: #17a2b8; color: white; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px;">Estatísticas Completas</a>
+        <a href="/administrador/estatistica-usuarios-test" style="background: #ffc107; color: black; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px;">🔧 TESTE NOVO</a>
+        <a href="/acesso" style="background: #6c757d; color: white; padding: 10px; text-decoration: none; border-radius: 3px; margin: 5px;">Fazer Login</a>
+    </div>
+</body>
+</html>

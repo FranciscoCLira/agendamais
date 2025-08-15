@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Super Simples - AgendaMais</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .btn { display: inline-block; padding: 12px 20px; margin: 5px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Controller Super Simples - FUNCIONANDO!</h1>
+        
+        <div class="success">
+            <h3>✅ Sucesso Total!</h3>
+            <p th:text="${mensagemSucesso}">Mensagem de sucesso</p>
+            <p><strong>Total de Usuários:</strong> <span th:text="${totalUsuarios}">0</span></p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Status do Teste:</h3>
+            <ul>
+                <li>✅ Sessão válida detectada</li>
+                <li>✅ Controller acessado com sucesso</li>
+                <li>✅ Dados básicos carregados</li>
+                <li>✅ Template renderizado</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>🔗 Navegação de Teste:</h3>
+            <a href="/administrador" class="btn btn-primary">🏠 Voltar Administrador</a>
+            <a href="/administrador/estatistica-simples" class="btn btn-success">✅ Teste Simples</a>
+            <a href="/administrador/estatistica-usuarios" class="btn btn-info">📊 Estatísticas Completas</a>
+            <a href="/administrador/gestao-usuarios" class="btn btn-secondary">👥 Gestão de Usuários</a>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
+            <h4>🔍 Diagnóstico:</h4>
+            <p>Se este controller funciona mas o "Estatísticas Completas" não, o problema está na complexidade do processamento, não na navegação ou sessão.</p>
+        </div>
+    </div>
+</body>
+</html>
