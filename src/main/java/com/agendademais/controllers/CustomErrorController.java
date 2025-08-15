@@ -12,10 +12,30 @@ public class CustomErrorController implements ErrorController {
 
     @RequestMapping("/error")
     public String handleError(HttpServletRequest request, Model model) {
+        // Tentar múltiplas formas de capturar informações do erro
         Object status = request.getAttribute("javax.servlet.error.status_code");
         Object errorMessage = request.getAttribute("javax.servlet.error.message");
         Object requestUri = request.getAttribute("javax.servlet.error.request_uri");
         Object exception = request.getAttribute("javax.servlet.error.exception");
+        
+        // Fallback para obter status da resposta HTTP
+        if (status == null) {
+            status = request.getAttribute("org.springframework.boot.web.servlet.error.DefaultErrorAttributes.ERROR");
+            if (status == null) {
+                // Tentar obter do parâmetro ou header
+                String statusParam = request.getParameter("status");
+                if (statusParam != null) {
+                    status = statusParam;
+                } else {
+                    status = 500; // Assumir 500 se não conseguir obter
+                }
+            }
+        }
+        
+        // Fallback para URI
+        if (requestUri == null) {
+            requestUri = request.getRequestURI();
+        }
 
         // Debug - imprimir informações do erro
         System.out.println("*** DEBUG CUSTOM ERROR CONTROLLER ***");
@@ -23,6 +43,8 @@ public class CustomErrorController implements ErrorController {
         System.out.println("ErrorMessage: " + errorMessage);
         System.out.println("RequestUri: " + requestUri);
         System.out.println("Exception: " + exception);
+        System.out.println("Request Method: " + request.getMethod());
+        System.out.println("Query String: " + request.getQueryString());
         
         // Se há uma exceção, imprimir stack trace completo
         if (exception instanceof Exception) {
@@ -55,10 +77,30 @@ public class CustomErrorController implements ErrorController {
             model.addAttribute("requestUri", requestUri);
         }
         String errorDetails = "";
+        
+        // Se o status ainda for null mas há exceção, assumir erro 500
+        if (status == null && exception != null) {
+            status = 500;
+            System.out.println("*** FORÇANDO STATUS 500 DEVIDO À EXCEÇÃO ***");
+        }
+        
+        // Se ainda não temos status mas a URI indica erro de servidor, assumir 500
+        if (status == null && requestUri != null && requestUri.toString().contains("/administrador/")) {
+            status = 500;
+            System.out.println("*** FORÇANDO STATUS 500 DEVIDO À URI ADMINISTRATIVA ***");
+        }
 
         if (status != null) {
-            Integer statusCode = Integer.valueOf(status.toString());
-            errorCode = statusCode.toString();
+            Integer statusCode;
+            try {
+                statusCode = Integer.valueOf(status.toString());
+                errorCode = statusCode.toString();
+            } catch (NumberFormatException e) {
+                // Se não conseguir converter, assume 500
+                statusCode = 500;
+                errorCode = "500";
+                System.out.println("*** ERRO NA CONVERSÃO DO STATUS, ASSUMINDO 500 ***");
+            }
 
             System.out.println("StatusCode processado: " + statusCode);
 
@@ -86,6 +128,29 @@ public class CustomErrorController implements ErrorController {
             } else if (statusCode == 500) {
                 errorTitle = "Erro interno do servidor (500)";
                 errorDescription = "Ocorreu um erro interno no servidor. Tente novamente em alguns minutos.";
+                
+                // Adicionar informações técnicas detalhadas para erro 500
+                model.addAttribute("timestamp", new java.util.Date());
+                model.addAttribute("httpMethod", request.getMethod());
+                model.addAttribute("userAgent", request.getHeader("User-Agent"));
+                model.addAttribute("remoteAddr", request.getRemoteAddr());
+                model.addAttribute("sessionId", request.getSession(false) != null ? request.getSession().getId() : "N/A");
+                
+                // Adicionar parâmetros da requisição
+                StringBuilder parameters = new StringBuilder();
+                request.getParameterMap().forEach((key, values) -> {
+                    parameters.append(key).append("=").append(String.join(",", values)).append("\n");
+                });
+                model.addAttribute("requestParameters", parameters.toString());
+                
+                // Adicionar headers importantes
+                StringBuilder headers = new StringBuilder();
+                headers.append("Accept: ").append(request.getHeader("Accept")).append("\n");
+                headers.append("Accept-Language: ").append(request.getHeader("Accept-Language")).append("\n");
+                headers.append("Content-Type: ").append(request.getHeader("Content-Type")).append("\n");
+                headers.append("Referer: ").append(request.getHeader("Referer")).append("\n");
+                model.addAttribute("requestHeaders", headers.toString());
+                
                 model.addAttribute("homeLink", "/acesso");
                 model.addAttribute("homeLinkText", "Voltar ao Login");
                 model.addAttribute("errorCode", errorCode);
