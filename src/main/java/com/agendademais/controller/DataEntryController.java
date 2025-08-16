@@ -242,6 +242,28 @@ public class DataEntryController {
     }
     
     /**
+     * Download do arquivo de exemplo Excel (.xlsx)
+     */
+    @GetMapping("/exemplo-excel")
+    public ResponseEntity<Resource> downloadExemploExcel() {
+        try {
+            String staticPath = System.getProperty("user.dir") + "/src/main/resources/static/exemplo-usuarios.xlsx";
+            File file = new File(staticPath);
+            if (file.exists()) {
+                Resource resource = new FileSystemResource(file);
+                return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios.xlsx\"")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
      * Classe para informações do DataEntry
      */
     public static class DataEntryInfo {
