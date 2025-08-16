@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Estatística de Usuários - AgendaMais</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .stats-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .table th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            color: #495057;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+            border-color: #e9ecef;
+        }
+        .percentage-cell {
+            font-weight: 600;
+            color: #28a745;
+        }
+        .country-cell {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        .state-cell {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        .city-cell {
+            color: #495057;
+        }
+        .controls-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .btn-export {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+        .sort-select {
+            border-radius: 10px;
+            padding: 10px 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+    <div class="container-fluid mt-4">
+        <!-- Header Card -->
+        <div class="header-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-2">
+                        <i class="fas fa-list-alt me-3"></i>
+                        Lista Estatística de Usuários
+                    </h2>
+                    <p class="mb-0 opacity-75">
+                        <span th:text="${nomeInstituicao ?: 'Instituição Selecionada'}"></span> • 
+                        Visualização condensada das estatísticas geográficas
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/administrador/lista-usuarios}" class="btn btn-light me-2">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar à Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div th:if="${erro}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${erro}"></span>
+        </div>
+
+        <!-- Controls Card -->
+        <div class="controls-card">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <label for="sortOrder" class="form-label fw-bold">
+                        <i class="fas fa-sort me-2"></i>Ordenação:
+                    </label>
+                    <select id="sortOrder" class="form-select sort-select" onchange="sortTable()">
+                        <option value="geographic">Por País/Estado/Cidade</option>
+                        <option value="percentage-desc">Relevância % Decrescente</option>
+                        <option value="percentage-asc">Relevância % Crescente</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button onclick="exportCSV()" class="btn btn-export">
+                        <i class="fas fa-download me-2"></i>
+                        Exportar CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Estatística Condensada -->
+        <div class="stats-table">
+            <table class="table table-hover mb-0" id="statisticsTable">
+                <thead>
+                    <tr>
+                        <th colspan="3" class="text-center border-end">PAÍS</th>
+                        <th colspan="3" class="text-center border-end">ESTADO</th>
+                        <th colspan="3" class="text-center">CIDADE</th>
+                    </tr>
+                    <tr>
+                        <th>Qtd.</th>
+                        <th>Perc.</th>
+                        <th class="border-end">País</th>
+                        <th>Qtd.</th>
+                        <th>Perc.</th>
+                        <th class="border-end">Estado</th>
+                        <th>Qtd.</th>
+                        <th>Perc.</th>
+                        <th>Cidade</th>
+                    </tr>
+                </thead>
+                <tbody id="statisticsTableBody">
+                    <!-- Países -->
+                    <th:block th:each="pais : ${estatisticasPaises}">
+                        <!-- Estados do país -->
+                        <th:block th:each="estado : ${pais.subNiveis}">
+                            <!-- Cidades do estado -->
+                            <th:block th:each="cidade : ${estado.subNiveis}">
+                                <tr>
+                                    <!-- Dados do País -->
+                                    <td class="country-cell" th:text="${pais.quantidade}">0003</td>
+                                    <td class="country-cell percentage-cell" 
+                                        th:text="${#numbers.formatDecimal(pais.percentual, 1, 1)} + '%'">60,0%</td>
+                                    <td class="country-cell border-end" th:text="${pais.nome}">Brasil</td>
+                                    
+                                    <!-- Dados do Estado -->
+                                    <td class="state-cell" th:text="${estado.quantidade}">0002</td>
+                                    <td class="state-cell percentage-cell" 
+                                        th:text="${#numbers.formatDecimal(estado.percentual, 1, 1)} + '%'">66,6%</td>
+                                    <td class="state-cell border-end" th:text="${estado.nome}">SP</td>
+                                    
+                                    <!-- Dados da Cidade -->
+                                    <td class="city-cell" th:text="${cidade.quantidade}">0001</td>
+                                    <td class="city-cell percentage-cell" 
+                                        th:text="${#numbers.formatDecimal(cidade.percentual, 1, 1)} + '%'">25,0%</td>
+                                    <td class="city-cell" th:text="${cidade.nome}">São Paulo</td>
+                                </tr>
+                            </th:block>
+                        </th:block>
+                    </th:block>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumo Footer -->
+        <div class="mt-4 text-center text-muted">
+            <small>
+                <i class="fas fa-info-circle me-1"></i>
+                Total de registros: <span th:text="${totalUsuarios ?: 0}">0</span> usuários • 
+                <span th:text="${#lists.size(estatisticasPaises ?: {})}">0</span> países • 
+                Gerado em: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
+            </small>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para ordenar tabela
+        function sortTable() {
+            const table = document.getElementById('statisticsTable');
+            const tbody = document.getElementById('statisticsTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const sortOrder = document.getElementById('sortOrder').value;
+            
+            let sortedRows;
+            
+            if (sortOrder === 'percentage-desc') {
+                // Ordenar por percentual da cidade (decrescente)
+                sortedRows = rows.sort((a, b) => {
+                    const percentA = parseFloat(a.cells[7].textContent.replace('%', '').replace(',', '.'));
+                    const percentB = parseFloat(b.cells[7].textContent.replace('%', '').replace(',', '.'));
+                    return percentB - percentA;
+                });
+            } else if (sortOrder === 'percentage-asc') {
+                // Ordenar por percentual da cidade (crescente)
+                sortedRows = rows.sort((a, b) => {
+                    const percentA = parseFloat(a.cells[7].textContent.replace('%', '').replace(',', '.'));
+                    const percentB = parseFloat(b.cells[7].textContent.replace('%', '').replace(',', '.'));
+                    return percentA - percentB;
+                });
+            } else {
+                // Ordenação geográfica (padrão): País > Estado > Cidade
+                sortedRows = rows.sort((a, b) => {
+                    const paisA = a.cells[2].textContent;
+                    const paisB = b.cells[2].textContent;
+                    const estadoA = a.cells[5].textContent;
+                    const estadoB = b.cells[5].textContent;
+                    const cidadeA = a.cells[8].textContent;
+                    const cidadeB = b.cells[8].textContent;
+                    
+                    if (paisA !== paisB) return paisA.localeCompare(paisB);
+                    if (estadoA !== estadoB) return estadoA.localeCompare(estadoB);
+                    return cidadeA.localeCompare(cidadeB);
+                });
+            }
+            
+            // Limpar e recriar tbody
+            tbody.innerHTML = '';
+            sortedRows.forEach(row => tbody.appendChild(row));
+        }
+        
+        // Função para exportar CSV
+        function exportCSV() {
+            const table = document.getElementById('statisticsTable');
+            const rows = table.querySelectorAll('tbody tr');
+            
+            let csvContent = 'Qtd_Pais;Perc_Pais;Pais;Qtd_Estado;Perc_Estado;Estado;Qtd_Cidade;Perc_Cidade;Cidade\n';
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = [];
+                cells.forEach(cell => {
+                    rowData.push(cell.textContent.trim());
+                });
+                csvContent += rowData.join(';') + '\n';
+            });
+            
+            // Criar e baixar arquivo
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'lista_estatistica_usuarios_' + new Date().toISOString().slice(0,10) + '.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

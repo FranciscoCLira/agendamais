@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Simples</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="alert alert-primary">
+            <h2>TESTE SIMPLES</h2>
+            <p>Instituição: <span th:text="${nomeInstituicao}">Não encontrado</span></p>
+            <p>Total: <span th:text="${totalUsuarios}">0</span> usuários</p>
+            <p>Países definidos: <span th:text="${estatisticasPaises != null ? 'SIM' : 'NÃO'}">NÃO</span></p>
+            <p>Quantidade de países: <span th:text="${estatisticasPaises != null ? #lists.size(estatisticasPaises) : 0}">0</span></p>
+        </div>
+
+        <!-- Lista simples de países SEM hierarquia -->
+        <div class="card" th:if="${estatisticasPaises != null}">
+            <div class="card-body">
+                <h5>Lista dos Países (Simples)</h5>
+                <ul>
+                    <li th:each="pais : ${estatisticasPaises}">
+                        <span th:text="${pais.nome}">País</span> - 
+                        <span th:text="${pais.quantidade}">0</span> usuários
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="alert alert-danger" th:unless="${estatisticasPaises != null}">
+            ❌ A variável estatisticasPaises não está definida
+        </div>
+    </div>
+</body>
+</html>

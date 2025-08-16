@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Estatística de Usuários</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Header -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Lista Estatística de Usuários - <span th:text="${nomeInstituicao}">Instituto</span>
+                            <small th:if="${nomeInstituicao != null and nomeInstituicao.contains('DEMONSTRAÇÃO')}" 
+                                   class="badge bg-warning text-dark ms-2">MODO DEMONSTRAÇÃO</small>
+                        </h4>
+                        <small>Total de usuários: <span th:text="${totalUsuarios}">0</span></small>
+                    </div>
+                </div>
+
+                <!-- Controles de Ordenação -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <label for="ordenacao" class="form-label fw-bold">Ordenação:</label>
+                                <select id="ordenacao" class="form-select" onchange="ordenarTabela()">
+                                    <option value="geografica">Por País/Estado/Cidade</option>
+                                    <option value="percentual-desc">Por Relevância % (Maior → Menor)</option>
+                                    <option value="percentual-asc">Por Relevância % (Menor → Maior)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-success" onclick="exportarCSV()">
+                                    <i class="fas fa-file-csv me-1"></i>
+                                    Exportar CSV
+                                </button>
+                                <a href="/administrador/lista-usuarios" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Voltar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Estatísticas -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="tabelaEstatisticas" class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">Nível</th>
+                                        <th scope="col">País</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col">Cidade</th>
+                                        <th scope="col" class="text-center">Usuários</th>
+                                        <th scope="col" class="text-center">Relevância %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaCorpo">
+                                    <!-- Template será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dados do servidor (JavaScript) -->
+    <script th:inline="javascript">
+        // Receber dados do controller
+        var dadosPaises = /*[[${estatisticasPaises}]]*/ [];
+        var nomeInstituicao = /*[[${nomeInstituicao}]]*/ "Instituto";
+        var totalUsuarios = /*[[${totalUsuarios}]]*/ 0;
+        
+        console.log('Dados recebidos:', dadosPaises);
+        console.log('Nome instituição:', nomeInstituicao);
+        console.log('Total usuários:', totalUsuarios);
+        
+        // Função para renderizar a tabela
+        function renderizarTabela() {
+            var tbody = document.getElementById('tabelaCorpo');
+            tbody.innerHTML = '';
+            
+            if (!dadosPaises || dadosPaises.length === 0) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Nenhuma estatística disponível
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+            
+            dadosPaises.forEach(function(pais) {
+                // Linha do País
+                var trPais = document.createElement('tr');
+                trPais.className = 'table-primary';
+                trPais.innerHTML = `
+                    <td><i class="fas fa-globe text-primary"></i> País</td>
+                    <td class="fw-bold">${pais.nome}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td class="text-center">${pais.quantidade}</td>
+                    <td class="text-center">${pais.percentual.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(trPais);
+                
+                // Estados do País
+                if (pais.subNiveis && pais.subNiveis.length > 0) {
+                    pais.subNiveis.forEach(function(estado) {
+                        var trEstado = document.createElement('tr');
+                        trEstado.className = 'table-warning';
+                        trEstado.innerHTML = `
+                            <td class="ps-4"><i class="fas fa-map text-warning"></i> Estado</td>
+                            <td>${pais.nome}</td>
+                            <td class="fw-bold">${estado.nome}</td>
+                            <td>-</td>
+                            <td class="text-center">${estado.quantidade}</td>
+                            <td class="text-center">${estado.percentual.toFixed(1)}%</td>
+                        `;
+                        tbody.appendChild(trEstado);
+                        
+                        // Cidades do Estado
+                        if (estado.subNiveis && estado.subNiveis.length > 0) {
+                            estado.subNiveis.forEach(function(cidade) {
+                                var trCidade = document.createElement('tr');
+                                trCidade.innerHTML = `
+                                    <td class="ps-5"><i class="fas fa-city text-secondary"></i> Cidade</td>
+                                    <td>${pais.nome}</td>
+                                    <td>${estado.nome}</td>
+                                    <td class="fw-bold">${cidade.nome}</td>
+                                    <td class="text-center">${cidade.quantidade}</td>
+                                    <td class="text-center">${cidade.percentual.toFixed(1)}%</td>
+                                `;
+                                tbody.appendChild(trCidade);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Renderizar quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            renderizarTabela();
+        });
+    </script>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function ordenarTabela() {
+            const select = document.getElementById('ordenacao');
+            const tabela = document.getElementById('tabelaEstatisticas');
+            const tbody = tabela.querySelector('tbody');
+            const linhas = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Filtrar apenas linhas com dados (ignorar mensagem de vazio)
+            const linhasComDados = linhas.filter(linha => 
+                !linha.textContent.includes('Nenhuma estatística disponível')
+            );
+            
+            if (linhasComDados.length === 0) return;
+            
+            // Ordenar baseado na seleção
+            switch (select.value) {
+                case 'geografica':
+                    // Manter ordem original (países → estados → cidades)
+                    renderizarTabela();
+                    break;
+                    
+                case 'percentual-desc':
+                    linhasComDados.sort((a, b) => {
+                        const percentA = parseFloat(a.cells[5].textContent.replace('%', ''));
+                        const percentB = parseFloat(b.cells[5].textContent.replace('%', ''));
+                        return percentB - percentA;
+                    });
+                    break;
+                    
+                case 'percentual-asc':
+                    linhasComDados.sort((a, b) => {
+                        const percentA = parseFloat(a.cells[5].textContent.replace('%', ''));
+                        const percentB = parseFloat(b.cells[5].textContent.replace('%', ''));
+                        return percentA - percentB;
+                    });
+                    break;
+            }
+            
+            if (select.value !== 'geografica') {
+                // Limpar tbody e adicionar linhas ordenadas
+                tbody.innerHTML = '';
+                linhasComDados.forEach(linha => tbody.appendChild(linha));
+            }
+        }
+        
+        function exportarCSV() {
+            const tabela = document.getElementById('tabelaEstatisticas');
+            let csv = 'Nivel;Pais;Estado;Cidade;Usuarios;Relevancia_Percentual\n';
+            
+            const linhas = tabela.querySelectorAll('tbody tr');
+            
+            linhas.forEach(linha => {
+                if (!linha.textContent.includes('Nenhuma estatística disponível')) {
+                    const colunas = linha.querySelectorAll('td');
+                    const dadosLinha = [];
+                    
+                    colunas.forEach(coluna => {
+                        // Limpar ícones, espaços extras mas MANTER acentos
+                        let texto = coluna.textContent
+                            .replace(/\s*\n\s*/g, ' ')  // Remove quebras de linha
+                            .replace(/\s+/g, ' ')       // Remove espaços múltiplos
+                            .trim()                     // Remove espaços início/fim
+                            .replace(/[📊🌍🗺️🏙️]/g, '')   // Remove emojis se houver
+                            .replace(/fas fa-\w+/g, '') // Remove classes FontAwesome
+                            .replace(/text-\w+/g, '');  // Remove classes de cor
+                        
+                        // NÃO converter acentos - manter caracteres originais
+                        dadosLinha.push(texto);
+                    });
+                    
+                    csv += dadosLinha.join(';') + '\n';
+                }
+            });
+            
+            console.log('CSV gerado:', csv); // Debug
+            
+            // Download do arquivo com encoding UTF-8 com BOM para Excel
+            const BOM = '\uFEFF'; // UTF-8 BOM para Excel reconhecer acentos
+            const csvComBOM = BOM + csv;
+            const blob = new Blob([csvComBOM], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            // Gerar data atual no formato YYYY-MM-DD (horário local, não UTC)
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const dataAtual = `${ano}-${mes}-${dia}`;
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `lista-estatistica-usuarios-${dataAtual}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Feedback visual
+            const btnExport = document.querySelector('button[onclick="exportarCSV()"]');
+            const textoOriginal = btnExport.innerHTML;
+            btnExport.innerHTML = '<i class="fas fa-check me-1"></i>CSV Exportado!';
+            btnExport.classList.remove('btn-success');
+            btnExport.classList.add('btn-info');
+            
+            setTimeout(() => {
+                btnExport.innerHTML = textoOriginal;
+                btnExport.classList.remove('btn-info');
+                btnExport.classList.add('btn-success');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
