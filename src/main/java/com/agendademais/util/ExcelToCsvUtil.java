@@ -253,4 +253,62 @@ public class ExcelToCsvUtil {
                                fileName, sheetName, rowCount, columnCount);
         }
     }
+    
+    /**
+     * Converte arquivo Excel (File) para CSV - sobrecarga para File
+     */
+    public static void convertExcelToCsv(File excelFile, File csvOutputFile) throws IOException {
+        if (excelFile == null || !excelFile.exists()) {
+            throw new IllegalArgumentException("Arquivo Excel não existe");
+        }
+        
+        String fileName = excelFile.getName().toLowerCase();
+        if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+            throw new IllegalArgumentException("Arquivo deve ser do tipo Excel (.xlsx ou .xls)");
+        }
+        
+        Workbook workbook = null;
+        try {
+            // Determina o tipo de arquivo Excel
+            FileInputStream fis = new FileInputStream(excelFile);
+            if (fileName.endsWith(".xlsx")) {
+                workbook = new XSSFWorkbook(fis);
+            } else {
+                workbook = new HSSFWorkbook(fis);
+            }
+            
+            // Escreve CSV
+            try (OutputStreamWriter writer = new OutputStreamWriter(
+                    new FileOutputStream(csvOutputFile), StandardCharsets.UTF_8);
+                 BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+                
+                // BOM para UTF-8
+                bufferedWriter.write('\ufeff');
+                
+                Sheet sheet = workbook.getSheetAt(0); // Primeira planilha
+                DataFormatter dataFormatter = new DataFormatter();
+                FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                
+                for (Row row : sheet) {
+                    List<String> csvRow = new ArrayList<>();
+                    
+                    for (Cell cell : row) {
+                        String cellValue = "";
+                        if (cell != null) {
+                            cellValue = dataFormatter.formatCellValue(cell, formulaEvaluator);
+                        }
+                        csvRow.add(escapeForCsv(cellValue, SEPARATOR_SEMICOLON));
+                    }
+                    
+                    bufferedWriter.write(String.join(SEPARATOR_SEMICOLON, csvRow));
+                    bufferedWriter.newLine();
+                }
+            }
+            
+        } finally {
+            if (workbook != null) {
+                workbook.close();
+            }
+        }
+    }
 }
