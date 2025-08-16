@@ -1,0 +1,11 @@
+email;nome;celular;pais;estado;cidade;comentarios;instituicaoId;identificacaoPessoaInstituicao;subInstituicaoId;identificacaoPessoaSubInstituicao
+joao.silva@teste.com;João da Silva;11999999999;Brasil;São Paulo;São Paulo;Usuário teste com acentuação;;;
+maria.santos@exemplo.com;Maria José dos Santos;21888888888;Brasil;Rio de Janeiro;Rio de Janeiro;Usuária produção çõãê;;;
+pedro.oliveira@demo.com;Pedro José Oliveira;11987654321;Brasil;São Paulo;Campinas;Usuário exemplo ação ção;;;
+ana.costa@amostra.com;Ana Cristina da Costa;85999887766;Brasil;Ceará;Fortaleza;Demonstração acentuação gráfica;;;
+carlos.ferreira@modelo.com;Carlos Antônio Ferreira;47991234567;Brasil;Santa Catarina;Florianópolis;Teste caracteres especiais çãõ;;;
+lucia.mendes@exemplo.com;Lúcia Helena Mendes;62988776655;Brasil;Goiás;Goiânia;Validação ênfase e tildes;;;
+roberto.nunes@teste.com;Roberto André Nunes;84987654321;Brasil;Rio Grande do Norte;Natal;Exemplo números acentuação;;;
+beatriz.alves@demo.com;Beatriz Ação Ferreira;11976543210;Brasil;São Paulo;São Bernardo do Campo;Usuária múltiplas açções;;;
+fernando.rocha@teste.com;Fernando José da Rocha;51987456321;Brasil;Rio Grande do Sul;Porto Alegre;Usuário cação validação;;;
+gabriela.lima@exemplo.com;Gabriela Criação Lima;11965478321;Brasil;São Paulo;Guarulhos;Usuária demonstração completa;;;

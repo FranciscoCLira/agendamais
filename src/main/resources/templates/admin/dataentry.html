@@ -154,8 +154,15 @@
         <!-- Header -->
         <div class="row">
             <div class="col-12">
-                <h1><i class="fas fa-upload me-2"></i><span th:text="${pageTitle}">Carga Massiva de Dados</span></h1>
-                <p class="text-muted">Importação em massa de usuários a partir de arquivos CSV ou Excel</p>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h1><i class="fas fa-upload me-2"></i><span th:text="${pageTitle}">Carga Massiva de Dados</span></h1>
+                        <p class="text-muted mb-0">Importação em massa de usuários a partir de arquivos CSV ou Excel</p>
+                    </div>
+                    <a href="/controle-total" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar ao Menu
+                    </a>
+                </div>
                 <hr>
             </div>
         </div>
@@ -415,10 +422,21 @@
                         <li>(11) 99999-9999</li>
                     </ul>
                     
+                    
+                    <h6>Arquivos de Exemplo para Download:</h6>
+                    <div class="mb-3">
+                        <a href="/exemplo-usuarios.csv" class="btn btn-sm btn-outline-primary me-2" download>
+                            <i class="fas fa-download me-1"></i>Baixar Exemplo CSV
+                        </a>
+                        <a href="/exemplo-usuarios-utf8.csv" class="btn btn-sm btn-outline-success" download>
+                            <i class="fas fa-download me-1"></i>Baixar Exemplo UTF-8
+                        </a>
+                    </div>
+                    
                     <h6>Exemplo de CSV:</h6>
                     <pre class="bg-light p-2">email;nome;celular;pais;estado;cidade
-joao@email.com;João Silva;11999999999;Brasil;São Paulo;São Paulo
-maria@email.com;Maria Santos;21888888888;Brasil;Rio de Janeiro;Rio de Janeiro</pre>
+joao.silva@teste.com;João da Silva;11999999999;Brasil;São Paulo;São Paulo
+maria.santos@exemplo.com;Maria José dos Santos;21888888888;Brasil;Rio de Janeiro;Rio de Janeiro</pre>
                 </div>
             </div>
         </div>

@@ -1,6 +1,9 @@
 email;nome;celular;pais;estado;cidade;comentarios;instituicaoId;identificacaoPessoaInstituicao;subInstituicaoId;identificacaoPessoaSubInstituicao
-joao@email.com;João Silva;11999999999;Brasil;São Paulo;São Paulo;Usuario de teste;;;
-maria@email.com;Maria Santos;21888888888;Brasil;Rio de Janeiro;Rio de Janeiro;Usuario de produção;;;
-pedro@teste.com;Pedro Oliveira;11987654321;Brasil;São Paulo;Campinas;Usuario exemplo;;;
-ana@exemplo.com;Ana Costa;85999887766;Brasil;Ceará;Fortaleza;Usuario de demonstração;;;
-carlos@demo.com;Carlos Ferreira;47991234567;Brasil;Santa Catarina;Florianópolis;Usuario para testes;;;
+joao.silva@teste.com;João da Silva;11999999999;Brasil;São Paulo;São Paulo;Usuário de teste com acentuação;;;
+maria.santos@exemplo.com;Maria José Santos;21888888888;Brasil;Rio de Janeiro;Rio de Janeiro;Usuária de produção com ç;;;
+pedro.oliveira@demo.com;Pedro José Oliveira;11987654321;Brasil;São Paulo;Campinas;Usuário exemplo ação ção;;;
+ana.costa@amostra.com;Ana Cristina Costa;85999887766;Brasil;Ceará;Fortaleza;Demonstração de acentuação gráfica;;;
+carlos.ferreira@modelo.com;Carlos Antônio Ferreira;47991234567;Brasil;Santa Catarina;Florianópolis;Teste de caracteres especiais çãõ;;;
+lucia.mendes@exemplo.com;Lúcia Helena Mendes;62988776655;Brasil;Goiás;Goiânia;Validação de ênfase e tildes;;;
+roberto.nunes@teste.com;Roberto André Nunes;84987654321;Brasil;Rio Grande do Norte;Natal;Exemplo com números e ñ opcional;;;
+beatriz.alves@demo.com;Beatriz Ação Alves;11976543210;Brasil;São Paulo;São Bernardo do Campo;Usuária com açções múltiplas;;;
