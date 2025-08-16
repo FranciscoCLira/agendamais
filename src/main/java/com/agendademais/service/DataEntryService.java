@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Arrays;
 
 /**
  * Serviço para processamento de dados em massa (Data Entry)
@@ -476,11 +477,15 @@ public class DataEntryService {
             // Busca ou cria país (tipoLocal = 1)
             Local localPais = null;
             if (pais != null && !pais.trim().isEmpty()) {
-                Optional<Local> paisExistente = localRepository.findByTipoLocalAndNomeLocal(1, pais);
+                Optional<Local> paisExistente = localRepository.findByTipoLocalAndNomeLocal(Integer.valueOf(1), pais);
                 if (paisExistente.isPresent()) {
                     localPais = paisExistente.get();
                 } else {
-                    localPais = new Local(1, pais, null);
+                    localPais = new Local();
+                    localPais.setTipoLocal(1);
+                    localPais.setNomeLocal(pais);
+                    localPais.setLocalPai(null);
+                    localPais.setDataUltimaAtualizacao(LocalDate.now());
                     localPais = localRepository.save(localPais);
                 }
             }
@@ -492,7 +497,11 @@ public class DataEntryService {
                 if (estadoExistente.isPresent()) {
                     localEstado = estadoExistente.get();
                 } else {
-                    localEstado = new Local(2, estado, localPais);
+                    localEstado = new Local();
+                    localEstado.setTipoLocal(2);
+                    localEstado.setNomeLocal(estado);
+                    localEstado.setLocalPai(localPais);
+                    localEstado.setDataUltimaAtualizacao(LocalDate.now());
                     localEstado = localRepository.save(localEstado);
                 }
             }
@@ -502,13 +511,21 @@ public class DataEntryService {
             if (cidadeExistente.isPresent()) {
                 return cidadeExistente.get();
             } else {
-                Local localCidade = new Local(3, cidade, localEstado);
+                Local localCidade = new Local();
+                localCidade.setTipoLocal(3);
+                localCidade.setNomeLocal(cidade);
+                localCidade.setLocalPai(localEstado);
+                localCidade.setDataUltimaAtualizacao(LocalDate.now());
                 return localRepository.save(localCidade);
             }
             
         } catch (Exception e) {
             // Se houver erro, criar apenas a cidade sem hierarquia
-            Local localCidade = new Local(3, cidade, null);
+            Local localCidade = new Local();
+            localCidade.setTipoLocal(3);
+            localCidade.setNomeLocal(cidade);
+            localCidade.setLocalPai(null);
+            localCidade.setDataUltimaAtualizacao(LocalDate.now());
             return localRepository.save(localCidade);
         }
     }
@@ -583,6 +600,64 @@ public class DataEntryService {
             }
         } catch (Exception e) {
             response.addWarning("Erro ao criar relacionamentos institucionais para " + registro.getUsername() + ": " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Valida conteúdo do arquivo e retorna número de registros
+     */
+    public int validarConteudoArquivo(MultipartFile arquivo, String separadorCsv, DataEntryResponse response) {
+        try {
+            File tempFile = File.createTempFile("validation_", "_temp");
+            arquivo.transferTo(tempFile);
+            
+            File csvFile = tempFile;
+            
+            // Se for Excel, converte para CSV primeiro
+            String nomeArquivo = arquivo.getOriginalFilename();
+            if (nomeArquivo != null && (nomeArquivo.toLowerCase().endsWith(".xlsx") || nomeArquivo.toLowerCase().endsWith(".xls"))) {
+                File csvConverted = File.createTempFile("converted_", ".csv");
+                ExcelToCsvUtil.convertExcelToCsv(tempFile, csvConverted);
+                csvFile = csvConverted;
+                tempFile.delete();
+            }
+            
+            // Conta registros no CSV
+            int totalRegistros = 0;
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(csvFile), StandardCharsets.UTF_8))) {
+                
+                String linha = reader.readLine(); // Header
+                if (linha != null) {
+                    response.addInfo("Cabeçalho encontrado: " + linha);
+                    
+                    // Validar cabeçalhos obrigatórios
+                    String[] headers = linha.split(separadorCsv);
+                    boolean hasEmail = Arrays.stream(headers).anyMatch(h -> h.trim().toLowerCase().equals("email"));
+                    boolean hasNome = Arrays.stream(headers).anyMatch(h -> h.trim().toLowerCase().equals("nome"));
+                    boolean hasCelular = Arrays.stream(headers).anyMatch(h -> h.trim().toLowerCase().equals("celular"));
+                    
+                    if (!hasEmail) response.addError("Coluna 'email' obrigatória não encontrada");
+                    if (!hasNome) response.addError("Coluna 'nome' obrigatória não encontrada");
+                    if (!hasCelular) response.addError("Coluna 'celular' obrigatória não encontrada");
+                }
+                
+                // Conta linhas de dados
+                while ((linha = reader.readLine()) != null) {
+                    linha = linha.trim();
+                    if (!linha.isEmpty()) {
+                        totalRegistros++;
+                    }
+                }
+            }
+            
+            csvFile.delete();
+            return totalRegistros;
+            
+        } catch (Exception e) {
+            response.addError("Erro ao validar conteúdo: " + e.getMessage());
+            e.printStackTrace();
+            return 0;
         }
     }
 }

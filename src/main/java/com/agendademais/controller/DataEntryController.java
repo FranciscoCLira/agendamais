@@ -136,7 +136,8 @@ public class DataEntryController {
     @PostMapping("/validate")
     @ResponseBody
     public ResponseEntity<DataEntryResponse> validateFile(
-            @RequestParam("arquivo") MultipartFile arquivo
+            @RequestParam("arquivo") MultipartFile arquivo,
+            @RequestParam(value = "separadorCsv", defaultValue = ";") String separadorCsv
     ) {
         DataEntryResponse response = new DataEntryResponse();
         
@@ -164,14 +165,24 @@ public class DataEntryController {
                 response.addWarning("Arquivo muito grande (" + (tamanho/1024/1024) + "MB). Pode demorar para processar.");
             }
             
+            // Validar conteúdo do arquivo
+            int totalRegistros = dataEntryService.validarConteudoArquivo(arquivo, separadorCsv, response);
+            
             response.addInfo("Arquivo válido: " + nomeArquivo);
             response.addInfo("Tamanho: " + (tamanho/1024) + "KB");
             response.addInfo("Tipo: " + (extensao.endsWith(".csv") ? "CSV" : "Excel"));
+            
+            // Atualizar contadores
+            response.setRegistrosLidos(totalRegistros);
+            if (totalRegistros > 0) {
+                response.addInfo("Total de registros encontrados: " + totalRegistros);
+            }
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             response.addError("Erro ao validar arquivo: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

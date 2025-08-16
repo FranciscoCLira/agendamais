@@ -516,6 +516,7 @@ maria.santos@exemplo.com;Maria José dos Santos;21888888888;Brasil;Rio de Janeir
             
             const formData = new FormData();
             formData.append('arquivo', selectedFile);
+            formData.append('separadorCsv', document.getElementById('separadorCsv').value);
             
             fetch('/admin/dataentry/validate', {
                 method: 'POST',
@@ -573,6 +574,12 @@ maria.santos@exemplo.com;Maria José dos Santos;21888888888;Brasil;Rio de Janeir
         
         // Show validation result
         function showValidationResult(data) {
+            // Update statistics for validation
+            document.getElementById('statLidos').textContent = data.registrosLidos || 0;
+            document.getElementById('statProcessados').textContent = 0;
+            document.getElementById('statAvisos').textContent = (data.avisos || []).length;
+            document.getElementById('statErros').textContent = (data.erros || []).length;
+            
             logContainer.innerHTML = '';
             
             if (data.informacoes) {
