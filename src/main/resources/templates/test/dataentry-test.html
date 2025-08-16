@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Teste - Carga Massiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-flask me-2"></i><span th:text="${pageTitle}">Teste - Carga Massiva</span></h1>
+        
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-check-circle me-2"></i>Status da Implementação</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><i class="fas fa-server me-2"></i>DataEntryController</span>
+                                <span class="badge bg-success">✓ Implementado</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><i class="fas fa-cogs me-2"></i>DataEntryService</span>
+                                <span class="badge bg-success">✓ Implementado</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><i class="fas fa-phone me-2"></i>PhoneNumberUtil</span>
+                                <span class="badge bg-success">✓ Implementado</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><i class="fas fa-file-excel me-2"></i>ExcelToCsvUtil</span>
+                                <span class="badge bg-success">✓ Implementado</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><i class="fas fa-desktop me-2"></i>Interface Web</span>
+                                <span class="badge bg-success">✓ Implementado</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span><i class="fas fa-link me-2"></i>Menu Controle Total</span>
+                                <span class="badge bg-success">✓ Integrado</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-play me-2"></i>Testes Rápidos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="/admin/dataentry" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Ir para Carga Massiva
+                            </a>
+                            <a href="/controle-total" class="btn btn-secondary">
+                                <i class="fas fa-crown me-2"></i>Menu Controle Total
+                            </a>
+                            <a href="/test/info" class="btn btn-info" target="_blank">
+                                <i class="fas fa-info me-2"></i>API Info
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-file-csv me-2"></i>Exemplo de CSV</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="bg-light p-2 small">email;nome;celular;pais;estado;cidade
+joao@test.com;João Silva;11999999999;Brasil;São Paulo;São Paulo
+maria@test.com;Maria Santos;21888888888;Brasil;Rio de Janeiro;Rio de Janeiro</pre>
+                        <a href="/exemplo-usuarios.csv" class="btn btn-sm btn-outline-primary" download>
+                            <i class="fas fa-download me-1"></i>Baixar Exemplo
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar me-2"></i>Estatísticas do Sistema</h5>
+                    </div>
+                    <div class="card-body" id="statsCard">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <small class="d-block">Carregando estatísticas...</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list me-2"></i>Recursos</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-check text-success me-2"></i>Suporte CSV/Excel</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Geração de credenciais</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Validação de telefone</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Carga teste/real</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Download resultados</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Próximos Passos para Teste:</h6>
+                    <ol class="mb-0">
+                        <li>Baixe o arquivo de exemplo CSV</li>
+                        <li>Acesse a página de <strong>Carga Massiva</strong></li>
+                        <li>Faça upload do arquivo de exemplo</li>
+                        <li>Configure como <strong>"Carga de Teste"</strong></li>
+                        <li>Processe e verifique os resultados</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Carrega estatísticas do sistema
+        fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                const statsCard = document.getElementById('statsCard');
+                if (data.status === 'success') {
+                    statsCard.innerHTML = `
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h6>${data.totalUsuarios}</h6>
+                                <small>Usuários</small>
+                            </div>
+                            <div class="col-4">
+                                <h6>${data.totalPessoas}</h6>
+                                <small>Pessoas</small>
+                            </div>
+                            <div class="col-4">
+                                <h6>${data.totalLocais}</h6>
+                                <small>Locais</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center small">
+                            <div class="col-4">
+                                <span class="badge bg-primary">${data.totalPaises}</span><br>
+                                <small>Países</small>
+                            </div>
+                            <div class="col-4">
+                                <span class="badge bg-secondary">${data.totalEstados}</span><br>
+                                <small>Estados</small>
+                            </div>
+                            <div class="col-4">
+                                <span class="badge bg-info">${data.totalCidades}</span><br>
+                                <small>Cidades</small>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statsCard.innerHTML = '<small class="text-muted">Erro ao carregar estatísticas</small>';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('statsCard').innerHTML = '<small class="text-muted">Erro ao carregar</small>';
+            });
+    </script>
+</body>
+</html>
