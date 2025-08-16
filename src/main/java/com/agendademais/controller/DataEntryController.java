@@ -187,6 +187,50 @@ public class DataEntryController {
     }
     
     /**
+     * Download do arquivo de exemplo CSV básico
+     */
+    @GetMapping("/exemplo-csv")
+    public ResponseEntity<Resource> downloadExemploCSV() {
+        try {
+            String staticPath = System.getProperty("user.dir") + "/src/main/resources/static/exemplo-usuarios.csv";
+            File file = new File(staticPath);
+            if (file.exists()) {
+                Resource resource = new FileSystemResource(file);
+                return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios.csv\"")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Download do arquivo de exemplo CSV UTF-8
+     */
+    @GetMapping("/exemplo-csv-utf8")
+    public ResponseEntity<Resource> downloadExemploCSVUTF8() {
+        try {
+            String staticPath = System.getProperty("user.dir") + "/src/main/resources/static/exemplo-usuarios-utf8.csv";
+            File file = new File(staticPath);
+            if (file.exists()) {
+                Resource resource = new FileSystemResource(file);
+                return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios-utf8.csv\"")
+                    .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                    .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
      * Classe para informações do DataEntry
      */
     public static class DataEntryInfo {
