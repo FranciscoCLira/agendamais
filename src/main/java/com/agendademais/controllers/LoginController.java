@@ -10,6 +10,7 @@ import com.agendademais.repositories.UsuarioRepository;
 import com.agendademais.services.RecuperacaoLoginService;
 
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,18 +28,21 @@ public class LoginController {
     private final PessoaInstituicaoRepository pessoaInstituicaoRepository;
     private final UsuarioInstituicaoRepository usuarioInstituicaoRepository;
     private final RecuperacaoLoginService recuperacaoLoginService;
+    private final PasswordEncoder passwordEncoder;
 
     public LoginController(
             UsuarioRepository usuarioRepository,
             InstituicaoRepository instituicaoRepository,
             PessoaInstituicaoRepository pessoaInstituicaoRepository,
             UsuarioInstituicaoRepository usuarioInstituicaoRepository,
-            RecuperacaoLoginService recuperacaoLoginService) {
+            RecuperacaoLoginService recuperacaoLoginService,
+            PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.instituicaoRepository = instituicaoRepository;
         this.pessoaInstituicaoRepository = pessoaInstituicaoRepository;
         this.usuarioInstituicaoRepository = usuarioInstituicaoRepository;
         this.recuperacaoLoginService = recuperacaoLoginService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
@@ -72,7 +76,18 @@ public class LoginController {
 
         Usuario usuario = usuarioOpt.get();
 
-        if (!usuario.getPassword().equals(password)) {
+        // Sistema compatível: testa BCrypt primeiro, depois texto plano
+        boolean senhaValida = false;
+        
+        // Tenta BCrypt primeiro (senhas criptografadas)
+        if (usuario.getPassword().startsWith("$2a$") || usuario.getPassword().startsWith("$2b$")) {
+            senhaValida = passwordEncoder.matches(password, usuario.getPassword());
+        } else {
+            // Sistema legado: comparação direta (senhas antigas em texto plano)
+            senhaValida = usuario.getPassword().equals(password);
+        }
+        
+        if (!senhaValida) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Senha inválida.");
             redirectAttributes.addFlashAttribute("username", username);
             return "redirect:/acesso";

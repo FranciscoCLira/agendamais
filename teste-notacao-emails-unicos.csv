@@ -1,0 +1,4 @@
+email;nome;celular;pais;estado;cidade;comentarios
+teste1.notacao@exemplo.com;Maria Teste Um;3.51912E+11;Portugal;Lisboa;Lisboa;Teste notação científica 1
+teste2.notacao@exemplo.com;João Teste Dois;3.52134E+11;Portugal;Porto;Porto;Teste notação científica 2
+teste3.notacao@exemplo.com;Ana Teste Três;3.53456E+11;Portugal;Braga;Braga;Teste notação científica 3

@@ -41,6 +41,26 @@ public class PhoneNumberUtil {
         
         String cleanNumber = phoneNumber.trim().replaceAll("[\\s\\-\\(\\)\\.]", "");
         
+        // Trata notação científica (ex: 3.51912E+11 -> 35191234567)
+        if (cleanNumber.contains("E+") || cleanNumber.contains("e+")) {
+            try {
+                // Converte notação científica para número normal
+                double scientificNumber = Double.parseDouble(phoneNumber.trim());
+                // Remove parte decimal se for zero
+                if (scientificNumber == Math.floor(scientificNumber)) {
+                    cleanNumber = String.valueOf((long) scientificNumber);
+                } else {
+                    cleanNumber = String.valueOf(scientificNumber);
+                    // Remove .0 se existir
+                    if (cleanNumber.endsWith(".0")) {
+                        cleanNumber = cleanNumber.substring(0, cleanNumber.length() - 2);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // Se não conseguir converter, continua com o valor original
+            }
+        }
+        
         // Se já está no padrão correto, retorna como está
         if (STANDARD_PATTERN.matcher(phoneNumber.trim()).matches()) {
             return phoneNumber.trim();
@@ -148,6 +168,34 @@ public class PhoneNumberUtil {
             return null; // Válido
         } catch (IllegalArgumentException e) {
             return e.getMessage();
+        }
+    }
+    
+    /**
+     * Método para teste de conversão de notação científica
+     */
+    public static void main(String[] args) {
+        System.out.println("=== Teste de Conversão de Notação Científica ===");
+        
+        String[] testNumbers = {
+            "3.51912E+11",    // Portugal
+            "3.51923E+11",    // Portugal  
+            "3.51935E+11",    // Portugal
+            "35191234567",    // Número normal
+            "+5511999999999",  // Já formatado
+            "11999999999"     // Número normal brasileiro
+        };
+        
+        for (String number : testNumbers) {
+            try {
+                System.out.println("Input: " + number);
+                String formatted = formatPhoneNumber(number);
+                System.out.println("Output: " + formatted);
+                System.out.println("---");
+            } catch (Exception e) {
+                System.out.println("Erro: " + e.getMessage());
+                System.out.println("---");
+            }
         }
     }
 }

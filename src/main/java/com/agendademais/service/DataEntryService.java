@@ -8,10 +8,10 @@ import com.agendademais.repositories.*;
 import com.agendademais.util.ExcelToCsvUtil;
 import com.agendademais.util.PhoneNumberUtil;
 import com.agendademais.util.CsvValidationUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,19 +31,28 @@ public class DataEntryService {
     
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
+
     @Autowired
     private PessoaRepository pessoaRepository;
-    
+
     @Autowired
     private LocalRepository localRepository;
-    
+
     @Autowired
     private InstituicaoRepository instituicaoRepository;
-    
+
     @Autowired
     private SubInstituicaoRepository subInstituicaoRepository;
-    
+
+    @Autowired
+    private UsuarioInstituicaoRepository usuarioInstituicaoRepository;
+
+    @Autowired
+    private PessoaInstituicaoRepository pessoaInstituicaoRepository;
+
+    @Autowired
+    private PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
     
@@ -229,7 +238,7 @@ public class DataEntryService {
         UsuarioCSVRecord registro = new UsuarioCSVRecord();
         
         for (int i = 0; i < Math.min(campos.length, headers.length); i++) {
-            String header = headers[i].trim().toLowerCase();
+            String header = headers[i].trim().toLowerCase().replaceAll("[^a-z]", "");
             String valor = campos[i].trim();
             
             switch (header) {
@@ -237,7 +246,7 @@ public class DataEntryService {
                 case "email":
                     registro.setEmail(valor);
                     break;
-                case "nomepessoa":
+                case "nomepessoa":  
                 case "nome":
                     registro.setNome(valor);
                     break;
@@ -297,25 +306,32 @@ public class DataEntryService {
      * Gera credenciais automáticas para os usuários
      */
     private void gerarCredenciais(List<UsuarioCSVRecord> registros, DataEntryRequest request, DataEntryResponse response) {
+        // Busca o maior username já existente com o prefixo
+        String prefixo = "teste".equalsIgnoreCase(request.getTipoCarga()) ? "X" : "U";
+        String maxUsername = usuarioRepository.findMaxUsernameStartingWith(prefixo);
         int contador = 1;
-        
+        if (maxUsername != null && maxUsername.length() > 1) {
+            try {
+                contador = Integer.parseInt(maxUsername.substring(1)) + 1;
+            } catch (NumberFormatException e) {
+                // Se não conseguir converter, começa do 1
+                contador = 1;
+            }
+        }
         for (UsuarioCSVRecord registro : registros) {
             // Se não tem username definido, gera automaticamente
             if (registro.getUsername() == null || registro.getUsername().trim().isEmpty()) {
                 String username = gerarUsername(request.getFormatoUsuario(), contador, request.getTipoCarga());
                 registro.setUsername(username);
             }
-            
             // Se não tem password definido, gera automaticamente
             if (registro.getPassword() == null || registro.getPassword().trim().isEmpty()) {
                 String password = gerarPassword(request.getFormatoUsuario(), contador, request.getTipoCarga());
                 registro.setPassword(password);
             }
-            
             registro.setNumeroSequencial(contador);
             contador++;
         }
-        
         response.addInfo("Credenciais geradas para " + registros.size() + " usuários");
     }
     
@@ -329,10 +345,13 @@ public class DataEntryService {
     
     /**
      * Gera password baseado no formato especificado
+     * TESTE: X00001$ (prefixo X com sufixo $)
+     * REAL: U00001$ (prefixo U com sufixo $ para passar na validação)
      */
     private String gerarPassword(String formato, int contador, String tipoCarga) {
-        String sufixo = "teste".equalsIgnoreCase(tipoCarga) ? "$" : "";
-        return String.format("%s%05d%s", "teste".equalsIgnoreCase(tipoCarga) ? "X" : "U", contador, sufixo);
+        String prefixo = "teste".equalsIgnoreCase(tipoCarga) ? "X" : "U";
+        // Sempre adiciona $ no final para atender requisitos de senha com caracteres especiais
+        return String.format("%s%05d$", prefixo, contador);
     }
     
     /**
@@ -402,19 +421,43 @@ public class DataEntryService {
     }
     
     /**
-     * Processa os registros válidos (cria usuários no banco)
+     * Processa todos os registros válidos
      */
+    @Transactional
     private void processarRegistros(List<UsuarioCSVRecord> registros, DataEntryRequest request, DataEntryResponse response) {
         for (int i = 0; i < registros.size(); i++) {
             UsuarioCSVRecord registro = registros.get(i);
-            
+
+            // Se o registro não tem instituicaoId/subInstituicaoId, usa o do request (formulário)
+            if (registro.getInstituicaoId() == null && request.getInstituicaoId() != null) {
+                registro.setInstituicaoId(request.getInstituicaoId());
+            }
+            if (registro.getSubInstituicaoId() == null && request.getSubInstituicaoId() != null) {
+                registro.setSubInstituicaoId(request.getSubInstituicaoId());
+            }
+
             try {
-                criarUsuario(registro, request, response);
+                // Usa uma transação separada para cada usuário para evitar rollback em lote
+                criarUsuarioTransactional(registro, request, response);
                 response.incrementarRegistrosProcessados();
                 response.incrementarRegistrosIncluidos();
             } catch (Exception e) {
                 response.addError("Registro " + (i + 1) + ": Erro ao criar usuário: " + e.getMessage());
+                e.printStackTrace(); // Log detalhado do erro
             }
+        }
+    }
+    
+    /**
+     * Cria usuário em transação separada para evitar rollback em lote
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void criarUsuarioTransactional(UsuarioCSVRecord registro, DataEntryRequest request, DataEntryResponse response) {
+        try {
+            criarUsuario(registro, request, response);
+        } catch (Exception e) {
+            // Re-lança a exceção para que seja capturada no método chamador
+            throw new RuntimeException("Erro ao processar usuário " + registro.getEmail() + ": " + e.getMessage(), e);
         }
     }
     
@@ -422,6 +465,22 @@ public class DataEntryService {
      * Cria usuário a partir do registro
      */
     private void criarUsuario(UsuarioCSVRecord registro, DataEntryRequest request, DataEntryResponse response) {
+        System.out.println("=== INICIANDO CRIAÇÃO DE USUÁRIO: " + registro.getEmail() + " ===");
+        
+        // Verifica se usuário já existe
+        Optional<Usuario> usuarioExistente = usuarioRepository.findByEmailPessoa(registro.getEmail());
+        if (usuarioExistente.isPresent()) {
+            throw new RuntimeException("Usuário com email " + registro.getEmail() + " já existe");
+        }
+        System.out.println("✓ Usuário não existe ainda");
+        
+        // Verifica também se já existe uma Pessoa com esse email
+        Optional<Pessoa> pessoaExistente = pessoaRepository.findByEmailPessoa(registro.getEmail());
+        if (pessoaExistente.isPresent()) {
+            throw new RuntimeException("Pessoa com email " + registro.getEmail() + " já existe");
+        }
+        System.out.println("✓ Pessoa não existe ainda");
+        
         // Cria Pessoa
         Pessoa pessoa = new Pessoa();
         pessoa.setNomePessoa(registro.getNome());
@@ -430,6 +489,7 @@ public class DataEntryService {
         pessoa.setComentarios(registro.getComentarios());
         pessoa.setDataInclusao(LocalDate.now());
         pessoa.setDataUltimaAtualizacao(LocalDate.now());
+        pessoa.setSituacaoPessoa("A"); // Ativo
         
         // Busca ou cria Local hierárquico
         Local localCidade = buscarOuCriarLocal(registro.getPais(), registro.getEstado(), registro.getCidade());
@@ -448,10 +508,24 @@ public class DataEntryService {
             }
         }
         
-        // Salva Pessoa
-        pessoa = pessoaRepository.save(pessoa);
+        System.out.println("✓ Locais processados");
+        
+        // Salva Pessoa primeiro e assegura que tem ID
+        System.out.println("→ Salvando Pessoa...");
+        try {
+            pessoa = pessoaRepository.saveAndFlush(pessoa);
+            System.out.println("✓ Pessoa salva com ID: " + pessoa.getId());
+        } catch (Exception e) {
+            System.err.println("✗ ERRO ao salvar Pessoa: " + e.getMessage());
+            throw new RuntimeException("Erro ao salvar pessoa: " + e.getMessage(), e);
+        }
+        
+        if (pessoa.getId() == null) {
+            throw new RuntimeException("Erro ao salvar pessoa - ID não foi gerado");
+        }
         
         // Cria Usuario
+        System.out.println("→ Criando Usuário...");
         Usuario usuario = new Usuario();
         usuario.setUsername(registro.getUsername());
         usuario.setPassword(passwordEncoder.encode(registro.getPassword()));
@@ -459,10 +533,24 @@ public class DataEntryService {
         usuario.setSituacaoUsuario("A"); // Ativo
         usuario.setDataUltimaAtualizacao(LocalDate.now());
         
-        usuarioRepository.save(usuario);
+        // Salva usuário e assegura que tem ID
+        System.out.println("→ Salvando Usuário...");
+        try {
+            usuario = usuarioRepository.saveAndFlush(usuario);
+            System.out.println("✓ Usuário salvo com ID: " + usuario.getId());
+        } catch (Exception e) {
+            System.err.println("✗ ERRO ao salvar Usuário: " + e.getMessage());
+            throw new RuntimeException("Erro ao salvar usuário: " + e.getMessage(), e);
+        }
+        
+        if (usuario.getId() == null) {
+            throw new RuntimeException("Erro ao salvar usuário - ID não foi gerado");
+        }
         
         // Criar relacionamentos institucionais se informados
         criarRelacionamentosInstitucionais(pessoa, registro, response);
+        
+        System.out.println("✓ USUÁRIO CRIADO COM SUCESSO: " + registro.getEmail() + " (ID: " + usuario.getId() + ")");
     }
     
     /**
@@ -577,23 +665,58 @@ public class DataEntryService {
         try {
             // Relacionamento com Instituição
             if (registro.getInstituicaoId() != null) {
-                Optional<Instituicao> instituicao = instituicaoRepository.findById(registro.getInstituicaoId());
-                if (instituicao.isPresent()) {
-                    // Criar PessoaInstituicao se necessário
-                    // Por enquanto, apenas logamos que a instituição existe
-                    response.addInfo("Instituição " + registro.getInstituicaoId() + " associada ao usuário " + registro.getUsername());
+                Optional<Instituicao> instituicaoOpt = instituicaoRepository.findById(registro.getInstituicaoId());
+                if (instituicaoOpt.isPresent()) {
+                    Instituicao instituicao = instituicaoOpt.get();
+                    // Cria e persiste PessoaInstituicao
+                    PessoaInstituicao pessoaInstituicao = new PessoaInstituicao();
+                    pessoaInstituicao.setPessoa(pessoa);
+                    pessoaInstituicao.setInstituicao(instituicao);
+                    pessoaInstituicao.setIdentificacaoPessoaInstituicao(registro.getIdentificacaoPessoaInstituicao());
+                    pessoaInstituicao.setDataAfiliacao(java.time.LocalDate.now());
+                    pessoaInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
+                    pessoaInstituicaoRepository.save(pessoaInstituicao);
+
+                    // Cria e persiste UsuarioInstituicao
+                    Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(registro.getUsername());
+                    if (usuarioOpt.isPresent()) {
+                        UsuarioInstituicao usuarioInstituicao = new UsuarioInstituicao();
+                        usuarioInstituicao.setUsuario(usuarioOpt.get());
+                        usuarioInstituicao.setInstituicao(instituicao);
+                        usuarioInstituicao.setSitAcessoUsuarioInstituicao("A"); // Ativo por padrão
+                        usuarioInstituicao.setNivelAcessoUsuarioInstituicao(1); // Participante por padrão
+                        usuarioInstituicaoRepository.save(usuarioInstituicao);
+                    } else {
+                        response.addWarning("Usuário não encontrado para criar vínculo institucional: " + registro.getUsername());
+                    }
+
+                    response.addInfo("Instituição " + registro.getInstituicaoId() + " associada e persistida para usuário " + registro.getUsername());
                 } else {
                     response.addWarning("Instituição " + registro.getInstituicaoId() + " não encontrada para usuário " + registro.getUsername());
                 }
             }
-            
+
             // Relacionamento com SubInstituição
             if (registro.getSubInstituicaoId() != null) {
-                Optional<SubInstituicao> subInstituicao = subInstituicaoRepository.findById(registro.getSubInstituicaoId());
-                if (subInstituicao.isPresent()) {
-                    // Criar PessoaSubInstituicao se necessário
-                    // Por enquanto, apenas logamos que a sub-instituição existe
-                    response.addInfo("Sub-Instituição " + registro.getSubInstituicaoId() + " associada ao usuário " + registro.getUsername());
+                Optional<SubInstituicao> subInstituicaoOpt = subInstituicaoRepository.findById(registro.getSubInstituicaoId());
+                if (subInstituicaoOpt.isPresent()) {
+                    SubInstituicao subInstituicao = subInstituicaoOpt.get();
+                    Optional<Instituicao> instituicaoOpt = instituicaoRepository.findById(subInstituicao.getInstituicao().getId());
+                    if (instituicaoOpt.isPresent()) {
+                        Instituicao instituicao = instituicaoOpt.get();
+                        // Cria e persiste PessoaSubInstituicao
+                        PessoaSubInstituicao pessoaSubInstituicao = new PessoaSubInstituicao();
+                        pessoaSubInstituicao.setPessoa(pessoa);
+                        pessoaSubInstituicao.setInstituicao(instituicao);
+                        pessoaSubInstituicao.setSubInstituicao(subInstituicao);
+                        pessoaSubInstituicao.setIdentificacaoPessoaSubInstituicao(registro.getIdentificacaoPessoaSubInstituicao());
+                        pessoaSubInstituicao.setDataAfiliacao(java.time.LocalDate.now());
+                        pessoaSubInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
+                        pessoaSubInstituicaoRepository.save(pessoaSubInstituicao);
+                        response.addInfo("Sub-Instituição " + registro.getSubInstituicaoId() + " associada e persistida para usuário " + registro.getUsername());
+                    } else {
+                        response.addWarning("Instituição da Sub-Instituição " + registro.getSubInstituicaoId() + " não encontrada para usuário " + registro.getUsername());
+                    }
                 } else {
                     response.addWarning("Sub-Instituição " + registro.getSubInstituicaoId() + " não encontrada para usuário " + registro.getUsername());
                 }
@@ -629,13 +752,33 @@ public class DataEntryService {
                 
                 String linha = reader.readLine(); // Header
                 if (linha != null) {
+                    // Remove BOM se presente no header
+                    if (linha.startsWith("\uFEFF")) {
+                        linha = linha.substring(1);
+                    }
+                    
                     response.addInfo("Cabeçalho encontrado: " + linha);
                     
                     // Validar cabeçalhos obrigatórios
                     String[] headers = linha.split(separadorCsv);
-                    boolean hasEmail = Arrays.stream(headers).anyMatch(h -> h.trim().toLowerCase().equals("email"));
-                    boolean hasNome = Arrays.stream(headers).anyMatch(h -> h.trim().toLowerCase().equals("nome"));
-                    boolean hasCelular = Arrays.stream(headers).anyMatch(h -> h.trim().toLowerCase().equals("celular"));
+                    
+                    // Debug: mostrar headers encontrados
+                    for (int i = 0; i < headers.length; i++) {
+                        response.addInfo("Header[" + i + "]: '" + headers[i].trim() + "'");
+                    }
+                    
+                    boolean hasEmail = Arrays.stream(headers).anyMatch(h -> {
+                        String cleanHeader = h.trim().toLowerCase().replaceAll("[^a-z]", "");
+                        return cleanHeader.equals("email");
+                    });
+                    boolean hasNome = Arrays.stream(headers).anyMatch(h -> {
+                        String cleanHeader = h.trim().toLowerCase().replaceAll("[^a-z]", "");
+                        return cleanHeader.equals("nome");
+                    });
+                    boolean hasCelular = Arrays.stream(headers).anyMatch(h -> {
+                        String cleanHeader = h.trim().toLowerCase().replaceAll("[^a-z]", "");
+                        return cleanHeader.equals("celular");
+                    });
                     
                     if (!hasEmail) response.addError("Coluna 'email' obrigatória não encontrada");
                     if (!hasNome) response.addError("Coluna 'nome' obrigatória não encontrada");
@@ -659,5 +802,167 @@ public class DataEntryService {
             e.printStackTrace();
             return 0;
         }
+    }
+    
+    /**
+     * Processa exclusão em massa baseada em arquivo de importação
+     * Remove apenas usuários e relacionamentos, preserva configurações sistêmicas
+     */
+    public DataEntryResponse processarExclusaoMassa(MultipartFile arquivo, String separadorCsv, boolean confirmacao) {
+        DataEntryResponse response = new DataEntryResponse();
+        response.setInicioProcessamento(LocalDateTime.now());
+        
+        try {
+            // Lê emails do arquivo
+            List<String> emailsParaExcluir = extrairEmailsDoArquivo(arquivo, separadorCsv, response);
+            
+            if (emailsParaExcluir.isEmpty()) {
+                response.addError("Nenhum email encontrado no arquivo para exclusão");
+                return response;
+            }
+            
+            response.addInfo("Emails encontrados para exclusão: " + emailsParaExcluir.size());
+            
+            // Se não é confirmação, apenas lista o que seria excluído
+            if (!confirmacao) {
+                for (String email : emailsParaExcluir) {
+                    Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
+                    if (usuarioOpt.isPresent()) {
+                        Usuario usuario = usuarioOpt.get();
+                        response.addInfo("Seria excluído: " + email + " (ID: " + usuario.getId() + ")");
+                        response.incrementarRegistrosLidos();
+                    } else {
+                        response.addWarning("Email não encontrado na base: " + email);
+                    }
+                }
+                response.addInfo("SIMULAÇÃO: " + response.getRegistrosLidos() + " usuários seriam excluídos");
+                response.addInfo("Para confirmar a exclusão, adicione o parâmetro confirmacao=true");
+                return response;
+            }
+            
+            // Processa exclusão confirmada
+            int excluidos = 0;
+            for (String email : emailsParaExcluir) {
+                try {
+                    Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
+                    if (usuarioOpt.isPresent()) {
+                        Usuario usuario = usuarioOpt.get();
+                        if (usuario.getPessoa() != null) {
+                            Pessoa pessoa = usuario.getPessoa();
+
+                            // Remove todos os vínculos de UsuarioInstituicao
+                            usuarioInstituicaoRepository.findByUsuarioId(usuario.getId())
+                                .forEach(ui -> usuarioInstituicaoRepository.delete(ui));
+
+                            // Remove todos os vínculos de PessoaInstituicao
+                            pessoaInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
+
+                            // Remove todos os vínculos de PessoaSubInstituicao
+                            pessoaSubInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
+
+                            // Remove usuário
+                            usuarioRepository.delete(usuario);
+
+                            // Remove pessoa
+                            pessoaRepository.delete(pessoa);
+
+                            response.addInfo("Excluído: " + email + " (ID: " + usuario.getId() + ")");
+                            excluidos++;
+                        }
+                    } else {
+                        response.addWarning("Email não encontrado na base: " + email);
+                    }
+                } catch (Exception e) {
+                    response.addError("Erro ao excluir " + email + ": " + e.getMessage());
+                }
+            }
+            
+            response.setRegistrosProcessados(excluidos);
+            response.addInfo("EXCLUSÃO CONCLUÍDA: " + excluidos + " usuários removidos");
+            
+            if (excluidos > 0) {
+                response.addInfo("⚠️ IMPORTANTE: Locais (países/estados/cidades) foram preservados");
+                response.addInfo("⚠️ Instituições e sub-instituições foram preservadas");
+            }
+            
+        } catch (Exception e) {
+            response.addError("Erro durante exclusão em massa: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        response.setFimProcessamento(LocalDateTime.now());
+        return response;
+    }
+    
+    /**
+     * Extrai lista de emails do arquivo CSV/Excel
+     */
+    private List<String> extrairEmailsDoArquivo(MultipartFile arquivo, String separadorCsv, DataEntryResponse response) {
+        List<String> emails = new ArrayList<>();
+        
+        try {
+            // Cria arquivo temporário
+            File csvFile = File.createTempFile("delete_bulk_", "_temp");
+            arquivo.transferTo(csvFile);
+            
+            if (arquivo.getOriginalFilename().toLowerCase().endsWith(".xlsx") || 
+                arquivo.getOriginalFilename().toLowerCase().endsWith(".xls")) {
+                File csvConverted = new File(csvFile.getParent(), "converted_" + System.currentTimeMillis() + ".csv");
+                ExcelToCsvUtil.convertExcelToCsv(csvFile, csvConverted);
+                csvFile.delete();
+                csvFile = csvConverted;
+            }
+            
+            // Lê emails do CSV
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(csvFile), StandardCharsets.UTF_8))) {
+                
+                String linha = reader.readLine(); // Header
+                if (linha != null) {
+                    // Remove BOM se presente
+                    if (linha.startsWith("\uFEFF")) {
+                        linha = linha.substring(1);
+                    }
+                    
+                    String[] headers = linha.split(separadorCsv);
+                    int emailColIndex = -1;
+                    
+                    // Encontra coluna de email
+                    for (int i = 0; i < headers.length; i++) {
+                        String header = headers[i].trim().toLowerCase().replaceAll("[^a-z]", "");
+                        if (header.equals("email")) {
+                            emailColIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (emailColIndex == -1) {
+                        response.addError("Coluna 'email' não encontrada no arquivo");
+                        return emails;
+                    }
+                    
+                    // Lê emails das linhas de dados
+                    while ((linha = reader.readLine()) != null) {
+                        linha = linha.trim();
+                        if (!linha.isEmpty()) {
+                            String[] campos = linha.split(separadorCsv, -1);
+                            if (campos.length > emailColIndex) {
+                                String email = campos[emailColIndex].trim();
+                                if (!email.isEmpty() && !emails.contains(email)) {
+                                    emails.add(email);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            csvFile.delete();
+            
+        } catch (Exception e) {
+            response.addError("Erro ao extrair emails do arquivo: " + e.getMessage());
+        }
+        
+        return emails;
     }
 }

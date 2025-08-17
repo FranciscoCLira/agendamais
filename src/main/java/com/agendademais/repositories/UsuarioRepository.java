@@ -12,12 +12,15 @@ import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-	
-	Optional<Usuario> findByUsername(String username);
+
+    @Query("SELECT MAX(u.username) FROM Usuario u WHERE u.username LIKE CONCAT(:prefixo, '%')")
+    String findMaxUsernameStartingWith(@Param("prefixo") String prefixo);
+    
+    Optional<Usuario> findByUsername(String username);
 
     Optional<Usuario> findByUsernameAndPassword(String username, String password);
 
-	List<Usuario> findAllByPessoaEmailPessoa(String email);
+    List<Usuario> findAllByPessoaEmailPessoa(String email);
     
     @Query("SELECT u FROM Usuario u WHERE LOWER(u.pessoa.emailPessoa) = LOWER(:email)")
     Optional<Usuario> findByEmailPessoa(@Param("email") String email);

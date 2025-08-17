@@ -207,9 +207,16 @@ public class DataEntryController {
             File file = new File(staticPath);
             if (file.exists()) {
                 Resource resource = new FileSystemResource(file);
+                
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios.csv\"");
+                headers.add(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8");
+                headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+                headers.add(HttpHeaders.PRAGMA, "no-cache");
+                headers.add(HttpHeaders.EXPIRES, "0");
+                
                 return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios.csv\"")
-                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .headers(headers)
                     .body(resource);
             } else {
                 return ResponseEntity.notFound().build();
@@ -229,9 +236,16 @@ public class DataEntryController {
             File file = new File(staticPath);
             if (file.exists()) {
                 Resource resource = new FileSystemResource(file);
+                
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios-utf8.csv\"");
+                headers.add(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8");
+                headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+                headers.add(HttpHeaders.PRAGMA, "no-cache");
+                headers.add(HttpHeaders.EXPIRES, "0");
+                
                 return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"exemplo-usuarios-utf8.csv\"")
-                    .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                    .headers(headers)
                     .body(resource);
             } else {
                 return ResponseEntity.notFound().build();
@@ -281,5 +295,41 @@ public class DataEntryController {
             "subInstituicaoId", "identificacaoPessoaSubInstituicao",
             "username", "password"
         };
+    }
+    
+    /**
+     * Endpoint para exclusão em massa (desfazimento)
+     * Remove usuários baseado no mesmo arquivo de importação
+     */
+    @PostMapping("/delete-bulk")
+    @ResponseBody
+    public ResponseEntity<DataEntryResponse> deleteBulk(
+            @RequestParam("arquivo") MultipartFile arquivo,
+            @RequestParam(value = "separadorCsv", defaultValue = ";") String separadorCsv,
+            @RequestParam(value = "confirmacao", defaultValue = "false") boolean confirmacao
+    ) {
+        DataEntryResponse response = new DataEntryResponse();
+        
+        try {
+            // Valida arquivo
+            if (arquivo.isEmpty()) {
+                response.addError("Arquivo não informado");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Processa exclusão em massa
+            response = dataEntryService.processarExclusaoMassa(arquivo, separadorCsv, confirmacao);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).body(response);
+            }
+            
+        } catch (Exception e) {
+            response.addError("Erro ao processar exclusão em massa: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

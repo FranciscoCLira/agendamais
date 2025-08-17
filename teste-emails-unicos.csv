@@ -1,0 +1,4 @@
+email;nome;celular;pais;estado;cidade;comentarios
+joao.teste1@exemplo.com;João Silva Teste1;3.51912E+11;Portugal;Lisboa;Lisboa;Teste notação científica 1
+maria.teste2@exemplo.com;Maria Santos Teste2;3.51923E+11;Portugal;Porto;Porto;Teste notação científica 2
+pedro.teste3@exemplo.com;Pedro Oliveira Teste3;3.51935E+11;Portugal;Braga;Braga;Teste notação científica 3

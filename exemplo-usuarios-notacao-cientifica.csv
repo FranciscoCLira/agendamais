@@ -1,0 +1,6 @@
+email;nome;celular;pais;estado;cidade;comentarios
+joao.silva@teste.com;João da Silva;3.51912E+11;Portugal;Lisboa;Lisboa;Usuário de teste com notação científica
+maria.santos@exemplo.com;Maria dos Santos;3.51923E+11;Portugal;Porto;Porto;Usuária de produção com notação científica  
+pedro.oliveira@demo.com;Pedro Luiz Oliveira;3.51935E+11;Portugal;Braga;Braga;Demonstração de notação científica
+ana.costa@exemplo.com;Ana Cristina Costa;11998887777;Brasil;São Paulo;São Paulo;Teste de caracteres especiais com número normal
+carlos.ferreira@modelo.com;Carlos Antônio Ferreira;21987654321;Brasil;Rio de Janeiro;Rio de Janeiro;Validação de tildes e acentos
