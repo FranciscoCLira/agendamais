@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teste Sessão</title>
+  </head>
+  <body>
+    <h1>Teste da Sessão</h1>
+    <p>
+      <strong>Session ID:</strong> <span th:text="${sessionId}">SessionID</span>
+    </p>
+    <p>
+      <strong>Usuário Logado:</strong>
+      <span th:text="${usuarioLogado != null ? usuarioLogado.username : 'NULL'}"
+        >Usuario</span
+      >
+    </p>
+    <p>
+      <strong>Instituição:</strong>
+      <span
+        th:text="${instituicaoSelecionada != null ? instituicaoSelecionada.nomeInstituicao : 'NULL'}"
+        >Instituicao</span
+      >
+    </p>
+    <p><strong>Nível:</strong> <span th:text="${nivelAcesso}">Nivel</span></p>
+
+    <hr />
+    <a href="/test-login">Fazer Login Automático</a><br />
+    <a href="/administrador/usuarios">Testar Gestão Usuários</a>
+  </body>
+</html>

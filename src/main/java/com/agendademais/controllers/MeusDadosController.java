@@ -38,9 +38,9 @@ public class MeusDadosController {
     private final PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository;
     private final SubInstituicaoRepository subInstituicaoRepository;
 
-    public MeusDadosController(PessoaRepository pessoaRepository, LocalService localService, 
-                              PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository,
-                              SubInstituicaoRepository subInstituicaoRepository) {
+    public MeusDadosController(PessoaRepository pessoaRepository, LocalService localService,
+            PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository,
+            SubInstituicaoRepository subInstituicaoRepository) {
         this.pessoaRepository = pessoaRepository;
         this.localService = localService;
         this.pessoaSubInstituicaoRepository = pessoaSubInstituicaoRepository;
@@ -119,20 +119,24 @@ public class MeusDadosController {
             // Primeiro tenta buscar pela instituição da sessão
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
             Optional<PessoaSubInstituicao> vinculoSubInstituicaoOpt = Optional.empty();
-            
-            if (instituicaoSelecionada != null && instituicaoSelecionada instanceof com.agendademais.entities.Instituicao) {
+
+            if (instituicaoSelecionada != null
+                    && instituicaoSelecionada instanceof com.agendademais.entities.Instituicao) {
                 com.agendademais.entities.Instituicao instituicao = (com.agendademais.entities.Instituicao) instituicaoSelecionada;
-                vinculoSubInstituicaoOpt = pessoaSubInstituicaoRepository.findByPessoaAndInstituicao(pessoa, instituicao);
-                System.out.println("Buscando vínculo para pessoa " + pessoa.getId() + " na instituição " + instituicao.getNomeInstituicao() + ": " + vinculoSubInstituicaoOpt.isPresent());
+                vinculoSubInstituicaoOpt = pessoaSubInstituicaoRepository.findByPessoaAndInstituicao(pessoa,
+                        instituicao);
+                System.out.println("Buscando vínculo para pessoa " + pessoa.getId() + " na instituição "
+                        + instituicao.getNomeInstituicao() + ": " + vinculoSubInstituicaoOpt.isPresent());
             } else {
                 System.out.println("Instituição não encontrada na sessão para buscar vínculo de sub-instituição");
             }
-            
+
             boolean possuiVinculoSubInstituicao = vinculoSubInstituicaoOpt.isPresent();
-            
+
             if (possuiVinculoSubInstituicao) {
                 model.addAttribute("vinculoSubInstituicao", vinculoSubInstituicaoOpt.get());
-                System.out.println("Vínculo encontrado: " + vinculoSubInstituicaoOpt.get().getSubInstituicao().getNomeSubInstituicao());
+                System.out.println("Vínculo encontrado: "
+                        + vinculoSubInstituicaoOpt.get().getSubInstituicao().getNomeSubInstituicao());
             } else {
                 System.out.println("Nenhum vínculo de sub-instituição encontrado para a instituição atual");
             }
@@ -192,6 +196,14 @@ public class MeusDadosController {
                 ? cidadeOutro.trim()
                 : nomeCidadePessoa;
 
+        // Converter campos em branco para null
+        if (pessoa.getComentarios() != null && pessoa.getComentarios().isBlank()) {
+            pessoa.setComentarios(null);
+        }
+        if (pessoa.getCurriculoPessoal() != null && pessoa.getCurriculoPessoal().isBlank()) {
+            pessoa.setCurriculoPessoal(null);
+        }
+
         // Validação de campos obrigatórios
         if (pessoa.getNomePessoa() == null || pessoa.getNomePessoa().isBlank()) {
             model.addAttribute("mensagemErro", "Nome é obrigatório.");
@@ -244,13 +256,13 @@ public class MeusDadosController {
 
             // Processa informações de Sub-Instituição
             try {
-                processarSubInstituicao(pessoaAtual, subInstituicaoNome, identificacaoSubInstituicao, 
-                                      excluirSubInstituicao, possuiaVinculo, session);
+                processarSubInstituicao(pessoaAtual, subInstituicaoNome, identificacaoSubInstituicao,
+                        excluirSubInstituicao, possuiaVinculo, session);
             } catch (Exception e) {
                 System.err.println("Erro específico ao processar sub-instituição: " + e.getMessage());
                 e.printStackTrace();
-                redirectAttributes.addFlashAttribute("mensagemErro", 
-                    "Dados pessoais salvos, mas houve erro ao processar sub-instituição: " + e.getMessage());
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Dados pessoais salvos, mas houve erro ao processar sub-instituição: " + e.getMessage());
                 return "redirect:/meus-dados";
             }
 
@@ -269,32 +281,34 @@ public class MeusDadosController {
      * Processa as informações de Sub-Instituição (inclusão, alteração ou exclusão)
      */
     @Transactional
-    private void processarSubInstituicao(Pessoa pessoa, String subInstituicaoNome, 
-                                       String identificacao, Boolean excluir, 
-                                       Boolean possuiaVinculo, HttpSession session) {
+    private void processarSubInstituicao(Pessoa pessoa, String subInstituicaoNome,
+            String identificacao, Boolean excluir,
+            Boolean possuiaVinculo, HttpSession session) {
         try {
+            System.out.println("=== ");
             System.out.println("=== PROCESSANDO SUB-INSTITUIÇÃO ===");
             System.out.println("Pessoa ID: " + pessoa.getId());
             System.out.println("Sub-Instituição Nome: " + subInstituicaoNome);
             System.out.println("Identificação: " + identificacao);
             System.out.println("Excluir: " + excluir);
             System.out.println("Possuía Vínculo: " + possuiaVinculo);
-            
+            System.out.println("=== ");
+
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
             if (!(instituicaoSelecionada instanceof Instituicao)) {
                 System.err.println("ERRO: Instituição não encontrada na sessão");
                 throw new RuntimeException("Instituição não encontrada na sessão");
             }
-            
+
             Instituicao instituicao = (Instituicao) instituicaoSelecionada;
             System.out.println("Instituição: " + instituicao.getNomeInstituicao());
-            
+
             // Busca vínculo existente
             Optional<PessoaSubInstituicao> vinculoExistente = pessoaSubInstituicaoRepository
-                .findByPessoaAndInstituicao(pessoa, instituicao);
-            
+                    .findByPessoaAndInstituicao(pessoa, instituicao);
+
             System.out.println("Vínculo existente encontrado: " + vinculoExistente.isPresent());
-            
+
             // Caso 1: Exclusão de vínculo existente
             if (Boolean.TRUE.equals(excluir) && vinculoExistente.isPresent()) {
                 System.out.println("Executando exclusão do vínculo...");
@@ -304,25 +318,34 @@ public class MeusDadosController {
                 System.out.println("Vínculo com sub-instituição removido com sucesso");
                 return;
             }
-            
+
             // Caso 2: Exclusão marcada mas sem vínculo existente
             if (Boolean.TRUE.equals(excluir) && !vinculoExistente.isPresent()) {
                 System.out.println("Exclusão marcada mas não há vínculo para remover");
                 return;
             }
-            
+
             // Caso 3: Não há dados de sub-instituição para processar
-            if ((subInstituicaoNome == null || subInstituicaoNome.trim().isEmpty()) && 
-                (identificacao == null || identificacao.trim().isEmpty())) {
+            boolean subInstituicaoVazia = (subInstituicaoNome == null || subInstituicaoNome.trim().isEmpty());
+            boolean identificacaoVazia = (identificacao == null || identificacao.trim().isEmpty());
+            if (subInstituicaoVazia && identificacaoVazia) {
                 System.out.println("Não há dados de sub-instituição para processar");
                 return;
             }
-            
+            // Se identificacao preenchida sem subInstituicao, erro
+            if (!subInstituicaoVazia && identificacaoVazia) {
+                // subInstituicao preenchida, identificacao vazia: PERMITIDO
+                // Não faz nada, segue o fluxo
+            } else if (subInstituicaoVazia && !identificacaoVazia) {
+                // identificacao preenchida, subInstituicao vazia: ERRO
+                throw new RuntimeException("Por favor, preencha a sub-instituição antes de informar a identificação.");
+            }
+
             // Caso 4: Busca ou cria a sub-instituição
-            String nomeSubInst = subInstituicaoNome.trim();
+            String nomeSubInst = subInstituicaoNome != null ? subInstituicaoNome.trim() : "";
             List<SubInstituicao> subInstituicoesExistentes = subInstituicaoRepository
-                .findByNomeSubInstituicaoAndInstituicao(nomeSubInst, instituicao);
-            
+                    .findByNomeSubInstituicaoAndInstituicao(nomeSubInst, instituicao);
+
             SubInstituicao subInstituicao;
             if (subInstituicoesExistentes.isEmpty()) {
                 // Cria nova sub-instituição
@@ -337,7 +360,7 @@ public class MeusDadosController {
                 subInstituicao = subInstituicoesExistentes.get(0);
                 System.out.println("Sub-instituição existente encontrada com ID: " + subInstituicao.getId());
             }
-            
+
             // Caso 5: Atualiza ou cria vínculo
             PessoaSubInstituicao vinculo;
             if (vinculoExistente.isPresent()) {
@@ -358,11 +381,11 @@ public class MeusDadosController {
                 vinculo.setDataAfiliacao(LocalDate.now());
                 System.out.println("Novo vínculo com sub-instituição criado");
             }
-            
+
             PessoaSubInstituicao vinculoSalvo = pessoaSubInstituicaoRepository.save(vinculo);
             System.out.println("Vínculo salvo com ID: " + vinculoSalvo.getId());
             System.out.println("=== PROCESSAMENTO CONCLUÍDO ===");
-            
+
         } catch (Exception e) {
             System.err.println("ERRO ao processar sub-instituição: " + e.getMessage());
             e.printStackTrace();
@@ -399,40 +422,41 @@ public class MeusDadosController {
     public ResponseEntity<List<String>> buscarSubInstituicoes(
             @RequestParam(required = false) String q,
             HttpSession session) {
-        
+
         try {
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
             if (!(instituicaoSelecionada instanceof Instituicao)) {
                 return ResponseEntity.ok(List.of());
             }
-            
+
             Instituicao instituicao = (Instituicao) instituicaoSelecionada;
-            
-            // Se não há termo de busca, retorna todas as sub-instituições ativas da instituição
+
+            // Se não há termo de busca, retorna todas as sub-instituições ativas da
+            // instituição
             List<SubInstituicao> subInstituicoes;
             if (q == null || q.trim().isEmpty()) {
                 subInstituicoes = subInstituicaoRepository
-                    .findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao("", "A")
-                    .stream()
-                    .filter(si -> si.getInstituicao().getId().equals(instituicao.getId()))
-                    .toList();
+                        .findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao("", "A")
+                        .stream()
+                        .filter(si -> si.getInstituicao().getId().equals(instituicao.getId()))
+                        .toList();
             } else {
                 subInstituicoes = subInstituicaoRepository
-                    .findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao(q.trim(), "A")
-                    .stream()
-                    .filter(si -> si.getInstituicao().getId().equals(instituicao.getId()))
-                    .toList();
+                        .findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao(q.trim(), "A")
+                        .stream()
+                        .filter(si -> si.getInstituicao().getId().equals(instituicao.getId()))
+                        .toList();
             }
-            
+
             // Converte para lista de nomes
             List<String> nomes = subInstituicoes.stream()
-                .map(SubInstituicao::getNomeSubInstituicao)
-                .distinct()
-                .sorted()
-                .toList();
-            
+                    .map(SubInstituicao::getNomeSubInstituicao)
+                    .distinct()
+                    .sorted()
+                    .toList();
+
             return ResponseEntity.ok(nomes);
-            
+
         } catch (Exception e) {
             System.err.println("Erro ao buscar sub-instituições: " + e.getMessage());
             return ResponseEntity.ok(List.of());

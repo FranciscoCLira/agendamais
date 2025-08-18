@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login de Teste Realizado</title>
+  </head>
+  <body>
+    <h1>Login Automático Realizado com Sucesso!</h1>
+    <p>Usuário: admin1</p>
+    <p>Sessão configurada com sucesso.</p>
+
+    <h2>Teste das Páginas:</h2>
+    <ul>
+      <li>
+        <a th:href="@{/administrador/usuarios}" target="_self"
+          >Testar Gestão de Usuários</a
+        >
+      </li>
+      <li>
+        <a href="/administrador/editar-usuarios" target="_self"
+          >Testar Edição de Usuários</a
+        >
+      </li>
+      <li>
+        <a href="/administrador" target="_self">Voltar ao Menu Administrador</a>
+      </li>
+    </ul>
+
+    <script>
+      // Automaticamente redirecionar para a página de gestão de usuários após 3 segundos
+      setTimeout(function () {
+        window.location.href = "[[@{/administrador/usuarios}]]";
+      }, 3000);
+    </script>
+
+    <p>Redirecionando automaticamente em 3 segundos...</p>
+  </body>
+</html>

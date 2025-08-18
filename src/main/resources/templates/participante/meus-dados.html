@@ -67,40 +67,80 @@
           <input type="text" th:field="*{nomePessoa}" maxlength="80" required />
 
           <!-- Sub-Instituição - Modo Visualização e Edição -->
-          <div style="margin: 15px 0;">
+          <div style="margin: 15px 0">
             <div class="sub-instituicao-section">
               <!-- Modo Visualização (readonly) -->
-              <div class="sub-inst-readonly" style="display: none;">
-                <div style="margin-bottom: 5px;">
-                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                    <span style="font-weight: bold; min-width: 130px;">✅Sub-Instituição:</span>
-                    <span id="displaySubInstituicao" style="color: #2c5f2d; font-weight: 500; font-size: 0.95em;" 
-                          th:text="${possuiVinculoSubInstituicao ? vinculoSubInstituicao.subInstituicao.nomeSubInstituicao : '(nenhuma)'}">
+              <div class="sub-inst-readonly" style="display: none">
+                <div style="margin-bottom: 5px">
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      margin-bottom: 4px;
+                    "
+                  >
+                    <span style="font-weight: bold; min-width: 130px"
+                      >✅Sub-Instituição:</span
+                    >
+                    <span
+                      id="displaySubInstituicao"
+                      style="
+                        color: #2c5f2d;
+                        font-weight: 500;
+                        font-size: 0.95em;
+                      "
+                      th:text="${possuiVinculoSubInstituicao ? vinculoSubInstituicao.subInstituicao.nomeSubInstituicao : '(nenhuma)'}"
+                    >
                       (nenhuma)
                     </span>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: bold; min-width: 130px;">Identificação:</span>
-                    <span id="displayIdentificacao" style="color: #2c5f2d; font-weight: 500; font-size: 0.95em;" 
-                          th:text="${possuiVinculoSubInstituicao ? vinculoSubInstituicao.identificacaoPessoaSubInstituicao : '(não informado)'}">
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <span style="font-weight: bold; min-width: 130px"
+                      >Identificação:</span
+                    >
+                    <span
+                      id="displayIdentificacao"
+                      style="
+                        color: #2c5f2d;
+                        font-weight: 500;
+                        font-size: 0.95em;
+                      "
+                      th:text="${possuiVinculoSubInstituicao ? vinculoSubInstituicao.identificacaoPessoaSubInstituicao : '(não informado)'}"
+                    >
                       (não informado)
                     </span>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Modo Edição -->
-              <div class="sub-inst-editable" style="display: none;">
+              <div class="sub-inst-editable" style="display: none">
                 <!-- Linha 1: Sub-Instituição -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                  <label style="min-width: 130px; font-weight: bold;">✅Sub-Instituição:</label>
-                  <input 
-                    type="text" 
-                    id="subInstituicaoNome" 
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 8px;
+                  "
+                >
+                  <label style="min-width: 130px; font-weight: bold"
+                    >✅Sub-Instituição:</label
+                  >
+                  <input
+                    type="text"
+                    id="subInstituicaoNome"
                     name="subInstituicaoNome"
                     th:value="${possuiVinculoSubInstituicao ? vinculoSubInstituicao.subInstituicao.nomeSubInstituicao : ''}"
                     placeholder="Digite ou selecione uma sub-instituição"
-                    style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.9em;"
+                    style="
+                      flex: 1;
+                      padding: 6px;
+                      border: 1px solid #ddd;
+                      border-radius: 3px;
+                      font-size: 0.9em;
+                    "
                     list="subInstituicaoList"
                     maxlength="20"
                     title="Máximo 20 caracteres"
@@ -109,33 +149,62 @@
                     <!-- As opções serão carregadas via JavaScript/AJAX -->
                   </datalist>
                 </div>
-                
+
                 <!-- Linha 2: Identificação -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                  <label style="min-width: 130px; font-weight: bold;">Identificação:</label>
-                  <input 
-                    type="text" 
-                    id="identificacaoSubInstituicao" 
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <label style="min-width: 130px; font-weight: bold"
+                    >Identificação:</label
+                  >
+                  <input
+                    type="text"
+                    id="identificacaoSubInstituicao"
                     name="identificacaoSubInstituicao"
                     th:value="${possuiVinculoSubInstituicao ? vinculoSubInstituicao.identificacaoPessoaSubInstituicao : ''}"
                     placeholder="ID ou código da pessoa na sub-instituição"
-                    style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.9em;"
+                    style="
+                      flex: 1;
+                      padding: 6px;
+                      border: 1px solid #ddd;
+                      border-radius: 3px;
+                      font-size: 0.9em;
+                    "
                     maxlength="17"
                     title="Máximo 17 caracteres"
                   />
                 </div>
-                
+
                 <!-- Checkbox para exclusão (apenas no modo edição e se já existe vínculo) -->
-                <div th:if="${possuiVinculoSubInstituicao}" style="margin-top: 8px;">
-                  <label style="font-size: 0.9em; color: #666;">
-                    <input type="checkbox" id="excluirSubInstituicao" name="excluirSubInstituicao" value="true" style="margin-right: 5px;" />
+                <div
+                  th:if="${possuiVinculoSubInstituicao}"
+                  style="margin-top: 8px"
+                >
+                  <label style="font-size: 0.9em; color: #666">
+                    <input
+                      type="checkbox"
+                      id="excluirSubInstituicao"
+                      name="excluirSubInstituicao"
+                      value="true"
+                      style="margin-right: 5px"
+                    />
                     🗑️ Remover vinculação com sub-instituição
                   </label>
                 </div>
               </div>
-              
+
               <!-- Campo hidden para indicar se é uma operação de atualização -->
-              <input type="hidden" id="possuiaVinculo" name="possuiaVinculo" th:value="${possuiVinculoSubInstituicao}" />
+              <input
+                type="hidden"
+                id="possuiaVinculo"
+                name="possuiaVinculo"
+                th:value="${possuiVinculoSubInstituicao}"
+              />
             </div>
           </div>
 
@@ -323,63 +392,65 @@ O script local-form.js cuida de:
         console.log("País atual:", paisSelect?.value);
         console.log("Estado atual:", estadoSelect?.value);
         console.log("Cidade atual:", cidadeInput?.value);
-        
+
         // NOVA FUNCIONALIDADE: Controle de modo de visualização da Sub-Instituição
         initSubInstituicaoModeControl();
-        
+
         console.log("=== FIM INIT ===");
       });
 
       // NOVA FUNÇÃO: Controla a alternância entre modos da Sub-Instituição
       function initSubInstituicaoModeControl() {
         console.log("Inicializando controle de modo da Sub-Instituição...");
-        
+
         // Inicia em modo readonly
-        setSubInstituicaoMode('readonly');
+        setSubInstituicaoMode("readonly");
       }
 
       // NOVA FUNÇÃO: Define o modo de exibição da Sub-Instituição
       function setSubInstituicaoMode(mode) {
-        const subInstReadonly = document.querySelector('.sub-inst-readonly');
-        const subInstEditable = document.querySelector('.sub-inst-editable');
-        
+        const subInstReadonly = document.querySelector(".sub-inst-readonly");
+        const subInstEditable = document.querySelector(".sub-inst-editable");
+
         if (!subInstReadonly || !subInstEditable) {
           console.log("Elementos de sub-instituição não encontrados");
           return;
         }
-        
-        if (mode === 'readonly') {
+
+        if (mode === "readonly") {
           // Atualiza os valores na visualização readonly
           updateSubInstituicaoDisplay();
-          
+
           // Mostra readonly, esconde editable
-          subInstReadonly.style.display = 'block';
-          subInstEditable.style.display = 'none';
-          
+          subInstReadonly.style.display = "block";
+          subInstEditable.style.display = "none";
+
           console.log("Sub-Instituição: modo readonly ativado");
-        } else if (mode === 'editable') {
+        } else if (mode === "editable") {
           // Esconde readonly, mostra editable
-          subInstReadonly.style.display = 'none';
-          subInstEditable.style.display = 'block';
-          
+          subInstReadonly.style.display = "none";
+          subInstEditable.style.display = "block";
+
           console.log("Sub-Instituição: modo editable ativado");
         }
       }
 
       // NOVA FUNÇÃO: Atualiza a exibição readonly com os valores dos campos editáveis
       function updateSubInstituicaoDisplay() {
-        const nomeInput = document.getElementById('subInstituicaoNome');
-        const identificacaoInput = document.getElementById('identificacaoSubInstituicao');
-        const displayNome = document.getElementById('displaySubInstituicao');
-        const displayIdent = document.getElementById('displayIdentificacao');
-        
+        const nomeInput = document.getElementById("subInstituicaoNome");
+        const identificacaoInput = document.getElementById(
+          "identificacaoSubInstituicao"
+        );
+        const displayNome = document.getElementById("displaySubInstituicao");
+        const displayIdent = document.getElementById("displayIdentificacao");
+
         if (nomeInput && identificacaoInput && displayNome && displayIdent) {
           const nome = nomeInput.value.trim();
           const ident = identificacaoInput.value.trim();
-          
-          displayNome.textContent = nome || '(nenhuma)';
-          displayIdent.textContent = ident || '(não informado)';
-          
+
+          displayNome.textContent = nome || "(nenhuma)";
+          displayIdent.textContent = ident || "(não informado)";
+
           console.log(`Sub-Instituição display atualizado: ${nome} | ${ident}`);
         }
       }
@@ -390,7 +461,7 @@ O script local-form.js cuida de:
         const btnEditar = document.getElementById("btnEditar");
         const btnSalvar = document.getElementById("btnSalvar");
         const infoMsg = document.getElementById("infoMsg");
-        
+
         if (fields.classList.contains("readonly")) {
           fields.classList.remove("readonly");
           Array.from(
@@ -402,16 +473,15 @@ O script local-form.js cuida de:
           btnEditar.style.display = "none";
           btnSalvar.style.display = "";
           infoMsg.innerText = "Agora é possível editar seus dados.";
-          
+
           // ATUALIZADO: Ativa modo edição da Sub-Instituição
-          setSubInstituicaoMode('editable');
-          
+          setSubInstituicaoMode("editable");
         } else {
           // NOVO: Quando sair do modo edição, volta para readonly
-          setSubInstituicaoMode('readonly');
+          setSubInstituicaoMode("readonly");
         }
       }
-      
+
       document.getElementById("formMeusDados").onsubmit = function (evt) {
         const fields = document.getElementById("formFields");
         if (!fields.classList.contains("readonly")) {
@@ -453,7 +523,7 @@ O script local-form.js cuida de:
             evt.preventDefault();
           } else {
             // NOVO: Após confirmação, volta para modo readonly
-            setTimeout(() => setSubInstituicaoMode('readonly'), 100);
+            setTimeout(() => setSubInstituicaoMode("readonly"), 100);
           }
         }
       };
@@ -461,53 +531,59 @@ O script local-form.js cuida de:
 
     <!-- Script para Autocomplete de Sub-Instituições -->
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        const subInstituicaoInput = document.getElementById("subInstituicaoNome");
-        const subInstituicaoList = document.getElementById("subInstituicaoList");
-        const excluirCheckbox = document.getElementById("excluirSubInstituicao");
-        const identificacaoInput = document.getElementById("identificacaoSubInstituicao");
-        
+      document.addEventListener("DOMContentLoaded", function () {
+        const subInstituicaoInput =
+          document.getElementById("subInstituicaoNome");
+        const subInstituicaoList =
+          document.getElementById("subInstituicaoList");
+        const excluirCheckbox = document.getElementById(
+          "excluirSubInstituicao"
+        );
+        const identificacaoInput = document.getElementById(
+          "identificacaoSubInstituicao"
+        );
+
         // Carrega as sub-instituições via AJAX
-        function carregarSubInstituicoes(termo = '') {
+        function carregarSubInstituicoes(termo = "") {
           fetch(`/api/sub-instituicoes?q=${encodeURIComponent(termo)}`)
-            .then(response => response.json())
-            .then(data => {
+            .then((response) => response.json())
+            .then((data) => {
               // Limpa as opções existentes
               subInstituicaoList.innerHTML = "";
-              
+
               // Adiciona as novas opções
-              data.forEach(nome => {
+              data.forEach((nome) => {
                 const option = document.createElement("option");
                 option.value = nome;
                 subInstituicaoList.appendChild(option);
               });
             })
-            .catch(error => {
-              console.error('Erro ao carregar sub-instituições:', error);
+            .catch((error) => {
+              console.error("Erro ao carregar sub-instituições:", error);
               // Fallback com dados estáticos
               const fallbackData = [
                 "Departamento de Ciências",
-                "Departamento de Engenharia", 
+                "Departamento de Engenharia",
                 "Departamento de Humanas",
                 "Instituto de Pesquisa",
                 "Centro de Extensão",
-                "Laboratório de Inovação"
+                "Laboratório de Inovação",
               ];
-              
+
               subInstituicaoList.innerHTML = "";
-              fallbackData.forEach(nome => {
+              fallbackData.forEach((nome) => {
                 const option = document.createElement("option");
                 option.value = nome;
                 subInstituicaoList.appendChild(option);
               });
             });
         }
-        
+
         // Carrega as sub-instituições ao inicializar
         carregarSubInstituicoes();
-        
+
         // Adiciona autocomplete dinâmico
-        subInstituicaoInput.addEventListener("input", function() {
+        subInstituicaoInput.addEventListener("input", function () {
           const termo = this.value;
           if (termo.length >= 2) {
             carregarSubInstituicoes(termo);
@@ -515,14 +591,14 @@ O script local-form.js cuida de:
             carregarSubInstituicoes();
           }
         });
-        
+
         // Controla a habilitação/desabilitação dos campos baseado no checkbox de exclusão
         if (excluirCheckbox) {
-          excluirCheckbox.addEventListener("change", function() {
+          excluirCheckbox.addEventListener("change", function () {
             const desabilitar = this.checked;
             subInstituicaoInput.disabled = desabilitar;
             identificacaoInput.disabled = desabilitar;
-            
+
             if (desabilitar) {
               subInstituicaoInput.style.backgroundColor = "#f5f5f5";
               identificacaoInput.style.backgroundColor = "#f5f5f5";
@@ -532,34 +608,36 @@ O script local-form.js cuida de:
             }
           });
         }
-        
+
         // Validação do formulário para sub-instituição
-        document.getElementById("formMeusDados").addEventListener("submit", function(e) {
-          const subInstituicaoValue = subInstituicaoInput.value.trim();
-          const identificacaoValue = identificacaoInput.value.trim();
-          const isExcluir = excluirCheckbox && excluirCheckbox.checked;
-          
-          // Se está marcado para excluir, não precisa validar os campos
-          if (isExcluir) {
-            return;
-          }
-          
-          // Se preencheu sub-instituição mas não preencheu identificação
-          if (subInstituicaoValue && !identificacaoValue) {
-            alert("Por favor, preencha a identificação da sub-instituição.");
-            identificacaoInput.focus();
-            e.preventDefault();
-            return;
-          }
-          
-          // Se preencheu identificação mas não preencheu sub-instituição  
-          if (identificacaoValue && !subInstituicaoValue) {
-            alert("Por favor, selecione uma sub-instituição.");
-            subInstituicaoInput.focus();
-            e.preventDefault();
-            return;
-          }
-        });
+        document
+          .getElementById("formMeusDados")
+          .addEventListener("submit", function (e) {
+            const subInstituicaoValue = subInstituicaoInput.value.trim();
+            const identificacaoValue = identificacaoInput.value.trim();
+            const isExcluir = excluirCheckbox && excluirCheckbox.checked;
+
+            // Se está marcado para excluir, não precisa validar os campos
+            if (isExcluir) {
+              return;
+            }
+
+            // Se preencheu sub-instituição mas não preencheu identificação
+            // if (subInstituicaoValue && !identificacaoValue) {
+            //   alert("Por favor, preencha a identificação da sub-instituição.");
+            //   identificacaoInput.focus();
+            //   e.preventDefault();
+            //   return;
+            // }
+
+            // Se preencheu identificação mas não preencheu sub-instituição
+            if (identificacaoValue && !subInstituicaoValue) {
+              alert("Por favor, selecione uma sub-instituição.");
+              subInstituicaoInput.focus();
+              e.preventDefault();
+              return;
+            }
+          });
       });
     </script>
   </body>

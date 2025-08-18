@@ -48,57 +48,83 @@ public class LocalDataLoader implements CommandLineRunner {
                 Local franca = localRepository.save(new Local(1, "França", null));
                 // Local argentina = localRepository.save(new Local(1, "Argentina", null));
 
-                // Carga de Estados (exemplo Brasil)
-                // Local ac = localRepository.save(new Local(2, "AC", brasil));
-                // Local al = localRepository.save(new Local(2, "AL", brasil));
-                // Local ap = localRepository.save(new Local(2, "AP", brasil));
-                // Local am = localRepository.save(new Local(2, "AM", brasil));
-                // Local ba = localRepository.save(new Local(2, "BA", brasil));
-                // Local ce = localRepository.save(new Local(2, "CE", brasil));
-                // Local df = localRepository.save(new Local(2, "DF", brasil));
-                // Local es = localRepository.save(new Local(2, "ES", brasil));
-                // Local go = localRepository.save(new Local(2, "GO", brasil));
-                // Local ma = localRepository.save(new Local(2, "MA", brasil));
-                // Local mt = localRepository.save(new Local(2, "MT", brasil));
-                // Local ms = localRepository.save(new Local(2, "MS", brasil));
-                // Local mg = localRepository.save(new Local(2, "MG", brasil));
-                // Local pa = localRepository.save(new Local(2, "PA", brasil));
-                // Local pb = localRepository.save(new Local(2, "PB", brasil));
-                Local pr = localRepository.save(new Local(2, "PR", brasil));
-                // Local pe = localRepository.save(new Local(2, "PE", brasil));
-                // Local pi = localRepository.save(new Local(2, "PI", brasil));
-                Local rj = localRepository.save(new Local(2, "RJ", brasil));
-                // Local rn = localRepository.save(new Local(2, "RN", brasil));
-                // Local rs = localRepository.save(new Local(2, "RS", brasil));
-                // Local ro = localRepository.save(new Local(2, "RO", brasil));
-                // Local rr = localRepository.save(new Local(2, "RR", brasil));
-                // Local sc = localRepository.save(new Local(2, "SC", brasil));
-                Local sp = localRepository.save(new Local(2, "SP", brasil));
-                // Local se = localRepository.save(new Local(2, "SE", brasil));
-                // Local to = localRepository.save(new Local(2, "TO", brasil));
+                // Carga de Estados (Exemplo Brasil)
+                Local ac = localRepository.save(new Local(2, "Acre", brasil));
+                Local al = localRepository.save(new Local(2, "Alagoas", brasil));
+                Local ap = localRepository.save(new Local(2, "Amapá", brasil));
+                Local am = localRepository.save(new Local(2, "Amazonas", brasil));
+                Local ba = localRepository.save(new Local(2, "Bahia", brasil));
+                Local ce = localRepository.save(new Local(2, "Ceará", brasil));
+                Local df = localRepository.save(new Local(2, "DistritoFederal", brasil));
+                Local es = localRepository.save(new Local(2, "EspíritoSanto", brasil));
+                Local go = localRepository.save(new Local(2, "Goiás", brasil));
+                Local ma = localRepository.save(new Local(2, "Maranhão", brasil));
+                Local mt = localRepository.save(new Local(2, "MatoGrosso", brasil));
+                Local ms = localRepository.save(new Local(2, "MatoGrossodoSul", brasil));
+                Local mg = localRepository.save(new Local(2, "MinasGerais", brasil));
+                Local pa = localRepository.save(new Local(2, "Pará", brasil));
+                Local pb = localRepository.save(new Local(2, "Paraíba", brasil));
+                Local pr = localRepository.save(new Local(2, "Paraná", brasil));
+                Local pe = localRepository.save(new Local(2, "Pernambuco", brasil));
+                Local pi = localRepository.save(new Local(2, "Piauí", brasil));
+                Local rj = localRepository.save(new Local(2, "RiodeJaneiro", brasil));
+                Local rn = localRepository.save(new Local(2, "RioGrandedoNorte", brasil));
+                Local rs = localRepository.save(new Local(2, "RioGrandedoSul", brasil));
+                Local ro = localRepository.save(new Local(2, "Rondônia", brasil));
+                Local rr = localRepository.save(new Local(2, "Roraima", brasil));
+                Local sc = localRepository.save(new Local(2, "SantaCatarina", brasil));
+                Local sp = localRepository.save(new Local(2, "SãoPaulo", brasil));
+                Local se = localRepository.save(new Local(2, "Sergipe", brasil));
+                Local to = localRepository.save(new Local(2, "Tocantins", brasil));
 
-                // Cidades de SP
                 localRepository.saveAll(Arrays.asList(
+                                new Local(3, "Rio Branco", ac),
+                                new Local(3, "Maceió", al),
+                                new Local(3, "Macapá", ap),
+                                new Local(3, "Manaus", am),
+                                new Local(3, "Salvador", ba),
+                                new Local(3, "Fortaleza", ce),
+                                new Local(3, "Brasília", df),
+                                new Local(3, "Vitória", es),
+                                new Local(3, "Goiânia", go),
+                                new Local(3, "São Luís", ma),
+                                new Local(3, "Belo Horizonte", mt),
+                                new Local(3, "Campo Grande", ms),
+                                new Local(3, "Cuiabá", mg),
+                                new Local(3, "Belém", pa),
+                                new Local(3, "João Pessoa", pb),
+
+                                new Local(3, "Curitiba", pr),
+                                new Local(3, "Cascavel", pr),
+
+                                new Local(3, "Recife", pe),
+                                new Local(3, "Teresina", pi),
+
+                                new Local(3, "Rio de Janeiro", rj),
+                                new Local(3, "Niterói", rj),
+                                new Local(3, "Campos", rj),
+                                new Local(3, "Volta Redonda", rj),
+
+                                new Local(3, "Natal", rn),
+                                new Local(3, "Porto Alegre", rs),
+                                new Local(3, "Porto Velho", ro),
+                                new Local(3, "Boa Vista", rr),
+                                new Local(3, "Florianópolis", sc),
+
                                 new Local(3, "São Paulo", sp),
                                 new Local(3, "São Caetano do Sul", sp),
                                 new Local(3, "São Bernardo do Campo", sp),
                                 new Local(3, "Santo André", sp),
+                                new Local(3, "Osasco", sp),
+                                new Local(3, "Guarulhos", sp),
                                 new Local(3, "Santos", sp),
                                 new Local(3, "São Vicente", sp),
+                                new Local(3, "Mongaguá", sp),
                                 new Local(3, "Campinas", sp),
-                                new Local(3, "Mogi das Cruzes", sp)));
+                                new Local(3, "Mogi das Cruzes", sp),
 
-                // Cidades de RJ
-                localRepository.saveAll(Arrays.asList(
-                                new Local(3, "Rio de Janeiro", rj),
-                                new Local(3, "Niterói", rj),
-                                new Local(3, "Campos", rj),
-                                new Local(3, "Volta Redonda", rj)));
-
-                // Cidades de PR
-                localRepository.saveAll(Arrays.asList(
-                                new Local(3, "Curitiba", pr),
-                                new Local(3, "Cascavel", pr)));
+                                new Local(3, "Aracaju", se),
+                                new Local(3, "Palmas", to)));
 
                 // Carga de Estados - Provincias de Portugal
                 Local li = localRepository.save(new Local(2, "Lisboa", portugal));

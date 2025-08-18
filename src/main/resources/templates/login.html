@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>Login - Agenda Mais</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
   </head>
   <body>
@@ -14,8 +14,8 @@
         <h3>Agendando tudo e mais</h3>
       </div>
       <div class="logo">
-		<i class="fas fa-moon"></i>      
-	</div>
+    <i class="fas fa-moon"></i>      
+  </div>
     </header>
 
     <div class="form-container">
@@ -33,9 +33,9 @@
       </div>
 
       <!-- Etapa 1: validar login -->
-	  <form th:action="@{/acesso}" method="post"
+    <form th:action="@{/acesso}" method="post"
             th:if="${exibirInstituicoes == null or !exibirInstituicoes}" >
-        <label for="username">Usuário:</label>
+        <label for="username">Código de Usuário ou Email:</label>
         <input type="text" id="username" name="username" th:value="${username}"
                maxlength="25" pattern="[A-Za-z0-9]+" required />
         <label for="password">Senha:</label>

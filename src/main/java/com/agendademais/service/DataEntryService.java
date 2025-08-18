@@ -346,12 +346,13 @@ public class DataEntryService {
     /**
      * Gera password baseado no formato especificado
      * TESTE: X00001$ (prefixo X com sufixo $)
-     * REAL: U00001$ (prefixo U com sufixo $ para passar na validação)
+     * REAL: U00001% (prefixo U com sufixo % para passar na validação)
      */
     private String gerarPassword(String formato, int contador, String tipoCarga) {
         String prefixo = "teste".equalsIgnoreCase(tipoCarga) ? "X" : "U";
-        // Sempre adiciona $ no final para atender requisitos de senha com caracteres especiais
-        return String.format("%s%05d$", prefixo, contador);
+        // TESTE: sufixo $ | REAL: sufixo %
+        String sufixo = "teste".equalsIgnoreCase(tipoCarga) ? "$" : "%";
+        return String.format("%s%05d%s", prefixo, contador, sufixo);
     }
     
     /**

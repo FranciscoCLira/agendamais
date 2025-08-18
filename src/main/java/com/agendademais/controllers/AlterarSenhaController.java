@@ -3,6 +3,7 @@ package com.agendademais.controllers;
 import com.agendademais.entities.Usuario;
 import com.agendademais.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,9 @@ import java.util.Optional;
 
 @Controller
 public class AlterarSenhaController {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -57,7 +61,7 @@ public class AlterarSenhaController {
         
         Usuario usuario = usuarioOpt.get();
 
-        if (!usuario.getPassword().equals(currentPassword)) {
+        if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
             model.addAttribute("mensagemErro", "Senha atual incorreta: " + username);
             model.addAttribute("username", username);
             model.addAttribute("newPassword", newPassword);
@@ -65,7 +69,7 @@ public class AlterarSenhaController {
             return "alterar-senha";
         }
 
-        if (usuario.getPassword().equals(newPassword)) {
+        if (passwordEncoder.matches(newPassword, usuario.getPassword())) {
             model.addAttribute("mensagemErro", "A nova senha não pode ser igual à anterior: " + username);
             model.addAttribute("username", username);
             model.addAttribute("newPassword", newPassword);
@@ -73,7 +77,7 @@ public class AlterarSenhaController {
             return "alterar-senha";
         }
 
-        usuario.setPassword(newPassword);
+        usuario.setPassword(passwordEncoder.encode(newPassword));
         usuarioRepository.save(usuario);
         model.addAttribute("mensagemSucesso", "Senha alterada com sucesso! Usuário: " + username);
 

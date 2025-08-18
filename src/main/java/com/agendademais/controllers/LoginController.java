@@ -66,19 +66,21 @@ public class LoginController {
         System.out.println("*** 1. LoginController.java POST /acesso/processarLogin          ");
         System.out.println("*** ");
 
+        // Permitir login por username OU email
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
-
         if (usuarioOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
+            usuarioOpt = usuarioRepository.findByEmailPessoa(username);
+        }
+        if (usuarioOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário ou email não encontrado.");
             redirectAttributes.addFlashAttribute("username", username);
             return "redirect:/acesso";
         }
-
         Usuario usuario = usuarioOpt.get();
 
         // Sistema compatível: testa BCrypt primeiro, depois texto plano
         boolean senhaValida = false;
-        
+
         // Tenta BCrypt primeiro (senhas criptografadas)
         if (usuario.getPassword().startsWith("$2a$") || usuario.getPassword().startsWith("$2b$")) {
             senhaValida = passwordEncoder.matches(password, usuario.getPassword());
@@ -86,11 +88,21 @@ public class LoginController {
             // Sistema legado: comparação direta (senhas antigas em texto plano)
             senhaValida = usuario.getPassword().equals(password);
         }
-        
+
         if (!senhaValida) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Senha inválida.");
             redirectAttributes.addFlashAttribute("username", username);
             return "redirect:/acesso";
+        }
+
+        // Se senha padrão de carga massiva, redireciona para alterar senha
+        String user = usuario.getUsername();
+        if ((user != null && user.matches("^[XU][0-9]{5}$")) &&
+                (password.equals(user + "$") || password.equals(user + "%"))) {
+            // Redireciona para alterar senha
+            redirectAttributes.addFlashAttribute("username", user);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Por favor, altere sua senha inicial.");
+            return "redirect:/alterar-senha";
         }
 
         if (usuario.getSituacaoUsuario() != null && usuario.getSituacaoUsuario().equals("B")) {
@@ -343,10 +355,8 @@ public class LoginController {
         // Chamar o serviço de envio de email como já feito no
         // RecuperacaoLoginController
         recuperacaoLoginService.enviarLinkRecuperacao(email);
-        // model.addAttribute("mensagemSucesso", "Enviamos uma mensagem para o e-mail
-        // informado com as instruções para recuperar sua password.");
-        redirectAttributes.addFlashAttribute("mensagemErro",
-                "Enviamos uma mensagem com as instruções para recuperar sua password, para o e-mail: " + email + ".");
+        redirectAttributes.addFlashAttribute("mensagemSucesso",
+                "Enviamos uma mensagem com as instruções para recuperar sua Senha, para o e-mail: " + email + ".");
         return "redirect:/acesso/recuperar-login-email";
     }
 
@@ -371,7 +381,7 @@ public class LoginController {
         recuperacaoLoginService.enviarLinkRecuperacao(email);
 
         redirectAttributes.addFlashAttribute("mensagemSucesso",
-                "Enviamos uma mensagem com as instruções para recuperar seu acesso para o email: " + email + ".");
+                "Enviamos uma mensagem com as instruções para recuperar sua Senha, para o e-mail: " + email + ".");
 
         return "redirect:/acesso";
     }

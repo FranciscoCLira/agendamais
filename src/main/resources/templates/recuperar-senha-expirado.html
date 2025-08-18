@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <title>Link Expirado</title>
-  <link rel="stylesheet" th:href="@{/css/estilo.css}" />
-</head>
-<body>
-<header class="cabecalho">
-    <div class="titulo">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Link Expirado</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+  </head>
+  <body>
+    <header class="cabecalho">
+      <div class="titulo">
         <h1>Agenda Mais</h1>
         <h3>Redefinir Senha</h3>
-    </div>
-</header>
+      </div>
+    </header>
 
-  <div class="form-container">
-    <h2>Link Expirado</h2>
-    <p th:if="${mensagemErro}" th:text="${mensagemErro}" class="mensagem-erro"></p>
-    <p>O link de redefinição de senha expirou ou é inválido.</p>
-    <p>Por favor, <a href="/login/recuperar-login-email">solicite um novo link</a>.</p>
-  </div>
-</body>
+    <div class="form-container">
+      <h2>Link Expirado</h2>
+      <p
+        th:if="${mensagemErro}"
+        th:text="${mensagemErro}"
+        class="mensagem-erro"
+      ></p>
+      <p>O link de redefinição de senha expirou ou é inválido.</p>
+      <p>
+        Por favor,
+        <a href="/acesso/recuperar-login-email">solicite um novo link</a>.
+      </p>
+    </div>
+  </body>
 </html>
