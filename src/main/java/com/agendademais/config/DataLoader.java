@@ -221,12 +221,12 @@ public class DataLoader implements CommandLineRunner {
         // BUSCAR LOCAIS PARA ASSOCIAR ÀS PESSOAS
         // Os locais já foram criados pelo LocalDataLoader devido ao @Order(1)
         Local brasilPais = localRepository.findByTipoLocalAndNomeLocal(1, "Brasil").orElse(null);
-        Local spEstado = localRepository.findByTipoLocalAndNomeLocal(2, "SP").orElse(null);
+        Local spEstado = localRepository.findByTipoLocalAndNomeLocal(2, "São Paulo").orElse(null);
         Local spCidade = localRepository.findByTipoLocalAndNomeLocal(3, "São Paulo").orElse(null);
 
         System.out.println("*** DEBUG LOCAIS ENCONTRADOS ***");
         System.out.println("Brasil (país): " + (brasilPais != null ? brasilPais.getId() : "null"));
-        System.out.println("SP (estado): " + (spEstado != null ? spEstado.getId() : "null"));
+        System.out.println("São Paulo (estado): " + (spEstado != null ? spEstado.getId() : "null"));
         System.out.println("São Paulo (cidade): " + (spCidade != null ? spCidade.getId() : "null"));
 
         // PESSOA id=1: PARTICIPANTE - NIVEL 1
@@ -234,7 +234,7 @@ public class DataLoader implements CommandLineRunner {
         Pessoa pessoa1 = new Pessoa();
         pessoa1.setNomePessoa("Carlos Silva");
         pessoa1.setEmailPessoa("carlos@email.com");
-        pessoa1.setCelularPessoa("+55-11-99999-9999");
+        pessoa1.setCelularPessoa(com.agendademais.utils.StringUtils.somenteNumeros("+55-11-99999-9999"));
         // Associar aos locais normalizados se disponíveis
         if (brasilPais != null)
             pessoa1.setPais(brasilPais);
@@ -295,7 +295,7 @@ public class DataLoader implements CommandLineRunner {
         Pessoa pessoa2 = new Pessoa();
         pessoa2.setNomePessoa("João de Souza Autor");
         pessoa2.setEmailPessoa("joao@email.com");
-        pessoa2.setCelularPessoa("+55-11-99999-9999");
+        pessoa2.setCelularPessoa(com.agendademais.utils.StringUtils.somenteNumeros("+55-11-99999-9999"));
         // Associar aos locais normalizados se disponíveis
         if (brasilPais != null)
             pessoa2.setPais(brasilPais);
@@ -353,7 +353,7 @@ public class DataLoader implements CommandLineRunner {
         Pessoa pessoa3 = new Pessoa();
         pessoa3.setNomePessoa("Maria dos Santos");
         pessoa3.setEmailPessoa("maria@email.com");
-        pessoa3.setCelularPessoa("+55-11-99999-9999");
+        pessoa3.setCelularPessoa(com.agendademais.utils.StringUtils.somenteNumeros("+55-11-99999-9999"));
         // Associar aos locais normalizados se disponíveis
         if (brasilPais != null)
             pessoa3.setPais(brasilPais);
@@ -411,7 +411,7 @@ public class DataLoader implements CommandLineRunner {
         Pessoa pessoa4 = new Pessoa();
         pessoa4.setNomePessoa("Luz Carlos dos Reis");
         pessoa4.setEmailPessoa("luizcarlos@email.com");
-        pessoa4.setCelularPessoa("+55-11-99999-9999");
+        pessoa4.setCelularPessoa(com.agendademais.utils.StringUtils.somenteNumeros("+55-11-99999-9999"));
         // Associar aos locais normalizados se disponíveis
         if (brasilPais != null)
             pessoa4.setPais(brasilPais);

@@ -9,6 +9,8 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -19,6 +21,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/cadastro-pessoa")
 public class CadastroPessoaController {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final UsuarioRepository usuarioRepository;
     private final PessoaRepository pessoaRepository;
@@ -67,6 +72,14 @@ public class CadastroPessoaController {
         }
 
         // Cidades são carregadas dinamicamente via JavaScript
+
+        // Adiciona celular formatado para exibição
+        if (pessoa.getCelularPessoa() != null && pessoa.getCelularPessoa().length() == 13) {
+            String celularFormatado = com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa());
+            model.addAttribute("celularPessoaFormatado", celularFormatado);
+        } else {
+            model.addAttribute("celularPessoaFormatado", pessoa.getCelularPessoa());
+        }
 
         model.addAttribute("pessoa", pessoa);
         model.addAttribute("paises", paises);
@@ -153,7 +166,6 @@ public class CadastroPessoaController {
             Local estadoLocal = localService.buscarOuCriar(2, estadoNome, paisLocal);
 
             // Busca ou cria a cidade
-            // Busca ou cria a cidade
             Local cidadeLocal = localService.buscarOuCriar(3, cidadeNome, estadoLocal);
 
             // Define as referências normalizadas
@@ -170,6 +182,19 @@ public class CadastroPessoaController {
             e.printStackTrace();
             model.addAttribute("mensagemErro", "Erro interno ao processar localização: " + e.getMessage());
             return recarregarViewComListas(model, pessoa, usuario);
+        }
+
+        // Normalizar celular: salvar apenas números
+        if (pessoa.getCelularPessoa() != null && !pessoa.getCelularPessoa().isBlank()) {
+            pessoa.setCelularPessoa(com.agendademais.utils.StringUtils.somenteNumeros(pessoa.getCelularPessoa()));
+        }
+
+        // Salvar comentários e currículo como null se vierem em branco
+        if (pessoa.getComentarios() != null && pessoa.getComentarios().isBlank()) {
+            pessoa.setComentarios(null);
+        }
+        if (pessoa.getCurriculoPessoal() != null && pessoa.getCurriculoPessoal().isBlank()) {
+            pessoa.setCurriculoPessoal(null);
         }
 
         // System.out.println("*** CadastroPessoaController.java /cadastro-pessoa =" +
@@ -190,6 +215,11 @@ public class CadastroPessoaController {
         // Relaciona ao usuário e salva
 
         usuario.setPessoa(pessoa);
+        // Criptografar senha se ainda não estiver criptografada
+        String senha = usuario.getPassword();
+        if (senha != null && !senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+            usuario.setPassword(passwordEncoder.encode(senha));
+        }
         usuarioRepository.save(usuario);
 
         // Remove da sessão (opcional)

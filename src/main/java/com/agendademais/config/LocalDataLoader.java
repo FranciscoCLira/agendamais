@@ -55,25 +55,25 @@ public class LocalDataLoader implements CommandLineRunner {
                 Local am = localRepository.save(new Local(2, "Amazonas", brasil));
                 Local ba = localRepository.save(new Local(2, "Bahia", brasil));
                 Local ce = localRepository.save(new Local(2, "Ceará", brasil));
-                Local df = localRepository.save(new Local(2, "DistritoFederal", brasil));
-                Local es = localRepository.save(new Local(2, "EspíritoSanto", brasil));
+                Local df = localRepository.save(new Local(2, "Distrito Federal", brasil));
+                Local es = localRepository.save(new Local(2, "Espírito Santo", brasil));
                 Local go = localRepository.save(new Local(2, "Goiás", brasil));
                 Local ma = localRepository.save(new Local(2, "Maranhão", brasil));
-                Local mt = localRepository.save(new Local(2, "MatoGrosso", brasil));
-                Local ms = localRepository.save(new Local(2, "MatoGrossodoSul", brasil));
-                Local mg = localRepository.save(new Local(2, "MinasGerais", brasil));
+                Local mt = localRepository.save(new Local(2, "Mato Grosso", brasil));
+                Local ms = localRepository.save(new Local(2, "Mato Grosso do Sul", brasil));
+                Local mg = localRepository.save(new Local(2, "Minas Gerais", brasil));
                 Local pa = localRepository.save(new Local(2, "Pará", brasil));
                 Local pb = localRepository.save(new Local(2, "Paraíba", brasil));
                 Local pr = localRepository.save(new Local(2, "Paraná", brasil));
                 Local pe = localRepository.save(new Local(2, "Pernambuco", brasil));
                 Local pi = localRepository.save(new Local(2, "Piauí", brasil));
-                Local rj = localRepository.save(new Local(2, "RiodeJaneiro", brasil));
-                Local rn = localRepository.save(new Local(2, "RioGrandedoNorte", brasil));
-                Local rs = localRepository.save(new Local(2, "RioGrandedoSul", brasil));
+                Local rj = localRepository.save(new Local(2, "Rio de Janeiro", brasil));
+                Local rn = localRepository.save(new Local(2, "Rio Grande do Norte", brasil));
+                Local rs = localRepository.save(new Local(2, "Rio Grande do Sul", brasil));
                 Local ro = localRepository.save(new Local(2, "Rondônia", brasil));
                 Local rr = localRepository.save(new Local(2, "Roraima", brasil));
-                Local sc = localRepository.save(new Local(2, "SantaCatarina", brasil));
-                Local sp = localRepository.save(new Local(2, "SãoPaulo", brasil));
+                Local sc = localRepository.save(new Local(2, "Santa Catarina", brasil));
+                Local sp = localRepository.save(new Local(2, "São Paulo", brasil));
                 Local se = localRepository.save(new Local(2, "Sergipe", brasil));
                 Local to = localRepository.save(new Local(2, "Tocantins", brasil));
 
@@ -115,11 +115,13 @@ public class LocalDataLoader implements CommandLineRunner {
                                 new Local(3, "São Caetano do Sul", sp),
                                 new Local(3, "São Bernardo do Campo", sp),
                                 new Local(3, "Santo André", sp),
+                                new Local(3, "Mauá", sp),
                                 new Local(3, "Osasco", sp),
                                 new Local(3, "Guarulhos", sp),
                                 new Local(3, "Santos", sp),
                                 new Local(3, "São Vicente", sp),
                                 new Local(3, "Mongaguá", sp),
+                                new Local(3, "Itanhahém", sp),
                                 new Local(3, "Campinas", sp),
                                 new Local(3, "Mogi das Cruzes", sp),
 

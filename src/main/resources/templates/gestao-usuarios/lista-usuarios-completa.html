@@ -238,7 +238,7 @@
                                 </td>
                                 <td>
                                     <i class="fas fa-mobile-alt text-muted"></i>
-                                    <span th:text="${usuarioInst.usuario.pessoa.celularPessoa}" th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}">Celular</span>
+                                    <span th:text="${T(com.agendademais.utils.StringUtils).formatarCelularParaExibicao(usuarioInst.usuario.pessoa.celularPessoa)}" th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}">Celular</span>
                                     <span th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}" class="text-muted"><em>Não informado</em></span>
                                 </td>
                                 <td>

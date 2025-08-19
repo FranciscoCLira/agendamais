@@ -222,8 +222,22 @@
             th:field="*{celularPessoa}"
             required
             placeholder="+55-99-99999-9999"
-            pattern="^\+\d{2}-\d{2}-\d{4,5}-\d{4}$"
+            th:value="${celularPessoaFormatado}"
+            onblur="formatarCelularInput(this)"
           />
+
+<script>
+function formatarCelularInput(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length === 13) {
+    input.value = `+${v.substring(0,2)}-${v.substring(2,4)}-${v.substring(4,9)}-${v.substring(9)}`;
+  } else if (v.length === 11) {
+    input.value = `+55-${v.substring(0,2)}-${v.substring(2,7)}-${v.substring(7)}`;
+  } else {
+    input.value = input.value;
+  }
+}
+</script>
 
           <!-- País -->
           <label>País:</label>

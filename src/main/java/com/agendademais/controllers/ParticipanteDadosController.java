@@ -132,7 +132,12 @@ public class ParticipanteDadosController {
             Pessoa pessoaDb = usuario.getPessoa();
             pessoaDb.setNomePessoa(pessoa.getNomePessoa());
             pessoaDb.setEmailPessoa(pessoa.getEmailPessoa());
-            pessoaDb.setCelularPessoa(pessoa.getCelularPessoa());
+            // Limpa o celular para salvar apenas números
+            if (pessoa.getCelularPessoa() != null && !pessoa.getCelularPessoa().isBlank()) {
+                pessoaDb.setCelularPessoa(com.agendademais.utils.StringUtils.somenteNumeros(pessoa.getCelularPessoa()));
+            } else {
+                pessoaDb.setCelularPessoa(null);
+            }
             pessoaDb.setCurriculoPessoal(pessoa.getCurriculoPessoal());
             pessoaDb.setComentarios(pessoa.getComentarios());
 

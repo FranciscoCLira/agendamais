@@ -78,6 +78,14 @@ public class GestaoUsuariosController {
             // REMOVER O USUÁRIO LOGADO DA LISTA (ele acessa seus dados via "Meus Dados")
             usuarios.removeIf(usuarioInst -> usuarioInst.getUsuario().getId().equals(usuarioLogado.getId()));
 
+            // Adiciona celular formatado para exibição em cada usuário
+            for (UsuarioInstituicao usuarioInst : usuarios) {
+                Pessoa pessoa = usuarioInst.getUsuario().getPessoa();
+                if (pessoa != null && pessoa.getCelularPessoa() != null && pessoa.getCelularPessoa().length() == 13) {
+                    String celularFormatado = com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa());
+                    pessoa.setCelularPessoa(celularFormatado);
+                }
+            }
             model.addAttribute("usuarios", usuarios);
             model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
             model.addAttribute("nivelAcessoLogado", nivelAcesso);
