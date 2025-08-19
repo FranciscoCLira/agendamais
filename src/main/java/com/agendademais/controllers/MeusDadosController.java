@@ -65,7 +65,8 @@ public class MeusDadosController {
         if (usuario != null && usuario.getPessoa() != null) {
             Pessoa pessoa = usuario.getPessoa();
             if (pessoa.getCelularPessoa() != null && pessoa.getCelularPessoa().length() == 13) {
-                pessoa.setCelularPessoa(com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa()));
+                pessoa.setCelularPessoa(
+                        com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa()));
             }
         }
         return processarMeusDados(model, session);
@@ -117,7 +118,8 @@ public class MeusDadosController {
         Pessoa pessoa = usuario.getPessoa();
         // Formatar celular para exibição sem alterar o valor salvo
         if (pessoa != null && pessoa.getCelularPessoa() != null && pessoa.getCelularPessoa().length() == 13) {
-            String celularFormatado = com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa());
+            String celularFormatado = com.agendademais.utils.StringUtils
+                    .formatarCelularParaExibicao(pessoa.getCelularPessoa());
             model.addAttribute("celularPessoaFormatado", celularFormatado);
         } else {
             model.addAttribute("celularPessoaFormatado", pessoa != null ? pessoa.getCelularPessoa() : "");
@@ -140,16 +142,17 @@ public class MeusDadosController {
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
             Optional<PessoaSubInstituicao> vinculoSubInstituicaoOpt = Optional.empty();
 
-        if (instituicaoSelecionada != null
-            && instituicaoSelecionada instanceof com.agendademais.entities.Instituicao && pessoa != null) {
-        com.agendademais.entities.Instituicao instituicao = (com.agendademais.entities.Instituicao) instituicaoSelecionada;
-        vinculoSubInstituicaoOpt = pessoaSubInstituicaoRepository.findByPessoaAndInstituicao(pessoa,
-            instituicao);
-        System.out.println("Buscando vínculo para pessoa " + pessoa.getId() + " na instituição "
-            + instituicao.getNomeInstituicao() + ": " + vinculoSubInstituicaoOpt.isPresent());
-        } else {
-        System.out.println("Instituição não encontrada na sessão para buscar vínculo de sub-instituição ou pessoa nula");
-        }
+            if (instituicaoSelecionada != null
+                    && instituicaoSelecionada instanceof com.agendademais.entities.Instituicao && pessoa != null) {
+                com.agendademais.entities.Instituicao instituicao = (com.agendademais.entities.Instituicao) instituicaoSelecionada;
+                vinculoSubInstituicaoOpt = pessoaSubInstituicaoRepository.findByPessoaAndInstituicao(pessoa,
+                        instituicao);
+                System.out.println("Buscando vínculo para pessoa " + pessoa.getId() + " na instituição "
+                        + instituicao.getNomeInstituicao() + ": " + vinculoSubInstituicaoOpt.isPresent());
+            } else {
+                System.out.println(
+                        "Instituição não encontrada na sessão para buscar vínculo de sub-instituição ou pessoa nula");
+            }
 
             boolean possuiVinculoSubInstituicao = vinculoSubInstituicaoOpt.isPresent();
 
@@ -171,7 +174,7 @@ public class MeusDadosController {
         LocalFormUtil.preencherListasLocais(model, localService, pessoa);
 
         model.addAttribute("pessoa", pessoa);
-    model.addAttribute("tipoUsuario", tipoUsuario);
+        model.addAttribute("tipoUsuario", tipoUsuario);
         model.addAttribute("nomePaisPessoa", nomePais);
         model.addAttribute("nomeEstadoPessoa", nomeEstado);
         model.addAttribute("nomeCidadePessoa", nomeCidade);

@@ -234,7 +234,9 @@
             <tr th:each="pessoa : ${pessoasRelacionadas}">
               <td th:text="${pessoa.nomePessoa}"></td>
               <td th:text="${pessoa.emailPessoa}"></td>
-              <td th:text="${T(com.agendademais.utils.StringUtils).formatarCelularParaExibicao(pessoa.celularPessoa)}"></td>
+              <td
+                th:text="${T(com.agendademais.utils.StringUtils).formatarCelularParaExibicao(pessoa.celularPessoa)}"
+              ></td>
               <td
                 th:text="${pessoa.pais != null ? pessoa.pais.nomeLocal : '-'}"
               ></td>

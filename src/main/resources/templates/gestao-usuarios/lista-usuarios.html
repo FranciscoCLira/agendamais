@@ -136,8 +136,16 @@
                     email@exemplo.com
                   </td>
                   <td>
-                    <span th:text="${T(com.agendademais.utils.StringUtils).formatarCelularParaExibicao(usuarioInst.usuario.pessoa.celularPessoa)}" th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}">Celular</span>
-                    <span th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}" class="text-muted"><em>Não informado</em></span>
+                    <span
+                      th:text="${T(com.agendademais.utils.StringUtils).formatarCelularParaExibicao(usuarioInst.usuario.pessoa.celularPessoa)}"
+                      th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}"
+                      >Celular</span
+                    >
+                    <span
+                      th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}"
+                      class="text-muted"
+                      ><em>Não informado</em></span
+                    >
                   </td>
                   <td>
                     <span class="text-muted">Sub-instituição</span>
@@ -327,11 +335,11 @@
 
       // Carregar dados no modal
       function carregarDadosUsuario(button) {
-        const id = button.getAttribute('data-usuario-id');
-        const nivel = button.getAttribute('data-nivel-acesso');
-        const situacao = button.getAttribute('data-situacao-acesso');
-        const nome = button.getAttribute('data-nome-pessoa');
-        
+        const id = button.getAttribute("data-usuario-id");
+        const nivel = button.getAttribute("data-nivel-acesso");
+        const situacao = button.getAttribute("data-situacao-acesso");
+        const nome = button.getAttribute("data-nome-pessoa");
+
         document.getElementById("usuarioInstituicaoId").value = id;
         document.getElementById("nomeUsuarioModal").value = nome;
         document.getElementById("nivelAcessoUsuarioInstituicao").value = nivel;

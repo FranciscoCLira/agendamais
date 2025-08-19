@@ -723,14 +723,14 @@ public class DataEntryService {
                         Instituicao instituicao = instituicaoOpt.get();
                         // Cria e persiste PessoaSubInstituicao
                         PessoaSubInstituicao pessoaSubInstituicao = new PessoaSubInstituicao();
-            pessoaSubInstituicao.setPessoa(pessoa);
-            pessoaSubInstituicao.setInstituicao(instituicao);
-            pessoaSubInstituicao.setSubInstituicao(subInstituicao);
-            pessoaSubInstituicao
-                .setIdentificacaoPessoaSubInstituicao(registro.getIdentificacaoPessoaSubInstituicao());
-            pessoaSubInstituicao.setDataAfiliacao(null); // Não vem do CSV
-            pessoaSubInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
-            pessoaSubInstituicaoRepository.save(pessoaSubInstituicao);
+                        pessoaSubInstituicao.setPessoa(pessoa);
+                        pessoaSubInstituicao.setInstituicao(instituicao);
+                        pessoaSubInstituicao.setSubInstituicao(subInstituicao);
+                        pessoaSubInstituicao
+                                .setIdentificacaoPessoaSubInstituicao(registro.getIdentificacaoPessoaSubInstituicao());
+                        pessoaSubInstituicao.setDataAfiliacao(null); // Não vem do CSV
+                        pessoaSubInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
+                        pessoaSubInstituicaoRepository.save(pessoaSubInstituicao);
                         response.addInfo("Sub-Instituição " + registro.getSubInstituicaoId()
                                 + " associada e persistida para usuário " + registro.getUsername());
                     } else {

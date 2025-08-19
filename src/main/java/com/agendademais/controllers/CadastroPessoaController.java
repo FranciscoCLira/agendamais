@@ -75,7 +75,8 @@ public class CadastroPessoaController {
 
         // Adiciona celular formatado para exibição
         if (pessoa.getCelularPessoa() != null && pessoa.getCelularPessoa().length() == 13) {
-            String celularFormatado = com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa());
+            String celularFormatado = com.agendademais.utils.StringUtils
+                    .formatarCelularParaExibicao(pessoa.getCelularPessoa());
             model.addAttribute("celularPessoaFormatado", celularFormatado);
         } else {
             model.addAttribute("celularPessoaFormatado", pessoa.getCelularPessoa());
