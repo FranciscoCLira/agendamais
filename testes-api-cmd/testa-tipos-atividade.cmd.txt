@@ -1,0 +1,21 @@
+@echo off
+setlocal
+
+REM Altere o valor abaixo para o seu JSESSIONID atual
+set JSESSIONID=2F5DEF75C08C34993CDB15845C3290B7
+
+REM Listar tipos de atividade
+echo === GET tipos de atividade ===
+curl -b "JSESSIONID=%JSESSIONID%" http://localhost:8080/api/admin/tipos-atividade
+echo.
+
+REM Criar novo tipo de atividade
+REM curl -X POST -H "Content-Type: application/json" -b "JSESSIONID=%JSESSIONID%" -d "{\"tituloTipoAtividade\":\"Teste\",\"descricaoTipoAtividade\":\"Descrição\"}" http://localhost:8080/api/admin/tipos-atividade
+
+REM Editar tipo de atividade (exemplo para id=1)
+REM curl -X PUT -H "Content-Type: application/json" -b "JSESSIONID=%JSESSIONID%" -d "{\"tituloTipoAtividade\":\"Editado\",\"descricaoTipoAtividade\":\"Nova descrição\"}" http://localhost:8080/api/admin/tipos-atividade/1
+
+REM Excluir tipo de atividade (exemplo para id=1)
+REM curl -X DELETE -b "JSESSIONID=%JSESSIONID%" http://localhost:8080/api/admin/tipos-atividade/1
+
+pause

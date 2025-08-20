@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tipos de Atividade - Administração</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+  </head>
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <main
+      style="
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 24px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #ddd;
+      "
+    >
+      <h1 style="margin-bottom: 18px">Tipos de Atividade</h1>
+      <div id="mensagem" class="status-centralizado"></div>
+      <button
+        id="btnNovo"
+        style="
+          margin-bottom: 18px;
+          background: #4b0082;
+          color: #fff;
+          border: none;
+          padding: 8px 18px;
+          border-radius: 5px;
+          cursor: pointer;
+        "
+      >
+        Novo Tipo de Atividade
+      </button>
+      <table
+        id="tabelaTipos"
+        style="width: 100%; border-collapse: collapse; margin-bottom: 18px"
+      >
+        <thead style="background: #f0f0f8">
+          <tr>
+            <th style="display: none">ID</th>
+            <th>Título</th>
+            <th>Descrição</th>
+            <th style="width: 120px">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Conteúdo AJAX -->
+        </tbody>
+      </table>
+      <div id="formContainer" class="form-container hidden">
+        <h2 id="formTitulo">Novo Tipo de Atividade</h2>
+        <form id="formTipo">
+          <input type="hidden" id="id" name="id" />
+          <label for="tituloTipoAtividade">Título:</label>
+          <input
+            type="text"
+            id="tituloTipoAtividade"
+            name="tituloTipoAtividade"
+            maxlength="50"
+            required
+          />
+          <label for="descricaoTipoAtividade">Descrição:</label>
+          <input
+            type="text"
+            id="descricaoTipoAtividade"
+            name="descricaoTipoAtividade"
+            maxlength="100"
+          />
+          <div style="margin-top: 18px">
+            <button type="submit">Salvar</button>
+            <button type="button" id="btnCancelar">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <div
+        th:replace="fragments/botao_retornar_menu :: botao-retornar-menu('/administrador')"
+      ></div>
+    </main>
+    <script>
+      // Util AJAX para CRUD
+      const apiUrl = "/api/admin/tipos-atividade";
+      const tabela = document.querySelector("#tabelaTipos tbody");
+      const mensagem = document.getElementById("mensagem");
+      const formContainer = document.getElementById("formContainer");
+      const form = document.getElementById("formTipo");
+      const btnNovo = document.getElementById("btnNovo");
+      const btnCancelar = document.getElementById("btnCancelar");
+
+      function exibirMensagem(msg, sucesso = true) {
+        mensagem.textContent = msg;
+        mensagem.className = sucesso
+          ? "mensagem-sucesso status-centralizado"
+          : "mensagem-erro status-centralizado";
+        setTimeout(() => {
+          mensagem.textContent = "";
+        }, 3000);
+      }
+
+      function carregarTipos() {
+        fetch(apiUrl)
+          .then((r) => r.json())
+          .then((lista) => {
+            tabela.innerHTML = "";
+            if (lista.length === 0) {
+              tabela.innerHTML =
+                '<tr><td colspan="4" style="text-align:center;">Nenhum tipo cadastrado.</td></tr>';
+              return;
+            }
+            lista.forEach((tipo) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                    <td style='display:none;'>${tipo.id}</td>
+                    <td>${tipo.tituloTipoAtividade}</td>
+                    <td>${tipo.descricaoTipoAtividade || ""}</td>
+                    <td>
+                        <button onclick="editarTipo(${tipo.id})">Editar</button>
+                        <button onclick="excluirTipo(${
+                          tipo.id
+                        })" style="background:#b00; color:#fff;">Excluir</button>
+                    </td>
+                `;
+              tabela.appendChild(tr);
+            });
+          });
+      }
+
+      function editarTipo(id) {
+        fetch(apiUrl + "/" + id)
+          .then((r) => r.json())
+          .then((tipo) => {
+            form.id.value = tipo.id;
+            form.tituloTipoAtividade.value = tipo.tituloTipoAtividade;
+            form.descricaoTipoAtividade.value =
+              tipo.descricaoTipoAtividade || "";
+            document.getElementById("formTitulo").textContent =
+              "Editar Tipo de Atividade";
+            formContainer.classList.remove("hidden");
+          });
+      }
+
+      function excluirTipo(id) {
+        if (!confirm("Confirma exclusão?")) return;
+        fetch(apiUrl + "/" + id, { method: "DELETE" }).then((r) => {
+          if (r.ok) {
+            exibirMensagem("Tipo excluído com sucesso!");
+            carregarTipos();
+          } else {
+            exibirMensagem("Erro ao excluir tipo.", false);
+          }
+        });
+      }
+
+      btnNovo.onclick = () => {
+        form.reset();
+        form.id.value = "";
+        document.getElementById("formTitulo").textContent =
+          "Novo Tipo de Atividade";
+        formContainer.classList.remove("hidden");
+      };
+
+      btnCancelar.onclick = () => {
+        formContainer.classList.add("hidden");
+      };
+
+      form.onsubmit = function (e) {
+        e.preventDefault();
+        const tipo = {
+          id: form.id.value || null,
+          tituloTipoAtividade: form.tituloTipoAtividade.value,
+          descricaoTipoAtividade: form.descricaoTipoAtividade.value,
+        };
+        const method = tipo.id ? "PUT" : "POST";
+        const url = tipo.id ? apiUrl + "/" + tipo.id : apiUrl;
+        fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tipo),
+        }).then((r) => {
+          if (r.ok) {
+            exibirMensagem("Tipo salvo com sucesso!");
+            formContainer.classList.add("hidden");
+            carregarTipos();
+          } else {
+            exibirMensagem("Erro ao salvar tipo.", false);
+          }
+        });
+      };
+
+      // Carregar lista ao abrir
+      carregarTipos();
+    </script>
+  </body>
+</html>

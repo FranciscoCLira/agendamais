@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tipo de Atividade - Administração</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+  </head>
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <main>
+      <h1
+        th:text="${tipoAtividade.id} != null ? 'Editar Tipo de Atividade' : 'Novo Tipo de Atividade'"
+      ></h1>
+      <form
+        th:action="@{/administrador/tipos-atividade/salvar}"
+        th:object="${tipoAtividade}"
+        method="post"
+      >
+        <input type="hidden" th:field="*{id}" />
+        <label for="tituloTipoAtividade">Título:</label>
+        <input
+          type="text"
+          id="tituloTipoAtividade"
+          th:field="*{tituloTipoAtividade}"
+          maxlength="50"
+          required
+          style="width: 30ch"
+        /><br />
+        <label for="descricaoTipoAtividade">Descrição:</label>
+        <input
+          type="text"
+          id="descricaoTipoAtividade"
+          th:field="*{descricaoTipoAtividade}"
+          maxlength="100"
+          style="width: 50ch"
+        /><br />
+        <button type="submit">Salvar</button>
+        <a th:href="@{/administrador/tipos-atividade}">Cancelar</a>
+      </form>
+    </main>
+  </body>
+</html>

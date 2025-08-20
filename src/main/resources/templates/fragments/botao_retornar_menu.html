@@ -1,0 +1,28 @@
+<!-- fragments/botao_retornar_menu.html -->
+<div th:fragment="botao-retornar-menu(url)">
+  <button
+    type="button"
+    th:attr="data-url=${url}"
+    class="btn-retornar-menu"
+    style="
+      background: #888;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+    "
+  >
+    Retornar ao Menu
+  </button>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".btn-retornar-menu").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var url = btn.getAttribute("data-url");
+          if (url) window.location.href = url;
+        });
+      });
+    });
+  </script>
+</div>

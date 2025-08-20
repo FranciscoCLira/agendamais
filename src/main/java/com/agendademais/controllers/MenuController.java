@@ -139,11 +139,6 @@ public class MenuController {
         return "info/em-construcao";
     }
 
-    @GetMapping("/administrador/tipos-atividade")
-    public String gerenciarTiposAtividade() {
-        return "info/em-construcao";
-    }
-
     @GetMapping("/administrador/ocorrencias")
     public String gerenciarOcorrencias() {
         return "info/em-construcao";
