@@ -1,6 +1,4 @@
-<div
-  th:replace="fragments/botao_retornar_menu :: botao-retornar-menu('/administrador')"
-></div>
+<!-- Botão 'Retornar ao Menu' removido conforme solicitado -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
@@ -25,10 +23,16 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="/administrador" th:if="${nivelAcessoLogado == 5}">
+            <a
+              th:href="@{/administrador(page=${page},size=${size},filtro=${filtro})}"
+              th:if="${nivelAcessoLogado == 5}"
+            >
               <i class="fas fa-home"></i> Administrador
             </a>
-            <a href="/superusuario" th:if="${nivelAcessoLogado == 9}">
+            <a
+              th:href="@{/superusuario(page=${page},size=${size},filtro=${filtro})}"
+              th:if="${nivelAcessoLogado == 9}"
+            >
               <i class="fas fa-home"></i> SuperUsuário
             </a>
           </li>
@@ -38,17 +42,25 @@
         </ol>
       </nav>
 
-      <!-- Título da Página -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <h2>
+      <!-- Título da Página e botão Editar Usuários -->
+      <div class="row mb-2 align-items-center">
+        <div class="col-8">
+          <h2 class="mb-1">
             <i class="fas fa-users me-2 text-primary"></i>
             Gestão de Usuários -
-            <span th:text="${instituicaoSelecionada.nomeInstituicao}"
-              >Instituição</span
-            >
+            <span th:if="${instituicaoSelecionada != null}" th:text="${instituicaoSelecionada.nomeInstituicao}">Instituição</span>
+            <span th:unless="${instituicaoSelecionada != null}">Instituição não selecionada</span>
           </h2>
-          <p class="text-muted">Gerencie os usuários da sua instituição</p>
+          <p class="text-muted mb-2">Gerencie os usuários da sua instituição</p>
+        </div>
+        <div class="col-4 text-end">
+          <a
+            th:if="${nivelAcessoLogado >= 5}"
+            th:href="@{/administrador/editar-usuarios}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-edit me-1"></i> Editar Usuários
+          </a>
         </div>
       </div>
 
@@ -81,35 +93,135 @@
         ></button>
       </div>
 
-      <!-- Filtros e Ações -->
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="fas fa-search"></i>
-            </span>
+      <!-- Filtros em duas linhas -->
+      <form method="get" class="mb-3" th:action="@{/usuarios}">
+        <div class="row align-items-end mb-1">
+          <div class="col-md-2">
+            <label for="filtroCodigo" class="form-label mb-0">Código</label>
             <input
               type="text"
               class="form-control"
-              id="filtroUsuario"
-              placeholder="Buscar por nome, código ou email..."
+              name="filtroCodigo"
+              id="filtroCodigo"
+              th:value="${filtroCodigo}"
+              placeholder="Login"
             />
           </div>
+          <div class="col-md-2">
+            <label for="filtroNome" class="form-label mb-0">Nome</label>
+            <input
+              type="text"
+              class="form-control"
+              name="filtroNome"
+              id="filtroNome"
+              th:value="${filtroNome}"
+              placeholder="Nome do Usuário"
+            />
+          </div>
+          <div class="col-md-2">
+            <label for="filtroEmail" class="form-label mb-0">Email</label>
+            <input
+              type="text"
+              class="form-control"
+              name="filtroEmail"
+              id="filtroEmail"
+              th:value="${filtroEmail}"
+              placeholder="Email"
+            />
+          </div>
+          <div class="col-md-2">
+            <label for="filtroSubInstituicao" class="form-label mb-0"
+              >Sub-Instituição</label
+            >
+            <select class="form-select" name="filtroSubInstituicao" id="filtroSubInstituicao">
+              <option value="" th:selected="${filtroSubInstituicao == null || filtroSubInstituicao == ''}">Todas</option>
+              <option th:each="sub : ${subInstituicoes}" th:value="${sub.id}" th:text="${sub.nomeSubInstituicao}" th:selected="${filtroSubInstituicao == sub.id.toString()}"></option>
+              <option value="-1" th:selected="${filtroSubInstituicao == '-1'}">Nenhuma</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="filtroStatus" class="form-label mb-0">Sit.</label>
+            <select
+              class="form-select"
+              name="filtroStatus"
+              id="filtroStatus"
+            >
+              <option value="" th:selected="${filtroStatus == null || filtroStatus == ''}">Todos</option>
+              <option value="A" th:selected="${filtroStatus == 'A'}">A = Ativo</option>
+              <option value="B" th:selected="${filtroStatus == 'B'}">B = Bloqueado</option>
+              <option value="C" th:selected="${filtroStatus == 'C'}">C = Cancelado</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-filter me-2"></i>Filtrar
+            </button>
+            <a th:href="@{/usuarios}" class="btn btn-outline-secondary w-100"
+              >Limpar</a
+            >
+          </div>
         </div>
-        <div class="col-md-6 text-end">
-          <a href="/administrador/editar-usuarios" class="btn btn-primary">
-            <i class="fas fa-user-edit me-2"></i>Editar Usuários
-          </a>
+        <div class="row align-items-end">
+          <div class="col-md-2">
+            <label for="filtroPais" class="form-label mb-0">País</label>
+            <input
+              type="text"
+              class="form-control"
+              name="filtroPais"
+              id="filtroPais"
+              th:value="${filtroPais}"
+              placeholder="País"
+            />
+          </div>
+          <div class="col-md-2">
+            <label for="filtroEstado" class="form-label mb-0">Estado</label>
+            <input
+              type="text"
+              class="form-control"
+              name="filtroEstado"
+              id="filtroEstado"
+              th:value="${filtroEstado}"
+              placeholder="Estado"
+            />
+          </div>
+          <div class="col-md-2">
+            <label for="filtroCidade" class="form-label mb-0">Cidade</label>
+            <input
+              type="text"
+              class="form-control"
+              name="filtroCidade"
+              id="filtroCidade"
+              th:value="${filtroCidade}"
+              placeholder="Cidade"
+            />
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <select
+              class="form-select"
+              name="size"
+              onchange="this.form.submit()"
+            >
+              <option th:value="10" th:selected="${size == 10}">010</option>
+              <option th:value="100" th:selected="${size == 100}">100</option>
+              <option th:value="200" th:selected="${size == 200}">200</option>
+              <option th:value="300" th:selected="${size == 300}">300</option>
+              <option th:value="400" th:selected="${size == 400}">400</option>
+              <option th:value="500" th:selected="${size == 500}">500</option>
+            </select>
+          </div>
         </div>
-      </div>
+      </form>
 
       <!-- Tabela de Usuários -->
       <div class="card">
         <div class="card-header bg-light">
           <h5 class="mb-0">
             <i class="fas fa-list me-2"></i>
-            Lista de Usuários (<span th:text="${#lists.size(usuarios)}">0</span>
-            usuários)
+            Lista de Usuários (<span
+              th:text="${usuarios != null ? usuarios.size() : 0}"
+              >0</span
+            >
+            usuários listados)
           </h5>
         </div>
         <div class="card-body p-0">
@@ -120,15 +232,16 @@
                   <th><i class="fas fa-hashtag"></i> Código</th>
                   <th><i class="fas fa-user"></i> Nome</th>
                   <th><i class="fas fa-envelope"></i> Email</th>
+                  <th><i class="fas fa-globe"></i> País/Estado/Cidade</th>
                   <th><i class="fas fa-mobile-alt"></i> Celular</th>
                   <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
                   <th><i class="fas fa-user-tag"></i> Nível</th>
-                  <th><i class="fas fa-toggle-on"></i> Situação</th>
+                  <th><i class="fas fa-toggle-on"></i> Sit.</th>
                   <th><i class="fas fa-cogs"></i> Ações</th>
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="usuarioInst : ${usuarios}" class="linha-usuario">
+                <tr th:each="usuarioInst,iter : ${usuarios}" class="linha-usuario">
                   <td th:text="${usuarioInst.usuario.username}">U001</td>
                   <td>
                     <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
@@ -137,6 +250,15 @@
                   </td>
                   <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">
                     email@exemplo.com
+                  </td>
+                  <td>
+                    <span
+                      th:text="
+                      (${usuarioInst.usuario.pessoa.pais != null ? usuarioInst.usuario.pessoa.pais.nomeLocal : '---'}) + ' / ' +
+                      (${usuarioInst.usuario.pessoa.estado != null ? usuarioInst.usuario.pessoa.estado.nomeLocal : '---'}) + ' / ' +
+                      (${usuarioInst.usuario.pessoa.cidade != null ? usuarioInst.usuario.pessoa.cidade.nomeLocal : '---'})
+                    "
+                    ></span>
                   </td>
                   <td>
                     <span
@@ -151,46 +273,46 @@
                     >
                   </td>
                   <td>
-                    <span class="text-muted">Sub-instituição</span>
-                  </td>
-                  <td>
                     <span
-                      th:switch="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                      th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
+                      th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao}"
+                    ></span>
+                    <span
+                      th:unless="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
+                      >---</span
                     >
-                      <span th:case="1" class="badge bg-secondary"
-                        >Participante</span
-                      >
-                      <span th:case="2" class="badge bg-primary">Autor</span>
-                      <span th:case="5" class="badge bg-warning text-dark"
-                        >Administrador</span
-                      >
-                      <span th:case="9" class="badge bg-danger"
-                        >SuperUsuário</span
-                      >
-                      <span
-                        th:case="*"
-                        class="badge bg-dark"
-                        th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
-                        >Outros</span
-                      >
-                    </span>
                   </td>
+                  <td
+                    class="text-center"
+                    th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                  ></td>
                   <td>
                     <span
                       th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
                     >
-                      <span th:case="'A'" class="badge bg-success">Ativo</span>
-                      <span th:case="'B'" class="badge bg-warning text-dark"
-                        >Bloqueado</span
+                      <span
+                        th:case="'A'"
+                        class="badge"
+                        style="background-color: #28a745; color: #fff"
+                        >A</span
                       >
-                      <span th:case="'C'" class="badge bg-danger"
-                        >Cancelado</span
+                      <span
+                        th:case="'B'"
+                        class="badge"
+                        style="background-color: #ff9800; color: #fff"
+                        >B</span
+                      >
+                      <span
+                        th:case="'C'"
+                        class="badge"
+                        style="background-color: #dc3545; color: #fff"
+                        >C</span
                       >
                       <span
                         th:case="*"
                         class="badge bg-secondary"
                         th:text="${usuarioInst.sitAcessoUsuarioInstituicao}"
-                        >Indefinido</span
+                        >-</span
                       >
                     </span>
                   </td>
@@ -204,7 +326,10 @@
                       th:data-nivel-acesso="${usuarioInst.nivelAcessoUsuarioInstituicao}"
                       th:data-situacao-acesso="${usuarioInst.sitAcessoUsuarioInstituicao}"
                       th:data-nome-pessoa="${usuarioInst.usuario.pessoa.nomePessoa}"
+                      th:data-email-pessoa="${usuarioInst.usuario.pessoa.emailPessoa}"
+                      th:data-subinstituicao="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0 ? usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.id : ''}"
                       onclick="carregarDadosUsuario(this)"
+                      th:if="${nivelAcessoLogado != 5 or usuarioInst.nivelAcessoUsuarioInstituicao <= 5}"
                     >
                       <i class="fas fa-edit"></i> Editar
                     </button>
@@ -216,20 +341,53 @@
         </div>
       </div>
 
+      <!-- Paginação -->
+      <th:block th:if="${usuarios != null and usuarios.size() > 0 and totalPages > 1}">
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+              <a
+                class="page-link"
+                th:href="@{/usuarios(page=${(page ?: 0) > 0 ? (page ?: 0) - 1 : 0},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
+              >Anterior</a>
+            </li>
+            <li
+              class="page-item"
+              th:each="i : ${#numbers.sequence(0, (totalPages ?: 1) - 1)}"
+              th:classappend="${i == (page ?: 0)} ? 'active'"
+            >
+              <a
+                class="page-link"
+                th:href="@{/usuarios(page=${i},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
+                th:text="${i+1}"
+              ></a>
+            </li>
+            <li
+              class="page-item"
+              th:classappend="${page == ((totalPages ?: 1) - 1)} ? 'disabled'"
+            >
+              <a
+                class="page-link"
+                th:href="@{/usuarios(page=${(page ?: 0) + 1},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
+              >Próxima</a>
+            </li>
+          </ul>
+        </nav>
+      </th:block>
       <!-- Navegação -->
-      <div class="mt-4">
-        <a
-          href="/administrador"
-          th:if="${nivelAcessoLogado == 5}"
-          class="btn btn-secondary"
-        >
-          <i class="fas fa-arrow-left me-2"></i>Voltar ao Menu Administrador
-        </a>
-        <a
-          href="/superusuario"
-          th:if="${nivelAcessoLogado == 9}"
-          class="btn btn-secondary"
-        >
+      <div th:if="${totalPages <= 1 || usuarios == null || usuarios.size() == 0}" class="my-4"></div>
+      <a
+        href="/administrador"
+        th:if="${nivelAcessoLogado == 5}"
+        class="btn btn-secondary"
+      >
+        <i class="fas fa-arrow-left me-2"></i>Voltar ao Menu Administrador
+      </a>
+      <a
+        href="/superusuario"
+        th:if="${nivelAcessoLogado == 9}"
+        class="btn btn-secondary"
+      >
           <i class="fas fa-arrow-left me-2"></i>Voltar ao Menu SuperUsuário
         </a>
       </div>
@@ -256,19 +414,22 @@
                 id="usuarioInstituicaoId"
                 name="usuarioInstituicaoId"
               />
-
               <div class="mb-3">
-                <label for="nomeUsuarioModal" class="form-label"
-                  >Nome do Usuário:</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nomeUsuarioModal"
-                  readonly
-                />
+                <label for="nomeUsuarioModal" class="form-label">Nome do Usuário:</label>
+                <input type="text" class="form-control" id="nomeUsuarioModal" name="nomeUsuario" required />
               </div>
-
+              <div class="mb-3">
+                <label for="emailUsuarioModal" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="emailUsuarioModal" name="emailUsuario" required />
+              </div>
+              <div class="mb-3">
+                <label for="subInstituicaoUsuarioModal" class="form-label">Sub-Instituição:</label>
+                <select class="form-select" id="subInstituicaoUsuarioModal" name="subInstituicaoUsuario">
+                  <option value="" th:selected="${subInstituicaoUsuario == null || subInstituicaoUsuario == ''}">Manter atual</option>
+                  <option th:each="sub : ${subInstituicoes}" th:value="${sub.id}" th:text="${sub.nomeSubInstituicao}" th:selected="${subInstituicaoUsuario == sub.id}"></option>
+                  <option value="-1" th:selected="${subInstituicaoUsuario == '-1'}">Nenhuma</option>
+                </select>
+              </div>
               <div class="mb-3">
                 <label for="nivelAcessoUsuarioInstituicao" class="form-label"
                   >Nível de Acesso:</label
@@ -279,15 +440,12 @@
                   name="nivelAcessoUsuarioInstituicao"
                   required
                 >
-                  <option value="1">Participante</option>
-                  <option value="2">Autor</option>
-                  <option value="5">Administrador</option>
-                  <option value="9" th:if="${nivelAcessoLogado == 9}">
-                    SuperUsuário
-                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="5">5</option>
+                  <option value="9" th:if="${nivelAcessoLogado == 9}">9</option>
                 </select>
               </div>
-
               <div class="mb-3">
                 <label for="sitAcessoUsuarioInstituicao" class="form-label"
                   >Situação de Acesso:</label
@@ -298,9 +456,9 @@
                   name="sitAcessoUsuarioInstituicao"
                   required
                 >
-                  <option value="A">Ativo</option>
-                  <option value="B">Bloqueado</option>
-                  <option value="C">Cancelado</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
                 </select>
               </div>
             </div>
@@ -323,18 +481,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Filtro de busca
-      document
-        .getElementById("filtroUsuario")
-        .addEventListener("keyup", function () {
-          const filtro = this.value.toLowerCase();
-          const linhas = document.querySelectorAll(".linha-usuario");
-
-          linhas.forEach(function (linha) {
-            const texto = linha.textContent.toLowerCase();
-            linha.style.display = texto.includes(filtro) ? "" : "none";
-          });
-        });
+      // Filtro de busca agora é feito no servidor (form GET)
 
       // Carregar dados no modal
       function carregarDadosUsuario(button) {
@@ -342,12 +489,35 @@
         const nivel = button.getAttribute("data-nivel-acesso");
         const situacao = button.getAttribute("data-situacao-acesso");
         const nome = button.getAttribute("data-nome-pessoa");
+        const email = button.getAttribute("data-email-pessoa");
+        let subinst = button.getAttribute("data-subinstituicao");
+        // Se não houver sub-instituição, setar para '-1' (Nenhuma)
+        if (!subinst) subinst = "-1";
 
         document.getElementById("usuarioInstituicaoId").value = id;
         document.getElementById("nomeUsuarioModal").value = nome;
+        document.getElementById("emailUsuarioModal").value = email;
+        document.getElementById("subInstituicaoUsuarioModal").value = subinst;
         document.getElementById("nivelAcessoUsuarioInstituicao").value = nivel;
         document.getElementById("sitAcessoUsuarioInstituicao").value = situacao;
       }
+      // Redirecionar para /usuarios após salvar no modal
+      document.addEventListener('DOMContentLoaded', function() {
+        const modalForm = document.querySelector('#modalEditarUsuario form');
+        if (modalForm) {
+          modalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = new FormData(form);
+            fetch(form.action, {
+              method: 'POST',
+              body: data
+            }).then(() => {
+              window.location.href = '/usuarios';
+            });
+          });
+        }
+      });
     </script>
   </body>
 </html>

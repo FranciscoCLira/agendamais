@@ -35,7 +35,7 @@ public class Pessoa {
 	private String curriculoPessoal;
 
 	// Relacionamento com Sub-Instituições
-	@OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private java.util.List<PessoaSubInstituicao> pessoaSubInstituicao;
 
 	// GETTERS AND SETTERS

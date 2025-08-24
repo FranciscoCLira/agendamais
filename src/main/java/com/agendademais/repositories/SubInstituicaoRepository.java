@@ -9,13 +9,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubInstituicaoRepository extends JpaRepository<SubInstituicao, Long> {
 
-	// Object findBySituacaoSubInstituicao(String situacao);
-	
 	List<SubInstituicao> findBySituacaoSubInstituicao(String situacao);
-	
-	// Método para autocomplete de sub-instituições
-	List<SubInstituicao> findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao(String nome, String situacao);
-	
-	// Método para buscar sub-instituição por nome e instituição
+
+	List<SubInstituicao> findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao(String nome,
+			String situacao);
+
 	List<SubInstituicao> findByNomeSubInstituicaoAndInstituicao(String nome, Instituicao instituicao);
+
+	// Novo método para buscar sub-instituições ativas por instituição
+	List<SubInstituicao> findByInstituicaoAndSituacaoSubInstituicao(Instituicao instituicao, String situacao);
 }

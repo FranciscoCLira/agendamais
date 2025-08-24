@@ -18,6 +18,9 @@ import com.agendademais.entities.Pessoa;
 import com.agendademais.entities.Usuario;
 import com.agendademais.entities.UsuarioInstituicao;
 import com.agendademais.repositories.PessoaRepository;
+import com.agendademais.entities.SubInstituicao;
+import com.agendademais.entities.PessoaSubInstituicao;
+import com.agendademais.repositories.SubInstituicaoRepository;
 import com.agendademais.repositories.UsuarioInstituicaoRepository;
 import com.agendademais.repositories.UsuarioRepository;
 
@@ -36,8 +39,13 @@ public class GestaoUsuariosController {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Autowired
+    private SubInstituicaoRepository subInstituicaoRepository;
+
     @GetMapping("/usuarios")
-    public String listarUsuarios(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String listarUsuarios(@RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
         Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
@@ -45,40 +53,31 @@ public class GestaoUsuariosController {
 
         // Verificar permissões
         if (usuarioLogado == null || nivelAcesso == null) {
-            // Sessão expirada - redirecionar para acesso com mensagem amigável
             redirectAttributes.addFlashAttribute("mensagemErro", "Sessão expirou. Faça login novamente.");
             return "redirect:/acesso";
         }
-
         if (nivelAcesso < 5) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Acesso negado. Funcionalidade disponível apenas para Administradores e SuperUsuários.");
             return "redirect:/acesso";
         }
-
         if (instituicaoSelecionada == null) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro: Instituição não selecionada.");
             return "redirect:/acesso";
         }
-
         try {
-            // Buscar usuários da instituição com nível de acesso igual ou inferior ao
-            // usuário logado
             List<UsuarioInstituicao> usuarios;
-
-            if (nivelAcesso == 9) { // SuperUsuário - pode ver todos os níveis
+            if (nivelAcesso == 9) {
                 usuarios = usuarioInstituicaoRepository
                         .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
-            } else { // Administrador - pode ver apenas participantes, autores e administradores
+            } else {
                 usuarios = usuarioInstituicaoRepository
                         .findByInstituicaoAndNivelAcessoUsuarioInstituicaoLessThanEqualOrderByNivelAcessoUsuarioInstituicaoAsc(
                                 instituicaoSelecionada, 5);
             }
-
-            // REMOVER O USUÁRIO LOGADO DA LISTA (ele acessa seus dados via "Meus Dados")
+            // REMOVER O USUÁRIO LOGADO DA LISTA
             usuarios.removeIf(usuarioInst -> usuarioInst.getUsuario().getId().equals(usuarioLogado.getId()));
-
             // Adiciona celular formatado para exibição em cada usuário
             for (UsuarioInstituicao usuarioInst : usuarios) {
                 Pessoa pessoa = usuarioInst.getUsuario().getPessoa();
@@ -88,12 +87,24 @@ public class GestaoUsuariosController {
                     pessoa.setCelularPessoa(celularFormatado);
                 }
             }
-            model.addAttribute("usuarios", usuarios);
+            // Paginação manual
+            int safeSize = (size == null || size <= 0) ? 10 : size;
+            int totalElements = usuarios.size();
+            int fromIndex = Math.min(page * safeSize, totalElements);
+            int toIndex = Math.min(fromIndex + safeSize, totalElements);
+            List<UsuarioInstituicao> usuariosPaginados = usuarios.subList(fromIndex, toIndex);
+            int totalPages = (int) Math.ceil((double) totalElements / safeSize);
+            // Carrega sub-instituições ativas da instituição
+            List<SubInstituicao> subInstituicoes = subInstituicaoRepository
+                    .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
+            model.addAttribute("subInstituicoes", subInstituicoes);
+            model.addAttribute("usuarios", usuariosPaginados);
             model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
             model.addAttribute("nivelAcessoLogado", nivelAcesso);
-
+            model.addAttribute("page", page);
+            model.addAttribute("totalPages", totalPages > 0 ? totalPages : 1);
+            model.addAttribute("size", safeSize);
             return "gestao-usuarios/lista-usuarios";
-
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro ao carregar lista de usuários: " + e.getMessage());
@@ -102,47 +113,126 @@ public class GestaoUsuariosController {
     }
 
     @GetMapping("/editar-usuarios")
-    public String editarUsuarios(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String editarUsuarios(
+            @RequestParam(value = "filtroCodigo", required = false) String filtroCodigo,
+            @RequestParam(value = "filtroNome", required = false) String filtroNome,
+            @RequestParam(value = "filtroEmail", required = false) String filtroEmail,
+            @RequestParam(value = "filtroSubInstituicao", required = false) String filtroSubInstituicao,
+            @RequestParam(value = "filtroStatus", required = false) String filtroStatus,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            HttpSession session, Model model, RedirectAttributes redirectAttributes) {
 
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
         Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
         Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
 
         // Verificar permissões
-        if (usuarioLogado == null || nivelAcesso == null || nivelAcesso < 5) {
+        if (usuarioLogado == null || nivelAcesso == null) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Sua sessão expirou por inatividade ou o sistema foi reiniciado. Faça login novamente para continuar.");
+            return "redirect:/acesso";
+        }
+        if (nivelAcesso < 5) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Acesso negado. Funcionalidade disponível apenas para Administradores e SuperUsuários.");
             return "redirect:/acesso";
         }
-
         if (instituicaoSelecionada == null) {
             redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Erro: Instituição não selecionada.");
+                    "Erro: Instituição não selecionada. Faça login novamente.");
             return "redirect:/acesso";
         }
-
         try {
-            // Buscar usuários da instituição para edição
             List<UsuarioInstituicao> usuarios;
+            // Sempre lista todos os usuários da instituição, inclusive nível 9
+            usuarios = usuarioInstituicaoRepository
+                    .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
 
-            if (nivelAcesso == 9) { // SuperUsuário - pode editar todos os níveis
-                usuarios = usuarioInstituicaoRepository
-                        .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
-            } else { // Administrador - pode editar apenas participantes, autores e administradores
-                usuarios = usuarioInstituicaoRepository
-                        .findByInstituicaoAndNivelAcessoUsuarioInstituicaoLessThanEqualOrderByNivelAcessoUsuarioInstituicaoAsc(
-                                instituicaoSelecionada, 5);
+            // Filtros em memória, removendo acentos
+            if (filtroCodigo != null && !filtroCodigo.trim().isEmpty()) {
+                String codigoFiltro = removerAcentos(filtroCodigo);
+                usuarios = usuarios.stream()
+                        .filter(ui -> removerAcentos(ui.getUsuario().getUsername()).contains(codigoFiltro))
+                        .toList();
+            }
+            if (filtroNome != null && !filtroNome.trim().isEmpty()) {
+                String nomeFiltro = removerAcentos(filtroNome);
+                usuarios = usuarios.stream()
+                        .filter(ui -> removerAcentos(ui.getUsuario().getPessoa().getNomePessoa()).contains(nomeFiltro))
+                        .toList();
+            }
+            if (filtroEmail != null && !filtroEmail.trim().isEmpty()) {
+                String emailFiltro = filtroEmail.trim().toLowerCase();
+                usuarios = usuarios.stream()
+                        .filter(ui -> ui.getUsuario().getPessoa().getEmailPessoa().toLowerCase().contains(emailFiltro))
+                        .toList();
+            }
+            if (filtroSubInstituicao != null && !filtroSubInstituicao.trim().isEmpty()) {
+                if ("-1".equals(filtroSubInstituicao)) {
+                    // Nenhuma sub-instituição
+                    usuarios = usuarios.stream()
+                            .filter(ui -> ui.getUsuario().getPessoa().getPessoaSubInstituicao() == null ||
+                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() ||
+                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) == null ||
+                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                            .getSubInstituicao() == null)
+                            .toList();
+                } else {
+                    try {
+                        Long filtroSubId = Long.parseLong(filtroSubInstituicao);
+                        usuarios = usuarios.stream()
+                                .filter(ui -> {
+                                    try {
+                                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&
+                                                !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&
+                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&
+                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                                        .getSubInstituicao() != null
+                                                &&
+                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                                        .getSubInstituicao().getId().equals(filtroSubId);
+                                    } catch (Exception e) {
+                                        return false;
+                                    }
+                                })
+                                .toList();
+                    } catch (NumberFormatException e) {
+                        usuarios = usuarios.stream().filter(ui -> false).toList();
+                    }
+                }
+            }
+            if (filtroStatus != null && !filtroStatus.trim().isEmpty()) {
+                usuarios = usuarios.stream()
+                        .filter(ui -> filtroStatus.equalsIgnoreCase(ui.getSitAcessoUsuarioInstituicao()))
+                        .toList();
             }
 
-            // REMOVER O USUÁRIO LOGADO DA LISTA (ele acessa seus dados via "Meus Dados")
-            usuarios.removeIf(usuarioInst -> usuarioInst.getUsuario().getId().equals(usuarioLogado.getId()));
+            // Corrigir valor padrão de itens por página para 10 na ausência de filtros
+            int safeSize = (size == null || size <= 0) ? 10 : size;
+            model.addAttribute("filtroPaginacao", safeSize); // sempre manter selecionado
+            int totalElements = usuarios.size();
+            int fromIndex = Math.min(page * safeSize, totalElements);
+            int toIndex = Math.min(fromIndex + safeSize, totalElements);
+            List<UsuarioInstituicao> usuariosPaginados = usuarios.subList(fromIndex, toIndex);
+            int totalPages = (int) Math.ceil((double) totalElements / safeSize);
 
-            model.addAttribute("usuarios", usuarios);
+            model.addAttribute("usuarios", usuariosPaginados);
             model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
             model.addAttribute("nivelAcessoLogado", nivelAcesso);
-
+            model.addAttribute("page", page);
+            model.addAttribute("totalPages", totalPages > 0 ? totalPages : 1);
+            model.addAttribute("size", safeSize);
+            model.addAttribute("filtroCodigo", filtroCodigo);
+            model.addAttribute("filtroNome", filtroNome);
+            model.addAttribute("filtroEmail", filtroEmail);
+            model.addAttribute("filtroSubInstituicao", filtroSubInstituicao);
+            model.addAttribute("filtroStatus", filtroStatus);
+            model.addAttribute("totalUsuarios", usuariosPaginados.size());
+            List<SubInstituicao> subInstituicoes = subInstituicaoRepository
+                    .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
+            model.addAttribute("subInstituicoes", subInstituicoes);
             return "gestao-usuarios/editar-usuarios";
-
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro ao carregar dados para edição: " + e.getMessage());
@@ -155,6 +245,10 @@ public class GestaoUsuariosController {
             @RequestParam Long usuarioInstituicaoId,
             @RequestParam Integer nivelAcessoUsuarioInstituicao,
             @RequestParam String sitAcessoUsuarioInstituicao,
+            @RequestParam(value = "nomeUsuario", required = false) String nomeUsuario,
+            @RequestParam(value = "emailUsuario", required = false) String emailUsuario,
+            @RequestParam(value = "subInstituicaoUsuario", required = false) String subInstituicaoUsuarioId,
+            @RequestParam(value = "origem", required = false) String origem,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -169,13 +263,16 @@ public class GestaoUsuariosController {
         }
 
         try {
-            Optional<UsuarioInstituicao> usuarioInstOpt = usuarioInstituicaoRepository.findById(usuarioInstituicaoId);
 
+            Optional<UsuarioInstituicao> usuarioInstOpt = usuarioInstituicaoRepository.findById(usuarioInstituicaoId);
             if (usuarioInstOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
-                return "redirect:/administrador/usuarios";
+                if (origem != null && origem.equals("lista-usuarios")) {
+                    return "redirect:/usuarios";
+                } else {
+                    return "redirect:/administrador/editar-usuarios";
+                }
             }
-
             UsuarioInstituicao usuarioInst = usuarioInstOpt.get();
 
             // Verificar se o usuário logado tem permissão para alterar este nível
@@ -196,6 +293,52 @@ public class GestaoUsuariosController {
             usuarioInst.setNivelAcessoUsuarioInstituicao(nivelAcessoUsuarioInstituicao);
             usuarioInst.setSitAcessoUsuarioInstituicao(sitAcessoUsuarioInstituicao);
 
+            // Atualizar nome e email se fornecidos e diferentes do atual
+            Pessoa pessoa = usuarioInst.getUsuario().getPessoa();
+            if (nomeUsuario != null && !nomeUsuario.trim().isEmpty()
+                    && !nomeUsuario.trim().equals(pessoa.getNomePessoa())) {
+                pessoa.setNomePessoa(nomeUsuario.trim());
+            }
+            if (emailUsuario != null && !emailUsuario.trim().isEmpty()
+                    && !emailUsuario.trim().equals(pessoa.getEmailPessoa())) {
+                pessoa.setEmailPessoa(emailUsuario.trim());
+            }
+            // Atualizar sub-instituição se fornecida e diferente da atual
+            if (subInstituicaoUsuarioId != null) {
+                if (subInstituicaoUsuarioId.equals("-1") || subInstituicaoUsuarioId.isEmpty()) {
+                    // Desvincular sub-instituição
+                    if (pessoa.getPessoaSubInstituicao() != null && !pessoa.getPessoaSubInstituicao().isEmpty()) {
+                        pessoa.getPessoaSubInstituicao().clear();
+                        // Forçar remoção no banco se necessário
+                        pessoaRepository.save(pessoa);
+                    }
+                } else {
+                    try {
+                        Long subId = Long.parseLong(subInstituicaoUsuarioId);
+                        SubInstituicao novaSub = subInstituicaoRepository.findById(subId).orElse(null);
+                        if (novaSub != null) {
+                            if (pessoa.getPessoaSubInstituicao() == null
+                                    || pessoa.getPessoaSubInstituicao().isEmpty()) {
+                                // Cria nova relação se não existir
+                                PessoaSubInstituicao psi = new PessoaSubInstituicao();
+                                psi.setPessoa(pessoa);
+                                psi.setSubInstituicao(novaSub);
+                                pessoa.getPessoaSubInstituicao().add(psi);
+                            } else {
+                                if (pessoa.getPessoaSubInstituicao().get(0).getSubInstituicao() == null
+                                        || !pessoa.getPessoaSubInstituicao().get(0).getSubInstituicao().getId()
+                                                .equals(subId)) {
+                                    pessoa.getPessoaSubInstituicao().get(0).setSubInstituicao(novaSub);
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        // Ignorar erro de parse ou sub não encontrada
+                    }
+                }
+            }
+            pessoaRepository.save(pessoa);
+
             usuarioInstituicaoRepository.save(usuarioInst);
 
             redirectAttributes.addFlashAttribute("mensagemSucesso",
@@ -206,7 +349,10 @@ public class GestaoUsuariosController {
                     "Erro ao atualizar usuário: " + e.getMessage());
         }
 
-        return "redirect:/administrador/usuarios";
+        if (origem != null && origem.equals("lista-usuarios")) {
+            return "redirect:/usuarios";
+        }
+        return "redirect:/administrador/editar-usuarios";
     }
 
     @GetMapping("/lista-usuarios")
@@ -227,8 +373,8 @@ public class GestaoUsuariosController {
 
             // Verificar permissões
             if (usuarioLogado == null || nivelAcesso == null) {
-                // Sessão expirada - redirecionar para acesso com mensagem amigável
-                redirectAttributes.addFlashAttribute("mensagemErro", "Sessão expirou. Faça login novamente.");
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Sua sessão expirou por inatividade ou o sistema foi reiniciado. Faça login novamente para continuar.");
                 return "redirect:/acesso";
             }
 
@@ -249,6 +395,11 @@ public class GestaoUsuariosController {
 
             // NOTA: Incluindo o usuário logado na lista pois esta é uma view apenas de
             // consulta
+
+            // Carrega sub-instituições ativas da instituição
+            List<SubInstituicao> subInstituicoes = subInstituicaoRepository
+                    .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
+            model.addAttribute("subInstituicoes", subInstituicoes);
 
             // Aplicar filtros
             if (codigoUsuario != null && !codigoUsuario.trim().isEmpty()) {
@@ -300,27 +451,43 @@ public class GestaoUsuariosController {
             }
 
             if (subInstituicao != null && !subInstituicao.trim().isEmpty()) {
-                String subInstituicaoFiltro = removerAcentos(subInstituicao);
-                usuarios = usuarios.stream()
-                        .filter(ui -> {
-                            try {
-                                return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&
-                                        !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&
-                                        ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&
-                                        ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
-                                                .getSubInstituicao() != null
-                                        &&
-                                        ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
-                                                .getSubInstituicao().getNomeSubInstituicao() != null
-                                        &&
-                                        removerAcentos(ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
-                                                .getSubInstituicao().getNomeSubInstituicao())
-                                                .contains(subInstituicaoFiltro);
-                            } catch (Exception e) {
-                                return false;
-                            }
-                        })
-                        .collect(java.util.stream.Collectors.toList());
+                if ("-1".equals(subInstituicao)) {
+                    // Nenhuma sub-instituição
+                    usuarios = usuarios.stream()
+                            .filter(ui -> {
+                                try {
+                                    return ui.getUsuario().getPessoa().getPessoaSubInstituicao() == null ||
+                                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() ||
+                                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
+                                                    .allMatch(psi -> psi.getSubInstituicao() == null);
+                                } catch (Exception e) {
+                                    return false;
+                                }
+                            })
+                            .collect(java.util.stream.Collectors.toList());
+                } else if (!"".equals(subInstituicao)) {
+                    String subInstituicaoFiltro = removerAcentos(subInstituicao);
+                    usuarios = usuarios.stream()
+                            .filter(ui -> {
+                                try {
+                                    return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&
+                                            !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&
+                                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&
+                                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                                    .getSubInstituicao() != null
+                                            &&
+                                            ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                                    .getSubInstituicao().getNomeSubInstituicao() != null
+                                            &&
+                                            removerAcentos(ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                                    .getSubInstituicao().getNomeSubInstituicao())
+                                                    .contains(subInstituicaoFiltro);
+                                } catch (Exception e) {
+                                    return false;
+                                }
+                            })
+                            .collect(java.util.stream.Collectors.toList());
+                }
             }
 
             // Calcular estatísticas

@@ -3,21 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <title>Editar Usuários</title>
+
+    <!-- Custom CSS (primeiro) -->
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
+    <!-- Bootstrap CSS (por último) -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
   </head>
   <body>
-    <!-- CABEÇALHO PADRÃO -->
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
-
     <div class="container mt-4">
+      <!-- TODO: todo o conteúdo da página deve estar aqui dentro -->
+      <!-- O fechamento de </body> e </html> deve estar apenas no final do arquivo -->
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -46,8 +50,13 @@
           <h2>
             <i class="fas fa-user-edit me-2 text-warning"></i>
             Editar Usuários -
-            <span th:text="${instituicaoSelecionada.nomeInstituicao}"
+            <span
+              th:if="${instituicaoSelecionada != null}"
+              th:text="${instituicaoSelecionada.nomeInstituicao}"
               >Instituição</span
+            >
+            <span th:unless="${instituicaoSelecionada != null}"
+              >Instituição não selecionada</span
             >
           </h2>
           <p class="text-muted">
@@ -88,77 +97,150 @@
       <!-- Filtros -->
       <div class="card mb-4">
         <div class="card-header bg-light">
-          <h5 class="mb-0">
-            <i class="fas fa-search me-2"></i>Filtros de Busca
-          </h5>
+          <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros</h5>
         </div>
         <div class="card-body">
-          <div class="row">
-            <div class="col-md-4">
-              <label for="filtroCodigo" class="form-label"
-                >Código do Usuário:</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="filtroCodigo"
-                placeholder="Digite o código..."
-                list="listaCodigos"
-              />
-              <datalist id="listaCodigos">
-                <option
-                  th:each="usuarioInst : ${usuarios}"
-                  th:value="${usuarioInst.usuario.username}"
-                ></option>
-              </datalist>
+          <form
+            method="get"
+            th:action="@{/administrador/editar-usuarios}"
+            autocomplete="off"
+          >
+            <div class="row g-3 align-items-end">
+              <div class="col-md-3">
+                <label for="filtroCodigo" class="form-label"
+                  >Código do Usuário:</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="filtroCodigo"
+                  name="filtroCodigo"
+                  placeholder="Login"
+                  th:value="${filtroCodigo}"
+                  list="listaCodigos"
+                />
+                <datalist id="listaCodigos">
+                  <option
+                    th:each="usuarioInst : ${usuarios}"
+                    th:value="${usuarioInst.usuario.username}"
+                  ></option>
+                </datalist>
+              </div>
+              <div class="col-md-3">
+                <label for="filtroNome" class="form-label"
+                  >Nome do Usuário:</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="filtroNome"
+                  name="filtroNome"
+                  placeholder="Nome do Usuário"
+                  th:value="${filtroNome}"
+                  list="listaNomes"
+                />
+                <datalist id="listaNomes">
+                  <option
+                    th:each="usuarioInst : ${usuarios}"
+                    th:value="${usuarioInst.usuario.pessoa.nomePessoa}"
+                  ></option>
+                </datalist>
+              </div>
+              <div class="col-md-3">
+                <label for="filtroEmail" class="form-label">Email:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="filtroEmail"
+                  name="filtroEmail"
+                  placeholder="Email"
+                  th:value="${filtroEmail}"
+                />
+              </div>
+              <div class="col-md-3">
+                <label for="filtroSubInstituicao" class="form-label"
+                  >Sub-Instituição:</label
+                >
+                <select
+                  class="form-select"
+                  id="filtroSubInstituicao"
+                  name="filtroSubInstituicao"
+                >
+                  <option
+                    value=""
+                    th:selected="${filtroSubInstituicao == null || filtroSubInstituicao == ''}"
+                  >
+                    Todas
+                  </option>
+                  <option
+                    th:each="sub : ${subInstituicoes}"
+                    th:value="${sub.id}"
+                    th:text="${sub.nomeSubInstituicao}"
+                    th:selected="${filtroSubInstituicao == sub.id.toString()}"
+                  ></option>
+                  <option
+                    value="-1"
+                    th:selected="${filtroSubInstituicao == '-1'}"
+                  >
+                    Nenhuma
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label for="filtroStatus" class="form-label"
+                  >Situação Atual:</label
+                >
+                <select
+                  class="form-select"
+                  id="filtroStatus"
+                  name="filtroStatus"
+                  th:value="${filtroStatus}"
+                >
+                  <option value="">Todas</option>
+                  <option value="A" th:selected="${filtroStatus == 'A'}">
+                    Ativo
+                  </option>
+                  <option value="B" th:selected="${filtroStatus == 'B'}">
+                    Bloqueado
+                  </option>
+                  <option value="C" th:selected="${filtroStatus == 'C'}">
+                    Cancelado
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label for="size" class="form-label">Itens por página:</label>
+                <select
+                  class="form-select"
+                  id="size"
+                  name="size"
+                  onchange="this.form.submit()"
+                >
+                  <option value="10" th:selected="${size == 10}">10</option>
+                  <option value="25" th:selected="${size == 25}">25</option>
+                  <option value="50" th:selected="${size == 50}">50</option>
+                  <option value="100" th:selected="${size == 100}">100</option>
+                  <option value="200" th:selected="${size == 200}">200</option>
+                  <option value="300" th:selected="${size == 300}">300</option>
+                  <option value="400" th:selected="${size == 400}">400</option>
+                  <option value="500" th:selected="${size == 500}">500</option>
+                </select>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="fas fa-search me-2"></i>Buscar
+                </button>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <a
+                  th:href="@{/administrador/editar-usuarios}"
+                  class="btn btn-secondary w-100"
+                >
+                  <i class="fas fa-eraser me-2"></i>Limpar
+                </a>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label for="filtroNome" class="form-label"
-                >Nome do Usuário:</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="filtroNome"
-                placeholder="Digite o nome..."
-                list="listaNomes"
-              />
-              <datalist id="listaNomes">
-                <option
-                  th:each="usuarioInst : ${usuarios}"
-                  th:value="${usuarioInst.usuario.pessoa.nomePessoa}"
-                ></option>
-              </datalist>
-            </div>
-            <div class="col-md-4">
-              <label for="filtroSubInstituicao" class="form-label"
-                >Sub-Instituição:</label
-              >
-              <select class="form-select" id="filtroSubInstituicao">
-                <option value="">Todas as Sub-Instituições</option>
-                <option value="sem-vinculo">Sem Vínculo</option>
-                <!-- Aqui seria necessário carregar as sub-instituições dinamicamente -->
-              </select>
-            </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col-12">
-              <button
-                type="button"
-                class="btn btn-primary"
-                onclick="aplicarFiltros()"
-              >
-                <i class="fas fa-search me-2"></i>Buscar
-              </button>
-              <button
-                type="button"
-                class="btn btn-secondary ms-2"
-                onclick="limparFiltros()"
-              >
-                <i class="fas fa-eraser me-2"></i>Limpar
-              </button>
-            </div>
-          </div>
+          </form>
         </div>
       </div>
 
@@ -167,7 +249,15 @@
         <div class="card-header bg-light">
           <h5 class="mb-0">
             <i class="fas fa-list me-2"></i>
-            Selecionar Usuários para Edição
+            Selecionar Usuários para Alteração em Massa
+            <span
+              class="text-secondary"
+              style="font-size: 0.95em; font-weight: normal"
+            >
+              (
+              <span th:text="${totalUsuarios}"></span>
+              usuário(s) listado(s) )
+            </span>
           </h5>
         </div>
         <div class="card-body p-0">
@@ -181,6 +271,7 @@
                         class="form-check-input"
                         type="checkbox"
                         id="selecionarTodos"
+                        onclick="marcarTodosUsuarios(this)"
                       />
                       <label class="form-check-label" for="selecionarTodos">
                         <i class="fas fa-check-square"></i>
@@ -190,9 +281,10 @@
                   <th><i class="fas fa-hashtag"></i> Código</th>
                   <th><i class="fas fa-user"></i> Nome</th>
                   <th><i class="fas fa-envelope"></i> Email</th>
+                  <th><i class="fas fa-globe"></i> País/Estado/Cidade</th>
                   <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
                   <th><i class="fas fa-user-tag"></i> Nível Atual</th>
-                  <th><i class="fas fa-toggle-on"></i> Situação Atual</th>
+                  <th><i class="fas fa-toggle-on"></i> Sit.</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,6 +299,7 @@
                         th:data-nome="${usuarioInst.usuario.pessoa.nomePessoa}"
                         th:data-nivel="${usuarioInst.nivelAcessoUsuarioInstituicao}"
                         th:data-situacao="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                        th:disabled="${usuarioInst.nivelAcessoUsuarioInstituicao == 9}"
                       />
                     </div>
                   </td>
@@ -220,46 +313,55 @@
                     email@exemplo.com
                   </td>
                   <td>
-                    <span class="text-muted">Sub-instituição</span>
+                    <span
+                      th:text="
+                      (${usuarioInst.usuario.pessoa.pais != null ? usuarioInst.usuario.pessoa.pais.nomeLocal : '---'}) + ' / ' +
+                      (${usuarioInst.usuario.pessoa.estado != null ? usuarioInst.usuario.pessoa.estado.nomeLocal : '---'}) + ' / ' +
+                      (${usuarioInst.usuario.pessoa.cidade != null ? usuarioInst.usuario.pessoa.cidade.nomeLocal : '---'})
+                    "
+                    ></span>
                   </td>
                   <td>
                     <span
-                      th:switch="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                      th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
+                      th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao != null ? usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao : '---'}"
                     >
-                      <span th:case="1" class="badge bg-secondary"
-                        >Participante</span
-                      >
-                      <span th:case="2" class="badge bg-primary">Autor</span>
-                      <span th:case="5" class="badge bg-warning text-dark"
-                        >Administrador</span
-                      >
-                      <span th:case="9" class="badge bg-danger"
-                        >SuperUsuário</span
-                      >
-                      <span
-                        th:case="*"
-                        class="badge bg-dark"
-                        th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
-                        >Outros</span
-                      >
                     </span>
+                    <span
+                      th:unless="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
+                      >---</span
+                    >
                   </td>
+                  <td
+                    th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                  ></td>
                   <td>
                     <span
                       th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
                     >
-                      <span th:case="'A'" class="badge bg-success">Ativo</span>
-                      <span th:case="'B'" class="badge bg-warning text-dark"
-                        >Bloqueado</span
+                      <span
+                        th:case="'A'"
+                        class="badge"
+                        style="background-color: #28a745; color: #fff"
+                        >A</span
                       >
-                      <span th:case="'C'" class="badge bg-danger"
-                        >Cancelado</span
+                      <span
+                        th:case="'B'"
+                        class="badge"
+                        style="background-color: #ff9800; color: #fff"
+                        >B</span
+                      >
+                      <span
+                        th:case="'C'"
+                        class="badge"
+                        style="background-color: #dc3545; color: #fff"
+                        >C</span
                       >
                       <span
                         th:case="*"
                         class="badge bg-secondary"
                         th:text="${usuarioInst.sitAcessoUsuarioInstituicao}"
-                        >Indefinido</span
+                        >-</span
                       >
                     </span>
                   </td>
@@ -280,21 +382,37 @@
         <div class="card-body">
           <form id="formEdicaoUsuarios">
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <label for="novaSubInstituicao" class="form-label"
+                  >Nova Sub-Instituição:</label
+                >
+                <select
+                  class="form-select"
+                  id="novaSubInstituicao"
+                  name="novaSubInstituicao"
+                >
+                  <option value="" selected>Manter atual</option>
+                  <option
+                    th:each="sub : ${subInstituicoes}"
+                    th:value="${sub.id}"
+                    th:text="${sub.nomeSubInstituicao}"
+                  ></option>
+                  <option value="-1">Nenhuma</option>
+                </select>
+              </div>
+              <div class="col-md-4">
                 <label for="novoNivelAcesso" class="form-label"
                   >Novo Nível de Acesso:</label
                 >
                 <select class="form-select" id="novoNivelAcesso">
                   <option value="">Manter atual</option>
-                  <option value="1">Participante</option>
-                  <option value="2">Autor</option>
-                  <option value="5">Administrador</option>
-                  <option value="9" th:if="${nivelAcessoLogado == 9}">
-                    SuperUsuário
-                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="5">5</option>
+                  <option value="9" th:if="${nivelAcessoLogado == 9}">9</option>
                 </select>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label for="novaSituacao" class="form-label"
                   >Nova Situação:</label
                 >
@@ -307,34 +425,95 @@
               </div>
             </div>
             <div class="row mt-3">
-              <div class="col-12">
-                <h6>Usuários selecionados:</h6>
-                <div id="listaUsuariosSelecionados" class="alert alert-info">
-                  <!-- Lista será preenchida dinamicamente -->
-                </div>
-              </div>
-            </div>
-            <div class="row mt-3">
-              <div class="col-12">
+              <div class="col-12 text-end">
                 <button
                   type="button"
-                  class="btn btn-warning"
-                  onclick="aplicarEdicoes()"
+                  class="btn btn-success fw-bold"
+                  onclick="confirmarAlteracaoUsuarios()"
                 >
-                  <i class="fas fa-save me-2"></i>Aplicar Alterações
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary ms-2"
-                  onclick="cancelarEdicao()"
-                >
-                  <i class="fas fa-times me-2"></i>Cancelar
+                  <i class="fas fa-check me-2"></i>Confirmar Alteração
                 </button>
               </div>
             </div>
           </form>
         </div>
+        <!-- Modal de confirmação -->
+        <div class="modal fade" id="modalConfirmacaoAlteracao" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                  <i class="fas fa-exclamation-triangle me-2"></i>Confirmação de
+                  Alteração em Massa
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div id="resumoAlteracao"></div>
+                <div class="alert alert-danger mt-3">
+                  <strong>Atenção:</strong> Esta alteração será aplicada para
+                  <span id="qtdUsuariosSelecionados"></span> usuário(s)
+                  selecionados/listados!
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  onclick="aplicarEdicoes()"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Paginação -->
+      <nav class="mt-4" th:if="${totalPages > 1 && totalUsuarios > 0}">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+            <a
+              class="page-link"
+              th:href="@{/administrador/editar-usuarios(page=${page > 0 ? page - 1 : 0},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus})}"
+              >Anterior</a
+            >
+          </li>
+          <li
+            class="page-item"
+            th:each="i : ${#numbers.sequence(0, (totalPages ?: 1) - 1)}"
+            th:classappend="${i == page} ? 'active'"
+          >
+            <a
+              class="page-link"
+              th:href="@{/administrador/editar-usuarios(page=${i},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus})}"
+              th:text="${i+1}"
+            ></a>
+          </li>
+          <li
+            class="page-item"
+            th:classappend="${page >= ((totalPages ?: 1) - 1)} ? 'disabled'"
+          >
+            <a
+              class="page-link"
+              th:href="@{/administrador/editar-usuarios(page=${page + 1},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus})}"
+              >Próxima</a
+            >
+          </li>
+        </ul>
+      </nav>
 
       <!-- Navegação -->
       <div class="mt-4">
@@ -346,65 +525,71 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Controle de seleção
-      document
-        .getElementById("selecionarTodos")
-        .addEventListener("change", function () {
-          const checkboxes = document.querySelectorAll(".usuario-checkbox");
-          checkboxes.forEach((checkbox) => {
-            checkbox.checked = this.checked;
-          });
-          atualizarPainelEdicao();
+      // Função para marcar/desmarcar todos os checkboxes de usuário
+      function marcarTodosUsuarios(masterCheckbox) {
+        const checkboxes = document.querySelectorAll(".usuario-checkbox");
+        checkboxes.forEach((cb) => {
+          if (!cb.disabled) cb.checked = masterCheckbox.checked;
         });
-
-      // Adicionar event listener para checkboxes individuais
-      document.querySelectorAll(".usuario-checkbox").forEach((checkbox) => {
-        checkbox.addEventListener("change", atualizarPainelEdicao);
+        // Atualiza painel de edição após marcar todos
+        setTimeout(function () {
+          if (typeof atualizarPainelEdicao === "function")
+            atualizarPainelEdicao();
+        }, 50);
+      }
+      // Exibir painel de edição ao selecionar pelo menos um usuário
+      document.addEventListener("DOMContentLoaded", function () {
+        const checkboxes = document.querySelectorAll(".usuario-checkbox");
+        const painel = document.getElementById("painelEdicao");
+        window.atualizarPainelEdicao = function atualizarPainelEdicao() {
+          const algumSelecionado = Array.from(checkboxes).some(
+            (cb) => cb.checked
+          );
+          painel.style.display = algumSelecionado ? "" : "none";
+        };
+        checkboxes.forEach((cb) =>
+          cb.addEventListener("change", window.atualizarPainelEdicao)
+        );
+        window.atualizarPainelEdicao();
       });
 
-      function atualizarPainelEdicao() {
+      function confirmarAlteracaoUsuarios() {
         const selecionados = document.querySelectorAll(
           ".usuario-checkbox:checked"
         );
-        const painel = document.getElementById("painelEdicao");
-        const lista = document.getElementById("listaUsuariosSelecionados");
-
-        if (selecionados.length > 0) {
-          painel.style.display = "block";
-          let html = '<ul class="mb-0">';
-          selecionados.forEach((checkbox) => {
-            const nome = checkbox.getAttribute("data-nome");
-            html += `<li>${nome}</li>`;
-          });
-          html += "</ul>";
-          lista.innerHTML = html;
-        } else {
-          painel.style.display = "none";
+        const novoNivel = document.getElementById("novoNivelAcesso").value;
+        const novaSituacao = document.getElementById("novaSituacao").value;
+        const novaSubInstituicao =
+          document.getElementById("novaSubInstituicao").value;
+        let resumo = "";
+        if (!novoNivel && !novaSituacao && !novaSubInstituicao) {
+          alert("Selecione pelo menos uma alteração a ser aplicada.");
+          return;
         }
-      }
-
-      function aplicarFiltros() {
-        const filtroTexto =
-          document.getElementById("filtroCodigo").value.toLowerCase() +
-          " " +
-          document.getElementById("filtroNome").value.toLowerCase();
-        const linhas = document.querySelectorAll(".linha-usuario");
-
-        linhas.forEach(function (linha) {
-          const texto = linha.textContent.toLowerCase();
-          linha.style.display = texto.includes(filtroTexto.trim())
-            ? ""
-            : "none";
-        });
-      }
-
-      function limparFiltros() {
-        document.getElementById("filtroCodigo").value = "";
-        document.getElementById("filtroNome").value = "";
-        document.getElementById("filtroSubInstituicao").value = "";
-
-        const linhas = document.querySelectorAll(".linha-usuario");
-        linhas.forEach((linha) => (linha.style.display = ""));
+        if (selecionados.length === 0) {
+          alert("Selecione pelo menos um usuário.");
+          return;
+        }
+        resumo += "<ul>";
+        if (novoNivel)
+          resumo += `<li><b>Novo Nível de Acesso:</b> ${novoNivel}</li>`;
+        if (novaSituacao)
+          resumo += `<li><b>Nova Situação:</b> ${novaSituacao}</li>`;
+        if (novaSubInstituicao) {
+          if (novaSubInstituicao === "-1") {
+            resumo += `<li><b>Nova Sub-Instituição:</b> Nenhuma</li>`;
+          } else {
+            resumo += `<li><b>Nova Sub-Instituição:</b> ${novaSubInstituicao}</li>`;
+          }
+        }
+        resumo += "</ul>";
+        document.getElementById("resumoAlteracao").innerHTML = resumo;
+        document.getElementById("qtdUsuariosSelecionados").innerText =
+          selecionados.length;
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalConfirmacaoAlteracao")
+        );
+        modal.show();
       }
 
       function aplicarEdicoes() {
@@ -413,76 +598,63 @@
         );
         const novoNivel = document.getElementById("novoNivelAcesso").value;
         const novaSituacao = document.getElementById("novaSituacao").value;
-
+        const novaSubInstituicao =
+          document.getElementById("novaSubInstituicao").value;
         if (selecionados.length === 0) {
           alert("Selecione pelo menos um usuário.");
           return;
         }
-
-        if (!novoNivel && !novaSituacao) {
+        if (!novoNivel && !novaSituacao && !novaSubInstituicao) {
           alert("Selecione pelo menos uma alteração a ser aplicada.");
           return;
         }
-
-        if (
-          confirm(
-            `Confirma a aplicação das alterações em ${selecionados.length} usuário(s)?`
-          )
-        ) {
-          // Aplicar as alterações uma por uma
-          let processados = 0;
-          selecionados.forEach((checkbox, index) => {
-            setTimeout(() => {
-              const form = document.createElement("form");
-              form.method = "POST";
-              form.action = "/administrador/atualizar-usuario";
-
-              // Campo ID
-              const inputId = document.createElement("input");
-              inputId.type = "hidden";
-              inputId.name = "usuarioInstituicaoId";
-              inputId.value = checkbox.value;
-              form.appendChild(inputId);
-
-              // Nível de acesso
-              const inputNivel = document.createElement("input");
-              inputNivel.type = "hidden";
-              inputNivel.name = "nivelAcessoUsuarioInstituicao";
-              inputNivel.value =
-                novoNivel || checkbox.getAttribute("data-nivel");
-              form.appendChild(inputNivel);
-
-              // Situação
-              const inputSituacao = document.createElement("input");
-              inputSituacao.type = "hidden";
-              inputSituacao.name = "sitAcessoUsuarioInstituicao";
-              inputSituacao.value =
-                novaSituacao || checkbox.getAttribute("data-situacao");
-              form.appendChild(inputSituacao);
-
-              document.body.appendChild(form);
-
-              if (index === selecionados.length - 1) {
-                // Último usuário - submeter o formulário
-                form.submit();
-              } else {
-                // Não é o último - apenas enviar via fetch
-                fetch(form.action, {
-                  method: "POST",
-                  body: new FormData(form),
-                });
-              }
-            }, index * 100); // Pequeno delay entre requisições
-          });
-        }
-      }
-
-      function cancelarEdicao() {
-        document.querySelectorAll(".usuario-checkbox").forEach((checkbox) => {
-          checkbox.checked = false;
+        selecionados.forEach((checkbox, index) => {
+          setTimeout(() => {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/administrador/atualizar-usuario";
+            // Campo ID
+            const inputId = document.createElement("input");
+            inputId.type = "hidden";
+            inputId.name = "usuarioInstituicaoId";
+            inputId.value = checkbox.value;
+            form.appendChild(inputId);
+            // Nível de acesso
+            const inputNivel = document.createElement("input");
+            inputNivel.type = "hidden";
+            inputNivel.name = "nivelAcessoUsuarioInstituicao";
+            inputNivel.value = novoNivel || checkbox.getAttribute("data-nivel");
+            form.appendChild(inputNivel);
+            // Situação
+            const inputSituacao = document.createElement("input");
+            inputSituacao.type = "hidden";
+            inputSituacao.name = "sitAcessoUsuarioInstituicao";
+            inputSituacao.value =
+              novaSituacao || checkbox.getAttribute("data-situacao");
+            form.appendChild(inputSituacao);
+            // Sub-Instituição
+            if (novaSubInstituicao) {
+              const inputSubInst = document.createElement("input");
+              inputSubInst.type = "hidden";
+              inputSubInst.name = "subInstituicaoUsuario";
+              // Se for 'Nenhuma', garantir envio de '-1' para desvincular
+              inputSubInst.value =
+                novaSubInstituicao === "-1" || novaSubInstituicao === ""
+                  ? "-1"
+                  : novaSubInstituicao;
+              form.appendChild(inputSubInst);
+            }
+            document.body.appendChild(form);
+            if (index === selecionados.length - 1) {
+              form.submit();
+            } else {
+              fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+              });
+            }
+          }, index * 100);
         });
-        document.getElementById("selecionarTodos").checked = false;
-        atualizarPainelEdicao();
       }
     </script>
   </body>

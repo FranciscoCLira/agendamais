@@ -58,7 +58,15 @@
         ></button>
       </div>
 
-      <!-- Estatísticas Básicas -->
+      <!-- Link Ver Gráficos -->
+      <div class="row mb-2">
+        <div class="col-12 text-end">
+          <a href="#graficos" class="btn btn-outline-primary">
+            <i class="fas fa-chart-pie me-2"></i>Ver Gráficos
+          </a>
+        </div>
+      </div>
+      <!-- Estatísticas Básicas e Gráficos -->
       <div class="row mb-4">
         <div class="col-md-4">
           <div class="card bg-primary text-white">
@@ -84,6 +92,30 @@
               <i class="fas fa-link fa-2x mb-3"></i>
               <h3 th:text="${totalVinculos ?: 0}">0</h3>
               <p>Total de Vínculos</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficos de Pizza -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-light">
+              <b>Distribuição por Nível de Acesso</b>
+            </div>
+            <div class="card-body">
+              <canvas id="pieNivelAcesso"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-light">
+              <b>Distribuição por Situação</b>
+            </div>
+            <div class="card-body">
+              <canvas id="pieSituacao"></canvas>
             </div>
           </div>
         </div>
@@ -128,5 +160,58 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      // Serializa arrays Thymeleaf para JavaScript
+      const nivelLabels = /*[[${nivelLabels}]]*/ [];
+      const nivelCounts = /*[[${nivelCounts}]]*/ [];
+      const situacaoLabels = /*[[${situacaoLabels}]]*/ [];
+      const situacaoCounts = /*[[${situacaoCounts}]]*/ [];
+
+      // Gráfico de pizza - Nível de Acesso
+      new Chart(document.getElementById("pieNivelAcesso"), {
+        type: "pie",
+        data: {
+          labels: nivelLabels,
+          datasets: [
+            {
+              data: nivelCounts,
+              backgroundColor: [
+                "#007bff",
+                "#ffc107",
+                "#28a745",
+                "#dc3545",
+                "#6c757d",
+                "#17a2b8",
+              ],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: "bottom" } },
+        },
+      });
+
+      // Gráfico de pizza - Situação
+      new Chart(document.getElementById("pieSituacao"), {
+        type: "pie",
+        data: {
+          labels: situacaoLabels,
+          datasets: [
+            {
+              data: situacaoCounts,
+              backgroundColor: ["#28a745", "#ffc107", "#dc3545", "#6c757d"],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: "bottom" } },
+        },
+      });
+      /*]]>*/
+    </script>
   </body>
 </html>
