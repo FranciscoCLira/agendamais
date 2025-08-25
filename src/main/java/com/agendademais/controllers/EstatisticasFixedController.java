@@ -28,13 +28,16 @@ public class EstatisticasFixedController {
      */
     @GetMapping("/administrador/estatistica-usuarios/graficos")
     public String estatisticaUsuariosGraficos(Model model, HttpSession session, RedirectAttributes redirectAttributes,
-                                             @org.springframework.web.bind.annotation.RequestParam(value = "situacao", required = false) String situacao,
-                                             @org.springframework.web.bind.annotation.RequestParam(value = "limiar", required = false) String limiarParam) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "situacao", required = false) String situacao,
+            @org.springframework.web.bind.annotation.RequestParam(value = "limiar", required = false) String limiarParam) {
         // Buscar dados reais da sessão
         model.addAttribute("situacao", situacao != null ? situacao : "");
         double limiar = 5.0;
         if (limiarParam != null && !limiarParam.isEmpty()) {
-            try { limiar = Double.parseDouble(limiarParam); } catch (Exception ignored) {}
+            try {
+                limiar = Double.parseDouble(limiarParam);
+            } catch (Exception ignored) {
+            }
         }
         model.addAttribute("limiar", limiar);
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
@@ -45,17 +48,20 @@ public class EstatisticasFixedController {
             return "redirect:/acesso";
         }
         List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
-            .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+                .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
         if (situacao != null && !situacao.isEmpty()) {
             usuarios = usuarios.stream()
-                .filter(ui -> {
-                    Object sit = ui.getSitAcessoUsuarioInstituicao();
-                    if (sit == null) return false;
-                    String sitStr = sit instanceof Character ? String.valueOf(sit) : sit.toString();
-                    System.out.println("[DEBUG FILTRO] Usuario: " + (ui.getUsuario() != null ? ui.getUsuario().getUsername() : "null") + " | sitAcessoUsuarioInstituicao: '" + sitStr + "' | Filtro: '" + situacao + "'");
-                    return situacao.equals(sitStr);
-                })
-                .toList();
+                    .filter(ui -> {
+                        Object sit = ui.getSitAcessoUsuarioInstituicao();
+                        if (sit == null)
+                            return false;
+                        String sitStr = sit instanceof Character ? String.valueOf(sit) : sit.toString();
+                        System.out.println("[DEBUG FILTRO] Usuario: "
+                                + (ui.getUsuario() != null ? ui.getUsuario().getUsername() : "null")
+                                + " | sitAcessoUsuarioInstituicao: '" + sitStr + "' | Filtro: '" + situacao + "'");
+                        return situacao.equals(sitStr);
+                    })
+                    .toList();
         }
         long totalUsuarios = usuarios.size();
 
@@ -159,10 +165,10 @@ public class EstatisticasFixedController {
 
     @GetMapping("/administrador/estatistica-usuarios")
     public String estatisticasFixed(Model model, HttpSession session, RedirectAttributes redirectAttributes,
-                                    @org.springframework.web.bind.annotation.RequestParam(value = "situacao", required = false) String situacao) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "situacao", required = false) String situacao) {
 
-    model.addAttribute("situacao", situacao != null ? situacao : "");
-    try {
+        model.addAttribute("situacao", situacao != null ? situacao : "");
+        try {
             System.out.println("*** DEBUG FIXED: Iniciando ***");
 
             // Verificar sessão
@@ -205,25 +211,29 @@ public class EstatisticasFixedController {
                 System.out.println(
                         "*** DEBUG FIXED: Instituição Nome: " + instituicaoSelecionada.getNomeInstituicao() + " ***");
 
-        List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
-            .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
-        if (situacao != null && !situacao.isEmpty()) {
-            usuarios = usuarios.stream()
-            .filter(ui -> {
-                Object sit = ui.getSitAcessoUsuarioInstituicao();
-                if (sit == null) return false;
-                String sitStr = sit instanceof Character ? String.valueOf(sit) : sit.toString();
-                System.out.println("[DEBUG FILTRO] Usuario: " + (ui.getUsuario() != null ? ui.getUsuario().getUsername() : "null") + " | sitAcessoUsuarioInstituicao: '" + sitStr + "' | Filtro: '" + situacao + "'");
-                return situacao.equals(sitStr);
-            })
-            .toList();
-        }
-        System.out.println("*** DEBUG FIXED: " + usuarios.size() + " usuários encontrados ***");
+                List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
+                        .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+                if (situacao != null && !situacao.isEmpty()) {
+                    usuarios = usuarios.stream()
+                            .filter(ui -> {
+                                Object sit = ui.getSitAcessoUsuarioInstituicao();
+                                if (sit == null)
+                                    return false;
+                                String sitStr = sit instanceof Character ? String.valueOf(sit) : sit.toString();
+                                System.out.println("[DEBUG FILTRO] Usuario: "
+                                        + (ui.getUsuario() != null ? ui.getUsuario().getUsername() : "null")
+                                        + " | sitAcessoUsuarioInstituicao: '" + sitStr + "' | Filtro: '" + situacao
+                                        + "'");
+                                return situacao.equals(sitStr);
+                            })
+                            .toList();
+                }
+                System.out.println("*** DEBUG FIXED: " + usuarios.size() + " usuários encontrados ***");
 
-        model.addAttribute("situacao", situacao);
-        // Processar estatísticas com sessão real
-        return processarEstatisticasComSessao(usuarios, model, usuarioLogado, instituicaoSelecionada,
-            nivelAcesso);
+                model.addAttribute("situacao", situacao);
+                // Processar estatísticas com sessão real
+                return processarEstatisticasComSessao(usuarios, model, usuarioLogado, instituicaoSelecionada,
+                        nivelAcesso);
 
             } catch (Exception e) {
                 System.out.println("*** ERRO AO BUSCAR USUÁRIOS: " + e.getMessage());

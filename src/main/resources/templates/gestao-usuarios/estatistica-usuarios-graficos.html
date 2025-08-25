@@ -19,22 +19,42 @@
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
     <div class="container mt-4">
       <!-- Filtro Situação do Usuário -->
-      <form method="get" class="row mb-4 align-items-end" action="/administrador/estatistica-usuarios/graficos">
+      <form
+        method="get"
+        class="row mb-4 align-items-end"
+        action="/administrador/estatistica-usuarios/graficos"
+      >
         <div class="col-auto">
-          <label for="filtroSituacao" class="form-label fw-bold mb-0">Situação:</label>
+          <label for="filtroSituacao" class="form-label fw-bold mb-0"
+            >Situação:</label
+          >
         </div>
         <div class="col-auto">
           <select id="filtroSituacao" name="situacao" class="form-select">
-            <option value="" th:selected="${situacao == null or situacao == ''}">Todos</option>
+            <option
+              value=""
+              th:selected="${situacao == null or situacao == ''}"
+            >
+              Todos
+            </option>
             <option value="A" th:selected="${situacao == 'A'}">Ativos</option>
-            <option value="B" th:selected="${situacao == 'B'}">Bloqueados</option>
-            <option value="C" th:selected="${situacao == 'C'}">Cancelados</option>
+            <option value="B" th:selected="${situacao == 'B'}">
+              Bloqueados
+            </option>
+            <option value="C" th:selected="${situacao == 'C'}">
+              Cancelados
+            </option>
           </select>
         </div>
         <div class="col-auto d-none">
           <button type="submit" class="btn btn-primary">Filtrar</button>
         </div>
-        <input type="hidden" id="hiddenLimiar" name="limiar" th:value="${limiar}" />
+        <input
+          type="hidden"
+          id="hiddenLimiar"
+          name="limiar"
+          th:value="${limiar}"
+        />
       </form>
       <!-- <div th:text="${paisesOrdenadosJson}">DEBUG_JSON</div> -->
       <div class="mb-3">
