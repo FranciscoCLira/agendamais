@@ -161,7 +161,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="paisesTableBody">
-                                        <tr th:each="pais : ${usuariosPorPais}" class="pais-row" th:attr="data-pais=${pais.key}">
+                                        <tr th:each="pais : ${paisesOrdenados}" class="pais-row" th:attr="data-pais=${pais.key}">
                                             <td>
                                                 <input type="checkbox" class="form-check-input pais-checkbox" th:attr="data-pais=${pais.key}">
                                             </td>
@@ -236,6 +236,14 @@
             </div>
         </div>
 
+        <!-- Link Ver Gráficos -->
+        <div class="row mb-2">
+            <div class="col-12 text-end">
+                <a href="/administrador/estatistica-usuarios/graficos" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-pie me-2"></i>Ver Gráficos
+                </a>
+            </div>
+        </div>
         <!-- Estatísticas por Localização -->
         <div class="row mb-4">
             <!-- Países -->
@@ -246,7 +254,7 @@
                     </div>
                     <div class="card-body">
                         <div th:if="${usuariosPorPais != null and !usuariosPorPais.isEmpty()}">
-                            <div th:each="pais : ${usuariosPorPais}" class="d-flex justify-content-between align-items-center mb-2 pais-item">
+                            <div th:each="pais : ${paisesOrdenados}" class="d-flex justify-content-between align-items-center mb-2 pais-item">
                                 <span th:text="${pais.key}">País</span>
                                 <div class="d-flex align-items-center">
                                     <span class="badge bg-primary me-2" th:text="${pais.value}">0</span>
@@ -270,7 +278,7 @@
                     </div>
                     <div class="card-body">
                         <div th:if="${usuariosPorEstado != null and !usuariosPorEstado.isEmpty()}">
-                            <div th:each="estado : ${usuariosPorEstado}" class="d-flex justify-content-between align-items-center mb-2 estado-item">
+                            <div th:each="estado : ${estadosOrdenados}" class="d-flex justify-content-between align-items-center mb-2 estado-item">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-map-marker-alt me-2 text-muted"></i>
                                     <span th:text="${estado.key}" class="estado-nome">Estado</span>
@@ -297,7 +305,7 @@
                     </div>
                     <div class="card-body">
                         <div th:if="${usuariosPorCidade != null and !usuariosPorCidade.isEmpty()}">
-                            <div th:each="cidade : ${usuariosPorCidade}" class="d-flex justify-content-between align-items-center mb-2 cidade-item">
+                            <div th:each="cidade : ${cidadesOrdenadas}" class="d-flex justify-content-between align-items-center mb-2 cidade-item">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-building me-2 text-muted"></i>
                                     <span th:text="${cidade.key}" class="cidade-nome">Cidade</span>
