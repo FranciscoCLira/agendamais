@@ -27,8 +27,16 @@ public class EstatisticasFixedController {
      * Endpoint para exibir os gráficos de estatísticas de usuários
      */
     @GetMapping("/administrador/estatistica-usuarios/graficos")
-    public String estatisticaUsuariosGraficos(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String estatisticaUsuariosGraficos(Model model, HttpSession session, RedirectAttributes redirectAttributes,
+                                             @org.springframework.web.bind.annotation.RequestParam(value = "situacao", required = false) String situacao,
+                                             @org.springframework.web.bind.annotation.RequestParam(value = "limiar", required = false) String limiarParam) {
         // Buscar dados reais da sessão
+        model.addAttribute("situacao", situacao != null ? situacao : "");
+        double limiar = 5.0;
+        if (limiarParam != null && !limiarParam.isEmpty()) {
+            try { limiar = Double.parseDouble(limiarParam); } catch (Exception ignored) {}
+        }
+        model.addAttribute("limiar", limiar);
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
         Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
         Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
@@ -37,7 +45,18 @@ public class EstatisticasFixedController {
             return "redirect:/acesso";
         }
         List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
-                .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+            .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+        if (situacao != null && !situacao.isEmpty()) {
+            usuarios = usuarios.stream()
+                .filter(ui -> {
+                    Object sit = ui.getSitAcessoUsuarioInstituicao();
+                    if (sit == null) return false;
+                    String sitStr = sit instanceof Character ? String.valueOf(sit) : sit.toString();
+                    System.out.println("[DEBUG FILTRO] Usuario: " + (ui.getUsuario() != null ? ui.getUsuario().getUsername() : "null") + " | sitAcessoUsuarioInstituicao: '" + sitStr + "' | Filtro: '" + situacao + "'");
+                    return situacao.equals(sitStr);
+                })
+                .toList();
+        }
         long totalUsuarios = usuarios.size();
 
         // Reaproveitar lógica de contagem
@@ -96,29 +115,29 @@ public class EstatisticasFixedController {
         try {
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             java.util.List<java.util.Map<String, Object>> paisesJson = paisesOrdenados.stream()
-                .map(e -> {
-                    java.util.Map<String, Object> m = new java.util.HashMap<>();
-                    m.put("key", e.getKey());
-                    m.put("value", e.getValue());
-                    return m;
-                })
-                .collect(java.util.stream.Collectors.toList());
+                    .map(e -> {
+                        java.util.Map<String, Object> m = new java.util.HashMap<>();
+                        m.put("key", e.getKey());
+                        m.put("value", e.getValue());
+                        return m;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
             java.util.List<java.util.Map<String, Object>> estadosJson = estadosOrdenados.stream()
-                .map(e -> {
-                    java.util.Map<String, Object> m = new java.util.HashMap<>();
-                    m.put("key", e.getKey());
-                    m.put("value", e.getValue());
-                    return m;
-                })
-                .collect(java.util.stream.Collectors.toList());
+                    .map(e -> {
+                        java.util.Map<String, Object> m = new java.util.HashMap<>();
+                        m.put("key", e.getKey());
+                        m.put("value", e.getValue());
+                        return m;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
             java.util.List<java.util.Map<String, Object>> cidadesJson = cidadesOrdenadas.stream()
-                .map(e -> {
-                    java.util.Map<String, Object> m = new java.util.HashMap<>();
-                    m.put("key", e.getKey());
-                    m.put("value", e.getValue());
-                    return m;
-                })
-                .collect(java.util.stream.Collectors.toList());
+                    .map(e -> {
+                        java.util.Map<String, Object> m = new java.util.HashMap<>();
+                        m.put("key", e.getKey());
+                        m.put("value", e.getValue());
+                        return m;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
             paisesOrdenadosJson = mapper.writeValueAsString(paisesJson);
             estadosOrdenadosJson = mapper.writeValueAsString(estadosJson);
             cidadesOrdenadasJson = mapper.writeValueAsString(cidadesJson);
@@ -139,9 +158,11 @@ public class EstatisticasFixedController {
     private PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository;
 
     @GetMapping("/administrador/estatistica-usuarios")
-    public String estatisticasFixed(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String estatisticasFixed(Model model, HttpSession session, RedirectAttributes redirectAttributes,
+                                    @org.springframework.web.bind.annotation.RequestParam(value = "situacao", required = false) String situacao) {
 
-        try {
+    model.addAttribute("situacao", situacao != null ? situacao : "");
+    try {
             System.out.println("*** DEBUG FIXED: Iniciando ***");
 
             // Verificar sessão
@@ -184,13 +205,25 @@ public class EstatisticasFixedController {
                 System.out.println(
                         "*** DEBUG FIXED: Instituição Nome: " + instituicaoSelecionada.getNomeInstituicao() + " ***");
 
-                List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
-                        .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
-                System.out.println("*** DEBUG FIXED: " + usuarios.size() + " usuários encontrados ***");
+        List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
+            .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+        if (situacao != null && !situacao.isEmpty()) {
+            usuarios = usuarios.stream()
+            .filter(ui -> {
+                Object sit = ui.getSitAcessoUsuarioInstituicao();
+                if (sit == null) return false;
+                String sitStr = sit instanceof Character ? String.valueOf(sit) : sit.toString();
+                System.out.println("[DEBUG FILTRO] Usuario: " + (ui.getUsuario() != null ? ui.getUsuario().getUsername() : "null") + " | sitAcessoUsuarioInstituicao: '" + sitStr + "' | Filtro: '" + situacao + "'");
+                return situacao.equals(sitStr);
+            })
+            .toList();
+        }
+        System.out.println("*** DEBUG FIXED: " + usuarios.size() + " usuários encontrados ***");
 
-                // Processar estatísticas com sessão real
-                return processarEstatisticasComSessao(usuarios, model, usuarioLogado, instituicaoSelecionada,
-                        nivelAcesso);
+        model.addAttribute("situacao", situacao);
+        // Processar estatísticas com sessão real
+        return processarEstatisticasComSessao(usuarios, model, usuarioLogado, instituicaoSelecionada,
+            nivelAcesso);
 
             } catch (Exception e) {
                 System.out.println("*** ERRO AO BUSCAR USUÁRIOS: " + e.getMessage());
@@ -210,8 +243,9 @@ public class EstatisticasFixedController {
     /**
      * Método para processar estatísticas com sessão real
      */
-    private String processarEstatisticasComSessao(List<UsuarioInstituicao> usuarios, Model model, Usuario usuarioLogado, Instituicao instituicao, Integer nivelAcesso) {
-    // ...apenas lógica de mapas e model.addAttribute já existente...
+    private String processarEstatisticasComSessao(List<UsuarioInstituicao> usuarios, Model model, Usuario usuarioLogado,
+            Instituicao instituicao, Integer nivelAcesso) {
+        // ...apenas lógica de mapas e model.addAttribute já existente...
         System.out.println(
                 "*** DEBUG: Processando estatísticas com sessão real para " + usuarios.size() + " usuários ***");
 
@@ -441,52 +475,52 @@ public class EstatisticasFixedController {
         System.out.println(
                 "*** DEBUG: Estados: " + usuariosPorEstado.size() + ", Cidades: " + usuariosPorCidade.size() + " ***");
 
-    // === ADICIONAR DADOS AO MODEL ===
-    model.addAttribute("totalUsuarios", totalUsuarios);
-    model.addAttribute("usuariosComSubInstituicoes", usuariosComSubInstituicoes);
-    model.addAttribute("usuariosSemSubInstituicoes", usuariosSemSubInstituicoes);
-    model.addAttribute("totalPaises", totalPaises);
+        // === ADICIONAR DADOS AO MODEL ===
+        model.addAttribute("totalUsuarios", totalUsuarios);
+        model.addAttribute("usuariosComSubInstituicoes", usuariosComSubInstituicoes);
+        model.addAttribute("usuariosSemSubInstituicoes", usuariosSemSubInstituicoes);
+        model.addAttribute("totalPaises", totalPaises);
 
-    // === NOVA: Estatísticas por sub-instituição ===
-    model.addAttribute("usuariosPorSubInstituicao", usuariosPorSubInstituicao);
+        // === NOVA: Estatísticas por sub-instituição ===
+        model.addAttribute("usuariosPorSubInstituicao", usuariosPorSubInstituicao);
 
-    // Estatísticas por localização (hierárquicas)
-    model.addAttribute("usuariosPorPais", usuariosPorPais);
-    model.addAttribute("usuariosPorEstado", usuariosPorEstado);
-    model.addAttribute("usuariosPorCidade", usuariosPorCidade);
+        // Estatísticas por localização (hierárquicas)
+        model.addAttribute("usuariosPorPais", usuariosPorPais);
+        model.addAttribute("usuariosPorEstado", usuariosPorEstado);
+        model.addAttribute("usuariosPorCidade", usuariosPorCidade);
 
-    // Listas ordenadas para cards/tabelas
-    List<Map.Entry<String, Long>> paisesOrdenados = new ArrayList<>(usuariosPorPais.entrySet());
-    List<Map.Entry<String, Long>> estadosOrdenados = new ArrayList<>(usuariosPorEstado.entrySet());
-    List<Map.Entry<String, Long>> cidadesOrdenadas = new ArrayList<>(usuariosPorCidade.entrySet());
-    Comparator<Map.Entry<String, Long>> cmp = (a, b) -> {
-        double percA = (totalUsuarios > 0) ? (a.getValue() * 100.0 / totalUsuarios) : 0;
-        double percB = (totalUsuarios > 0) ? (b.getValue() * 100.0 / totalUsuarios) : 0;
-        return Double.compare(percB, percA);
-    };
-    paisesOrdenados.sort(cmp);
-    estadosOrdenados.sort(cmp);
-    cidadesOrdenadas.sort(cmp);
-    model.addAttribute("paisesOrdenados", paisesOrdenados);
-    model.addAttribute("estadosOrdenados", estadosOrdenados);
-    model.addAttribute("cidadesOrdenadas", cidadesOrdenadas);
+        // Listas ordenadas para cards/tabelas
+        List<Map.Entry<String, Long>> paisesOrdenados = new ArrayList<>(usuariosPorPais.entrySet());
+        List<Map.Entry<String, Long>> estadosOrdenados = new ArrayList<>(usuariosPorEstado.entrySet());
+        List<Map.Entry<String, Long>> cidadesOrdenadas = new ArrayList<>(usuariosPorCidade.entrySet());
+        Comparator<Map.Entry<String, Long>> cmp = (a, b) -> {
+            double percA = (totalUsuarios > 0) ? (a.getValue() * 100.0 / totalUsuarios) : 0;
+            double percB = (totalUsuarios > 0) ? (b.getValue() * 100.0 / totalUsuarios) : 0;
+            return Double.compare(percB, percA);
+        };
+        paisesOrdenados.sort(cmp);
+        estadosOrdenados.sort(cmp);
+        cidadesOrdenadas.sort(cmp);
+        model.addAttribute("paisesOrdenados", paisesOrdenados);
+        model.addAttribute("estadosOrdenados", estadosOrdenados);
+        model.addAttribute("cidadesOrdenadas", cidadesOrdenadas);
 
-    // Estruturas para filtros
-    model.addAttribute("estadosPorPais", estadosPorPais);
-    model.addAttribute("cidadesPorEstado", cidadesPorEstado);
+        // Estruturas para filtros
+        model.addAttribute("estadosPorPais", estadosPorPais);
+        model.addAttribute("cidadesPorEstado", cidadesPorEstado);
 
-    // Lista de países para filtros
-    model.addAttribute("listaPaises", new ArrayList<>(usuariosPorPais.keySet()));
+        // Lista de países para filtros
+        model.addAttribute("listaPaises", new ArrayList<>(usuariosPorPais.keySet()));
 
-    // Dados da sessão reais
-    String nomeUsuario = usuarioLogado.getPessoa() != null ? usuarioLogado.getPessoa().getNomePessoa()
-        : usuarioLogado.getUsername();
-    model.addAttribute("usuarioLogado", nomeUsuario);
-    model.addAttribute("instituicaoSelecionada", instituicao.getNomeInstituicao());
-    model.addAttribute("nivelAcessoAtual", nivelAcesso);
+        // Dados da sessão reais
+        String nomeUsuario = usuarioLogado.getPessoa() != null ? usuarioLogado.getPessoa().getNomePessoa()
+                : usuarioLogado.getUsername();
+        model.addAttribute("usuarioLogado", nomeUsuario);
+        model.addAttribute("instituicaoSelecionada", instituicao.getNomeInstituicao());
+        model.addAttribute("nivelAcessoAtual", nivelAcesso);
 
-    System.out.println("*** DEBUG: Todos os dados adicionados ao model - retornando template ***");
-    return "gestao-usuarios/estatistica-usuarios-simples";
+        System.out.println("*** DEBUG: Todos os dados adicionados ao model - retornando template ***");
+        return "gestao-usuarios/estatistica-usuarios-simples";
     }
 
     /**

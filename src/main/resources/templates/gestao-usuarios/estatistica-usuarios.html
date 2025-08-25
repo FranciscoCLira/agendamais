@@ -19,6 +19,23 @@
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
 
     <div class="container-fluid mt-4">
+      <!-- Filtro Situação do Usuário -->
+      <form method="get" class="row mb-4 align-items-end" action="/administrador/estatistica-usuarios">
+        <div class="col-auto">
+          <label for="filtroSituacao" class="form-label fw-bold mb-0">Situação:</label>
+        </div>
+        <div class="col-auto">
+          <select id="filtroSituacao" name="situacao" class="form-select">
+            <option th:value="" th:selected="${situacao == null or situacao == ''}">Todos</option>
+            <option th:value="A" th:selected="${situacao == 'A'}">Ativos</option>
+            <option th:value="B" th:selected="${situacao == 'B'}">Bloqueados</option>
+            <option th:value="C" th:selected="${situacao == 'C'}">Cancelados</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+      </form>
       <!-- Título da Página -->
       <div class="row mb-4">
         <div class="col-12">

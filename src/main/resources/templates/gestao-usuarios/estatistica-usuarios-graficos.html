@@ -15,18 +15,50 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-  <!-- CABEÇALHO PADRÃO -->
-  <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
-  <div class="container mt-4">
-  <!-- <div th:text="${paisesOrdenadosJson}">DEBUG_JSON</div> -->
-    <div class="mb-3">
-      <label for="inputLimiar" class="form-label fw-bold">Agrupar percentual inferior a:</label>
-      <div class="input-group" style="max-width: 300px;">
-        <input type="number" min="0" max="100" step="0.1" id="inputLimiar" class="form-control" value="5">
-        <span class="input-group-text">%</span>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+    <div class="container mt-4">
+      <!-- Filtro Situação do Usuário -->
+      <form method="get" class="row mb-4 align-items-end" action="/administrador/estatistica-usuarios/graficos">
+        <div class="col-auto">
+          <label for="filtroSituacao" class="form-label fw-bold mb-0">Situação:</label>
+        </div>
+        <div class="col-auto">
+          <select id="filtroSituacao" name="situacao" class="form-select">
+            <option value="" th:selected="${situacao == null or situacao == ''}">Todos</option>
+            <option value="A" th:selected="${situacao == 'A'}">Ativos</option>
+            <option value="B" th:selected="${situacao == 'B'}">Bloqueados</option>
+            <option value="C" th:selected="${situacao == 'C'}">Cancelados</option>
+          </select>
+        </div>
+        <div class="col-auto d-none">
+          <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+        <input type="hidden" id="hiddenLimiar" name="limiar" th:value="${limiar}" />
+      </form>
+      <!-- <div th:text="${paisesOrdenadosJson}">DEBUG_JSON</div> -->
+      <div class="mb-3">
+        <label for="inputLimiar" class="form-label fw-bold"
+          >Agrupar percentual inferior a:</label
+        >
+        <div class="input-group" style="max-width: 300px">
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            id="inputLimiar"
+            class="form-control"
+            th:value="${limiar}"
+            value="[[${limiar}]]"
+          />
+          <span class="input-group-text">%</span>
+        </div>
+        <div class="form-text">
+          Nome no gráfico:
+          <span id="exemploAgrupamento">n Agrupados (&lt; 5%)</span>
+        </div>
       </div>
-      <div class="form-text">Nome no gráfico: <span id="exemploAgrupamento">n Agrupados (&lt; 5%)</span></div>
-    </div>
       <h2>
         <i class="fas fa-chart-pie me-2 text-primary"></i> Gráficos de
         Estatísticas de Usuários
@@ -67,125 +99,207 @@
       </div>
     </div>
     <script th:inline="javascript">
-  window.onload = function() {
-    // Função para atualizar legendas de agrupados
-    function atualizarLegendaAgrupados(dados, limiar, ulId) {
-      var ul = document.getElementById(ulId);
-      if (!ul) return;
-      ul.innerHTML = '';
-      var agrupado = dados.find(function(e) { return typeof e[0] === 'string' && e[0].includes('Agrupados'); });
-      if (agrupado) {
-        var li = document.createElement('li');
-        li.innerHTML = '<strong>' + agrupado[0] + '</strong>: ' + agrupado[1];
-        ul.appendChild(li);
-      }
-    }
-    var inputLimiar = document.getElementById('inputLimiar');
-    var spanExemplo = document.getElementById('exemploAgrupamento');
-    if (!inputLimiar || !spanExemplo) return;
-    // Função para agrupar menores
-    function agruparMenores(dados, limiar) {
-      var total = dados.reduce((acc, cur) => acc + cur[1], 0);
-      var maiores = [];
-      var agrupados = 0;
-      dados.forEach(function (item) {
-        var perc = (item[1] * 100) / total;
-        if (perc >= limiar) {
-          maiores.push(item);
-        } else {
-          agrupados += item[1];
+      window.onload = function () {
+        // Sincroniza o valor do input limiar com o hidden do form
+        var inputLimiar = document.getElementById("inputLimiar");
+        var hiddenLimiar = document.getElementById("hiddenLimiar");
+        if (inputLimiar && hiddenLimiar) {
+          inputLimiar.addEventListener("input", function () {
+            hiddenLimiar.value = inputLimiar.value;
+          });
         }
-      });
-      if (agrupados > 0) {
-        maiores.push([agrupados + ' Agrupados (< ' + limiar + '%)', agrupados]);
-      }
-      return maiores;
-    }
+        // Submete o form automaticamente ao mudar o filtro de situação
+        var filtroSituacao = document.getElementById("filtroSituacao");
+        if (filtroSituacao) {
+          filtroSituacao.addEventListener("change", function () {
+            document.querySelector("form").submit();
+          });
+        }
+        // Função para atualizar legendas de agrupados
+        function atualizarLegendaAgrupados(dados, limiar, ulId) {
+          var ul = document.getElementById(ulId);
+          if (!ul) return;
+          ul.innerHTML = "";
+          var agrupado = dados.find(function (e) {
+            return typeof e[0] === "string" && e[0].includes("Agrupados");
+          });
+          if (agrupado) {
+            var li = document.createElement("li");
+            li.innerHTML = "<strong>" + agrupado[0] + "</strong>";
+            ul.appendChild(li);
+          }
+        }
+        var inputLimiar = document.getElementById("inputLimiar");
+        var spanExemplo = document.getElementById("exemploAgrupamento");
+        if (!inputLimiar || !spanExemplo) return;
+        // Função para agrupar menores
+        function agruparMenores(dados, limiar) {
+          var total = dados.reduce((acc, cur) => acc + cur[1], 0);
+          var maiores = [];
+          var agrupados = 0;
+          dados.forEach(function (item) {
+            var perc = (item[1] * 100) / total;
+            if (perc >= limiar) {
+              maiores.push(item);
+            } else {
+              agrupados += item[1];
+            }
+          });
+          if (agrupados > 0) {
+            maiores.push([
+              agrupados + " Agrupados (< " + limiar + "%)",
+              agrupados,
+            ]);
+          }
+          return maiores;
+        }
 
-    // Função para criar gráfico e permitir atualização
-    var chartPais, chartEstado, chartCidade;
-    function criarGraficoPie(ctx, dados, cores) {
-      var total = dados.reduce((acc, cur) => acc + cur[1], 0);
-      return new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: dados.map((e) => e[0]),
-          datasets: [
-            {
-              data: dados.map((e) => e[1]),
-              backgroundColor: cores,
+        // Função para criar gráfico e permitir atualização
+        var chartPais, chartEstado, chartCidade;
+        function criarGraficoPie(ctx, dados, cores) {
+          var total = dados.reduce((acc, cur) => acc + cur[1], 0);
+          return new Chart(ctx, {
+            type: "pie",
+            data: {
+              labels: dados.map((e) => e[0]),
+              datasets: [
+                {
+                  data: dados.map((e) => e[1]),
+                  backgroundColor: cores,
+                },
+              ],
             },
-          ],
-        },
-        options: {
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function (context) {
-                  var label = context.label || "";
-                  var value = context.parsed;
-                  var perc = total > 0 ? ((value * 100) / total).toFixed(1) : 0;
-                  return label + ": " + value + " (" + perc + "%)";
+            options: {
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      var label = context.label || "";
+                      var value = context.parsed;
+                      var perc =
+                        total > 0 ? ((value * 100) / total).toFixed(1) : 0;
+                      return label + ": " + value + " (" + perc + "%)";
+                    },
+                  },
                 },
               },
             },
-          },
-        },
-      });
-    }
+          });
+        }
 
-    var coresPais = ["#007bff", "#28a745", "#ffc107", "#17a2b8", "#dc3545", "#6c757d", "#8e44ad"];
-    var coresEstado = ["#28a745", "#007bff", "#ffc107", "#17a2b8", "#dc3545", "#6c757d", "#8e44ad"];
-    var coresCidade = ["#17a2b8", "#007bff", "#28a745", "#ffc107", "#dc3545", "#6c757d", "#8e44ad"];
+        var coresPais = [
+          "#007bff",
+          "#28a745",
+          "#ffc107",
+          "#17a2b8",
+          "#dc3545",
+          "#6c757d",
+          "#8e44ad",
+        ];
+        var coresEstado = [
+          "#28a745",
+          "#007bff",
+          "#ffc107",
+          "#17a2b8",
+          "#dc3545",
+          "#6c757d",
+          "#8e44ad",
+        ];
+        var coresCidade = [
+          "#17a2b8",
+          "#007bff",
+          "#28a745",
+          "#ffc107",
+          "#dc3545",
+          "#6c757d",
+          "#8e44ad",
+        ];
 
-    function atualizarGraficos() {
-      var limiar = parseFloat(document.getElementById('inputLimiar').value) || 0;
-      document.getElementById('exemploAgrupamento').textContent = 'n Agrupados (< ' + limiar + '%)';
-      if (chartPais) chartPais.destroy();
-      if (chartEstado) chartEstado.destroy();
-      if (chartCidade) chartCidade.destroy();
-      var dadosPaisAgrup = agruparMenores(dadosPais, limiar);
-      var dadosEstadoAgrup = agruparMenores(dadosEstado, limiar);
-      var dadosCidadeAgrup = agruparMenores(dadosCidade, limiar);
-      chartPais = criarGraficoPie(
-        document.getElementById("graficoPais"),
-        dadosPaisAgrup,
-        coresPais
-      );
-      chartEstado = criarGraficoPie(
-        document.getElementById("graficoEstado"),
-        dadosEstadoAgrup,
-        coresEstado
-      );
-      chartCidade = criarGraficoPie(
-        document.getElementById("graficoCidade"),
-        dadosCidadeAgrup,
-        coresCidade
-      );
-      atualizarLegendaAgrupados(dadosPaisAgrup, limiar, 'legendaPais');
-      atualizarLegendaAgrupados(dadosEstadoAgrup, limiar, 'legendaEstado');
-      atualizarLegendaAgrupados(dadosCidadeAgrup, limiar, 'legendaCidade');
-    }
+        function atualizarGraficos() {
+          var limiar =
+            parseFloat(document.getElementById("inputLimiar").value) || 0;
+          document.getElementById("exemploAgrupamento").textContent =
+            "n Agrupados (< " + limiar + "%)";
+          if (chartPais) chartPais.destroy();
+          if (chartEstado) chartEstado.destroy();
+          if (chartCidade) chartCidade.destroy();
+          var dadosPaisAgrup = agruparMenores(dadosPais, limiar);
+          var dadosEstadoAgrup = agruparMenores(dadosEstado, limiar);
+          var dadosCidadeAgrup = agruparMenores(dadosCidade, limiar);
+          chartPais = criarGraficoPie(
+            document.getElementById("graficoPais"),
+            dadosPaisAgrup,
+            coresPais
+          );
+          chartEstado = criarGraficoPie(
+            document.getElementById("graficoEstado"),
+            dadosEstadoAgrup,
+            coresEstado
+          );
+          chartCidade = criarGraficoPie(
+            document.getElementById("graficoCidade"),
+            dadosCidadeAgrup,
+            coresCidade
+          );
+          atualizarLegendaAgrupados(dadosPaisAgrup, limiar, "legendaPais");
+          atualizarLegendaAgrupados(dadosEstadoAgrup, limiar, "legendaEstado");
+          atualizarLegendaAgrupados(dadosCidadeAgrup, limiar, "legendaCidade");
+        }
 
-    document.getElementById('inputLimiar').addEventListener('input', atualizarGraficos);
-    atualizarGraficos();
-  }
-  var dadosPais = /*[[${paisesOrdenadosJson}]]*/ '[]';
-  var dadosEstado = /*[[${estadosOrdenadosJson}]]*/ '[]';
-  var dadosCidade = /*[[${cidadesOrdenadasJson}]]*/ '[]';
-  try { dadosPais = JSON.parse(dadosPais); } catch (e) { dadosPais = []; }
-  try { dadosEstado = JSON.parse(dadosEstado); } catch (e) { dadosEstado = []; }
-  try { dadosCidade = JSON.parse(dadosCidade); } catch (e) { dadosCidade = []; }
-  // Garante formato array de arrays para os gráficos
-  if (Array.isArray(dadosPais) && dadosPais.length > 0 && typeof dadosPais[0] === 'object' && !Array.isArray(dadosPais[0])) {
-    dadosPais = dadosPais.map(function(e) { return [e.key, e.value]; });
-  }
-  if (Array.isArray(dadosEstado) && dadosEstado.length > 0 && typeof dadosEstado[0] === 'object' && !Array.isArray(dadosEstado[0])) {
-    dadosEstado = dadosEstado.map(function(e) { return [e.key, e.value]; });
-  }
-  if (Array.isArray(dadosCidade) && dadosCidade.length > 0 && typeof dadosCidade[0] === 'object' && !Array.isArray(dadosCidade[0])) {
-    dadosCidade = dadosCidade.map(function(e) { return [e.key, e.value]; });
-  }
+        document
+          .getElementById("inputLimiar")
+          .addEventListener("input", atualizarGraficos);
+        atualizarGraficos();
+      };
+      var dadosPais = /*[[${paisesOrdenadosJson}]]*/ "[]";
+      var dadosEstado = /*[[${estadosOrdenadosJson}]]*/ "[]";
+      var dadosCidade = /*[[${cidadesOrdenadasJson}]]*/ "[]";
+      try {
+        dadosPais = JSON.parse(dadosPais);
+      } catch (e) {
+        dadosPais = [];
+      }
+      try {
+        dadosEstado = JSON.parse(dadosEstado);
+      } catch (e) {
+        dadosEstado = [];
+      }
+      try {
+        dadosCidade = JSON.parse(dadosCidade);
+      } catch (e) {
+        dadosCidade = [];
+      }
+      // Garante formato array de arrays para os gráficos
+      if (
+        Array.isArray(dadosPais) &&
+        dadosPais.length > 0 &&
+        typeof dadosPais[0] === "object" &&
+        !Array.isArray(dadosPais[0])
+      ) {
+        dadosPais = dadosPais.map(function (e) {
+          return [e.key, e.value];
+        });
+      }
+      if (
+        Array.isArray(dadosEstado) &&
+        dadosEstado.length > 0 &&
+        typeof dadosEstado[0] === "object" &&
+        !Array.isArray(dadosEstado[0])
+      ) {
+        dadosEstado = dadosEstado.map(function (e) {
+          return [e.key, e.value];
+        });
+      }
+      if (
+        Array.isArray(dadosCidade) &&
+        dadosCidade.length > 0 &&
+        typeof dadosCidade[0] === "object" &&
+        !Array.isArray(dadosCidade[0])
+      ) {
+        dadosCidade = dadosCidade.map(function (e) {
+          return [e.key, e.value];
+        });
+      }
 
       function agruparMenores(dados, limiar) {
         var total = dados.reduce((acc, cur) => acc + cur[1], 0);
@@ -200,7 +314,10 @@
           }
         });
         if (agrupados > 0) {
-          maiores.push([agrupados + ' Agrupados (<' + limiar + '%)', agrupados]);
+          maiores.push([
+            agrupados + " Agrupados (<" + limiar + "%)",
+            agrupados,
+          ]);
         }
         return maiores;
       }
@@ -225,7 +342,8 @@
                   label: function (context) {
                     var label = context.label || "";
                     var value = context.parsed;
-                    var perc = total > 0 ? ((value * 100) / total).toFixed(1) : 0;
+                    var perc =
+                      total > 0 ? ((value * 100) / total).toFixed(1) : 0;
                     return label + ": " + value + " (" + perc + "%)";
                   },
                 },
@@ -235,14 +353,37 @@
         });
       }
 
+      // Dados reais do backend (Thymeleaf) - serializados como JSON
 
-  // Dados reais do backend (Thymeleaf) - serializados como JSON
+      // ...já tratado acima, não precisa duplicar...
 
-  // ...já tratado acima, não precisa duplicar...
-
-      var coresPais = ["#007bff", "#28a745", "#ffc107", "#17a2b8", "#dc3545", "#6c757d", "#8e44ad"];
-      var coresEstado = ["#28a745", "#007bff", "#ffc107", "#17a2b8", "#dc3545", "#6c757d", "#8e44ad"];
-      var coresCidade = ["#17a2b8", "#007bff", "#28a745", "#ffc107", "#dc3545", "#6c757d", "#8e44ad"];
+      var coresPais = [
+        "#007bff",
+        "#28a745",
+        "#ffc107",
+        "#17a2b8",
+        "#dc3545",
+        "#6c757d",
+        "#8e44ad",
+      ];
+      var coresEstado = [
+        "#28a745",
+        "#007bff",
+        "#ffc107",
+        "#17a2b8",
+        "#dc3545",
+        "#6c757d",
+        "#8e44ad",
+      ];
+      var coresCidade = [
+        "#17a2b8",
+        "#007bff",
+        "#28a745",
+        "#ffc107",
+        "#dc3545",
+        "#6c757d",
+        "#8e44ad",
+      ];
     </script>
   </body>
 </html>

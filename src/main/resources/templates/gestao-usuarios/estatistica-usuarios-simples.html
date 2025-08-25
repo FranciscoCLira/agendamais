@@ -70,8 +70,36 @@
                         <i class="fas fa-university me-2"></i>Nome da Instituição
                     </h4>
                 </div>
+                                <!-- Filtro Situação do Usuário -->
+                                <form method="get" class="row justify-content-center align-items-end mt-2 mb-3" action="/administrador/estatistica-usuarios">
+                                    <div class="col-auto">
+                                        <label for="filtroSituacao" class="form-label fw-bold mb-0">Situação:</label>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select id="filtroSituacao" name="situacao" class="form-select">
+                                            <option value="" th:selected="${situacao == null or situacao == ''}">Todos</option>
+                                            <option value="A" th:selected="${situacao == 'A'}">Ativos</option>
+                                            <option value="B" th:selected="${situacao == 'B'}">Bloqueados</option>
+                                            <option value="C" th:selected="${situacao == 'C'}">Cancelados</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-auto d-none">
+                                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                                    </div>
+                                </form>
             </div>
         </div>
+        <script>
+            // Submete o form automaticamente ao mudar o filtro de situação
+            document.addEventListener("DOMContentLoaded", function () {
+                var filtroSituacao = document.getElementById("filtroSituacao");
+                if (filtroSituacao) {
+                    filtroSituacao.addEventListener("change", function () {
+                        filtroSituacao.form.submit();
+                    });
+                }
+            });
+        </script>
 
         <!-- Cards de Estatísticas Principais -->
         <div class="row mb-4">
