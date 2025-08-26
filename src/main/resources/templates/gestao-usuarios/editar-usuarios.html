@@ -323,12 +323,13 @@
                   </td>
                   <td>
                     <span
-                      th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
-                      th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao != null ? usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao : '---'}"
-                    >
-                    </span>
+                      th:if="${usuarioInst.nomeSubInstituicao != null}"
+                      th:text="${usuarioInst.nomeSubInstituicao}"
+                      class="badge bg-info"
+                    ></span>
                     <span
-                      th:unless="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
+                      th:if="${usuarioInst.nomeSubInstituicao == null}"
+                      class="text-muted"
                       >---</span
                     >
                   </td>

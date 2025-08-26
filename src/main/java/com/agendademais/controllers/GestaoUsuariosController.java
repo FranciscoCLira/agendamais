@@ -144,10 +144,8 @@ public class GestaoUsuariosController {
             return "redirect:/acesso";
         }
         try {
-            List<UsuarioInstituicao> usuarios;
-            // Sempre lista todos os usuários da instituição, inclusive nível 9
-            usuarios = usuarioInstituicaoRepository
-                    .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+            List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
+                .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
 
             // Filtros em memória, removendo acentos
             if (filtroCodigo != null && !filtroCodigo.trim().isEmpty()) {
@@ -170,11 +168,10 @@ public class GestaoUsuariosController {
             }
             if (filtroSubInstituicao != null && !filtroSubInstituicao.trim().isEmpty()) {
                 if ("-1".equals(filtroSubInstituicao)) {
-                    // Nenhuma sub-instituição
                     usuarios = usuarios.stream()
-                            .filter(ui -> ui.getUsuario().getPessoa().getPessoaSubInstituicao() == null ||
-                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() ||
-                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) == null ||
+                            .filter(ui -> ui.getUsuario().getPessoa().getPessoaSubInstituicao() == null ||\
+                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() ||\
+                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) == null ||\
                                     ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
                                             .getSubInstituicao() == null)
                             .toList();
@@ -184,9 +181,9 @@ public class GestaoUsuariosController {
                         usuarios = usuarios.stream()
                                 .filter(ui -> {
                                     try {
-                                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&
-                                                !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&
-                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&
+                                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&\
+                                                !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&\
+                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&\
                                                 ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
                                                         .getSubInstituicao() != null
                                                 &&
@@ -208,16 +205,29 @@ public class GestaoUsuariosController {
                         .toList();
             }
 
-            // Corrigir valor padrão de itens por página para 10 na ausência de filtros
             int safeSize = (size == null || size <= 0) ? 10 : size;
-            model.addAttribute("filtroPaginacao", safeSize); // sempre manter selecionado
+            model.addAttribute("filtroPaginacao", safeSize);
             int totalElements = usuarios.size();
             int fromIndex = Math.min(page * safeSize, totalElements);
             int toIndex = Math.min(fromIndex + safeSize, totalElements);
-            List<UsuarioInstituicao> usuariosPaginados = usuarios.subList(fromIndex, toIndex);
+            List<com.agendademais.dto.UsuarioInstituicaoDTO> usuariosDTO = new java.util.ArrayList<>();
+            for (UsuarioInstituicao usuarioInst : usuarios.subList(fromIndex, toIndex)) {
+                String nomeSub = null;
+                try {
+                    if (usuarioInst.getUsuario() != null && usuarioInst.getUsuario().getPessoa() != null && usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao() != null) {
+                        nomeSub = usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
+                            .filter(psi -> psi.getInstituicao() != null && psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
+                            .map(psi -> psi.getSubInstituicao() != null ? psi.getSubInstituicao().getNomeSubInstituicao() : null)
+                            .filter(n -> n != null)
+                            .findFirst().orElse(null);
+                    }
+                } catch (Exception e) {
+                    nomeSub = null;
+                }
+                usuariosDTO.add(new com.agendademais.dto.UsuarioInstituicaoDTO(usuarioInst, nomeSub));
+            }
             int totalPages = (int) Math.ceil((double) totalElements / safeSize);
-
-            model.addAttribute("usuarios", usuariosPaginados);
+            model.addAttribute("usuarios", usuariosDTO);
             model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
             model.addAttribute("nivelAcessoLogado", nivelAcesso);
             model.addAttribute("page", page);
@@ -358,12 +368,16 @@ public class GestaoUsuariosController {
     @GetMapping("/lista-usuarios")
     public String listaUsuarios(
             @RequestParam(value = "codigoUsuario", required = false) String codigoUsuario,
+            @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "nome", required = false) String nome,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "subInstituicao", required = false) String subInstituicao,
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "cidade", required = false) String cidade,
             @RequestParam(value = "pais", required = false) String pais,
+            @RequestParam(value = "statusUsuario", required = false) String statusUsuario,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "page", defaultValue = "0") int page,
             Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 
         try {
@@ -405,6 +419,13 @@ public class GestaoUsuariosController {
             if (codigoUsuario != null && !codigoUsuario.trim().isEmpty()) {
                 usuarios = usuarios.stream()
                         .filter(ui -> ui.getUsuario().getId().toString().contains(codigoUsuario))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+
+            if (username != null && !username.trim().isEmpty()) {
+                String usernameFiltro = removerAcentos(username);
+                usuarios = usuarios.stream()
+                        .filter(ui -> removerAcentos(ui.getUsuario().getUsername()).contains(usernameFiltro))
                         .collect(java.util.stream.Collectors.toList());
             }
 
@@ -490,6 +511,35 @@ public class GestaoUsuariosController {
                 }
             }
 
+            // Filtro por situação/status do usuário (ATIVO, BLOQUEADO, CANCELADO)
+            if (statusUsuario != null && !statusUsuario.trim().isEmpty()) {
+                String statusFiltro = statusUsuario.trim();
+                // Mapeamento: ATIVO -> A, BLOQUEADO -> B, CANCELADO -> C
+                final String statusInterno;
+                if ("ATIVO".equalsIgnoreCase(statusFiltro))
+                    statusInterno = "A";
+                else if ("BLOQUEADO".equalsIgnoreCase(statusFiltro))
+                    statusInterno = "B";
+                else if ("CANCELADO".equalsIgnoreCase(statusFiltro))
+                    statusInterno = "C";
+                else
+                    statusInterno = null;
+                if (statusInterno != null) {
+                    usuarios = usuarios.stream()
+                            .filter(ui -> statusInterno
+                                    .equalsIgnoreCase(String.valueOf(ui.getSitAcessoUsuarioInstituicao())))
+                            .collect(java.util.stream.Collectors.toList());
+                }
+            }
+
+            // Paginação
+            int safeSize = (size == null || size <= 0) ? 10 : size;
+            int totalElements = usuarios.size();
+            int fromIndex = Math.min(page * safeSize, totalElements);
+            int toIndex = Math.min(fromIndex + safeSize, totalElements);
+            List<UsuarioInstituicao> usuariosPaginados = usuarios.subList(fromIndex, toIndex);
+            int totalPages = (int) Math.ceil((double) totalElements / safeSize);
+
             // Calcular estatísticas
             long totalUsuarios = usuarios.size();
 
@@ -529,9 +579,36 @@ public class GestaoUsuariosController {
                             },
                             java.util.stream.Collectors.counting()));
 
-            // Adicionar ao modelo
-            model.addAttribute("usuarios", usuarios);
+            // Corrigir: criar DTOs a partir da lista já paginada
+            java.util.List<com.agendademais.dto.UsuarioInstituicaoDTO> usuariosDTO = new java.util.ArrayList<>();
+            for (UsuarioInstituicao usuarioInst : usuariosPaginados) {
+                String nomeSubInstituicao = null;
+                try {
+                    if (usuarioInst.getUsuario() != null && usuarioInst.getUsuario().getPessoa() != null
+                            && usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao() != null) {
+                        nomeSubInstituicao = usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
+                                .filter(psi -> psi.getInstituicao() != null
+                                        && psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
+                                .map(psi -> psi.getSubInstituicao() != null
+                                        ? psi.getSubInstituicao().getNomeSubInstituicao()
+                                        : null)
+                                .filter(n -> n != null)
+                                .findFirst().orElse(null);
+                    }
+                } catch (Exception e) {
+                    nomeSubInstituicao = null;
+                }
+                usuariosDTO.add(new com.agendademais.dto.UsuarioInstituicaoDTO(usuarioInst, nomeSubInstituicao));
+            }
+            // Remove qualquer DTO nulo ou com usuarioInstituicao nulo
+            usuariosDTO = usuariosDTO.stream()
+                    .filter(dto -> dto != null && dto.getUsuarioInstituicao() != null)
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("usuarios", usuariosDTO);
             model.addAttribute("totalUsuarios", totalUsuarios);
+            model.addAttribute("page", page);
+            model.addAttribute("size", safeSize);
+            model.addAttribute("totalPages", totalPages > 0 ? totalPages : 1);
             model.addAttribute("estatisticasEstado", estatisticasEstado);
             model.addAttribute("estatisticasPais", estatisticasPais);
             model.addAttribute("estatisticasSubInstituicao", estatisticasSubInstituicao);
@@ -540,12 +617,14 @@ public class GestaoUsuariosController {
 
             // Manter valores dos filtros para exibição
             model.addAttribute("codigoUsuario", codigoUsuario);
+            model.addAttribute("username", username);
             model.addAttribute("nome", nome);
             model.addAttribute("email", email);
             model.addAttribute("subInstituicao", subInstituicao);
             model.addAttribute("estado", estado);
             model.addAttribute("cidade", cidade);
             model.addAttribute("pais", pais);
+            model.addAttribute("statusUsuario", statusUsuario); // manter valor selecionado
 
             return "gestao-usuarios/lista-usuarios-completa";
 
