@@ -26,4 +26,11 @@ public class UsuarioInstituicaoDTO {
     public void setNomeSubInstituicao(String nomeSubInstituicao) {
         this.nomeSubInstituicao = nomeSubInstituicao;
     }
+
+    public String getSituacao() {
+        if (usuarioInstituicao != null) {
+            return usuarioInstituicao.getSitAcessoUsuarioInstituicao();
+        }
+        return null;
+    }
 }

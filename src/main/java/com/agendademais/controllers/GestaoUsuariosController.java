@@ -145,7 +145,7 @@ public class GestaoUsuariosController {
         }
         try {
             List<UsuarioInstituicao> usuarios = usuarioInstituicaoRepository
-                .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
+                    .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
 
             // Filtros em memória, removendo acentos
             if (filtroCodigo != null && !filtroCodigo.trim().isEmpty()) {
@@ -169,10 +169,10 @@ public class GestaoUsuariosController {
             if (filtroSubInstituicao != null && !filtroSubInstituicao.trim().isEmpty()) {
                 if ("-1".equals(filtroSubInstituicao)) {
                     usuarios = usuarios.stream()
-                            .filter(ui -> ui.getUsuario().getPessoa().getPessoaSubInstituicao() == null ||\
-                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() ||\
-                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) == null ||\
-                                    ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                            .filter(ui -> ui.getUsuario().getPessoa().getPessoaSubInstituicao() == null
+                                    || ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty()
+                                    || ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) == null
+                                    || ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
                                             .getSubInstituicao() == null)
                             .toList();
                 } else {
@@ -181,13 +181,12 @@ public class GestaoUsuariosController {
                         usuarios = usuarios.stream()
                                 .filter(ui -> {
                                     try {
-                                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null &&\
-                                                !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty() &&\
-                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null &&\
-                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                        return ui.getUsuario().getPessoa().getPessoaSubInstituicao() != null
+                                                && !ui.getUsuario().getPessoa().getPessoaSubInstituicao().isEmpty()
+                                                && ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0) != null
+                                                && ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
                                                         .getSubInstituicao() != null
-                                                &&
-                                                ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
+                                                && ui.getUsuario().getPessoa().getPessoaSubInstituicao().get(0)
                                                         .getSubInstituicao().getId().equals(filtroSubId);
                                     } catch (Exception e) {
                                         return false;
@@ -214,12 +213,16 @@ public class GestaoUsuariosController {
             for (UsuarioInstituicao usuarioInst : usuarios.subList(fromIndex, toIndex)) {
                 String nomeSub = null;
                 try {
-                    if (usuarioInst.getUsuario() != null && usuarioInst.getUsuario().getPessoa() != null && usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao() != null) {
+                    if (usuarioInst.getUsuario() != null && usuarioInst.getUsuario().getPessoa() != null
+                            && usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao() != null) {
                         nomeSub = usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
-                            .filter(psi -> psi.getInstituicao() != null && psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
-                            .map(psi -> psi.getSubInstituicao() != null ? psi.getSubInstituicao().getNomeSubInstituicao() : null)
-                            .filter(n -> n != null)
-                            .findFirst().orElse(null);
+                                .filter(psi -> psi.getInstituicao() != null
+                                        && psi.getInstituicao().getId().equals(instituicaoSelecionada.getId()))
+                                .map(psi -> psi.getSubInstituicao() != null
+                                        ? psi.getSubInstituicao().getNomeSubInstituicao()
+                                        : null)
+                                .filter(n -> n != null)
+                                .findFirst().orElse(null);
                     }
                 } catch (Exception e) {
                     nomeSub = null;
@@ -238,7 +241,7 @@ public class GestaoUsuariosController {
             model.addAttribute("filtroEmail", filtroEmail);
             model.addAttribute("filtroSubInstituicao", filtroSubInstituicao);
             model.addAttribute("filtroStatus", filtroStatus);
-            model.addAttribute("totalUsuarios", usuariosPaginados.size());
+            model.addAttribute("totalUsuarios", usuariosDTO.size());
             List<SubInstituicao> subInstituicoes = subInstituicaoRepository
                     .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
             model.addAttribute("subInstituicoes", subInstituicoes);

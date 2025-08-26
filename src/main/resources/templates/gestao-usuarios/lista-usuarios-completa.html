@@ -329,7 +329,7 @@
       <!-- Paginação -->
       <div class="row mt-3">
         <div class="col-12 d-flex justify-content-center">
-          <nav th:if="${totalPages > 1}" aria-label="Navegação de páginas">
+          <nav aria-label="Navegação de páginas">
             <ul class="pagination">
               <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
                 <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${page-1},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}">Anterior</a>
@@ -362,12 +362,13 @@
                     <span class="badge badge-nivel bg-secondary" th:if="${usuarioInst.usuarioInstituicao == null}">---</span>
                   </td>
                   <td>
-                    <span th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}">
+                    <span th:if="${usuarioInst.situacao != null}" th:switch="${usuarioInst.situacao}">
                       <span th:case="'A'" class="badge bg-success">A</span>
                       <span th:case="'B'" class="badge bg-warning text-dark">B</span>
                       <span th:case="'C'" class="badge bg-danger">C</span>
-                        <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.usuarioInstituicao.sitAcessoUsuarioInstituicao}">?</span>
+                      <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.situacao}">?</span>
                     </span>
+                    <span th:if="${usuarioInst.situacao == null}" class="badge bg-secondary">---</span>
                   </td>
                 </tr>
               </tbody>
