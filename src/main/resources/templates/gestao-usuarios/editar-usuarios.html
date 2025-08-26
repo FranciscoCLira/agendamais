@@ -122,7 +122,7 @@
                 <datalist id="listaCodigos">
                   <option
                     th:each="usuarioInst : ${usuarios}"
-                    th:value="${usuarioInst.usuario.username}"
+                    th:value="${usuarioInst.usuarioInstituicao.usuario.username}"
                   ></option>
                 </datalist>
               </div>
@@ -142,7 +142,7 @@
                 <datalist id="listaNomes">
                   <option
                     th:each="usuarioInst : ${usuarios}"
-                    th:value="${usuarioInst.usuario.pessoa.nomePessoa}"
+                    th:value="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePessoa}"
                   ></option>
                 </datalist>
               </div>
@@ -165,6 +165,7 @@
                   class="form-select"
                   id="filtroSubInstituicao"
                   name="filtroSubInstituicao"
+                  onchange="this.form.submit()"
                 >
                   <option
                     value=""
@@ -195,6 +196,7 @@
                   id="filtroStatus"
                   name="filtroStatus"
                   th:value="${filtroStatus}"
+                  onchange="this.form.submit()"
                 >
                   <option value="">Todas</option>
                   <option value="A" th:selected="${filtroStatus == 'A'}">
@@ -294,30 +296,37 @@
                       <input
                         class="form-check-input usuario-checkbox"
                         type="checkbox"
-                        th:id="'usuario_' + ${usuarioInst.id}"
-                        th:value="${usuarioInst.id}"
-                        th:data-nome="${usuarioInst.usuario.pessoa.nomePessoa}"
-                        th:data-nivel="${usuarioInst.nivelAcessoUsuarioInstituicao}"
-                        th:data-situacao="${usuarioInst.sitAcessoUsuarioInstituicao}"
-                        th:disabled="${usuarioInst.nivelAcessoUsuarioInstituicao == 9}"
+                        th:id="'usuario_' + ${usuarioInst.usuarioInstituicao.id}"
+                        th:value="${usuarioInst.usuarioInstituicao.id}"
+                        th:data-nome="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePessoa}"
+                        th:data-nivel="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao}"
+                        th:data-situacao="${usuarioInst.usuarioInstituicao.sitAcessoUsuarioInstituicao}"
+                        th:disabled="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao == 9}"
                       />
                     </div>
                   </td>
-                  <td th:text="${usuarioInst.usuario.username}">U001</td>
+                  <td
+                    th:text="${usuarioInst.usuarioInstituicao.usuario.username}"
+                  >
+                    U001
+                  </td>
                   <td>
-                    <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
+                    <strong
+                      th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePessoa}"
                       >Nome do Usuário</strong
                     >
                   </td>
-                  <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">
+                  <td
+                    th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.emailPessoa}"
+                  >
                     email@exemplo.com
                   </td>
                   <td>
                     <span
                       th:text="
-                      (${usuarioInst.usuario.pessoa.pais != null ? usuarioInst.usuario.pessoa.pais.nomeLocal : '---'}) + ' / ' +
-                      (${usuarioInst.usuario.pessoa.estado != null ? usuarioInst.usuario.pessoa.estado.nomeLocal : '---'}) + ' / ' +
-                      (${usuarioInst.usuario.pessoa.cidade != null ? usuarioInst.usuario.pessoa.cidade.nomeLocal : '---'})
+                      (${usuarioInst.usuarioInstituicao.usuario.pessoa.pais != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.pais.nomeLocal : '---'}) + ' / ' +
+                      (${usuarioInst.usuarioInstituicao.usuario.pessoa.estado != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.estado.nomeLocal : '---'}) + ' / ' +
+                      (${usuarioInst.usuarioInstituicao.usuario.pessoa.cidade != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.cidade.nomeLocal : '---'})
                     "
                     ></span>
                   </td>
@@ -334,11 +343,11 @@
                     >
                   </td>
                   <td
-                    th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
+                    th:text="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao}"
                   ></td>
                   <td>
                     <span
-                      th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                      th:switch="${usuarioInst.usuarioInstituicao.sitAcessoUsuarioInstituicao}"
                     >
                       <span
                         th:case="'A'"
@@ -361,7 +370,7 @@
                       <span
                         th:case="*"
                         class="badge bg-secondary"
-                        th:text="${usuarioInst.sitAcessoUsuarioInstituicao}"
+                        th:text="${usuarioInst.usuarioInstituicao.sitAcessoUsuarioInstituicao}"
                         >-</span
                       >
                     </span>
@@ -426,13 +435,20 @@
               </div>
             </div>
             <div class="row mt-3">
-              <div class="col-12 text-end">
+              <div class="col-12 d-flex justify-content-end gap-2">
                 <button
                   type="button"
                   class="btn btn-success fw-bold"
                   onclick="confirmarAlteracaoUsuarios()"
                 >
-                  <i class="fas fa-check me-2"></i>Confirmar Alteração
+                  <i class="fas fa-check me-2"></i>Confirmar alteração em massa
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary fw-bold"
+                  onclick="window.location.reload()"
+                >
+                  <i class="fas fa-times me-2"></i>Cancelar
                 </button>
               </div>
             </div>
