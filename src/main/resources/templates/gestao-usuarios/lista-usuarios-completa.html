@@ -225,29 +225,29 @@
             </div>
             <div class="col-md-2">
               <label for="subInstituicao" class="form-label">Sub-Instituição</label>
-              <select class="form-select" id="subInstituicao" name="subInstituicao">
+              <select class="form-select" id="subInstituicao" name="subInstituicao" onchange="this.form.submit()">
                 <option value="" th:selected="${subInstituicao == null or subInstituicao == ''}">Todas</option>
                 <option th:each="sub : ${subInstituicoes}" th:value="${sub.id}" th:text="${sub.nomeSubInstituicao}" th:selected="${subInstituicao == sub.id.toString()}"></option>
                 <option value="-1" th:selected="${subInstituicao == '-1'}">Nenhuma</option>
               </select>
             </div>
-            <div class="col-md-1">
+          </div>
+          <div class="row mt-3">
+            <div class="col-md-2">
               <label for="pais" class="form-label">País</label>
               <input type="text" class="form-control" id="pais" name="pais" th:value="${pais}" placeholder="Ex: Brasil" />
             </div>
-            <div class="col-md-1">
+            <div class="col-md-2">
               <label for="estado" class="form-label">Estado</label>
               <input type="text" class="form-control" id="estado" name="estado" th:value="${estado}" placeholder="Ex: São Paulo" />
             </div>
-          </div>
-          <div class="row mt-3">
             <div class="col-md-2">
               <label for="cidade" class="form-label">Cidade</label>
               <input type="text" class="form-control" id="cidade" name="cidade" th:value="${cidade}" placeholder="Ex: São Paulo" />
             </div>
             <div class="col-md-2">
               <label for="size" class="form-label">Itens por página</label>
-              <select class="form-select" id="size" name="size">
+              <select class="form-select" id="size" name="size" onchange="this.form.submit()">
                 <option th:value="10" th:selected="${size == null or size == 10}">10</option>
                 <option th:value="20" th:selected="${size == 20}">20</option>
                 <option th:value="50" th:selected="${size == 50}">50</option>
@@ -258,8 +258,8 @@
                 <option th:value="500" th:selected="${size == 500}">500</option>
               </select>
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary me-2">
+            <div class="col-md-4 d-flex align-items-end justify-content-end gap-2">
+              <button type="submit" class="btn btn-primary">
                 <i class="fas fa-search"></i> Filtrar
               </button>
               <a href="/administrador/lista-usuarios" class="btn btn-secondary">
@@ -326,24 +326,6 @@
                   <td>
                     <span th:if="${usuarioInst.nomeSubInstituicao != null}" th:text="${usuarioInst.nomeSubInstituicao}" class="badge bg-info"></span>
                     <span th:if="${usuarioInst.nomeSubInstituicao == null}" class="text-muted">---</span>
-      <!-- Paginação -->
-      <div class="row mt-3">
-        <div class="col-12 d-flex justify-content-center">
-          <nav aria-label="Navegação de páginas">
-            <ul class="pagination">
-              <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
-                <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${page-1},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}">Anterior</a>
-              </li>
-              <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${i == page} ? 'active'">
-                <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${i},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}" th:text="${i+1}"></a>
-              </li>
-              <li class="page-item" th:classappend="${page == totalPages-1} ? 'disabled'">
-                <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${page+1},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}">Próxima</a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
                   </td>
                   <td>
                     <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais : ''}"></span>
@@ -372,20 +354,53 @@
                   </td>
                 </tr>
               </tbody>
-                    <span th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() > 0}">
-                      <th:block th:with="subNome=${usuarioInst.usuario.pessoa.pessoaSubInstituicao.stream()
-                        .filter(psi -> psi.instituicao != null && instituicaoSelecionada != null && psi.instituicao.id == instituicaoSelecionada.id)
-                        .findFirst()?.get().subInstituicao?.nomeSubInstituicao}">
-                        <span th:if="${subNome != null}" th:text="${subNome}" class="badge bg-info"></span>
-                        <span th:if="${subNome == null}" class="text-muted">---</span>
-                      </th:block>
+          </table>
+          <!-- Paginação -->
+          <div class="row mt-3">
+            <div class="col-12 d-flex justify-content-center">
+              <nav aria-label="Navegação de páginas">
+                <ul class="pagination">
+                  <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${page-1},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}">Anterior</a>
+                  </li>
+                  <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${i == page} ? 'active'">
+                    <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${i},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}" th:text="${i+1}"></a>
+                  </li>
+                  <li class="page-item" th:classappend="${page == totalPages-1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/administrador/lista-usuarios(page=${page+1},size=${size},codigoUsuario=${codigoUsuario},username=${username},nome=${nome},email=${email},subInstituicao=${subInstituicao},pais=${pais},estado=${estado},cidade=${cidade},statusUsuario=${statusUsuario})}">Próxima</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+                  </td>
+                  <td>
+                    <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais : ''}"></span>
+                    <span th:if="${usuarioInst.usuarioInstituicao != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null}">/</span>
+                    <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado : ''}"></span>
+                    <span th:if="${usuarioInst.usuarioInstituicao != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade != null}">/</span>
+                    <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade : ''}"></span>
+                    <span class="text-muted" th:if="${usuarioInst.usuarioInstituicao == null}">---</span>
+                  </td>
+                  <td>
+                    <span th:if="${usuarioInst.usuarioInstituicao != null}"
+                      class="badge badge-nivel"
+                      th:classappend="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao == 9} ? 'bg-danger' : 
+                                                          (${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao >= 5} ? 'bg-warning' : 'bg-success')"
+                      th:text="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao}">Nível</span>
+                    <span class="badge badge-nivel bg-secondary" th:if="${usuarioInst.usuarioInstituicao == null}">---</span>
+                  </td>
+                  <td>
+                    <span th:if="${usuarioInst.situacao != null}" th:switch="${usuarioInst.situacao}">
+                      <span th:case="'A'" class="badge bg-success">A</span>
+                      <span th:case="'B'" class="badge bg-warning text-dark">B</span>
+                      <span th:case="'C'" class="badge bg-danger">C</span>
+                      <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.situacao}">?</span>
                     </span>
-                    <span th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao == null or usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() == 0}" class="text-muted">---</span>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
+                    <span th:if="${usuarioInst.situacao == null}" class="badge bg-secondary">---</span>
+                  </td>
+                </tr>
+              </tbody>
       <div class="row mt-4">
         <div class="col-12">
           <div class="alert alert-info">
