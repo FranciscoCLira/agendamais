@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AdministradorController {
 
-    @GetMapping("/administrador-form")
-    public String exibirFormularioAdministrador(HttpSession session, Model model) {
+    @GetMapping("/administrador")
+    public String exibirPainelAdministrador(HttpSession session, Model model) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/acesso";
+        }
         String nomeInstituicao = (String) session.getAttribute("nomeInstituicao");
         model.addAttribute("nomeInstituicao", nomeInstituicao);
-        return "administrador-form";
+    return "menus/menu-administrador";
     }
 }

@@ -1,0 +1,8 @@
+<!-- Fragmento de autocomplete para campo Solicitante -->
+<div class="mb-3 position-relative" th:fragment="autocompleteSolicitante">
+  <label for="solicitanteInput" class="form-label">Solicitante</label>
+  <input type="text" class="form-control" id="solicitanteInput" placeholder="Digite nome ou email..." autocomplete="off">
+  <input type="hidden" id="solicitanteId" name="idSolicitante">
+  <div id="solicitanteSuggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
+</div>
+

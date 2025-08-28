@@ -27,10 +27,6 @@ public class MenuController {
         return "menus/menu-autor";
     }
 
-    @GetMapping("/administrador")
-    public String administrador() {
-        return "menus/menu-administrador";
-    }
 
     @GetMapping("/superusuario")
     public String superusuario() {
@@ -134,10 +130,10 @@ public class MenuController {
         return "info/em-construcao";
     }
 
-    @GetMapping("/administrador/atividades")
-    public String gerenciarAtividades() {
-        return "info/em-construcao";
-    }
+    // @GetMapping("/administrador/atividades")
+    // public String gerenciarAtividades() {
+    //     return "redirect:/atividades";
+    // }
 
     @GetMapping("/administrador/ocorrencias")
     public String gerenciarOcorrencias() {

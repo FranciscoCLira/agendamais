@@ -4,41 +4,71 @@
     <meta charset="UTF-8">
     <title>Lista de Atividades</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
 </head>
 
 <body>
 <div th:replace="fragments/layout_cabecalho :: header"></div>
 
-<main>
-    <h1>Lista de Atividades</h1>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Lista de Atividades</h1>
+        <a th:href="@{/atividades/novo}" class="btn btn-primary">Nova Atividade</a>
+    </div>
 
-    <a th:href="@{/atividades/novo}">Nova Atividade</a>
+    <!-- Barra de filtros avançados -->
+    <form class="row g-2 mb-4 bg-light p-3 rounded shadow-sm" method="get" th:action="@{/atividades}">
+        <div class="col-md-3">
+            <input type="text" name="titulo" class="form-control" placeholder="Filtrar por título..." th:value="${param.titulo}" />
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="tipo" class="form-control" placeholder="Tipo..." th:value="${param.tipo}" />
+        </div>
+        <div class="col-md-2">
+            <select name="situacao" class="form-select">
+                <option value="">Situação...</option>
+                <option value="P">Proposta</option>
+                <option value="A">Aprovada</option>
+                <option value="R">Rejeitada</option>
+                <option value="C">Cancelada</option>
+                <option value="F">Finalizada</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="solicitante" class="form-control" placeholder="Solicitante..." th:value="${param.solicitante}" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
+        </div>
+    </form>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Tipo</th>
-                <th>Situação</th>
-                <th>Instituição</th>
-                <th>Apresentação</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="atividade : ${atividades}">
-                <td th:text="${atividade.tituloAtividade}"></td>
-                <td th:text="${atividade.tipoAtividade.tituloTipoAtividade}"></td>
-                <td th:text="${atividade.situacaoAtividade}"></td>
-                <td th:text="${atividade.instituicao.nomeInstituicao}"></td>
-                <td th:text="${atividade.formaApresentacao}"></td>
-                <td>
-                    <a th:href="@{'/atividades/editar/' + ${atividade.id}}">Editar</a>
-                    <a th:href="@{'/atividades/deletar/' + ${atividade.id}}" onclick="return confirm('Confirma exclusão?')">Excluir</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</main>    
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle bg-white">
+            <thead class="table-light">
+                <tr>
+                    <th>Título</th>
+                    <th>Tipo</th>
+                    <th>Situação</th>
+                    <th>Instituição</th>
+                    <th>Apresentação</th>
+                    <th style="width:120px;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="atividade : ${atividades}">
+                    <td th:text="${atividade.tituloAtividade}"></td>
+                    <td th:text="${atividade.tipoAtividade.tituloTipoAtividade}"></td>
+                    <td th:text="${atividade.situacaoAtividade}"></td>
+                    <td th:text="${atividade.instituicao.nomeInstituicao}"></td>
+                    <td th:text="${atividade.formaApresentacao}"></td>
+                    <td>
+                        <a th:href="@{'/atividades/editar/' + ${atividade.id}}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                        <a th:href="@{'/atividades/deletar/' + ${atividade.id}}" class="btn btn-sm btn-outline-danger ms-1" onclick="return confirm('Confirma exclusão?')">Excluir</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
 </body>
 </html>

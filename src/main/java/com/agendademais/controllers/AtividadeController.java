@@ -59,34 +59,68 @@ public class AtividadeController {
     }
 
     @GetMapping("/novo")
-    public String novaAtividade(Model model) {
+    public String novaAtividade(Model model, HttpSession session) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
         model.addAttribute("atividade", new Atividade());
         model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
-        model.addAttribute("instituicoes", instituicaoRepo.findAll());
-        model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
+        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+        if (instituicaoSelecionada != null) {
+            model.addAttribute("subinstituicoes", subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
+        } else {
+            model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
+        }
         model.addAttribute("pessoas", pessoaRepo.findAll());
-        
-        // PRINTS NA CONSOLE PARA TESTES 
-        System.out.println(" ### /Novo: Carregando nova atividade ********");
-        System.out.println("   Tipos: " + tipoAtividadeRepo.count());
-        System.out.println("   Instituições: " + instituicaoRepo.count());
-        System.out.println("   Subinstituições: " + subInstituicaoRepo.count());
-
         return "atividade-form";
     }
 
     @PostMapping("/salvar")
     public String salvarAtividade(@ModelAttribute Atividade atividade,
-                                  @RequestParam("emailSolicitante") String emailSolicitante) {
-
-         Pessoa solicitante = pessoaRepo.findByEmailPessoa(emailSolicitante)
-                .orElseThrow(() -> new IllegalArgumentException("Pessoa com e-mail '" + emailSolicitante + "' não encontrada."));
-    	
+                                  @RequestParam(value = "idSolicitante", required = false) Long idSolicitante,
+                                  HttpSession session,
+                                  Model model) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/login";
+        }
+        if (idSolicitante == null) {
+            model.addAttribute("atividade", atividade);
+            model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
+            com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+            if (instituicaoSelecionada != null) {
+                model.addAttribute("subinstituicoes", subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
+            } else {
+                model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
+            }
+            model.addAttribute("pessoas", pessoaRepo.findAll());
+            model.addAttribute("erroSolicitante", "Selecione um solicitante antes de salvar.");
+            return "atividade-form";
+        }
+        Pessoa solicitante = pessoaRepo.findById(idSolicitante)
+                .orElseThrow(() -> new IllegalArgumentException("Pessoa com id '" + idSolicitante + "' não encontrada."));
         atividade.setIdSolicitante(solicitante);
         atividade.setDataAtualizacao(LocalDate.now());
-
+        // Buscar instituição logada na sessão
+        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+        if (instituicaoSelecionada == null) {
+            throw new IllegalStateException("Instituição logada não encontrada na sessão. Faça login pelo menu principal.");
+        }
+        atividade.setInstituicao(instituicaoSelecionada);
+        // Campos opcionais: garantir null se vazio
+        if (atividade.getDescricaoAtividade() != null && atividade.getDescricaoAtividade().trim().isEmpty()) {
+            atividade.setDescricaoAtividade(null);
+        }
+        if (atividade.getComentariosAtividade() != null && atividade.getComentariosAtividade().trim().isEmpty()) {
+            atividade.setComentariosAtividade(null);
+        }
+        if (atividade.getLinkMaterialAtividade() != null && atividade.getLinkMaterialAtividade().trim().isEmpty()) {
+            atividade.setLinkMaterialAtividade(null);
+        }
+        if (atividade.getLinkAtividadeOnLine() != null && atividade.getLinkAtividadeOnLine().trim().isEmpty()) {
+            atividade.setLinkAtividadeOnLine(null);
+        }
         atividadeRepo.save(atividade);
-        return "redirect:/atividades";
+        return "redirect:/administrador/atividades";
     }
 
     
@@ -103,8 +137,34 @@ public class AtividadeController {
     }
 
     @GetMapping("/deletar/{id}")
-    public String deletar(@PathVariable Long id) {
+    public String deletar(@PathVariable Long id, 
+                          @RequestParam(required = false) String titulo,
+                          @RequestParam(required = false) String situacao,
+                          @RequestParam(required = false) String forma,
+                          @RequestParam(required = false) String alvo,
+                          @RequestParam(required = false) Long subInstituicao,
+                          @RequestParam(required = false) Long solicitante,
+                          @RequestParam(required = false) String dataInicio,
+                          @RequestParam(required = false) String dataFim,
+                          @RequestParam(required = false) String ordenacao,
+                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "25") int size
+    ) {
         atividadeRepo.deleteById(id);
-        return "redirect:/atividades";
+        // Montar query string para manter filtros e paginação
+        StringBuilder qs = new StringBuilder();
+        if (titulo != null) qs.append("&titulo=").append(titulo);
+        if (situacao != null) qs.append("&situacao=").append(situacao);
+        if (forma != null) qs.append("&forma=").append(forma);
+        if (alvo != null) qs.append("&alvo=").append(alvo);
+        if (subInstituicao != null) qs.append("&subInstituicao=").append(subInstituicao);
+        if (solicitante != null) qs.append("&solicitante=").append(solicitante);
+        if (dataInicio != null) qs.append("&dataInicio=").append(dataInicio);
+        if (dataFim != null) qs.append("&dataFim=").append(dataFim);
+        if (ordenacao != null) qs.append("&ordenacao=").append(ordenacao);
+        qs.append("&page=").append(page);
+        qs.append("&size=").append(size);
+        String redirectUrl = "redirect:/administrador/atividades?" + qs.substring(1); // remove primeiro &
+        return redirectUrl;
     }
 }

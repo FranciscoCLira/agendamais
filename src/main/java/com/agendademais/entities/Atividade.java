@@ -30,9 +30,9 @@ public class Atividade {
     @Column(length = 30)
     private String tituloAtividade;
 
-    private String situacaoAtividade;
-    private Integer formaApresentacao;
-    private Integer publicoAlvo;
+    private String situacaoAtividade; // P=Proposta, A=Aprovada, R=Rejeitada, C=Cancelada, F=Finalizada
+    private Integer formaApresentacao; // 1=Presencial, 2=Online, 3=Híbrido, 4=outro
+    private Integer publicoAlvo; // 1-Publico, 2=Restrito, 3=Academico, 4=outro
     private String descricaoAtividade;
     private String comentariosAtividade;
     private String linkMaterialAtividade;
@@ -41,45 +41,115 @@ public class Atividade {
 
     // Getters e Setters
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public TipoAtividade getTipoAtividade() { return tipoAtividade; }
-    public void setTipoAtividade(TipoAtividade tipoAtividade) { this.tipoAtividade = tipoAtividade; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Instituicao getInstituicao() { return instituicao; }
-    public void setInstituicao(Instituicao instituicao) { this.instituicao = instituicao; }
+    public TipoAtividade getTipoAtividade() {
+        return tipoAtividade;
+    }
 
-    public SubInstituicao getSubInstituicao() { return subInstituicao; }
-    public void setSubInstituicao(SubInstituicao subInstituicao) { this.subInstituicao = subInstituicao; }
+    public void setTipoAtividade(TipoAtividade tipoAtividade) {
+        this.tipoAtividade = tipoAtividade;
+    }
 
-    public Pessoa getIdSolicitante() { return idSolicitante; }
-    public void setIdSolicitante(Pessoa idSolicitante) { this.idSolicitante = idSolicitante; }
+    public Instituicao getInstituicao() {
+        return instituicao;
+    }
 
-    public String getTituloAtividade() { return tituloAtividade; }
-    public void setTituloAtividade(String tituloAtividade) { this.tituloAtividade = tituloAtividade; }
+    public void setInstituicao(Instituicao instituicao) {
+        this.instituicao = instituicao;
+    }
 
-    public String getSituacaoAtividade() { return situacaoAtividade; }
-    public void setSituacaoAtividade(String situacaoAtividade) { this.situacaoAtividade = situacaoAtividade; }
+    public SubInstituicao getSubInstituicao() {
+        return subInstituicao;
+    }
 
-    public Integer getFormaApresentacao() { return formaApresentacao; }
-    public void setFormaApresentacao(Integer formaApresentacao) { this.formaApresentacao = formaApresentacao; }
+    public void setSubInstituicao(SubInstituicao subInstituicao) {
+        this.subInstituicao = subInstituicao;
+    }
 
-    public Integer getPublicoAlvo() { return publicoAlvo; }
-    public void setPublicoAlvo(Integer publicoAlvo) { this.publicoAlvo = publicoAlvo; }
+    public Pessoa getIdSolicitante() {
+        return idSolicitante;
+    }
 
-    public String getDescricaoAtividade() { return descricaoAtividade; }
-    public void setDescricaoAtividade(String descricaoAtividade) { this.descricaoAtividade = descricaoAtividade; }
+    public void setIdSolicitante(Pessoa idSolicitante) {
+        this.idSolicitante = idSolicitante;
+    }
 
-    public String getComentariosAtividade() { return comentariosAtividade; }
-    public void setComentariosAtividade(String comentariosAtividade) { this.comentariosAtividade = comentariosAtividade; }
+    public String getTituloAtividade() {
+        return tituloAtividade;
+    }
 
-    public String getLinkMaterialAtividade() { return linkMaterialAtividade; }
-    public void setLinkMaterialAtividade(String linkMaterialAtividade) { this.linkMaterialAtividade = linkMaterialAtividade; }
+    public void setTituloAtividade(String tituloAtividade) {
+        this.tituloAtividade = tituloAtividade;
+    }
 
-    public String getLinkAtividadeOnLine() { return linkAtividadeOnLine; }
-    public void setLinkAtividadeOnLine(String linkAtividadeOnLine) { this.linkAtividadeOnLine = linkAtividadeOnLine; }
+    public String getSituacaoAtividade() {
+        return situacaoAtividade;
+    }
 
-    public LocalDate getDataAtualizacao() { return dataAtualizacao; }
-    public void setDataAtualizacao(LocalDate dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
+    public void setSituacaoAtividade(String situacaoAtividade) {
+        this.situacaoAtividade = situacaoAtividade;
+    }
+
+    public Integer getFormaApresentacao() {
+        return formaApresentacao;
+    }
+
+    public void setFormaApresentacao(Integer formaApresentacao) {
+        this.formaApresentacao = formaApresentacao;
+    }
+
+    public Integer getPublicoAlvo() {
+        return publicoAlvo;
+    }
+
+    public void setPublicoAlvo(Integer publicoAlvo) {
+        this.publicoAlvo = publicoAlvo;
+    }
+
+    public String getDescricaoAtividade() {
+        return descricaoAtividade;
+    }
+
+    public void setDescricaoAtividade(String descricaoAtividade) {
+        this.descricaoAtividade = descricaoAtividade;
+    }
+
+    public String getComentariosAtividade() {
+        return comentariosAtividade;
+    }
+
+    public void setComentariosAtividade(String comentariosAtividade) {
+        this.comentariosAtividade = comentariosAtividade;
+    }
+
+    public String getLinkMaterialAtividade() {
+        return linkMaterialAtividade;
+    }
+
+    public void setLinkMaterialAtividade(String linkMaterialAtividade) {
+        this.linkMaterialAtividade = linkMaterialAtividade;
+    }
+
+    public String getLinkAtividadeOnLine() {
+        return linkAtividadeOnLine;
+    }
+
+    public void setLinkAtividadeOnLine(String linkAtividadeOnLine) {
+        this.linkAtividadeOnLine = linkAtividadeOnLine;
+    }
+
+    public LocalDate getDataAtualizacao() {
+        return dataAtualizacao;
+    }
+
+    public void setDataAtualizacao(LocalDate dataAtualizacao) {
+        this.dataAtualizacao = dataAtualizacao;
+    }
 }

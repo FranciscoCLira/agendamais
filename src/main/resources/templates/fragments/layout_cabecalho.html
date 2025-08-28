@@ -1,44 +1,29 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
-<body>
 <!-- fragments/layout_cabecalho.html -->
 <div th:fragment="cabecalho">
-	
 	<header class="cabecalho">
-	  <div class="titulo">
-	    <h1>Agenda Mais</h1>
-	    <h3>Agendando tudo e mais</h3>
-	  </div>
-	
-	  <div class="logo-central">
-		<i class="fas fa-moon"></i>
-	  </div>
-	
-	  <div class="info-usuario">
-	
-	    <!-- Nome da instituição ou Controle Total -->
-		<p th:if="${instituicaoSelecionada != null}">
-		  <span th:text="${instituicaoSelecionada.nomeInstituicao}"></span>
-		</p>
-		<p th:if="${instituicaoSelecionada == null}">
-		  <span>*** Controle Total ***</span>
-		</p>
-		
-	    <!-- Usuário logado -->
-	    <p th:if="${usuarioLogado != null}">
-	      Cód.Usuário: 
-	      <span th:text="${#strings.abbreviate(usuarioLogado.username,25)}">usuario</span>
-	    </p>
-	    <p th:if="${usuarioLogado != null}">
-	      <span th:text="${#strings.abbreviate(usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
-	    </p>
-	
-	  </div>
+		<div class="titulo">
+			<h1>Agenda Mais</h1>
+			<h3>Agendando tudo e mais</h3>
+		</div>
+		<div class="logo-central">
+			<i class="fas fa-moon"></i>
+		</div>
+		<div class="info-usuario">
+			<!-- Nome da instituição ou Controle Total -->
+			<p th:if="${instituicaoSelecionada != null}">
+				<span th:text="${instituicaoSelecionada.nomeInstituicao}"></span>
+			</p>
+			<p th:if="${instituicaoSelecionada == null}">
+				<span>*** Controle Total ***</span>
+			</p>
+			<!-- Usuário logado -->
+			<p th:if="${usuarioLogado != null}">
+				Cód.Usuário: 
+				<span th:text="${#strings.abbreviate(usuarioLogado.username,25)}">usuario</span>
+			</p>
+			<p th:if="${usuarioLogado != null}">
+				<span th:text="${#strings.abbreviate(usuarioLogado.pessoa?.nomePessoa,38)}">Nome Pessoa</span>
+			</p>
+		</div>
 	</header>
-
 </div>
-</body>
-</html>

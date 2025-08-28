@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
+	// Para autocomplete eficiente
+	List<Pessoa> findTop10ByNomePessoaContainingIgnoreCaseOrEmailPessoaContainingIgnoreCase(String nome, String email);
+
 	Optional<Pessoa> findByEmailPessoa(String emailPessoa);
 
 	List<Pessoa> findAllByEmailPessoa(String emailPessoa);
