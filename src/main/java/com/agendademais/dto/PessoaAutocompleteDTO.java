@@ -17,11 +17,18 @@ public class PessoaAutocompleteDTO {
         return new PessoaAutocompleteDTO(
                 pessoa.getId(),
                 pessoa.getNomePessoa(),
-                pessoa.getEmailPessoa()
-        );
+                pessoa.getEmailPessoa());
     }
 
-    public Long getId() { return id; }
-    public String getNome() { return nome; }
-    public String getEmail() { return email; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getEmail() {
+        return email;
+    }
 }

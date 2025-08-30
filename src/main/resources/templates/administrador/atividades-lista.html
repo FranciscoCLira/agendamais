@@ -140,6 +140,9 @@
                         <a th:href="@{'/atividades/deletar/' + ${atividade.id}}" class="btn btn-sm btn-outline-danger ms-1" title="Excluir" onclick="return confirm('Confirma exclusão?')">
                             <i class="fa fa-times"></i>
                         </a>
+                        <a th:href="@{'/administrador/ocorrencias'}" class="btn btn-sm btn-outline-warning ms-1 d-inline-flex align-items-center p-1" title="Ocorrências" style="vertical-align: middle; height:32px;">
+                            <i class="fa fa-exclamation-circle" style="font-size: 1.1em;"></i>
+                        </a>
                         <!-- Corrigir para manter filtros ao excluir -->
                         <form th:action="@{'/atividades/deletar/' + ${atividade.id}}" method="get" style="display:none;" th:id="'deleteForm' + ${atividade.id}">
                             <input type="hidden" name="titulo" th:value="${param.titulo}" />

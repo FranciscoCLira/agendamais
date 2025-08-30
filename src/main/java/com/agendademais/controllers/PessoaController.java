@@ -27,11 +27,11 @@ public class PessoaController {
     @GetMapping("/api/pessoas/autocomplete")
     @ResponseBody
     public List<PessoaAutocompleteDTO> autocompletePessoas(@RequestParam("q") String query) {
-    List<Pessoa> pessoas = pessoaRepository
-        .findTop10ByNomePessoaContainingIgnoreCaseOrEmailPessoaContainingIgnoreCase(query, query);
-    return pessoas.stream()
-        .map(p -> new PessoaAutocompleteDTO(p.getId(), p.getNomePessoa(), p.getEmailPessoa()))
-        .collect(Collectors.toList());
+        List<Pessoa> pessoas = pessoaRepository
+                .findTop10ByNomePessoaContainingIgnoreCaseOrEmailPessoaContainingIgnoreCase(query, query);
+        return pessoas.stream()
+                .map(p -> new PessoaAutocompleteDTO(p.getId(), p.getNomePessoa(), p.getEmailPessoa()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping

@@ -11,10 +11,11 @@ public class AdministradorController {
     @GetMapping("/administrador")
     public String exibirPainelAdministrador(HttpSession session, Model model) {
         if (session.getAttribute("usuarioLogado") == null) {
-            return "redirect:/acesso";
+            model.addAttribute("mensagemErro", "Sessão expirada. Faça login novamente.");
+            return "login";
         }
         String nomeInstituicao = (String) session.getAttribute("nomeInstituicao");
         model.addAttribute("nomeInstituicao", nomeInstituicao);
-    return "menus/menu-administrador";
+        return "menus/menu-administrador";
     }
 }

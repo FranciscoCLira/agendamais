@@ -22,46 +22,85 @@ import com.agendademais.specs.AtividadeSpecs;
 @Controller
 @RequestMapping("/administrador/atividades")
 public class AdministradorAtividadesController {
-    @Autowired private AtividadeRepository atividadeRepo;
-    @Autowired private SubInstituicaoRepository subInstituicaoRepo;
-    @Autowired private PessoaRepository pessoaRepo;
+    @Autowired
+    private AtividadeRepository atividadeRepo;
+    @Autowired
+    private SubInstituicaoRepository subInstituicaoRepo;
+    @Autowired
+    private PessoaRepository pessoaRepo;
 
     @GetMapping
     public String listar(
-        @RequestParam(required = false) String titulo,
-        @RequestParam(required = false) String situacao,
-        @RequestParam(required = false) String forma,
-        @RequestParam(required = false) String alvo,
-        @RequestParam(required = false) Long subInstituicao,
-        @RequestParam(required = false) Long solicitante,
-        @RequestParam(required = false) String dataInicio,
-        @RequestParam(required = false) String dataFim,
-        @RequestParam(required = false) String ordenacao,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "25") int size,
-        Model model,
-        HttpSession session
-    ) {
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String situacao,
+            @RequestParam(required = false) String forma,
+            @RequestParam(required = false) String alvo,
+            @RequestParam(required = false) Long subInstituicao,
+            @RequestParam(required = false) Long solicitante,
+            @RequestParam(required = false) String dataInicio,
+            @RequestParam(required = false) String dataFim,
+            @RequestParam(required = false) String ordenacao,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size,
+            Model model,
+            HttpSession session) {
         if (session.getAttribute("usuarioLogado") == null) {
-            return "redirect:/acesso";
+            // Mensagem padrão de sessão expirada
+            model.addAttribute("mensagemErro", "Sessão expirada. Faça login novamente.");
+            return "login";
         }
         // Conversão de datas
         LocalDate dataIni = null, dataFinal = null;
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        try { if (dataInicio != null && !dataInicio.isEmpty()) dataIni = LocalDate.parse(dataInicio, dtf); } catch (Exception ignored) {}
-        try { if (dataFim != null && !dataFim.isEmpty()) dataFinal = LocalDate.parse(dataFim, dtf); } catch (Exception ignored) {}
+        try {
+            if (dataInicio != null && !dataInicio.isEmpty())
+                dataIni = LocalDate.parse(dataInicio, dtf);
+        } catch (Exception ignored) {
+        }
+        try {
+            if (dataFim != null && !dataFim.isEmpty())
+                dataFinal = LocalDate.parse(dataFim, dtf);
+        } catch (Exception ignored) {
+        }
 
         // Ordenação
         Sort sort = Sort.by(Sort.Direction.DESC, "dataAtualizacao");
         if (ordenacao != null && !ordenacao.isEmpty()) {
             switch (ordenacao) {
-                case "titulo": sort = Sort.by("tituloAtividade"); break;
-                case "situacao": sort = Sort.by("situacaoAtividade"); break;
-                case "forma": sort = Sort.by("formaApresentacao"); break;
-                case "alvo": sort = Sort.by("publicoAlvo"); break;
-                case "subinstituicao": sort = Sort.by("subInstituicao.nome"); break;
-                case "solicitante": sort = Sort.by("idSolicitante.nome"); break;
-                case "dataAtualizacao": sort = Sort.by(Sort.Direction.DESC, "dataAtualizacao"); break;
+                case "A": // Ordem: Data, Sit., Forma, Alvo, Sub, Título
+                    sort = Sort.by(Sort.Direction.DESC, "dataAtualizacao")
+                            .and(Sort.by("situacaoAtividade"))
+                            .and(Sort.by("formaApresentacao"))
+                            .and(Sort.by("publicoAlvo"))
+                            .and(Sort.by("subInstituicao.nomeSubInstituicao"))
+                            .and(Sort.by("tituloAtividade"));
+                    break;
+                case "B": // Ordem: Data, Sub, Sit., Título
+                    sort = Sort.by(Sort.Direction.DESC, "dataAtualizacao")
+                            .and(Sort.by("subInstituicao.nomeSubInstituicao"))
+                            .and(Sort.by("situacaoAtividade"))
+                            .and(Sort.by("tituloAtividade"));
+                    break;
+                case "C": // Ordem: Sit., Data, Forma, Alvo, Sub, Título
+                    sort = Sort.by("situacaoAtividade")
+                            .and(Sort.by(Sort.Direction.DESC, "dataAtualizacao"))
+                            .and(Sort.by("formaApresentacao"))
+                            .and(Sort.by("publicoAlvo"))
+                            .and(Sort.by("subInstituicao.nomeSubInstituicao"))
+                            .and(Sort.by("tituloAtividade"));
+                    break;
+                case "D": // Ordem: Sub, Data, Sit., Título
+                    sort = Sort.by("subInstituicao.nomeSubInstituicao")
+                            .and(Sort.by(Sort.Direction.DESC, "dataAtualizacao"))
+                            .and(Sort.by("situacaoAtividade"))
+                            .and(Sort.by("tituloAtividade"));
+                    break;
+                case "E": // Ordem: Sub, Título
+                    sort = Sort.by("subInstituicao.nomeSubInstituicao")
+                            .and(Sort.by("tituloAtividade"));
+                    break;
+                default:
+                    sort = Sort.by(Sort.Direction.DESC, "dataAtualizacao");
             }
         }
 
@@ -69,27 +108,27 @@ public class AdministradorAtividadesController {
         var spec = AtividadeSpecs.filtro(
                 titulo, situacao, forma, alvo,
                 subInstituicao, solicitante,
-                dataIni, dataFinal
-        );
-    Page<Atividade> atividadesPage = atividadeRepo.findAll(spec, PageRequest.of(page, size, sort));
+                dataIni, dataFinal);
+        Page<Atividade> atividadesPage = atividadeRepo.findAll(spec, PageRequest.of(page, size, sort));
         // Recuperar instituição da sessão
         var instituicao = session.getAttribute("instituicaoSelecionada");
         List<SubInstituicao> subinstituicoes;
         if (instituicao != null && instituicao instanceof com.agendademais.entities.Instituicao) {
-            subinstituicoes = subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao((com.agendademais.entities.Instituicao)instituicao, "A");
+            subinstituicoes = subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(
+                    (com.agendademais.entities.Instituicao) instituicao, "A");
         } else {
             subinstituicoes = subInstituicaoRepo.findAll();
         }
         List<Pessoa> pessoas = pessoaRepo.findAll();
-    model.addAttribute("atividades", atividadesPage.getContent());
-    model.addAttribute("page", atividadesPage);
-    model.addAttribute("size", size);
+        model.addAttribute("atividades", atividadesPage.getContent());
+        model.addAttribute("page", atividadesPage);
+        model.addAttribute("size", size);
         model.addAttribute("subinstituicoes", subinstituicoes);
         model.addAttribute("pessoas", pessoas);
         model.addAttribute("ordenacao", ordenacao);
         // Adicionar atributos de sessão para o cabeçalho
-    model.addAttribute("instituicaoSelecionada", session.getAttribute("instituicaoSelecionada"));
-    model.addAttribute("usuarioLogado", session.getAttribute("usuarioLogado"));
+        model.addAttribute("instituicaoSelecionada", session.getAttribute("instituicaoSelecionada"));
+        model.addAttribute("usuarioLogado", session.getAttribute("usuarioLogado"));
         return "administrador/atividades-lista";
     }
 }

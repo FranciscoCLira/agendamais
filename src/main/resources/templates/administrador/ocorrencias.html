@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ocorrências de Atividades</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+<body>
+<!-- Cabeçalho padrão -->
+<div th:replace="fragments/layout_cabecalho :: layout_cabecalho"></div>
+<div class="container mt-4">
+    <div class="mb-2">
+        <a th:href="@{/administrador}" class="btn btn-outline-secondary me-3">&larr; Voltar ao Menu</a>
+    </div>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Ocorrências de Atividades</h3>
+            <a th:href="@{'/administrador/ocorrencias/nova?atividadeId=' + ${atividadeSelecionada.id}}" th:if="${atividadeSelecionada != null}" class="btn btn-primary">Nova Ocorrência</a>
+            <a th:href="@{'/administrador/ocorrencias/nova'}" th:unless="${atividadeSelecionada != null}" class="btn btn-primary">Nova Ocorrência</a>
+        </div>
+        <div class="card-body">
+            <form method="get" th:action="@{/administrador/ocorrencias}" class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="tituloAtividade" placeholder="Atividade (autocomplete)" th:value="${param.tituloAtividade}" />
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="situacao">
+                        <option value="">Todas</option>
+                        <option value="P">Programada</option>
+                        <option value="R">Realizada</option>
+                        <option value="C">Cancelada</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="ordem">
+                        <option value="data">Data e Hora Inic</option>
+                        <option value="situacao">Sit., Data e Hora Inic</option>
+                        <option value="autor">Autor, Data e Hora Inic</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="size">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a th:href="@{/administrador/ocorrencias}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+            <div th:if="${atividadeSelecionada == null}">
+                <div class="alert alert-info">Selecione uma atividade para visualizar as ocorrências.</div>
+            </div>
+            <div th:if="${atividadeSelecionada != null}">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>DATA</th>
+                        <th>HORA INIC/FIM</th>
+                        <th>SIT.</th>
+                        <th>QT.PARTIC</th>
+                        <th>TEMA</th>
+                        <th>AUTOR</th>
+                        <th style="width:100px;">Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ocorrencia : ${ocorrencias}">
+                        <td th:text="${#dates.format(ocorrencia.dataOcorrencia, 'dd/MM/yy')}"></td>
+                        <td th:text="${ocorrencia.horaInicioOcorrencia} + ' - ' + ${ocorrencia.horaFimOcorrencia}"></td>
+                        <td>
+                            <span th:if="${ocorrencia.situacao} == 'P'" class="fw-bold text-success">P</span>
+                            <span th:if="${ocorrencia.situacao} == 'R'" class="fw-bold text-primary">R</span>
+                            <span th:if="${ocorrencia.situacao} == 'C'" class="fw-bold text-danger">C</span>
+                        </td>
+                        <td th:text="${ocorrencia.qtdeParticipantes}"></td>
+                        <td th:text="${#strings.abbreviate(ocorrencia.temaOcorrencia, 35)}"></td>
+                        <td th:text="${#strings.abbreviate(ocorrencia.autor != null ? ocorrencia.autor.nomePessoa : '', 20)}"></td>
+                        <td>
+                            <a th:href="@{'/administrador/ocorrencias/editar/' + ${ocorrencia.id}}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <i class="fa fa-pencil-alt"></i>
+                            </a>
+                            <a th:href="@{'/administrador/ocorrencias/deletar/' + ${ocorrencia.id}}" class="btn btn-sm btn-outline-danger ms-1" title="Excluir" onclick="return confirm('Confirma exclusão?')">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <!-- Paginação -->
+                <nav th:if="${ocorrencias.totalPages > 1}">
+                    <ul class="pagination justify-content-end">
+                        <li class="page-item" th:classappend="${ocorrencias.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{|/administrador/ocorrencias?page=${ocorrencias.number-1}|}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, ocorrencias.totalPages-1)}" th:classappend="${i == ocorrencias.number} ? 'active'">
+                            <a class="page-link" th:href="@{|/administrador/ocorrencias?page=${i}|}" th:text="${i+1}"></a>
+                        </li>
+                        <li class="page-item" th:classappend="${ocorrencias.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{|/administrador/ocorrencias?page=${ocorrencias.number+1}|}">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -9,8 +9,7 @@ public class AtividadeSpecs {
     public static Specification<Atividade> filtro(
             String titulo, String situacao, String forma, String alvo,
             Long subInstituicao, Long solicitante,
-            LocalDate dataInicio, LocalDate dataFim
-    ) {
+            LocalDate dataInicio, LocalDate dataFim) {
         return (root, query, cb) -> {
             Predicate p = cb.conjunction();
             if (titulo != null && !titulo.isEmpty())

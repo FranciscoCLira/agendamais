@@ -28,8 +28,6 @@ public class AtividadeController {
     @Autowired
     private PessoaRepository pessoaRepo;
 
-    
-
     @GetMapping("/atividade-form")
     public String exibirFormularioAtividade(HttpSession session, Model model) {
         String nomeInstituicao = (String) session.getAttribute("nomeInstituicao");
@@ -42,19 +40,18 @@ public class AtividadeController {
         String nomeInstituicao = (String) session.getAttribute("nomeInstituicao");
         model.addAttribute("nomeInstituicao", nomeInstituicao);
         return "atividade-lista";
-    }    
-    
-    
+    }
+
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("atividades", atividadeRepo.findAll());
-        
-        // PRINTS NA CONSOLE PARA TESTES 
+
+        // PRINTS NA CONSOLE PARA TESTES
         System.out.println(" ### listar: atividades ****************");
         System.out.println("   Tipos: " + tipoAtividadeRepo.count());
         System.out.println("   Instituições: " + instituicaoRepo.count());
         System.out.println("   Subinstituições: " + subInstituicaoRepo.count());
-        
+
         return "atividade-lista";
     }
 
@@ -65,9 +62,11 @@ public class AtividadeController {
         }
         model.addAttribute("atividade", new Atividade());
         model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
-        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
+                .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada != null) {
-            model.addAttribute("subinstituicoes", subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
+            model.addAttribute("subinstituicoes",
+                    subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
         } else {
             model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
         }
@@ -77,18 +76,20 @@ public class AtividadeController {
 
     @PostMapping("/salvar")
     public String salvarAtividade(@ModelAttribute Atividade atividade,
-                                  @RequestParam(value = "idSolicitante", required = false) Long idSolicitante,
-                                  HttpSession session,
-                                  Model model) {
+            @RequestParam(value = "idSolicitante", required = false) Long idSolicitante,
+            HttpSession session,
+            Model model) {
         if (session.getAttribute("usuarioLogado") == null) {
             return "redirect:/login";
         }
         if (idSolicitante == null) {
             model.addAttribute("atividade", atividade);
             model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
-            com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+            com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
+                    .getAttribute("instituicaoSelecionada");
             if (instituicaoSelecionada != null) {
-                model.addAttribute("subinstituicoes", subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
+                model.addAttribute("subinstituicoes",
+                        subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
             } else {
                 model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
             }
@@ -97,13 +98,16 @@ public class AtividadeController {
             return "atividade-form";
         }
         Pessoa solicitante = pessoaRepo.findById(idSolicitante)
-                .orElseThrow(() -> new IllegalArgumentException("Pessoa com id '" + idSolicitante + "' não encontrada."));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Pessoa com id '" + idSolicitante + "' não encontrada."));
         atividade.setIdSolicitante(solicitante);
         atividade.setDataAtualizacao(LocalDate.now());
         // Buscar instituição logada na sessão
-        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
+                .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada == null) {
-            throw new IllegalStateException("Instituição logada não encontrada na sessão. Faça login pelo menu principal.");
+            throw new IllegalStateException(
+                    "Instituição logada não encontrada na sessão. Faça login pelo menu principal.");
         }
         atividade.setInstituicao(instituicaoSelecionada);
         // Campos opcionais: garantir null se vazio
@@ -123,11 +127,10 @@ public class AtividadeController {
         return "redirect:/administrador/atividades";
     }
 
-    
-    
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        Atividade atividade = atividadeRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("ID inválido: " + id));
+        Atividade atividade = atividadeRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("ID inválido: " + id));
         model.addAttribute("atividade", atividade);
         model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
         model.addAttribute("instituicoes", instituicaoRepo.findAll());
@@ -137,31 +140,39 @@ public class AtividadeController {
     }
 
     @GetMapping("/deletar/{id}")
-    public String deletar(@PathVariable Long id, 
-                          @RequestParam(required = false) String titulo,
-                          @RequestParam(required = false) String situacao,
-                          @RequestParam(required = false) String forma,
-                          @RequestParam(required = false) String alvo,
-                          @RequestParam(required = false) Long subInstituicao,
-                          @RequestParam(required = false) Long solicitante,
-                          @RequestParam(required = false) String dataInicio,
-                          @RequestParam(required = false) String dataFim,
-                          @RequestParam(required = false) String ordenacao,
-                          @RequestParam(defaultValue = "0") int page,
-                          @RequestParam(defaultValue = "25") int size
-    ) {
+    public String deletar(@PathVariable Long id,
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String situacao,
+            @RequestParam(required = false) String forma,
+            @RequestParam(required = false) String alvo,
+            @RequestParam(required = false) Long subInstituicao,
+            @RequestParam(required = false) Long solicitante,
+            @RequestParam(required = false) String dataInicio,
+            @RequestParam(required = false) String dataFim,
+            @RequestParam(required = false) String ordenacao,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size) {
         atividadeRepo.deleteById(id);
         // Montar query string para manter filtros e paginação
         StringBuilder qs = new StringBuilder();
-        if (titulo != null) qs.append("&titulo=").append(titulo);
-        if (situacao != null) qs.append("&situacao=").append(situacao);
-        if (forma != null) qs.append("&forma=").append(forma);
-        if (alvo != null) qs.append("&alvo=").append(alvo);
-        if (subInstituicao != null) qs.append("&subInstituicao=").append(subInstituicao);
-        if (solicitante != null) qs.append("&solicitante=").append(solicitante);
-        if (dataInicio != null) qs.append("&dataInicio=").append(dataInicio);
-        if (dataFim != null) qs.append("&dataFim=").append(dataFim);
-        if (ordenacao != null) qs.append("&ordenacao=").append(ordenacao);
+        if (titulo != null)
+            qs.append("&titulo=").append(titulo);
+        if (situacao != null)
+            qs.append("&situacao=").append(situacao);
+        if (forma != null)
+            qs.append("&forma=").append(forma);
+        if (alvo != null)
+            qs.append("&alvo=").append(alvo);
+        if (subInstituicao != null)
+            qs.append("&subInstituicao=").append(subInstituicao);
+        if (solicitante != null)
+            qs.append("&solicitante=").append(solicitante);
+        if (dataInicio != null)
+            qs.append("&dataInicio=").append(dataInicio);
+        if (dataFim != null)
+            qs.append("&dataFim=").append(dataFim);
+        if (ordenacao != null)
+            qs.append("&ordenacao=").append(ordenacao);
         qs.append("&page=").append(page);
         qs.append("&size=").append(size);
         String redirectUrl = "redirect:/administrador/atividades?" + qs.substring(1); // remove primeiro &
