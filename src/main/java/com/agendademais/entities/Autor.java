@@ -1,77 +1,95 @@
 package com.agendademais.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.agendademais.enums.FuncaoAutor;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "funcaoAutorCustomizada" })
 public class Autor {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    private Pessoa idPessoa;
+	@ManyToOne
+	private Pessoa idPessoa;
 
-    @Enumerated(EnumType.STRING)
-    private FuncaoAutor funcaoAutor;
-    private String funcaoAutorOutra; // Para quando funcaoAutor = OUTRA
-    
-    @ManyToOne
-    private FuncaoAutorCustomizada funcaoAutorCustomizada; // Para funções personalizadas
-    private String situacaoAutor;
-    private String curriculoFuncaoAutor;
-    private String linkImgAutor;
-    private String linkMaterialAutor;
-    private LocalDate dataUltimaAtualizacao;
+	@Enumerated(EnumType.STRING)
+	private FuncaoAutor funcaoAutor;
+	private String funcaoAutorOutra; // Para quando funcaoAutor = OUTRA
 
-    
-    // GETTERS AND SETTERS 
+	@ManyToOne
+	private FuncaoAutorCustomizada funcaoAutorCustomizada; // Para funções personalizadas
+	private String situacaoAutor;
+	private String curriculoFuncaoAutor;
+	private String linkImgAutor;
+	private String linkMaterialAutor;
+	private LocalDate dataUltimaAtualizacao;
 
-    public Long getId() {
+	// GETTERS AND SETTERS
+
+	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	public Pessoa getIdPessoa() {
 		return idPessoa;
 	}
+
 	public void setIdPessoa(Pessoa idPessoa) {
 		this.idPessoa = idPessoa;
 	}
+
 	public FuncaoAutor getFuncaoAutor() {
 		return funcaoAutor;
 	}
+
 	public void setFuncaoAutor(FuncaoAutor funcaoAutor) {
 		this.funcaoAutor = funcaoAutor;
 	}
+
 	public String getSituacaoAutor() {
 		return situacaoAutor;
 	}
+
 	public void setSituacaoAutor(String situacaoAutor) {
 		this.situacaoAutor = situacaoAutor;
 	}
+
 	public String getCurriculoFuncaoAutor() {
 		return curriculoFuncaoAutor;
 	}
+
 	public void setCurriculoFuncaoAutor(String curriculoFuncaoAutor) {
 		this.curriculoFuncaoAutor = curriculoFuncaoAutor;
 	}
+
 	public String getLinkImgAutor() {
 		return linkImgAutor;
 	}
+
 	public void setLinkImgAutor(String linkImgAutor) {
 		this.linkImgAutor = linkImgAutor;
 	}
+
 	public String getLinkMaterialAutor() {
 		return linkMaterialAutor;
 	}
+
 	public void setLinkMaterialAutor(String linkMaterialAutor) {
 		this.linkMaterialAutor = linkMaterialAutor;
 	}
+
 	public LocalDate getDataUltimaAtualizacao() {
 		return dataUltimaAtualizacao;
 	}
+
 	public void setDataUltimaAtualizacao(LocalDate dataUltimaAtualizacao) {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
 	}
@@ -91,6 +109,5 @@ public class Autor {
 	public void setFuncaoAutorCustomizada(FuncaoAutorCustomizada funcaoAutorCustomizada) {
 		this.funcaoAutorCustomizada = funcaoAutorCustomizada;
 	}
-
 
 }

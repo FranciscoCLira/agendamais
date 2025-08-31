@@ -134,7 +134,6 @@ public class MenuController {
     // return "redirect:/atividades";
     // }
 
-
     @GetMapping("/administrador/postagens")
     public String gerenciarPostagens() {
         return "info/em-construcao";

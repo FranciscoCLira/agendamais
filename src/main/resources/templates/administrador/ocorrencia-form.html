@@ -1,33 +1,247 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Nova Ocorrência</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-</head>
-<body>
-<div class="container mt-4">
-    <div class="card">
+    <link rel="stylesheet" href="/css/estilo.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
+    />
+    <script>
+      $(function () {
+        $("input[name='idAutor.idPessoa.nomePessoa']").autocomplete({
+          source: function (request, response) {
+            $.getJSON(
+              "/administrador/ocorrencias/autocomplete-autor",
+              { term: request.term },
+              function (data) {
+                response(
+                  $.map(data, function (item) {
+                    return {
+                      label:
+                        (item.idPessoa && item.idPessoa.nomePessoa
+                          ? item.idPessoa.nomePessoa
+                          : "") +
+                        (item.idPessoa && item.idPessoa.emailPessoa
+                          ? " (" + item.idPessoa.emailPessoa + ")"
+                          : ""),
+                      value:
+                        item.idPessoa && item.idPessoa.nomePessoa
+                          ? item.idPessoa.nomePessoa
+                          : "",
+                      id: item.id,
+                    };
+                  })
+                );
+              }
+            );
+          },
+          minLength: 2,
+          select: function (event, ui) {
+            $("#idAutorId").val(ui.item.id);
+          },
+          change: function (event, ui) {
+            if (!ui.item) {
+              $("#idAutorId").val("");
+            }
+          },
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div class="container mt-4" style="max-width: 650px">
+      <div class="card">
         <div class="card-header">
-            <h3 class="mb-0">Nova Ocorrência</h3>
+          <h4 class="mb-0">NOVA OCORRÊNCIA DA ATIVIDADE:</h4>
+          <div
+            style="
+              background: #e9ecef;
+              padding: 6px 12px;
+              border-radius: 4px;
+              margin-top: 6px;
+            "
+          >
+            <b>Título da Atividade:</b>
+            <span
+              style="font-weight: bold"
+              th:text="${ocorrencia.idAtividade != null ? ocorrencia.idAtividade.tituloAtividade : ''}"
+            ></span>
+          </div>
         </div>
         <div class="card-body">
-            <form method="post">
-                <!-- Campos do formulário de ocorrência -->
-                <div class="mb-3">
-                    <label for="temaOcorrencia" class="form-label">Tema</label>
-                    <input type="text" class="form-control" id="temaOcorrencia" name="temaOcorrencia" th:field="*{temaOcorrencia}" required />
-                </div>
-                <div class="mb-3">
-                    <label for="dataOcorrencia" class="form-label">Data</label>
-                    <input type="date" class="form-control" id="dataOcorrencia" name="dataOcorrencia" th:field="*{dataOcorrencia}" required />
-                </div>
-                <!-- Adicione outros campos conforme necessário -->
-                <button type="submit" class="btn btn-primary">Salvar</button>
-                <a th:href="@{/administrador/ocorrencias}" class="btn btn-secondary ms-2">Cancelar</a>
-            </form>
+          <form method="post" th:object="${ocorrencia}" id="ocorrenciaForm">
+            <!-- Campo hidden para garantir que o id da atividade seja enviado no POST -->
+            <input type="hidden" th:field="*{idAtividade.id}" />
+            <div class="mb-3">
+              <label class="form-label">Tema *</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{temaOcorrencia}"
+                required
+              />
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Data *</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  th:field="*{dataOcorrencia}"
+                  required
+                  th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+                />
+                <script>
+                  // Validação de hora de término maior que início
+                  $(function () {
+                    $("#ocorrenciaForm").on("submit", function (e) {
+                      var inicio = $(
+                        'input[name="horaInicioOcorrencia"]'
+                      ).val();
+                      var fim = $('input[name="horaFimOcorrencia"]').val();
+                      if (inicio && fim && inicio >= fim) {
+                        alert(
+                          "A hora de término deve ser maior que a hora de início."
+                        );
+                        e.preventDefault();
+                      }
+                    });
+                  });
+                </script>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Início *</label>
+                <input
+                  type="time"
+                  class="form-control form-control-sm"
+                  th:field="*{horaInicioOcorrencia}"
+                  required
+                />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Término *</label>
+                <input
+                  type="time"
+                  class="form-control form-control-sm"
+                  th:field="*{horaFimOcorrencia}"
+                  required
+                />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Situação *</label>
+              <select
+                class="form-select"
+                th:field="*{situacaoOcorrencia}"
+                required
+              >
+                <option value="">Selecione...</option>
+                <option value="P">Programada</option>
+                <option value="R">Realizada</option>
+                <option value="C">Cancelada</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Autor *</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{idAutor.idPessoa.nomePessoa}"
+                required
+                placeholder="Nome do Autor (autocomplete)"
+              />
+              <input
+                type="hidden"
+                id="idAutorId"
+                name="idAutorId"
+                th:value="${ocorrencia.idAutor != null ? ocorrencia.idAutor.id : ''}"
+              />
+            </div>
+            <hr />
+            <h6 class="fw-bold">DIVULGAÇÃO</h6>
+            <div class="mb-2">
+              <label class="form-label">Assunto</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{assuntoDivulgacao}"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Detalhes</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{detalheDivulgacao}"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Link imagem</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{linkImgDivulgacao}"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Link material</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{linkMaterialTema}"
+              />
+            </div>
+            <hr />
+            <h6 class="fw-bold">ENCERRAMENTO</h6>
+            <div class="row mb-2">
+              <div class="col-md-3">
+                <label class="form-label">Qtde. Participantes</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  th:field="*{qtdeParticipantes}"
+                  min="0"
+                />
+              </div>
+              <div class="col-md-9">
+                <label class="form-label">Observações</label>
+                <textarea
+                  class="form-control"
+                  th:field="*{obsEncerramento}"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Bibliografia</label>
+              <textarea
+                class="form-control"
+                th:field="*{bibliografia}"
+                rows="4"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a
+              th:href="@{/administrador/ocorrencias}"
+              class="btn btn-secondary ms-2"
+              >Cancelar</a
+            >
+          </form>
         </div>
+      </div>
     </div>
-</div>
-</body>
+  </body>
 </html>

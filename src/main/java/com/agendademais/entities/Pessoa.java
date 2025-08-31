@@ -1,9 +1,12 @@
 package com.agendademais.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "pais", "estado", "cidade", "pessoaSubInstituicao" })
 public class Pessoa {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
