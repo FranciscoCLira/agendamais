@@ -2,7 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title>Nova Ocorrência</title>
+    <title
+      th:text="${ocorrencia.id != null} ? 'Editar Ocorrência' : 'Nova Ocorrência'"
+    >
+      Nova Ocorrência
+    </title>
     <link rel="stylesheet" href="/css/estilo.css" />
     <link
       rel="stylesheet"
@@ -20,6 +24,7 @@
     />
     <script>
       $(function () {
+        // Autocomplete Autor
         $("input[name='idAutor.idPessoa.nomePessoa']").autocomplete({
           source: function (request, response) {
             $.getJSON(
@@ -57,6 +62,20 @@
             }
           },
         });
+
+        // Autocomplete Tema
+        $("input[name='temaOcorrencia']").autocomplete({
+          source: function (request, response) {
+            $.getJSON(
+              "/administrador/ocorrencias/autocomplete-tema",
+              { term: request.term },
+              function (data) {
+                response(data);
+              }
+            );
+          },
+          minLength: 2,
+        });
       });
     </script>
   </head>
@@ -65,7 +84,12 @@
     <div class="container mt-4" style="max-width: 650px">
       <div class="card">
         <div class="card-header">
-          <h4 class="mb-0">NOVA OCORRÊNCIA DA ATIVIDADE:</h4>
+          <h4
+            class="mb-0"
+            th:text="${ocorrencia.id != null} ? 'EDITAR OCORRÊNCIA DA ATIVIDADE:' : 'NOVA OCORRÊNCIA DA ATIVIDADE:'"
+          >
+            NOVA OCORRÊNCIA DA ATIVIDADE:
+          </h4>
           <div
             style="
               background: #e9ecef;
@@ -74,7 +98,7 @@
               margin-top: 6px;
             "
           >
-            <b>Título da Atividade:</b>
+            <b>Título da Atividade: </b>
             <span
               style="font-weight: bold"
               th:text="${ocorrencia.idAtividade != null ? ocorrencia.idAtividade.tituloAtividade : ''}"
@@ -82,7 +106,12 @@
           </div>
         </div>
         <div class="card-body">
-          <form method="post" th:object="${ocorrencia}" id="ocorrenciaForm">
+          <form
+            method="post"
+            th:object="${ocorrencia}"
+            id="ocorrenciaForm"
+            th:action="${ocorrencia.id != null} ? @{'/administrador/ocorrencias/editar/' + ${ocorrencia.id}} : @{'/administrador/ocorrencias/nova'}"
+          >
             <!-- Campo hidden para garantir que o id da atividade seja enviado no POST -->
             <input type="hidden" th:field="*{idAtividade.id}" />
             <div class="mb-3">
@@ -100,7 +129,8 @@
                 <input
                   type="date"
                   class="form-control"
-                  th:field="*{dataOcorrencia}"
+                  name="dataOcorrencia"
+                  th:value="${ocorrencia.dataOcorrencia != null ? #temporals.format(ocorrencia.dataOcorrencia, 'yyyy-MM-dd') : ''}"
                   required
                   th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
                 />
@@ -127,7 +157,9 @@
                 <input
                   type="time"
                   class="form-control form-control-sm"
-                  th:field="*{horaInicioOcorrencia}"
+                  style="min-width: 110px; max-width: 140px"
+                  name="horaInicioOcorrencia"
+                  th:value="${ocorrencia.horaInicioOcorrencia != null ? #strings.substring(ocorrencia.horaInicioOcorrencia.toString(),0,5) : ''}"
                   required
                 />
               </div>
@@ -136,7 +168,9 @@
                 <input
                   type="time"
                   class="form-control form-control-sm"
-                  th:field="*{horaFimOcorrencia}"
+                  style="min-width: 110px; max-width: 140px"
+                  name="horaFimOcorrencia"
+                  th:value="${ocorrencia.horaFimOcorrencia != null ? #strings.substring(ocorrencia.horaFimOcorrencia.toString(),0,5) : ''}"
                   required
                 />
               </div>
@@ -235,7 +269,14 @@
             </div>
             <button type="submit" class="btn btn-primary">Salvar</button>
             <a
-              th:href="@{/administrador/ocorrencias}"
+              th:if="${origem} == 'atividades' or ${param.origem} == 'atividades'"
+              th:href="@{/administrador/atividades}"
+              class="btn btn-secondary ms-2"
+              >Cancelar</a
+            >
+            <a
+              th:if="!(${origem} == 'atividades' or ${param.origem} == 'atividades')"
+              th:href="@{/administrador/ocorrencias(atividadeId=${ocorrencia.idAtividade != null ? ocorrencia.idAtividade.id : 0}, origem=${origem})}"
               class="btn btn-secondary ms-2"
               >Cancelar</a
             >

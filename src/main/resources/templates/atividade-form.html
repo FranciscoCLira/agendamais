@@ -4,242 +4,286 @@
     <meta charset="UTF-8" />
     <title>Atividade</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
+    />
   </head>
 
   <body>
-    <div th:replace="fragments/layout_cabecalho :: header"></div>
-
-    <main
-      style="
-        max-width: 800px;
-        margin: 0 auto;
-        background: #fff;
-        padding: 24px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px #ddd;
-      "
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div
+      class="d-flex justify-content-center align-items-center"
+      style="min-height: 90vh; background: #f8f9fa"
     >
-      <h1
-        th:text="${atividade.id} != null ? 'Editar Atividade' : 'Nova Atividade'"
-      ></h1>
-      <form
-        th:action="@{/atividades/salvar}"
-        th:object="${atividade}"
-        method="post"
-        onsubmit="preencherIdSolicitante()"
-      >
-        <input type="hidden" th:field="*{id}" />
-        <label for="tituloAtividade">Título:</label>
-        <input
-          type="text"
-          id="tituloAtividade"
-          th:field="*{tituloAtividade}"
-          maxlength="40"
-          required
-          style="width: 40ch"
-        /><br />
-        <label for="tipoAtividade">Tipo de Atividade:</label>
-        <select
-          id="tipoAtividade"
-          th:field="*{tipoAtividade}"
-          required
-          style="width: 30ch"
-        >
-          <option value="" th:selected="${atividade.tipoAtividade == null}">
-            Escolher...
-          </option>
-          <option
-            th:each="tipo : ${tiposAtividade}"
-            th:value="${tipo.id}"
-            th:text="${tipo.tituloTipoAtividade}"
-            th:selected="${atividade.tipoAtividade != null and tipo.id == atividade.tipoAtividade.id}"
-          ></option></select
-        ><br />
-        <label for="subInstituicao">Subinstituição:</label>
-        <select
-          id="subInstituicao"
-          th:field="*{subInstituicao}"
-          required
-          style="width: 32ch"
-        >
-          <option value="" th:selected="${atividade.subInstituicao == null}">
-            Escolher...
-          </option>
-          <option
-            th:each="sub : ${subinstituicoes}"
-            th:value="${sub.id}"
-            th:text="${sub.nomeSubInstituicao}"
-            th:selected="${atividade.subInstituicao != null and sub.id == atividade.subInstituicao.id}"
-          ></option></select
-        ><br />
-        <!-- Campo autocomplete para Solicitante -->
-        <div
-          th:replace="fragments/autocomplete-solicitante :: autocompleteSolicitante(solicitante=${atividade.idSolicitante})"
-          style="width: 30ch"
-        ></div>
-        <br />
-        <label for="situacaoAtividade">Situação</label>
-        <select
-          id="situacaoAtividade"
-          th:field="*{situacaoAtividade}"
-          required
-          style="width: 30ch"
-        >
-          <option value="" th:selected="${atividade.situacaoAtividade == null}">
-            Escolher...
-          </option>
-          <option value="P" th:selected="${atividade.situacaoAtividade == 'P'}">
-            Proposta
-          </option>
-          <option value="A" th:selected="${atividade.situacaoAtividade == 'A'}">
-            Aprovada
-          </option>
-          <option value="R" th:selected="${atividade.situacaoAtividade == 'R'}">
-            Rejeitada
-          </option>
-          <option value="C" th:selected="${atividade.situacaoAtividade == 'C'}">
-            Cancelada
-          </option>
-          <option value="F" th:selected="${atividade.situacaoAtividade == 'F'}">
-            Finalizada
-          </option></select
-        ><br />
-        <label for="formaApresentacao">Forma Apresentação</label>
-        <select
-          id="formaApresentacao"
-          th:field="*{formaApresentacao}"
-          required
-          style="width: 30ch"
-        >
-          <option value="" th:selected="${atividade.formaApresentacao == null}">
-            Escolher...
-          </option>
-          <option value="1" th:selected="${atividade.formaApresentacao == 1}">
-            Presencial
-          </option>
-          <option value="2" th:selected="${atividade.formaApresentacao == 2}">
-            Online
-          </option>
-          <option value="3" th:selected="${atividade.formaApresentacao == 3}">
-            Híbrido
-          </option>
-          <option value="4" th:selected="${atividade.formaApresentacao == 4}">
-            Outro
-          </option></select
-        ><br />
-        <label for="publicoAlvo">Público Alvo</label>
-        <select
-          id="publicoAlvo"
-          th:field="*{publicoAlvo}"
-          required
-          style="width: 30ch"
-        >
-          <option value="" th:selected="${atividade.publicoAlvo == null}">
-            Escolher...
-          </option>
-          <option value="1" th:selected="${atividade.publicoAlvo == 1}">
-            Público
-          </option>
-          <option value="2" th:selected="${atividade.publicoAlvo == 2}">
-            Restrito
-          </option>
-          <option value="3" th:selected="${atividade.publicoAlvo == 3}">
-            Acadêmico
-          </option>
-          <option value="4" th:selected="${atividade.publicoAlvo == 4}">
-            Outro
-          </option></select
-        ><br />
-        <div style="margin-top: 1.2em"></div>
-        <label for="descricaoAtividade">Descrição:</label><br />
-        <textarea
-          id="descricaoAtividade"
-          th:field="*{descricaoAtividade}"
-          rows="4"
-          cols="50"
-        ></textarea
-        ><br />
-        <label for="comentariosAtividade">Comentários:</label><br />
-        <textarea
-          id="comentariosAtividade"
-          th:field="*{comentariosAtividade}"
-          rows="2"
-          cols="50"
-        ></textarea
-        ><br />
-        <label for="linkMaterialAtividade">Link para Material:</label>
-        <input
-          type="url"
-          id="linkMaterialAtividade"
-          th:field="*{linkMaterialAtividade}"
-          style="width: 80ch"
-        /><br />
-        <label for="linkAtividadeOnLine">Link Atividade Online:</label>
-        <input
-          type="url"
-          id="linkAtividadeOnLine"
-          th:field="*{linkAtividadeOnLine}"
-          style="width: 80ch"
-        /><br />
-        <div style="margin-top: 2em; display: flex; gap: 1em">
-          <button type="submit" class="btn btn-success">Salvar</button>
-          <a
-            th:href="@{/administrador/atividades}"
-            class="btn btn-outline-danger"
-            >Cancelar</a
+      <div class="card shadow" style="width: 100%; max-width: 650px">
+        <div class="card-header">
+          <h4
+            class="mb-0"
+            th:text="${atividade.id} != null ? 'EDITAR ATIVIDADE:' : 'NOVA ATIVIDADE:'"
           >
+            NOVA ATIVIDADE:
+          </h4>
         </div>
-        <div
-          th:if="${erroSolicitante != null}"
-          class="mensagem-vermelha"
-          th:text="${erroSolicitante}"
-        ></div>
-      </form>
-    </main>
-    <script>
-      const input = document.getElementById("solicitanteInput");
-      const suggestions = document.getElementById("solicitanteSuggestions");
-      const hiddenId = document.getElementById("solicitanteId");
-      let debounceTimeout;
-      console.log("Autocomplete solicitante JS carregado");
-      input.addEventListener("input", function () {
-        clearTimeout(debounceTimeout);
-        const query = this.value.trim();
-        // Sempre limpa o hidden ao digitar
-        hiddenId.value = "";
-        console.log("Input digitado:", query);
-        if (query.length < 2) {
-          suggestions.innerHTML = "";
-          return;
-        }
-        debounceTimeout = setTimeout(() => {
-          console.log("Fazendo fetch para autocomplete:", query);
-          fetch(`/api/pessoas/autocomplete?q=${encodeURIComponent(query)}`)
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("Dados recebidos do backend:", data);
-              suggestions.innerHTML = "";
-              data.forEach((pessoa) => {
-                const item = document.createElement("button");
-                item.type = "button";
-                item.className = "list-group-item list-group-item-action";
-                item.textContent = pessoa.nome + " (" + pessoa.email + ")";
-                item.onclick = () => {
-                  input.value = pessoa.nome + " (" + pessoa.email + ")";
-                  hiddenId.value = pessoa.id;
-                  suggestions.innerHTML = "";
-                  console.log("Selecionado:", pessoa);
-                };
-                suggestions.appendChild(item);
-              });
-            });
-        }, 300);
-      });
-      document.addEventListener("click", function (e) {
-        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
-          suggestions.innerHTML = "";
-        }
-      });
-    </script>
+        <div class="card-body">
+          <form
+            th:action="@{/atividades/salvar}"
+            th:object="${atividade}"
+            method="post"
+            onsubmit="preencherIdSolicitante()"
+          >
+            <input type="hidden" th:field="*{id}" />
+            <div class="mb-3">
+              <label for="tituloAtividade" class="form-label"
+                >Título da Atividade *</label
+              >
+              <input
+                type="text"
+                id="tituloAtividade"
+                th:field="*{tituloAtividade}"
+                maxlength="40"
+                required
+                class="form-control"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="tipoAtividade" class="form-label"
+                >Tipo de Atividade *</label
+              >
+              <select
+                id="tipoAtividade"
+                th:field="*{tipoAtividade}"
+                required
+                class="form-select"
+              >
+                <option
+                  value=""
+                  th:selected="${atividade.tipoAtividade == null}"
+                >
+                  Escolher...
+                </option>
+                <option
+                  th:each="tipo : ${tiposAtividade}"
+                  th:value="${tipo.id}"
+                  th:text="${tipo.tituloTipoAtividade}"
+                  th:selected="${atividade.tipoAtividade != null and tipo.id == atividade.tipoAtividade.id}"
+                ></option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="subInstituicao" class="form-label"
+                >Subinstituição *</label
+              >
+              <select
+                id="subInstituicao"
+                th:field="*{subInstituicao}"
+                required
+                class="form-select"
+              >
+                <option
+                  value=""
+                  th:selected="${atividade.subInstituicao == null}"
+                >
+                  Escolher...
+                </option>
+                <option
+                  th:each="sub : ${subinstituicoes}"
+                  th:value="${sub.id}"
+                  th:text="${sub.nomeSubInstituicao}"
+                  th:selected="${atividade.subInstituicao != null and sub.id == atividade.subInstituicao.id}"
+                ></option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <div
+                th:replace="fragments/autocomplete-solicitante :: autocompleteSolicitante(solicitante=${atividade.idSolicitante})"
+              ></div>
+            </div>
+            <div class="mb-3">
+              <label for="situacaoAtividade" class="form-label"
+                >Situação *</label
+              >
+              <select
+                id="situacaoAtividade"
+                th:field="*{situacaoAtividade}"
+                required
+                class="form-select"
+              >
+                <option
+                  value=""
+                  th:selected="${atividade.situacaoAtividade == null}"
+                >
+                  Escolher...
+                </option>
+                <option
+                  value="P"
+                  th:selected="${atividade.situacaoAtividade == 'P'}"
+                >
+                  Proposta
+                </option>
+                <option
+                  value="A"
+                  th:selected="${atividade.situacaoAtividade == 'A'}"
+                >
+                  Aprovada
+                </option>
+                <option
+                  value="R"
+                  th:selected="${atividade.situacaoAtividade == 'R'}"
+                >
+                  Rejeitada
+                </option>
+                <option
+                  value="C"
+                  th:selected="${atividade.situacaoAtividade == 'C'}"
+                >
+                  Cancelada
+                </option>
+                <option
+                  value="F"
+                  th:selected="${atividade.situacaoAtividade == 'F'}"
+                >
+                  Finalizada
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="formaApresentacao" class="form-label"
+                >Forma Apresentação *</label
+              >
+              <select
+                id="formaApresentacao"
+                th:field="*{formaApresentacao}"
+                required
+                class="form-select"
+              >
+                <option
+                  value=""
+                  th:selected="${atividade.formaApresentacao == null}"
+                >
+                  Escolher...
+                </option>
+                <option
+                  value="1"
+                  th:selected="${atividade.formaApresentacao == 1}"
+                >
+                  Presencial
+                </option>
+                <option
+                  value="2"
+                  th:selected="${atividade.formaApresentacao == 2}"
+                >
+                  Online
+                </option>
+                <option
+                  value="3"
+                  th:selected="${atividade.formaApresentacao == 3}"
+                >
+                  Híbrido
+                </option>
+                <option
+                  value="4"
+                  th:selected="${atividade.formaApresentacao == 4}"
+                >
+                  Outro
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="publicoAlvo" class="form-label">Público Alvo *</label>
+              <select
+                id="publicoAlvo"
+                th:field="*{publicoAlvo}"
+                required
+                class="form-select"
+              >
+                <option value="" th:selected="${atividade.publicoAlvo == null}">
+                  Escolher...
+                </option>
+                <option value="1" th:selected="${atividade.publicoAlvo == 1}">
+                  Público
+                </option>
+                <option value="2" th:selected="${atividade.publicoAlvo == 2}">
+                  Restrito
+                </option>
+                <option value="3" th:selected="${atividade.publicoAlvo == 3}">
+                  Acadêmico
+                </option>
+                <option value="4" th:selected="${atividade.publicoAlvo == 4}">
+                  Outro
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="descricaoAtividade" class="form-label"
+                >Descrição</label
+              >
+              <textarea
+                id="descricaoAtividade"
+                th:field="*{descricaoAtividade}"
+                rows="4"
+                class="form-control"
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="comentariosAtividade" class="form-label"
+                >Comentários</label
+              >
+              <textarea
+                id="comentariosAtividade"
+                th:field="*{comentariosAtividade}"
+                rows="2"
+                class="form-control"
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="linkMaterialAtividade" class="form-label"
+                >Link para Material</label
+              >
+              <input
+                type="url"
+                id="linkMaterialAtividade"
+                th:field="*{linkMaterialAtividade}"
+                class="form-control"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="linkAtividadeOnLine" class="form-label"
+                >Link Atividade Online</label
+              >
+              <input
+                type="url"
+                id="linkAtividadeOnLine"
+                th:field="*{linkAtividadeOnLine}"
+                class="form-control"
+              />
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button type="submit" class="btn btn-primary">Salvar</button>
+              <a
+                th:href="@{/administrador/atividades}"
+                class="btn btn-secondary"
+                >Cancelar</a
+              >
+            </div>
+            <div
+              th:if="${erroSolicitante != null}"
+              class="alert alert-danger mt-3"
+              th:text="${erroSolicitante}"
+            ></div>
+          </form>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

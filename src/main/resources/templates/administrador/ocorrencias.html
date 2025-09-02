@@ -81,10 +81,87 @@
                   .removeClass("disabled")
                   .attr("tabindex", "0")
                   .attr("aria-disabled", "false");
+              } else {
+                // Se não encontrar, limpa o campo e desabilita o botão
+                $tituloAtividade.val("");
+                $novaOcorrenciaBtn
+                  .addClass("disabled")
+                  .attr("tabindex", "-1")
+                  .attr("aria-disabled", "true");
               }
             }
           );
+        } else {
+          $tituloAtividade.val("");
+          $novaOcorrenciaBtn
+            .addClass("disabled")
+            .attr("tabindex", "-1")
+            .attr("aria-disabled", "true");
         }
+
+        // Autocomplete para Tema da Ocorrência
+        $("#temaOcorrenciaFiltro").autocomplete({
+        source: function (request, response) {
+            $.getJSON(
+            "/administrador/ocorrencias/autocomplete-tema",
+            { term: request.term },
+            function (data) {
+                response(data);
+            }
+            );
+        },
+        minLength: 2,
+        select: function (event, ui) {
+            $(this).val(ui.item.value);
+            $(this).closest("form").submit();
+        }
+        });
+
+        // Autocomplete para Autor da Ocorrência
+        $("#autorNomeFiltro").autocomplete({
+        source: function (request, response) {
+            $.getJSON(
+            "/administrador/ocorrencias/autocomplete-autor",
+            { term: request.term },
+            function (data) {
+                response(
+                $.map(data, function (item) {
+                    return {
+                    label: item.idPessoa.nomePessoa,
+                    value: item.idPessoa.nomePessoa,
+                    id: item.id
+                    };
+                })
+                );
+            }
+            );
+        },
+        minLength: 2,
+        select: function (event, ui) {
+            $("#autorIdFiltro").val(ui.item.id);
+            $(this).val(ui.item.value);
+            $(this).closest("form").submit();
+        },
+        change: function (event, ui) {
+            if (!ui.item) {
+            $("#autorIdFiltro").val("");
+            }
+        }
+        });
+
+        // Botão Limpar Filtros 
+
+        $("#limparFiltrosBtn").on("click", function(e) {
+        e.preventDefault();
+        $("input[name='temaOcorrencia']").val("");
+        $("input[name='autorNome']").val("");
+        $("#autorIdFiltro").val("");
+        $("select[name='situacao']").val("");
+        $("select[name='ordem']").val("");
+        $("select[name='size']").val("25");
+        $("#filtroOcorrenciasForm").submit();
+        });        
+
       });
     </script>
   </head>
@@ -94,16 +171,34 @@
     <div class="container mt-4" style="max-width: 900px">
       <div class="row mb-2 align-items-center">
         <div class="col-auto">
-          <a th:href="@{/administrador}" class="btn btn-outline-secondary me-3"
-            >&larr; Voltar ao Menu</a
+          <a
+            th:if="(${origem} == 'atividades') or (${param.origem} == 'atividades') or (${atividadeSelecionada != null and atividadeSelecionada.id != null})"
+            th:href="@{/administrador/atividades}"
+            class="btn btn-outline-secondary me-3"
+            >&larr; Voltar</a
+          >
+          <a
+            th:if="! ( (${origem} == 'atividades') or (${param.origem} == 'atividades') or (${atividadeSelecionada != null and atividadeSelecionada.id != null}) )"
+            th:href="@{/administrador}"
+            class="btn btn-outline-secondary me-3"
+            >&larr; Voltar</a
           >
         </div>
         <div class="col text-end">
           <a
-            th:href="@{/administrador/ocorrencias/nova(atividadeId=${atividadeSelecionada != null ? atividadeSelecionada.id : null})}"
-            th:classappend="${atividadeSelecionada == null} ? ' disabled'"
+            th:if="${atividadeSelecionada != null}"
+            th:href="@{/administrador/ocorrencias/nova(atividadeId=${atividadeSelecionada.id}, origem=${param.origem})}"
+            class="btn btn-primary"
             tabindex="0"
-            aria-disabled="${atividadeSelecionada == null}"
+            aria-disabled="false"
+            >Nova Ocorrência</a
+          >
+          <a
+            th:if="${atividadeSelecionada == null}"
+            class="btn btn-primary disabled"
+            tabindex="-1"
+            aria-disabled="true"
+            style="pointer-events: none; opacity: 0.7"
             >Nova Ocorrência</a
           >
         </div>
@@ -126,56 +221,127 @@
           <form
             method="get"
             th:action="@{/administrador/ocorrencias}"
-            class="row g-2 mb-3"
+            class="mb-3"
             id="filtroOcorrenciasForm"
           >
+            <input type="hidden" name="page" value="0" />
+            <!-- Linha destacada para Título Atividade -->
+            <div class="row mb-2">
+              <div class="col-12">
+                <div style="background: #e9ecef; padding: 8px 12px; border-radius: 4px;">
+                  <label for="tituloAtividade" class="form-label fw-bold mb-1">Título da Atividade <span style="font-weight:normal; color:#888;">(autocomplete)</span></label>
+                  <input
+                    type="text"
+                    class="form-control border-0 bg-transparent fw-bold"
+                    id="tituloAtividade"
+                    name="tituloAtividade"
+                    placeholder="Digite para buscar a atividade..."
+                    th:value="${param.tituloAtividade}"
+                    required
+                    style="font-size: 1.1rem; font-weight: bold; background: transparent; box-shadow: none; outline: none; width:100%;"
+                    autocomplete="off"
+                  />
+                  <input
+                    type="hidden"
+                    id="atividadeId"
+                    name="atividadeId"
+                    th:value="${param.atividadeId}"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- Linha para Data, Tema, Autor -->
+            <div class="row g-2 mb-1">
+              <div class="col-md-5 col-lg-5">
+                <div class="input-group" style="min-width:320px; max-width:410px;">
+                  <input type="date" class="form-control" style="min-width:140px; max-width:170px;" name="dataInicio" id="dataInicioFiltro" th:value="${param.dataInicio}" placeholder="De" onchange="onDateFilterChange()" />
+                  <span class="input-group-text">à</span>
+                  <input type="date" class="form-control" style="min-width:140px; max-width:170px;" name="dataFim" id="dataFimFiltro" th:value="${param.dataFim}" placeholder="Até" onchange="onDateFilterChange()" />
+    <script>
+      // Validação e sensibilização do filtro de datas
+      function onDateFilterChange() {
+        var dataInicio = document.getElementById('dataInicioFiltro').value;
+        var dataFim = document.getElementById('dataFimFiltro').value;
+        if (dataInicio && dataFim) {
+          if (dataFim < dataInicio) {
+            alert('A Data Fim deve ser maior ou igual à Data Início.');
+            document.getElementById('dataFimFiltro').value = '';
+            document.getElementById('dataFimFiltro').focus();
+            return;
+          }
+          document.getElementById('filtroOcorrenciasForm').submit();
+        }
+      }
+    </script>
+                </div>
+              </div>
+              <div class="col-md-4 col-lg-4">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="temaOcorrenciaFiltro"
+                  name="temaOcorrencia"
+                  placeholder="Tema (autocomplete)"
+                  th:value="${param.temaOcorrencia}"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="col-md-3 col-lg-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="autorNomeFiltro"
+                  name="autorNome"
+                  placeholder="Autor (autocomplete)"
+                  th:value="${param.autorNome}"
+                  autocomplete="off"
+                  style="max-width: 200px;"
+                />
+                <input type="hidden" id="autorIdFiltro" name="autorId" th:value="${param.autorId}" />
+              </div>
+            </div>
+            <div class="row g-2">
+            <div class="col-md-3">
+              <select
+                class="form-select"
+                style="min-width: 160px; max-width: 210px;"
+                name="situacao"
+                onchange="this.form.page.value=0; this.form.submit();"
+              >
+                <option value="" th:selected="${#strings.isEmpty(param.situacao)}">Todas</option>
+                <option value="P" th:selected="${param.situacao?.toString() == 'P'}">Programada</option>
+                <option value="R" th:selected="${param.situacao?.toString() == 'R'}">Realizada</option>
+                <option value="C" th:selected="${param.situacao?.toString() == 'C'}">Cancelada</option>
+              </select>
+            </div>
             <div class="col-md-4">
-              <input
-                type="text"
-                class="form-control"
-                name="tituloAtividade"
-                placeholder="Título Atividade"
-                th:value="${param.tituloAtividade}"
-                required
-              />
-              <input
-                type="hidden"
-                id="atividadeId"
-                name="atividadeId"
-                th:value="${param.atividadeId}"
-              />
-            </div>
-            <div class="col-md-2">
-              <select class="form-select" name="situacao">
-                <option value="">Todas</option>
-                <option value="P">Programada</option>
-                <option value="R">Realizada</option>
-                <option value="C">Cancelada</option>
+              <select
+                class="form-select"
+                name="ordem"
+                onchange="this.form.page.value=0; this.form.submit();"
+              >
+                <option value="data" th:selected="${#strings.isEmpty(param.ordem) or param.ordem == 'data'}">Ordem: Data e Hora Inic</option>
+                <option value="situacao" th:selected="${param.ordem?.toString() == 'situacao'}">Sit., Data e Hora Inic</option>
+                <option value="autor" th:selected="${param.ordem?.toString() == 'autor'}">Autor, Data e Hora Inic</option>
               </select>
             </div>
             <div class="col-md-2">
-              <select class="form-select" name="ordem">
-                <option value="data">Data e Hora Inic</option>
-                <option value="situacao">Sit., Data e Hora Inic</option>
-                <option value="autor">Autor, Data e Hora Inic</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <select class="form-select" name="size">
-                <option value="10">10</option>
-                <option value="25" selected>25</option>
-                <option value="50">50</option>
+              <select
+                class="form-select"
+                name="size"
+                onchange="this.form.page.value=0; this.form.submit();"
+              >
+                <option value="10" th:selected="${param.size?.toString() == '10'}">10</option>
+                <option value="25" th:selected="${#strings.isEmpty(param.size) or param.size?.toString() == '25'}">25</option>
+                <option value="50" th:selected="${param.size?.toString() == '50'}">50</option>
+                <option value="100" th:selected="${param.size?.toString() == '100'}">100</option>
               </select>
             </div>
             <div class="col-md-2 d-flex align-items-center">
               <button type="submit" class="btn btn-primary me-2">
                 Filtrar
               </button>
-              <a
-                th:href="@{/administrador/ocorrencias}"
-                class="btn btn-outline-secondary"
-                >Limpar</a
-              >
+              <a href="#" id="limparFiltrosBtn" class="btn btn-outline-secondary">Limpar</a>
             </div>
           </form>
           <div th:if="${atividadeSelecionada == null}">
@@ -183,14 +349,15 @@
               Selecione uma atividade para visualizar as ocorrências.
             </div>
           </div>
+          <div style="height: 12px;"></div>  
           <div th:if="${atividadeSelecionada != null}">
             <table class="table table-bordered table-hover align-middle">
               <thead class="table-light">
                 <tr>
                   <th>DATA</th>
-                  <th>HORA INIC/FIM</th>
+                  <th>HR.INIC/FIM</th>
                   <th>SIT.</th>
-                  <th>QT.PARTIC</th>
+                  <th>Q.PARTIC</th>
                   <th>TEMA</th>
                   <th>AUTOR</th>
                   <th style="width: 100px">Ações</th>
@@ -257,7 +424,15 @@
                 >
                   <a
                     class="page-link"
-                    th:href="@{|/administrador/ocorrencias?page=${ocorrencias.number-1}|}"
+                    th:href="@{/administrador/ocorrencias(
+                atividadeId=${param.atividadeId},
+                tituloAtividade=${param.tituloAtividade},
+                situacao=${param.situacao},
+                ordem=${param.ordem},
+                size=${param.size},
+                page=${ocorrencias.number-1},
+                origem=${origem}
+              )}"
                     >&laquo;</a
                   >
                 </li>
@@ -268,7 +443,15 @@
                 >
                   <a
                     class="page-link"
-                    th:href="@{|/administrador/ocorrencias?page=${i}|}"
+                    th:href="@{/administrador/ocorrencias(
+                atividadeId=${param.atividadeId},
+                tituloAtividade=${param.tituloAtividade},
+                situacao=${param.situacao},
+                ordem=${param.ordem},
+                size=${param.size},
+                page=${i},
+                origem=${origem}
+              )}"
                     th:text="${i+1}"
                   ></a>
                 </li>
@@ -278,7 +461,15 @@
                 >
                   <a
                     class="page-link"
-                    th:href="@{|/administrador/ocorrencias?page=${ocorrencias.number+1}|}"
+                    th:href="@{/administrador/ocorrencias(
+                atividadeId=${param.atividadeId},
+                tituloAtividade=${param.tituloAtividade},
+                situacao=${param.situacao},
+                ordem=${param.ordem},
+                size=${param.size},
+                page=${ocorrencias.number+1},
+                origem=${origem}
+              )}"
                     >&raquo;</a
                   >
                 </li>
