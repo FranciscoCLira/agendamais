@@ -304,8 +304,10 @@ public class AdministradorOcorrenciasController {
         // Recupera origem do request param se não veio no binding
         String origemFinal = origem;
         if ((origemFinal == null || origemFinal.isEmpty()) &&
-            model.asMap().containsKey("org.springframework.web.context.request.RequestContextListener.REQUEST_ATTRIBUTES")) {
-            Object req = model.asMap().get("org.springframework.web.context.request.RequestContextListener.REQUEST_ATTRIBUTES");
+                model.asMap().containsKey(
+                        "org.springframework.web.context.request.RequestContextListener.REQUEST_ATTRIBUTES")) {
+            Object req = model.asMap()
+                    .get("org.springframework.web.context.request.RequestContextListener.REQUEST_ATTRIBUTES");
             if (req instanceof jakarta.servlet.http.HttpServletRequest) {
                 String paramOrigem = ((jakarta.servlet.http.HttpServletRequest) req).getParameter("origem");
                 if (paramOrigem != null && !paramOrigem.isEmpty()) {
@@ -327,30 +329,41 @@ public class AdministradorOcorrenciasController {
 
     @GetMapping("/deletar/{id}")
     public String deletarOcorrencia(@PathVariable("id") Long id,
-                                    @RequestParam(value = "origem", required = false) String origem,
-                                    @RequestParam(value = "atividadeId", required = false) Long atividadeId,
-                                    @RequestParam(value = "page", required = false) Integer page,
-                                    @RequestParam(value = "size", required = false) Integer size,
-                                    @RequestParam(value = "situacao", required = false) String situacao,
-                                    @RequestParam(value = "ordem", required = false) String ordem,
-                                    @RequestParam(value = "dataInicio", required = false) String dataInicio,
-                                    @RequestParam(value = "dataFim", required = false) String dataFim,
-                                    @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
-                                    @RequestParam(value = "autorId", required = false) Long autorId,
-                                    @RequestParam(value = "autorNome", required = false) String autorNome) {
+            @RequestParam(value = "origem", required = false) String origem,
+            @RequestParam(value = "atividadeId", required = false) Long atividadeId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "situacao", required = false) String situacao,
+            @RequestParam(value = "ordem", required = false) String ordem,
+            @RequestParam(value = "dataInicio", required = false) String dataInicio,
+            @RequestParam(value = "dataFim", required = false) String dataFim,
+            @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
+            @RequestParam(value = "autorId", required = false) Long autorId,
+            @RequestParam(value = "autorNome", required = false) String autorNome) {
         ocorrenciaAtividadeRepository.deleteById(id);
         StringBuilder redirect = new StringBuilder("/administrador/ocorrencias?");
-        if (atividadeId != null) redirect.append("atividadeId=").append(atividadeId).append("&");
-        if (origem != null) redirect.append("origem=").append(origem).append("&");
-        if (page != null) redirect.append("page=").append(page).append("&");
-        if (size != null) redirect.append("size=").append(size).append("&");
-        if (situacao != null) redirect.append("situacao=").append(situacao).append("&");
-        if (ordem != null) redirect.append("ordem=").append(ordem).append("&");
-        if (dataInicio != null) redirect.append("dataInicio=").append(dataInicio).append("&");
-        if (dataFim != null) redirect.append("dataFim=").append(dataFim).append("&");
-        if (temaOcorrencia != null) redirect.append("temaOcorrencia=").append(temaOcorrencia).append("&");
-        if (autorId != null) redirect.append("autorId=").append(autorId).append("&");
-        if (autorNome != null) redirect.append("autorNome=").append(autorNome).append("&");
+        if (atividadeId != null)
+            redirect.append("atividadeId=").append(atividadeId).append("&");
+        if (origem != null)
+            redirect.append("origem=").append(origem).append("&");
+        if (page != null)
+            redirect.append("page=").append(page).append("&");
+        if (size != null)
+            redirect.append("size=").append(size).append("&");
+        if (situacao != null)
+            redirect.append("situacao=").append(situacao).append("&");
+        if (ordem != null)
+            redirect.append("ordem=").append(ordem).append("&");
+        if (dataInicio != null)
+            redirect.append("dataInicio=").append(dataInicio).append("&");
+        if (dataFim != null)
+            redirect.append("dataFim=").append(dataFim).append("&");
+        if (temaOcorrencia != null)
+            redirect.append("temaOcorrencia=").append(temaOcorrencia).append("&");
+        if (autorId != null)
+            redirect.append("autorId=").append(autorId).append("&");
+        if (autorNome != null)
+            redirect.append("autorNome=").append(autorNome).append("&");
         // Remove o último & se houver
         if (redirect.charAt(redirect.length() - 1) == '&') {
             redirect.deleteCharAt(redirect.length() - 1);
