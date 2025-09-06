@@ -13,9 +13,6 @@ public class Autor {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
-	private Pessoa idPessoa;
-
 	@Enumerated(EnumType.STRING)
 	private FuncaoAutor funcaoAutor;
 	private String funcaoAutorOutra; // Para quando funcaoAutor = OUTRA
@@ -28,6 +25,11 @@ public class Autor {
 	private String linkMaterialAutor;
 	private LocalDate dataUltimaAtualizacao;
 
+	// Relacionamento com Pessoa
+	@OneToOne
+	@JoinColumn(name = "pessoa_id")
+	private Pessoa pessoa;
+
 	// GETTERS AND SETTERS
 
 	public Long getId() {
@@ -36,14 +38,6 @@ public class Autor {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Pessoa getIdPessoa() {
-		return idPessoa;
-	}
-
-	public void setIdPessoa(Pessoa idPessoa) {
-		this.idPessoa = idPessoa;
 	}
 
 	public FuncaoAutor getFuncaoAutor() {
@@ -108,6 +102,14 @@ public class Autor {
 
 	public void setFuncaoAutorCustomizada(FuncaoAutorCustomizada funcaoAutorCustomizada) {
 		this.funcaoAutorCustomizada = funcaoAutorCustomizada;
+	}
+
+	public Pessoa getPessoa() {
+		return pessoa;
+	}
+
+	public void setPessoa(Pessoa pessoa) {
+		this.pessoa = pessoa;
 	}
 
 }

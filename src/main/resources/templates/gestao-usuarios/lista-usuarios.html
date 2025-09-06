@@ -235,104 +235,69 @@
                   <th><i class="fas fa-mobile-alt"></i> Celular</th>
                   <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
                   <th><i class="fas fa-user-tag"></i> Nível</th>
+                  <th>Debug Nível</th>
+                  <th>Debug Autor</th>
                   <th><i class="fas fa-toggle-on"></i> Sit.</th>
                   <th><i class="fas fa-cogs"></i> Ações</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="usuarioInst,iter : ${usuarios}" class="linha-usuario">
-                  <td th:text="${usuarioInst.usuario.username}">U001</td>
+                  <td th:text="${usuarioInst.username}">U001</td>
                   <td>
-                    <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
-                      >Nome do Usuário</strong
-                    >
-                  </td>
-                  <td th:text="${usuarioInst.usuario.pessoa.emailPessoa}">
-                    email@exemplo.com
+                    <strong th:if="${usuarioInst.pessoaDisponivel}" th:text="${usuarioInst.nomePessoa}">Nome do Usuário</strong>
+                    <span th:unless="${usuarioInst.pessoaDisponivel}" class="text-muted"><em>Não informado</em></span>
                   </td>
                   <td>
-                    <span
-                      th:text="
-                      (${usuarioInst.usuario.pessoa.pais != null ? usuarioInst.usuario.pessoa.pais.nomeLocal : '---'}) + ' / ' +
-                      (${usuarioInst.usuario.pessoa.estado != null ? usuarioInst.usuario.pessoa.estado.nomeLocal : '---'}) + ' / ' +
-                      (${usuarioInst.usuario.pessoa.cidade != null ? usuarioInst.usuario.pessoa.cidade.nomeLocal : '---'})
-                    "
-                    ></span>
+                    <span th:if="${usuarioInst.pessoaDisponivel}" th:text="${usuarioInst.emailPessoa}">email@exemplo.com</span>
+                    <span th:unless="${usuarioInst.pessoaDisponivel}" class="text-muted"><em>Não informado</em></span>
                   </td>
                   <td>
-                    <span
-                      th:text="${T(com.agendademais.utils.StringUtils).formatarCelularParaExibicao(usuarioInst.usuario.pessoa.celularPessoa)}"
-                      th:if="${usuarioInst.usuario.pessoa.celularPessoa != null}"
-                      >Celular</span
-                    >
-                    <span
-                      th:unless="${usuarioInst.usuario.pessoa.celularPessoa != null}"
-                      class="text-muted"
-                      ><em>Não informado</em></span
-                    >
+                    <span th:text="${usuarioInst.localizacaoFormatada}"></span>
                   </td>
                   <td>
-                    <span
-                      th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
-                      th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao}"
-                    ></span>
-                    <span
-                      th:unless="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0}"
-                      >---</span
-                    >
+                    <span th:text="${usuarioInst.celularFormatado}"></span>
                   </td>
-                  <td
-                    class="text-center"
-                    th:text="${usuarioInst.nivelAcessoUsuarioInstituicao}"
-                  ></td>
                   <td>
-                    <span
-                      th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
-                    >
-                      <span
-                        th:case="'A'"
-                        class="badge"
-                        style="background-color: #28a745; color: #fff"
-                        >A</span
-                      >
-                      <span
-                        th:case="'B'"
-                        class="badge"
-                        style="background-color: #ff9800; color: #fff"
-                        >B</span
-                      >
-                      <span
-                        th:case="'C'"
-                        class="badge"
-                        style="background-color: #dc3545; color: #fff"
-                        >C</span
-                      >
-                      <span
-                        th:case="*"
-                        class="badge bg-secondary"
-                        th:text="${usuarioInst.sitAcessoUsuarioInstituicao}"
-                        >-</span
-                      >
+                    <span th:text="${usuarioInst.subInstituicaoNome}"></span>
+                  </td>
+                  <td class="text-center" th:text="${usuarioInst.nivelAcesso}"></td>
+                  <td th:text="${usuarioInst.nivelAcesso}"></td>
+                  <td th:text="${usuarioInst.autorDisponivel}"></td>
+                  <td>
+                    <span th:switch="${usuarioInst.situacaoAcesso}">
+                      <span th:case="'A'" class="badge" style="background-color: #28a745; color: #fff">A</span>
+                      <span th:case="'B'" class="badge" style="background-color: #ff9800; color: #fff">B</span>
+                      <span th:case="'C'" class="badge" style="background-color: #dc3545; color: #fff">C</span>
+                      <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.situacaoAcesso}">-</span>
                     </span>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-primary"
+                    <!-- Ícone Editar Usuário -->
+                    <a th:if="${usuarioInst.pessoaDisponivel}"
+                      href="#"
+                      title="Editar Usuário"
+                      class="me-2"
                       data-bs-toggle="modal"
                       data-bs-target="#modalEditarUsuario"
-                      th:data-usuario-id="${usuarioInst.id}"
-                      th:data-nivel-acesso="${usuarioInst.nivelAcessoUsuarioInstituicao}"
-                      th:data-situacao-acesso="${usuarioInst.sitAcessoUsuarioInstituicao}"
-                      th:data-nome-pessoa="${usuarioInst.usuario.pessoa.nomePessoa}"
-                      th:data-email-pessoa="${usuarioInst.usuario.pessoa.emailPessoa}"
-                      th:data-subinstituicao="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and #lists.size(usuarioInst.usuario.pessoa.pessoaSubInstituicao) > 0 ? usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.id : ''}"
-                      onclick="carregarDadosUsuario(this)"
-                      th:if="${nivelAcessoLogado != 5 or usuarioInst.nivelAcessoUsuarioInstituicao <= 5}"
-                    >
-                      <i class="fas fa-edit"></i> Editar
-                    </button>
-                  </td>
+                      th:data-usuario-id="${usuarioInst.usuarioInstituicao != null ? usuarioInst.usuarioInstituicao.id : ''}"
+                      th:data-nivel-acesso="${usuarioInst.nivelAcesso}"
+                      th:data-situacao-acesso="${usuarioInst.situacaoAcesso}"
+                      th:data-nome-pessoa="${usuarioInst.nomePessoa}"
+                      th:data-email-pessoa="${usuarioInst.emailPessoa}"
+                      th:data-subinstituicao="${usuarioInst.subInstituicaoNome}"
+                      onclick="carregarDadosUsuario(this)">
+                      <i class="fas fa-pencil-alt" style="font-size: 1.1em;"></i>
+                    </a>
+                    <!-- Ícone Editar Autor -->
+                    <a th:if="${usuarioInst.autorDisponivel}"
+                      th:href="@{'/administrador/autor-form/' + ${usuarioInst.usuarioInstituicao != null && usuarioInst.usuarioInstituicao.getUsuario() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor() != null ? usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor().getId() : ''}}"
+                      title="Editar Autor">
+                      <i class="fas fa-user-edit text-primary" style="font-size: 1.1em;"></i>
+                    </a>
+                    <i th:unless="${usuarioInst.autorDisponivel}"
+                      class="fas fa-user-edit text-secondary" style="font-size: 1.1em; opacity: 0.4; cursor: not-allowed;" title="Não é Autor"></i>
+                  </td>                  
                 </tr>
               </tbody>
             </table>

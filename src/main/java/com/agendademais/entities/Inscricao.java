@@ -15,7 +15,7 @@ public class Inscricao {
 
 	@ManyToOne
 	@JoinColumn(name = "id_pessoa", nullable = false)
-	private Pessoa idPessoa;
+	private Pessoa pessoa;
 
 	@ManyToOne
 	@JoinColumn(name = "id_instituicao", nullable = false)
@@ -42,12 +42,12 @@ public class Inscricao {
 		this.id = id;
 	}
 
-	public Pessoa getIdPessoa() {
-		return idPessoa;
+	public Pessoa getPessoa() {
+		return pessoa;
 	}
 
-	public void setIdPessoa(Pessoa idPessoa) {
-		this.idPessoa = idPessoa;
+	public void setPessoa(Pessoa pessoa) {
+		this.pessoa = pessoa;
 	}
 
 	public Instituicao getIdInstituicao() {

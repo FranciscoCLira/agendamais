@@ -1,5 +1,7 @@
 package com.agendademais.controllers;
 
+import com.agendademais.dto.UsuarioInstituicaoDTO;
+
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
@@ -98,7 +100,11 @@ public class GestaoUsuariosController {
             List<SubInstituicao> subInstituicoes = subInstituicaoRepository
                     .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
             model.addAttribute("subInstituicoes", subInstituicoes);
-            model.addAttribute("usuarios", usuariosPaginados);
+            // Converter para DTO
+            List<UsuarioInstituicaoDTO> usuariosDTO = usuariosPaginados.stream()
+                    .map(ui -> new UsuarioInstituicaoDTO(ui, null)) // ajuste o segundo parâmetro se necessário
+                    .toList();
+            model.addAttribute("usuarios", usuariosDTO);
             model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
             model.addAttribute("nivelAcessoLogado", nivelAcesso);
             model.addAttribute("page", page);

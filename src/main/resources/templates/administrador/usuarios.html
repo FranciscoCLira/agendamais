@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <title>Gestão Geral de Usuários</title>
-    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
@@ -14,11 +13,11 @@
     />
   </head>
   <body>
-    <header th:replace="fragments/layout_cabecalho :: cabecalho"></header>
-    <div class="container">
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div class="container mt-4">
       <h2>Gestão Geral de Usuários</h2>
-      <table>
-        <thead>
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
           <tr>
             <th>Cod Usuário</th>
             <th>Nome</th>
@@ -36,7 +35,7 @@
             <td>
               <!-- Ícone Editar Usuário -->
               <a
-                th:href="@{'/controle-total/usuarios/editar/' + ${usuario.id}}"
+                th:href="@{'/administrador/usuarios/editar/' + ${usuario.id}}"
                 class="btn btn-sm btn-outline-secondary me-1"
                 title="Editar Usuário"
               >
@@ -45,7 +44,7 @@
               <!-- Ícone Editar Autor, só se nivel >= 2 e existe autor -->
               <a
                 th:if="${usuario.nivelAcessoUsuario} >= 2 and usuario.autor != null"
-                th:href="@{'/controle-total/autores/editar/' + ${usuario.autor.id} + '?origem=usuarios'}"
+                th:href="@{'/administrador/autores/editar/' + ${usuario.autor.id} + '?origem=usuarios'}"
                 class="btn btn-sm btn-outline-primary"
                 title="Editar Autor"
               >
@@ -53,11 +52,11 @@
               </a>
               <!-- Ações existentes -->
               <a
-                th:href="@{'/controle-total/usuarios/bloquear/' + ${usuario.id}}"
+                th:href="@{'/administrador/usuarios/bloquear/' + ${usuario.id}}"
                 >Bloquear</a
               >
               |
-              <a th:href="@{'/controle-total/usuarios/ativar/' + ${usuario.id}}"
+              <a th:href="@{'/administrador/usuarios/ativar/' + ${usuario.id}}"
                 >Ativar</a
               >
             </td>

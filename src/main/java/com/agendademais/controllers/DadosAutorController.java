@@ -33,7 +33,7 @@ public class DadosAutorController {
 
     @Autowired
     private SubInstituicaoRepository subInstituicaoRepository;
-    
+
     @Autowired
     private FuncaoAutorCustomizadaRepository funcaoCustomizadaRepository;
 
@@ -43,7 +43,7 @@ public class DadosAutorController {
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-        
+
         // Converter personalizado para FuncaoAutor
         binder.registerCustomEditor(FuncaoAutor.class, new PropertyEditorSupport() {
             @Override
@@ -75,8 +75,8 @@ public class DadosAutorController {
     @GetMapping
     public String exibirDadosAutor(
             @RequestParam(value = "origem", required = false, defaultValue = "autor") String origem,
-            HttpSession session, 
-            Model model, 
+            HttpSession session,
+            Model model,
             RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         Instituicao instituicao = (Instituicao) session.getAttribute("instituicaoSelecionada");
@@ -104,12 +104,12 @@ public class DadosAutorController {
         model.addAttribute("nomeInstituicao", instituicao != null ? instituicao.getNomeInstituicao() : "");
         model.addAttribute("nomeUsuario", usuario.getUsername());
         model.addAttribute("nomePessoa", pessoa.getNomePessoa());
-        
+
         // Adicionar origem para navegação
         model.addAttribute("origem", origem);
 
         // Buscar dados de autor
-        Optional<Autor> autorOpt = autorRepository.findByIdPessoa(pessoa);
+        Optional<Autor> autorOpt = autorRepository.findByPessoa(pessoa);
 
         if (autorOpt.isPresent()) {
             model.addAttribute("autor", autorOpt.get());
@@ -117,7 +117,7 @@ public class DadosAutorController {
         } else {
             // Criar objeto vazio para o formulário
             Autor autorVazio = new Autor();
-            autorVazio.setIdPessoa(pessoa);
+            autorVazio.setPessoa(pessoa);
             model.addAttribute("autor", autorVazio);
             model.addAttribute("possuiDadosAutor", false);
         }
@@ -125,8 +125,8 @@ public class DadosAutorController {
         // Buscar vínculo com sub-instituição da instituição atual
         if (instituicao != null) {
             Optional<PessoaSubInstituicao> vinculoSubInstituicao = pessoaSubInstituicaoRepository
-                .findByPessoaAndInstituicao(pessoa, instituicao);
-            
+                    .findByPessoaAndInstituicao(pessoa, instituicao);
+
             if (vinculoSubInstituicao.isPresent()) {
                 model.addAttribute("vinculoSubInstituicao", vinculoSubInstituicao.get());
                 model.addAttribute("possuiVinculoSubInstituicao", true);
@@ -173,7 +173,7 @@ public class DadosAutorController {
                     // É uma função personalizada
                     Long customId = Long.parseLong(funcaoAutorParam.substring(7));
                     FuncaoAutorCustomizada customFunc = funcaoCustomizadaRepository
-                        .findById(customId).orElse(null);
+                            .findById(customId).orElse(null);
                     if (customFunc != null) {
                         autor.setFuncaoAutorCustomizada(customFunc);
                         autor.setFuncaoAutor(null); // Limpar a enum
@@ -200,7 +200,7 @@ public class DadosAutorController {
             Pessoa pessoa = usuario.getPessoa();
 
             // Buscar autor existente ou criar novo
-            Optional<Autor> autorExistenteOpt = autorRepository.findByIdPessoa(pessoa);
+            Optional<Autor> autorExistenteOpt = autorRepository.findByPessoa(pessoa);
 
             if (autorExistenteOpt.isPresent()) {
                 // Atualizar autor existente
@@ -219,7 +219,7 @@ public class DadosAutorController {
 
             } else {
                 // Criar novo autor
-                autor.setIdPessoa(pessoa);
+                autor.setPessoa(pessoa);
                 autor.setSituacaoAutor("A"); // SEMPRE ATIVO - campo removido da view
                 autor.setDataUltimaAtualizacao(LocalDate.now());
 
@@ -241,8 +241,8 @@ public class DadosAutorController {
     @GetMapping("/editar")
     public String exibirFormularioEdicao(
             @RequestParam(value = "origem", required = false, defaultValue = "autor") String origem,
-            HttpSession session, 
-            Model model, 
+            HttpSession session,
+            Model model,
             RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         Instituicao instituicao = (Instituicao) session.getAttribute("instituicaoSelecionada");
@@ -270,19 +270,19 @@ public class DadosAutorController {
         model.addAttribute("nomeInstituicao", instituicao != null ? instituicao.getNomeInstituicao() : "");
         model.addAttribute("nomeUsuario", usuario.getUsername());
         model.addAttribute("nomePessoa", pessoa.getNomePessoa());
-        
+
         // Adicionar origem para navegação
         model.addAttribute("origem", origem);
 
         // Buscar dados de autor
-        Optional<Autor> autorOpt = autorRepository.findByIdPessoa(pessoa);
+        Optional<Autor> autorOpt = autorRepository.findByPessoa(pessoa);
 
         if (autorOpt.isPresent()) {
             model.addAttribute("autor", autorOpt.get());
         } else {
             // Criar objeto vazio para o formulário
             Autor autorVazio = new Autor();
-            autorVazio.setIdPessoa(pessoa);
+            autorVazio.setPessoa(pessoa);
             autorVazio.setSituacaoAutor("A");
             model.addAttribute("autor", autorVazio);
         }
@@ -290,8 +290,8 @@ public class DadosAutorController {
         // Buscar vínculo com sub-instituição da instituição atual
         if (instituicao != null) {
             Optional<PessoaSubInstituicao> vinculoSubInstituicao = pessoaSubInstituicaoRepository
-                .findByPessoaAndInstituicao(pessoa, instituicao);
-            
+                    .findByPessoaAndInstituicao(pessoa, instituicao);
+
             if (vinculoSubInstituicao.isPresent()) {
                 model.addAttribute("vinculoSubInstituicao", vinculoSubInstituicao.get());
                 model.addAttribute("possuiVinculoSubInstituicao", true);

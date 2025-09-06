@@ -41,6 +41,15 @@ public class Pessoa {
 	@OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private java.util.List<PessoaSubInstituicao> pessoaSubInstituicao;
 
+	// Relacionamento com Autor
+	@OneToOne(mappedBy = "pessoa")
+	@com.fasterxml.jackson.annotation.JsonIgnore
+	private Autor autor;
+
+	public Autor getAutor() {
+		return autor;
+	}
+
 	// GETTERS AND SETTERS
 
 	public Long getId() {

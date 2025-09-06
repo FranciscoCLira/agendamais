@@ -11,14 +11,17 @@ import com.agendademais.entities.Pessoa;
 
 public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
 
-    void deleteByIdPessoaAndIdInstituicao(Pessoa idPessoa, Instituicao idInstituicao);
+    void deleteByPessoaAndIdInstituicao(Pessoa pessoa, Instituicao idInstituicao);
 
-    void deleteByIdPessoa(Pessoa idPessoa);
-    List<Inscricao> findByIdPessoa(Pessoa idPessoa);
+    void deleteByPessoa(Pessoa pessoa);
 
-    Optional<Inscricao> findByIdPessoaAndIdInstituicao(Pessoa pessoa, Instituicao instituicao);
-    
-    // VERIFICA INSCRICAO COM DUPLICIDADE DE ATIVIDADE PARA A MESMA PESSOA E INSTITUICAO
-    boolean existsByIdPessoaAndIdInstituicaoAndTiposAtividade_Id(Pessoa idPessoa, Instituicao idInstituicao, Long tipoAtividadeId);
+    List<Inscricao> findByPessoa(Pessoa pessoa);
+
+    Optional<Inscricao> findByPessoaAndIdInstituicao(Pessoa pessoa, Instituicao instituicao);
+
+    // VERIFICA INSCRICAO COM DUPLICIDADE DE ATIVIDADE PARA A MESMA PESSOA E
+    // INSTITUICAO
+    boolean existsByPessoaAndIdInstituicaoAndTiposAtividade_Id(Pessoa pessoa, Instituicao idInstituicao,
+            Long tipoAtividadeId);
 
 }

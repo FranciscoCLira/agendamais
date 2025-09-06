@@ -65,8 +65,9 @@ public class ExcluirVinculosInstituicaoController {
                 "***    Antes delete - usuarioInstituicaoRepository.deleteByUsuarioAndInstituicao(usuario, instituicao");
 
         // Exclui vínculos com a instituição atual
+
         usuarioInstituicaoRepository.deleteByUsuarioAndInstituicao(usuario, instituicao);
-        inscricaoRepository.deleteByIdPessoaAndIdInstituicao(pessoa, instituicao);
+        inscricaoRepository.deleteByPessoaAndIdInstituicao(pessoa, instituicao);
         pessoaInstituicaoRepository.deleteByPessoaAndInstituicao(pessoa, instituicao);
         pessoaSubInstituicaoRepository.deleteByPessoaAndInstituicao(pessoa, instituicao);
 
@@ -79,7 +80,7 @@ public class ExcluirVinculosInstituicaoController {
 
         if (outrosVinculos.isEmpty()) {
             // Exclui todas as inscrições vinculadas à pessoa
-            inscricaoRepository.deleteByIdPessoa(pessoa);
+            inscricaoRepository.deleteByPessoa(pessoa);
 
             // Exclui usuário e pessoa
             usuarioRepository.delete(usuario);

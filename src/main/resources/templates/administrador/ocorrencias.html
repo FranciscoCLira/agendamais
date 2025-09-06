@@ -18,7 +18,7 @@
       rel="stylesheet"
       href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
     />
-    <script>
+    <script th:inline="javascript">
       $(function () {
         var atividadeSelecionada = null;
         var $tituloAtividade = $("input[name='tituloAtividade']");
@@ -47,23 +47,50 @@
           select: function (event, ui) {
             atividadeSelecionada = ui.item;
             $atividadeId.val(ui.item.id);
+            $tituloAtividade.val(ui.item.label); // Garante preenchimento
             $novaOcorrenciaBtn
               .removeClass("disabled")
               .attr("tabindex", "0")
               .attr("aria-disabled", "false");
-            // Submete o formulário de filtro automaticamente ao selecionar uma atividade
-            $(this).closest("form").submit();
+            setTimeout(() => { $("#filtroOcorrenciasForm").submit(); }, 100); // Submete após preencher
           },
-          change: function (event, ui) {
-            if (!ui.item) {
-              atividadeSelecionada = null;
-              $atividadeId.val("");
-              $novaOcorrenciaBtn
+            change: function (event, ui) {
+            // Só limpa se o campo estiver realmente vazio
+            if (!ui.item && !$tituloAtividade.val()) {
+                atividadeSelecionada = null;
+                $atividadeId.val("");
+                $novaOcorrenciaBtn
                 .addClass("disabled")
                 .attr("tabindex", "-1")
                 .attr("aria-disabled", "true");
             }
           },
+        });
+
+        var enterPressed = false;
+        $tituloAtividade.on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            enterPressed = true;
+        }
+        });
+        $tituloAtividade.on('keyup', function(e) {
+        if (e.key === 'Enter' && enterPressed) {
+            e.preventDefault();
+            if ($tituloAtividade.val().length >= 2) {
+            // Se não foi selecionado via mouse, submit manual
+            if (!$tituloAtividade.data('ui-autocomplete-item-selected')) {
+                $atividadeId.val('');
+                $(this).closest('form').submit();
+            }
+            }
+            enterPressed = false;
+        }
+        });
+        $tituloAtividade.on('autocompleteselect', function() {
+        $tituloAtividade.data('ui-autocomplete-item-selected', true);
+        setTimeout(function() {
+            $tituloAtividade.data('ui-autocomplete-item-selected', false);
+        }, 200);
         });
 
         // Ao carregar a página, se já houver atividadeId, buscar o título e preencher
@@ -110,41 +137,61 @@
             }
             );
         },
-        minLength: 2,
-        select: function (event, ui) {
-            $(this).val(ui.item.value);
-            $(this).closest("form").submit();
-        }
+    minLength: 2,
+    select: function (event, ui) {
+      $(this).val(ui.item.value);
+      // Não submete o formulário automaticamente, permite busca parcial ao pressionar Enter
+    },
+    // Permite busca parcial: usuário pode digitar e clicar em Filtrar normalmente
+    // Se quiser filtrar por nome exato, basta selecionar um item do autocomplete
+    // Se quiser filtrar parcialmente, basta digitar e clicar em Filtrar
         });
 
-        // Autocomplete para Autor da Ocorrência
-        $("#autorNomeFiltro").autocomplete({
-        source: function (request, response) {
-            $.getJSON(
-            "/administrador/ocorrencias/autocomplete-autor",
-            { term: request.term },
-            function (data) {
-                response(
-                $.map(data, function (item) {
-                    return {
-                    label: item.idPessoa.nomePessoa,
-                    value: item.idPessoa.nomePessoa,
-                    id: item.id
-                    };
-                })
-                );
+    // Autocomplete para Autor da Ocorrência (usando autores filtrados do backend)
+  var autoresDasOcorrencias = /*[[${autoresDasOcorrenciasList}]]*/ [];
+  console.log("autoresDasOcorrencias:", autoresDasOcorrencias);
+    console.log("autoresDasOcorrencias:", autoresDasOcorrencias);
+    $("#autorNomeFiltro").autocomplete({
+      source: function (request, response) {
+              var termo = request.term.toLowerCase();
+              var filtrados = autoresDasOcorrencias.filter(function (item) {
+                return (item.nome && item.nome.toLowerCase().includes(termo)) ||
+                       (item.email && item.email.toLowerCase().includes(termo));
+              });
+              response(filtrados.map(function (item) {
+                return {
+                  label: item.nome + (item.email ? ' (' + item.email + ')' : ''),
+                  value: item.nome,
+                  id: item.id
+                };
+              }));
+            },
+            minLength: 2,
+            select: function (event, ui) {
+              $("#autorIdFiltro").val(ui.item.id);
+              $("#autorNomeFiltro").val(ui.item.value); // Garante preenchimento
+              setTimeout(() => { $("#filtroOcorrenciasForm").submit(); }, 100);
+            },
+            change: function (event, ui) {
+              if (!ui.item && !$(this).val()) {
+                $("#autorIdFiltro").val("");
+              }
             }
-            );
-        },
-        minLength: 2,
-        select: function (event, ui) {
-            $("#autorIdFiltro").val(ui.item.id);
-            $(this).val(ui.item.value);
-            $(this).closest("form").submit();
-        },
-        change: function (event, ui) {
-            if (!ui.item) {
-            $("#autorIdFiltro").val("");
+          });
+
+        // Permite busca parcial ao pressionar Enter
+        $("#autorNomeFiltro").on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            var menu = $(this).autocomplete('widget');
+            var items = menu.find('li.ui-menu-item');
+            if (items.length === 1) {
+            items.first().trigger('mouseenter').trigger('click');
+            e.preventDefault();
+            } else if ($(this).val().length >= 2) {
+            // Busca parcial: limpa autorId e submete
+            $("#autorIdFiltro").val('');
+            $(this).closest('form').submit();
+            e.preventDefault();
             }
         }
         });
@@ -160,8 +207,52 @@
         $("select[name='ordem']").val("");
         $("select[name='size']").val("25");
         $("#filtroOcorrenciasForm").submit();
-        });        
+        });       
 
+        // Força seleção da sugestão ao pressionar Enter (Título da Atividade)
+        $tituloAtividade.on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            var menu = $tituloAtividade.autocomplete('widget');
+            var items = menu.find('li.ui-menu-item');
+            if (items.length === 1) {
+            items.first().trigger('mouseenter').trigger('click');
+            e.preventDefault();
+            }
+        }
+        });
+        // Força seleção da sugestão ao pressionar Enter (Autor)
+        $("#autorNomeFiltro").on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            var menu = $(this).autocomplete('widget');
+            var items = menu.find('li.ui-menu-item');
+            if (items.length === 1) {
+            items.first().trigger('mouseenter').trigger('click');
+            e.preventDefault();
+            }
+        }
+        });
+
+        // Corrige propagação do parâmetro origem para o Voltar
+        function getOrigemForVoltar() {
+          // Busca o parâmetro origem do backend (preferencial) ou da URL
+          var origem = /*[[${origem}]]*/ '';
+          if (!origem || origem === 'menu') return 'menu';
+          if (origem === 'atividades') return 'atividades';
+          // fallback: se não houver origem, decide pelo estado da atividade
+          if (!$("#atividadeId").val()) return "menu";
+          return "atividades";
+        }
+        $("a.btn-outline-secondary").on("click", function(e) {
+          if ($(this).attr("id") === "voltarBtn") {
+            e.preventDefault();
+            var origem = getOrigemForVoltar();
+            if (origem === "menu") {
+              window.location.href = "/administrador?origem=menu";
+            } else {
+              window.location.href = "/administrador/atividades?origem=atividades";
+            }
+          }
+        });
       });
     </script>
   </head>
@@ -171,18 +262,16 @@
     <div class="container mt-4" style="max-width: 900px">
       <div class="row mb-2 align-items-center">
         <div class="col-auto">
-          <a
-            th:if="(${origem} == 'atividades') or (${param.origem} == 'atividades') or (${atividadeSelecionada != null and atividadeSelecionada.id != null})"
-            th:href="@{/administrador/atividades}"
-            class="btn btn-outline-secondary me-3"
-            >&larr; Voltar</a
-          >
-          <a
-            th:if="! ( (${origem} == 'atividades') or (${param.origem} == 'atividades') or (${atividadeSelecionada != null and atividadeSelecionada.id != null}) )"
-            th:href="@{/administrador}"
-            class="btn btn-outline-secondary me-3"
-            >&larr; Voltar</a
-          >
+          <a id="voltarBtn"
+            th:if="${origem == 'atividades' or param.origem == 'atividades'}"
+            th:href="@{/administrador/atividades(origem='atividades')}"
+            class="btn btn-outline-secondary me-3">&larr; Voltar</a>
+
+          <a id="voltarBtn"
+            th:if="${origem != 'atividades' and param.origem != 'atividades'}"
+            th:href="@{/administrador(origem='menu')}"
+            class="btn btn-outline-secondary me-3">&larr; Voltar</a>
+
         </div>
         <div class="col text-end">
           <a
@@ -204,27 +293,15 @@
         </div>
       </div>
       <div class="card">
-        <div
-          class="card-header d-flex justify-content-between align-items-center"
-        >
-          <div>
-            <h3 class="mb-0 d-inline">Ocorrências da Atividade</h3>
-            <span
-              th:if="${ocorrencias != null}"
-              class="ms-2 text-muted"
-              th:text="'(' + ${ocorrencias.numberOfElements} + ' ocorrências listadas)'"
-              style="font-size: 1rem"
-            ></span>
-          </div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold">Filtrar Ocorrências</span>
+          <span class="fw-bold" th:if="${totalOcorrencias != null and ocorrencias != null}" style="font-size:1rem; color:#555; min-width:220px;">
+            [[${totalOcorrencias}]] Itens, sendo [[${ocorrencias.numberOfElements}]] listados
+          </span>
         </div>
-        <div class="card-body">
-          <form
-            method="get"
-            th:action="@{/administrador/ocorrencias}"
-            class="mb-3"
-            id="filtroOcorrenciasForm"
-          >
-            <input type="hidden" name="page" value="0" />
+        <form method="get" th:action="@{/administrador/ocorrencias}" class="mb-3" id="filtroOcorrenciasForm">
+    <input type="hidden" name="page" value="0" />
+    <input type="hidden" name="origem" th:value="${origem}" />
             <!-- Linha destacada para Título Atividade -->
             <div class="row mb-2">
               <div class="col-12">
@@ -343,7 +420,8 @@
               </button>
               <a href="#" id="limparFiltrosBtn" class="btn btn-outline-secondary">Limpar</a>
             </div>
-          </form>
+          </div>
+        </form>
           <div th:if="${atividadeSelecionada == null}">
             <div class="alert alert-info">
               Selecione uma atividade para visualizar as ocorrências.
@@ -393,18 +471,31 @@
                     th:text="${#strings.abbreviate(ocorrencia.temaOcorrencia, 35)}"
                   ></td>
                   <td
-                    th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.idPessoa != null ? ocorrencia.idAutor.idPessoa.nomePessoa : '', 20)}"
+                    th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.pessoa != null ? ocorrencia.idAutor.pessoa.nomePessoa : '', 20)}"
                   ></td>
                   <td>
                     <a
-                      th:href="@{'/administrador/ocorrencias/editar/' + ${ocorrencia.id}}"
+                      th:href="@{/administrador/ocorrencias/editar/{id}(id=${ocorrencia.id}, origem=${origem})}"
                       class="btn btn-sm btn-outline-secondary"
                       title="Editar"
                     >
                       <i class="fa fa-pencil-alt"></i>
                     </a>
                     <a
-                      th:href="@{'/administrador/ocorrencias/deletar/' + ${ocorrencia.id}}"
+                      th:href="@{/administrador/ocorrencias/deletar/{id}(
+                        id=${ocorrencia.id},
+                        atividadeId=${param.atividadeId},
+                        origem=${origem},
+                        page=${param.page},
+                        size=${param.size},
+                        situacao=${param.situacao},
+                        ordem=${param.ordem},
+                        dataInicio=${param.dataInicio},
+                        dataFim=${param.dataFim},
+                        temaOcorrencia=${param.temaOcorrencia},
+                        autorId=${param.autorId},
+                        autorNome=${param.autorNome}
+                      )}"
                       class="btn btn-sm btn-outline-danger ms-1"
                       title="Excluir"
                       onclick="return confirm('Confirma exclusão?')"

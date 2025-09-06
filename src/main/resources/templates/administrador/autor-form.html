@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Editar Autor</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+    <!-- DEBUG: Exibir objeto autor e mensagens de erro -->
+    <div class="alert alert-info" th:if="${autor != null}">
+      <strong>DEBUG autor:</strong>
+      <pre th:text="${autor}"></pre>
+    </div>
+    <div
+      class="alert alert-danger"
+      th:if="${mensagemErro != null}"
+      th:text="${mensagemErro}"
+    ></div>
+
+    <div
+      class="d-flex justify-content-center align-items-center"
+      style="min-height: 90vh; background: #f8f9fa"
+    >
+      <div class="card shadow" style="width: 100%; max-width: 650px">
+        <div class="card-header">
+          <h4 class="mb-0">EDITAR AUTOR</h4>
+        </div>
+        <div class="card-body">
+          <form
+            th:action="@{/administrador/autores/editar/{id}(id=${autor.id},origem=${origem})}"
+            th:object="${autor}"
+            method="post"
+          >
+            <input type="hidden" th:field="*{id}" />
+            <div class="mb-3">
+              <label for="nomeAutor" class="form-label">Nome do Autor</label>
+              <input
+                type="text"
+                id="nomeAutor"
+                th:value="${autor.pessoa != null ? autor.pessoa.nomePessoa : ''}"
+                class="form-control"
+                readonly
+              />
+            </div>
+            <!-- Campos removidos: emailAutor, instituicaoAutor, miniCurriculo (não existem na entidade) -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button type="submit" class="btn btn-primary">Salvar</button>
+              <a
+                th:href="@{${origem} == 'usuarios' ? '/administrador/usuarios' : '/administrador/autores'}"
+                class="btn btn-secondary"
+                >Cancelar</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

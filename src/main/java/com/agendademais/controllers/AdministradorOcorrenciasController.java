@@ -80,7 +80,7 @@ public class AdministradorOcorrenciasController {
                 sort = Sort.by("situacaoOcorrencia").ascending().and(Sort.by("dataOcorrencia").descending())
                         .and(Sort.by("horaInicioOcorrencia").descending());
             } else if (ordem.equals("autor")) {
-                sort = Sort.by("idAutor.idPessoa.nomePessoa").ascending().and(Sort.by("dataOcorrencia").descending())
+                sort = Sort.by("idAutor.pessoa.nomePessoa").ascending().and(Sort.by("dataOcorrencia").descending())
                         .and(Sort.by("horaInicioOcorrencia").descending());
             } else if (ordem.equals("data")) {
                 sort = Sort.by("dataOcorrencia").descending().and(Sort.by("horaInicioOcorrencia").descending());
@@ -106,19 +106,58 @@ public class AdministradorOcorrenciasController {
         }
         if (autorId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("idAutor").get("id"), autorId));
+        } else if (autorNome != null && !autorNome.isEmpty()) {
+            String nomeLower = autorNome.toLowerCase();
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("idAutor").get("pessoa").get("nomePessoa")),
+                    "%" + nomeLower + "%"));
         }
         Page<OcorrenciaAtividade> ocorrencias = ocorrenciaAtividadeRepository.findAll(spec, pageable);
         model.addAttribute("atividadeSelecionada", atividade);
         model.addAttribute("ocorrencias", ocorrencias);
-        // Se não houver ocorrências, redireciona para nova ocorrência
-        if (ocorrencias.isEmpty()) {
-            String origemFinal = origem;
-            if (origemFinal == null || origemFinal.isEmpty())
-                origemFinal = "atividades";
-            String redirect = "/administrador/ocorrencias/nova?atividadeId=" + atividade.getId() + "&origem="
-                    + origemFinal;
-            return "redirect:" + redirect;
+        // Lista de autores presentes em todas as ocorrências da atividade (para
+        // autocomplete), ignorando filtro de autor
+        Specification<OcorrenciaAtividade> specAutores = (root, query, cb) -> cb.equal(root.get("idAtividade"),
+                atividade);
+        if (situacao != null && !situacao.isEmpty()) {
+            specAutores = specAutores.and((root, query, cb) -> cb.equal(root.get("situacaoOcorrencia"), situacao));
         }
+        if (dataInicio != null && !dataInicio.isEmpty()) {
+            java.time.LocalDate dataIni = java.time.LocalDate.parse(dataInicio);
+            specAutores = specAutores
+                    .and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("dataOcorrencia"), dataIni));
+        }
+        if (dataFim != null && !dataFim.isEmpty()) {
+            java.time.LocalDate dataF = java.time.LocalDate.parse(dataFim);
+            specAutores = specAutores.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("dataOcorrencia"), dataF));
+        }
+        if (temaOcorrencia != null && !temaOcorrencia.isEmpty()) {
+            specAutores = specAutores.and((root, query, cb) -> cb.like(cb.lower(root.get("temaOcorrencia")),
+                    "%" + temaOcorrencia.toLowerCase() + "%"));
+        }
+        List<OcorrenciaAtividade> todasOcorrencias = ocorrenciaAtividadeRepository.findAll(specAutores);
+        java.util.Set<Autor> autoresDasOcorrenciasSet = new java.util.HashSet<>();
+        for (OcorrenciaAtividade oc : todasOcorrencias) {
+            Autor a = oc.getIdAutor();
+            if (a != null)
+                autoresDasOcorrenciasSet.add(a);
+        }
+        System.out.println("[DEBUG] autoresDasOcorrenciasSet size: " + autoresDasOcorrenciasSet.size());
+        for (Autor a : autoresDasOcorrenciasSet) {
+            System.out.println("[DEBUG] Autor: id=" + a.getId() + ", nome="
+                    + (a.getPessoa() != null ? a.getPessoa().getNomePessoa() : "null"));
+        }
+        List<Autor> autoresDasOcorrencias = new java.util.ArrayList<>(autoresDasOcorrenciasSet);
+        model.addAttribute("autoresDasOcorrencias", autoresDasOcorrencias);
+        List<java.util.Map<String, Object>> autoresDasOcorrenciasList = new java.util.ArrayList<>();
+        for (Autor a : autoresDasOcorrencias) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", a.getId());
+            map.put("nome", a.getPessoa() != null ? a.getPessoa().getNomePessoa() : "");
+            map.put("email", a.getPessoa() != null ? a.getPessoa().getEmailPessoa() : "");
+            autoresDasOcorrenciasList.add(map);
+        }
+        model.addAttribute("autoresDasOcorrenciasList", autoresDasOcorrenciasList);
+        model.addAttribute("totalOcorrencias", ocorrencias.getTotalElements());
         if (origem == null || origem.isEmpty()) {
             origem = "menu";
         }
@@ -176,13 +215,15 @@ public class AdministradorOcorrenciasController {
                 : null;
         if (atividadeId != null) {
             String redirect = "/administrador/ocorrencias?atividadeId=" + atividadeId;
-            if (origem != null)
+            if (origem != null && !origem.isEmpty()) {
                 redirect += "&origem=" + origem;
+            }
             return "redirect:" + redirect;
         } else {
             String redirect = "/administrador/ocorrencias";
-            if (origem != null)
+            if (origem != null && !origem.isEmpty()) {
                 redirect += "?origem=" + origem;
+            }
             return "redirect:" + redirect;
         }
     }
@@ -201,6 +242,10 @@ public class AdministradorOcorrenciasController {
         }
         model.addAttribute("ocorrencia", ocorrenciaOpt.get());
         model.addAttribute("origem", origem);
+        // Também propaga o id da atividade para o formulário
+        if (ocorrenciaOpt.get().getIdAtividade() != null) {
+            model.addAttribute("atividadeId", ocorrenciaOpt.get().getIdAtividade().getId());
+        }
         return "administrador/ocorrencia-form";
     }
 
@@ -256,17 +301,61 @@ public class AdministradorOcorrenciasController {
         Long atividadeId = (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getId() != null)
                 ? ocorrencia.getIdAtividade().getId()
                 : null;
+        // Recupera origem do request param se não veio no binding
+        String origemFinal = origem;
+        if ((origemFinal == null || origemFinal.isEmpty()) &&
+            model.asMap().containsKey("org.springframework.web.context.request.RequestContextListener.REQUEST_ATTRIBUTES")) {
+            Object req = model.asMap().get("org.springframework.web.context.request.RequestContextListener.REQUEST_ATTRIBUTES");
+            if (req instanceof jakarta.servlet.http.HttpServletRequest) {
+                String paramOrigem = ((jakarta.servlet.http.HttpServletRequest) req).getParameter("origem");
+                if (paramOrigem != null && !paramOrigem.isEmpty()) {
+                    origemFinal = paramOrigem;
+                }
+            }
+        }
         if (atividadeId != null) {
             String redirect = "/administrador/ocorrencias?atividadeId=" + atividadeId;
-            if (origem != null)
-                redirect += "&origem=" + origem;
+            if (origemFinal != null && !origemFinal.isEmpty()) {
+                redirect += "&origem=" + origemFinal;
+            }
             return "redirect:" + redirect;
         } else {
-            String redirect = "/administrador/ocorrencias";
-            if (origem != null)
-                redirect += "?origem=" + origem;
-            return "redirect:" + redirect;
+            // Se não houver atividade, volta para ocorrencias sem filtro
+            return "redirect:/administrador/ocorrencias";
         }
+    }
+
+    @GetMapping("/deletar/{id}")
+    public String deletarOcorrencia(@PathVariable("id") Long id,
+                                    @RequestParam(value = "origem", required = false) String origem,
+                                    @RequestParam(value = "atividadeId", required = false) Long atividadeId,
+                                    @RequestParam(value = "page", required = false) Integer page,
+                                    @RequestParam(value = "size", required = false) Integer size,
+                                    @RequestParam(value = "situacao", required = false) String situacao,
+                                    @RequestParam(value = "ordem", required = false) String ordem,
+                                    @RequestParam(value = "dataInicio", required = false) String dataInicio,
+                                    @RequestParam(value = "dataFim", required = false) String dataFim,
+                                    @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
+                                    @RequestParam(value = "autorId", required = false) Long autorId,
+                                    @RequestParam(value = "autorNome", required = false) String autorNome) {
+        ocorrenciaAtividadeRepository.deleteById(id);
+        StringBuilder redirect = new StringBuilder("/administrador/ocorrencias?");
+        if (atividadeId != null) redirect.append("atividadeId=").append(atividadeId).append("&");
+        if (origem != null) redirect.append("origem=").append(origem).append("&");
+        if (page != null) redirect.append("page=").append(page).append("&");
+        if (size != null) redirect.append("size=").append(size).append("&");
+        if (situacao != null) redirect.append("situacao=").append(situacao).append("&");
+        if (ordem != null) redirect.append("ordem=").append(ordem).append("&");
+        if (dataInicio != null) redirect.append("dataInicio=").append(dataInicio).append("&");
+        if (dataFim != null) redirect.append("dataFim=").append(dataFim).append("&");
+        if (temaOcorrencia != null) redirect.append("temaOcorrencia=").append(temaOcorrencia).append("&");
+        if (autorId != null) redirect.append("autorId=").append(autorId).append("&");
+        if (autorNome != null) redirect.append("autorNome=").append(autorNome).append("&");
+        // Remove o último & se houver
+        if (redirect.charAt(redirect.length() - 1) == '&') {
+            redirect.deleteCharAt(redirect.length() - 1);
+        }
+        return "redirect:" + redirect.toString();
     }
 
     @GetMapping("/autocomplete-atividade")
@@ -277,13 +366,11 @@ public class AdministradorOcorrenciasController {
 
     @GetMapping("/autocomplete-autor")
     @ResponseBody
-    public List<Autor> autocompleteAutor(@RequestParam("term") String term) {
-        // Buscar autores cujos nomes ou emails da pessoa associada contenham o termo
-        return autorRepository.findAll().stream()
-                .filter(a -> a.getIdPessoa() != null && ((a.getIdPessoa().getNomePessoa() != null
-                        && a.getIdPessoa().getNomePessoa().toLowerCase().contains(term.toLowerCase())) ||
-                        (a.getIdPessoa().getEmailPessoa() != null
-                                && a.getIdPessoa().getEmailPessoa().toLowerCase().contains(term.toLowerCase()))))
+    public List<Autor> autocompleteAutor(@RequestParam("term") String term,
+            @RequestParam(value = "atividadeId", required = false) Long atividadeId) {
+        // Busca diretamente autores vinculados a ocorrências da atividade (ou geral),
+        // filtrando por nome/email
+        return ocorrenciaAtividadeRepository.findDistinctAutoresByTermAndAtividadeId(term, atividadeId).stream()
                 .limit(10)
                 .toList();
     }

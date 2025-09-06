@@ -86,7 +86,7 @@ public class InscricaoTipoAtividadeController {
             try {
                 System.out.println("*** DEBUG - Buscando inscrição para pessoa=" + pessoa.getId() + ", instituicao="
                         + instituicao.getId());
-                inscricaoOpt = inscricaoRepository.findByIdPessoaAndIdInstituicao(pessoa, instituicao);
+                inscricaoOpt = inscricaoRepository.findByPessoaAndIdInstituicao(pessoa, instituicao);
             } catch (Exception e) {
                 System.err.println("*** ERRO ao buscar inscrição: " + e.getMessage());
                 e.printStackTrace();
@@ -195,7 +195,7 @@ public class InscricaoTipoAtividadeController {
             }
 
             // Buscar ou criar inscrição da pessoa na instituição
-            Optional<Inscricao> inscricaoOpt = inscricaoRepository.findByIdPessoaAndIdInstituicao(pessoa, instituicao);
+            Optional<Inscricao> inscricaoOpt = inscricaoRepository.findByPessoaAndIdInstituicao(pessoa, instituicao);
             Inscricao inscricao;
 
             if (inscricaoOpt.isPresent()) {
@@ -203,7 +203,7 @@ public class InscricaoTipoAtividadeController {
             } else {
                 // Criar nova inscrição
                 inscricao = new Inscricao();
-                inscricao.setIdPessoa(pessoa);
+                inscricao.setPessoa(pessoa);
                 inscricao.setIdInstituicao(instituicao);
                 inscricao.setDataInclusao(LocalDate.now());
                 inscricao.setDataUltimaAtualizacao(LocalDate.now());
@@ -272,13 +272,13 @@ public class InscricaoTipoAtividadeController {
 
             // Debug detalhado da verificação de propriedade
             Long pessoaUsuario = usuario.getPessoa().getId();
-            Long pessoaInscricao = inscricao.getInscricao().getIdPessoa().getId();
+            Long pessoaInscricao = inscricao.getInscricao().getPessoa().getId();
             System.out.println("*** DEBUG - ID da pessoa do usuário: " + pessoaUsuario);
             System.out.println("*** DEBUG - ID da pessoa da inscrição: " + pessoaInscricao);
             System.out.println("*** DEBUG - São iguais? " + pessoaUsuario.equals(pessoaInscricao));
 
             // Verificar se a inscrição pertence ao usuário logado
-            if (!inscricao.getInscricao().getIdPessoa().getId().equals(usuario.getPessoa().getId())) {
+            if (!inscricao.getInscricao().getPessoa().getId().equals(usuario.getPessoa().getId())) {
                 redirectAttributes.addFlashAttribute("mensagemErro",
                         "Você não tem permissão para remover esta inscrição.");
                 return "redirect:/inscricao-tipo-atividade?origem=" + origem;
@@ -346,13 +346,13 @@ public class InscricaoTipoAtividadeController {
 
                     // Debug detalhado da verificação de propriedade
                     Long pessoaUsuario = usuario.getPessoa().getId();
-                    Long pessoaInscricao = inscricao.getInscricao().getIdPessoa().getId();
+                    Long pessoaInscricao = inscricao.getInscricao().getPessoa().getId();
                     System.out.println("*** DEBUG - ID da pessoa do usuário: " + pessoaUsuario);
                     System.out.println("*** DEBUG - ID da pessoa da inscrição: " + pessoaInscricao);
                     System.out.println("*** DEBUG - São iguais? " + pessoaUsuario.equals(pessoaInscricao));
 
                     // Verificar se a inscrição pertence ao usuário logado
-                    if (inscricao.getInscricao().getIdPessoa().getId().equals(usuario.getPessoa().getId())) {
+                    if (inscricao.getInscricao().getPessoa().getId().equals(usuario.getPessoa().getId())) {
                         Inscricao inscricaoPai = inscricao.getInscricao();
                         inscricaoTipoAtividadeRepository.delete(inscricao);
                         removidas++;

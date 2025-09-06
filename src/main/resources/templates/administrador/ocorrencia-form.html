@@ -1,3 +1,11 @@
+  <!-- Campo hidden para garantir que o parâmetro origem seja enviado no POST -->
+  <form
+    method="post"
+    th:object="${ocorrencia}"
+    id="ocorrenciaForm"
+    th:action="${ocorrencia.id != null} ? @{'/administrador/ocorrencias/editar/' + ${ocorrencia.id}} : @{'/administrador/ocorrencias/nova'}"
+  >
+    <input type="hidden" name="origem" th:value="${origem}" />
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
@@ -24,26 +32,40 @@
     />
     <script>
       $(function () {
+        console.log(
+          "DEBUG: JS carregado e jQuery disponível:",
+          typeof $ !== "undefined"
+        );
         // Autocomplete Autor
-        $("input[name='idAutor.idPessoa.nomePessoa']").autocomplete({
+        var $inputAutor = $("input[name='idAutor.pessoa.nomePessoa']");
+        if ($inputAutor.length) {
+          console.log("DEBUG: Campo de autor encontrado para autocomplete");
+        } else {
+          console.warn(
+            "DEBUG: Campo de autor NÃO encontrado para autocomplete"
+          );
+        }
+        $inputAutor.autocomplete({
           source: function (request, response) {
+            console.log("DEBUG: Autocomplete disparado, termo:", request.term);
             $.getJSON(
               "/administrador/ocorrencias/autocomplete-autor",
               { term: request.term },
               function (data) {
+                console.log("DEBUG: Resposta do autocomplete-autor:", data);
                 response(
                   $.map(data, function (item) {
                     return {
                       label:
-                        (item.idPessoa && item.idPessoa.nomePessoa
-                          ? item.idPessoa.nomePessoa
+                        (item.pessoa && item.pessoa.nomePessoa
+                          ? item.pessoa.nomePessoa
                           : "") +
-                        (item.idPessoa && item.idPessoa.emailPessoa
-                          ? " (" + item.idPessoa.emailPessoa + ")"
+                        (item.pessoa && item.pessoa.emailPessoa
+                          ? " (" + item.pessoa.emailPessoa + ")"
                           : ""),
                       value:
-                        item.idPessoa && item.idPessoa.nomePessoa
-                          ? item.idPessoa.nomePessoa
+                        item.pessoa && item.pessoa.nomePessoa
+                          ? item.pessoa.nomePessoa
                           : "",
                       id: item.id,
                     };
@@ -193,7 +215,8 @@
               <input
                 type="text"
                 class="form-control"
-                th:field="*{idAutor.idPessoa.nomePessoa}"
+                th:field="*{idAutor.pessoa.nomePessoa}"
+                name="idAutor.pessoa.nomePessoa"
                 required
                 placeholder="Nome do Autor (autocomplete)"
               />
@@ -269,17 +292,9 @@
             </div>
             <button type="submit" class="btn btn-primary">Salvar</button>
             <a
-              th:if="${origem} == 'atividades' or ${param.origem} == 'atividades'"
-              th:href="@{/administrador/atividades}"
+              th:href="@{/administrador/ocorrencias(atividadeId=${ocorrencia.idAtividade != null ? ocorrencia.idAtividade.id : atividadeId}, origem=${origem})}"
               class="btn btn-secondary ms-2"
-              >Cancelar</a
-            >
-            <a
-              th:if="!(${origem} == 'atividades' or ${param.origem} == 'atividades')"
-              th:href="@{/administrador/ocorrencias(atividadeId=${ocorrencia.idAtividade != null ? ocorrencia.idAtividade.id : 0}, origem=${origem})}"
-              class="btn btn-secondary ms-2"
-              >Cancelar</a
-            >
+              >Cancelar</a>
           </form>
         </div>
       </div>

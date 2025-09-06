@@ -9,6 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AutorRepository extends JpaRepository<Autor, Long> {
 
-    Optional<Autor> findByIdPessoa(Pessoa pessoa);
+    Optional<Autor> findByPessoa(Pessoa pessoa);
 
 }
