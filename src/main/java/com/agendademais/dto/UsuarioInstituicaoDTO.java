@@ -1,8 +1,6 @@
-
 package com.agendademais.dto;
 
 import com.agendademais.entities.UsuarioInstituicao;
-// import com.agendademais.entities.Pessoa;
 
 public class UsuarioInstituicaoDTO {
     // Campo público para teste de binding Thymeleaf
@@ -55,8 +53,8 @@ public class UsuarioInstituicaoDTO {
                         var psi = pessoa.getPessoaSubInstituicao().get(0);
                         if (psi != null && psi.getSubInstituicao() != null) {
                             this.subInstituicaoId = psi.getSubInstituicao().getId();
+                            this.identificacaoPessoaSubInstituicao = psi.getIdentificacaoPessoaSubInstituicao();
                         }
-                        this.identificacaoPessoaSubInstituicao = psi.getIdentificacaoPessoaSubInstituicao();
                     }
                 } catch (Exception e) {
                     this.subInstituicaoId = null;

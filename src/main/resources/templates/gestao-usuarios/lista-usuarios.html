@@ -293,8 +293,21 @@
           </a>
           <!-- Ícone Editar Autor -->
           <a th:if="${usuarioInst != null and usuarioInst.autorDisponivel}"
-            th:href="@{'/administrador/autor-form/' + ${usuarioInst.usuarioInstituicao != null && usuarioInst.usuarioInstituicao.getUsuario() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor() != null ? usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor().getId() : ''}}"
-            title="Editar Autor">
+      th:href="@{/administrador/autor-form/{id}(
+        id=${usuarioInst.usuarioInstituicao != null && usuarioInst.usuarioInstituicao.getUsuario() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor() != null ? usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor().getId() : ''},
+        origem='usuarios',
+        filtroCodigo=${filtroCodigo},
+        filtroNome=${filtroNome},
+        filtroEmail=${filtroEmail},
+        filtroSubInstituicao=${filtroSubInstituicao},
+        filtroStatus=${filtroStatus},
+        filtroPais=${filtroPais},
+        filtroEstado=${filtroEstado},
+        filtroCidade=${filtroCidade},
+        size=${size},
+        page=${page}
+      )}"
+      title="Editar Autor">
             <i class="fas fa-user-edit text-primary" style="font-size: 1.1em;"></i>
           </a>
           <i th:if="${usuarioInst == null or !usuarioInst.autorDisponivel}"

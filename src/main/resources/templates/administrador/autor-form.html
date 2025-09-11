@@ -39,7 +39,7 @@
         </div>
         <div class="card-body">
           <form
-            th:action="@{/administrador/autores/editar/{id}(id=${autor.id},origem=${origem})}"
+            th:action="@{/administrador/autor-form/{id}(id=${autor.id},origem=${origem},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade},size=${size},page=${page})}"
             th:object="${autor}"
             method="post"
           >
@@ -58,9 +58,21 @@
             <div class="d-flex justify-content-end gap-2 mt-4">
               <button type="submit" class="btn btn-primary">Salvar</button>
               <a
-                th:href="@{${origem} == 'usuarios' ? '/administrador/usuarios' : '/administrador/autores'}"
+                th:href="@{/administrador/usuarios(
+                  filtroCodigo=${filtroCodigo},
+                  filtroNome=${filtroNome},
+                  filtroEmail=${filtroEmail},
+                  filtroSubInstituicao=${filtroSubInstituicao},
+                  filtroStatus=${filtroStatus},
+                  filtroPais=${filtroPais},
+                  filtroEstado=${filtroEstado},
+                  filtroCidade=${filtroCidade},
+                  size=${size},
+                  page=${page}
+                )}"
                 class="btn btn-secondary"
                 >Cancelar</a
+              >
               >
             </div>
           </form>
