@@ -93,7 +93,7 @@
       </div>
 
       <!-- Filtros em duas linhas -->
-      <form method="get" class="mb-3" th:action="@{/usuarios}">
+      <form method="get" class="mb-3" th:action="@{/administrador/usuarios}">
         <div class="row align-items-end mb-1">
           <div class="col-md-2">
             <label for="filtroCodigo" class="form-label mb-0">Código</label>
@@ -130,32 +130,30 @@
           </div>
           <div class="col-md-2">
             <label for="filtroSubInstituicao" class="form-label mb-0"
-              >Sub-Instituição</label
-            >
-            <select class="form-select" name="filtroSubInstituicao" id="filtroSubInstituicao">
-              <option value="" th:selected="${filtroSubInstituicao == null || filtroSubInstituicao == ''}">Todas</option>
-              <option th:each="sub : ${subInstituicoes}" th:value="${sub.id}" th:text="${sub.nomeSubInstituicao}" th:selected="${filtroSubInstituicao == sub.id.toString()}"></option>
-              <option value="-1" th:selected="${filtroSubInstituicao == '-1'}">Nenhuma</option>
+              >Sub-Instituição</label>
+            <!-- Filtro Sub-Instituição -->
+            <select class="form-select" name="filtroSubInstituicao" onchange="this.form.submit()">
+                <option value="Todas" th:selected="${filtroSubInstituicao == null or filtroSubInstituicao == 'Todas'}">Todas</option>
+                <option th:each="sub : ${subInstituicoes}" th:value="${sub.id}" th:text="${sub.nomeSubInstituicao}"
+                    th:selected="${filtroSubInstituicao != null and filtroSubInstituicao == sub.id.toString()}">
+                <option value="Nenhuma" th:selected="${filtroSubInstituicao == 'Nenhuma'}">Nenhuma</option>
             </select>
           </div>
           <div class="col-md-2">
             <label for="filtroStatus" class="form-label mb-0">Sit.</label>
-            <select
-              class="form-select"
-              name="filtroStatus"
-              id="filtroStatus"
-            >
-              <option value="" th:selected="${filtroStatus == null || filtroStatus == ''}">Todos</option>
+          <!-- Filtro Situação -->
+          <select class="form-select" name="filtroStatus" onchange="this.form.submit()">
+              <option value="Todos" th:selected="${filtroStatus == null or filtroStatus == 'Todos'}">Todas</option>
               <option value="A" th:selected="${filtroStatus == 'A'}">A = Ativo</option>
               <option value="B" th:selected="${filtroStatus == 'B'}">B = Bloqueado</option>
               <option value="C" th:selected="${filtroStatus == 'C'}">C = Cancelado</option>
-            </select>
+          </select>
           </div>
           <div class="col-md-2 d-flex align-items-end gap-2">
             <button type="submit" class="btn btn-primary w-100">
               <i class="fas fa-filter me-2"></i>Filtrar
             </button>
-            <a th:href="@{/usuarios}" class="btn btn-outline-secondary w-100"
+            <a th:href="@{/administrador/usuarios}" class="btn btn-outline-secondary w-100"
               >Limpar</a
             >
           </div>
@@ -241,65 +239,72 @@
                   <th><i class="fas fa-cogs"></i> Ações</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr th:each="usuarioInst,iter : ${usuarios}" class="linha-usuario">
-                  <td th:text="${usuarioInst.username}">U001</td>
-                  <td>
-                    <strong th:if="${usuarioInst.pessoaDisponivel}" th:text="${usuarioInst.nomePessoa}">Nome do Usuário</strong>
-                    <span th:unless="${usuarioInst.pessoaDisponivel}" class="text-muted"><em>Não informado</em></span>
-                  </td>
-                  <td>
-                    <span th:if="${usuarioInst.pessoaDisponivel}" th:text="${usuarioInst.emailPessoa}">email@exemplo.com</span>
-                    <span th:unless="${usuarioInst.pessoaDisponivel}" class="text-muted"><em>Não informado</em></span>
-                  </td>
-                  <td>
-                    <span th:text="${usuarioInst.localizacaoFormatada}"></span>
-                  </td>
-                  <td>
-                    <span th:text="${usuarioInst.celularFormatado}"></span>
-                  </td>
-                  <td>
-                    <span th:text="${usuarioInst.subInstituicaoNome}"></span>
-                  </td>
-                  <td class="text-center" th:text="${usuarioInst.nivelAcesso}"></td>
-                  <td th:text="${usuarioInst.nivelAcesso}"></td>
-                  <td th:text="${usuarioInst.autorDisponivel}"></td>
-                  <td>
-                    <span th:switch="${usuarioInst.situacaoAcesso}">
-                      <span th:case="'A'" class="badge" style="background-color: #28a745; color: #fff">A</span>
-                      <span th:case="'B'" class="badge" style="background-color: #ff9800; color: #fff">B</span>
-                      <span th:case="'C'" class="badge" style="background-color: #dc3545; color: #fff">C</span>
-                      <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.situacaoAcesso}">-</span>
-                    </span>
-                  </td>
-                  <td>
-                    <!-- Ícone Editar Usuário -->
-                    <a th:if="${usuarioInst.pessoaDisponivel}"
-                      href="#"
-                      title="Editar Usuário"
-                      class="me-2"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalEditarUsuario"
-                      th:data-usuario-id="${usuarioInst.usuarioInstituicao != null ? usuarioInst.usuarioInstituicao.id : ''}"
-                      th:data-nivel-acesso="${usuarioInst.nivelAcesso}"
-                      th:data-situacao-acesso="${usuarioInst.situacaoAcesso}"
-                      th:data-nome-pessoa="${usuarioInst.nomePessoa}"
-                      th:data-email-pessoa="${usuarioInst.emailPessoa}"
-                      th:data-subinstituicao="${usuarioInst.subInstituicaoNome}"
-                      onclick="carregarDadosUsuario(this)">
-                      <i class="fas fa-pencil-alt" style="font-size: 1.1em;"></i>
-                    </a>
-                    <!-- Ícone Editar Autor -->
-                    <a th:if="${usuarioInst.autorDisponivel}"
-                      th:href="@{'/administrador/autor-form/' + ${usuarioInst.usuarioInstituicao != null && usuarioInst.usuarioInstituicao.getUsuario() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor() != null ? usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor().getId() : ''}}"
-                      title="Editar Autor">
-                      <i class="fas fa-user-edit text-primary" style="font-size: 1.1em;"></i>
-                    </a>
-                    <i th:unless="${usuarioInst.autorDisponivel}"
-                      class="fas fa-user-edit text-secondary" style="font-size: 1.1em; opacity: 0.4; cursor: not-allowed;" title="Não é Autor"></i>
-                  </td>                  
-                </tr>
-              </tbody>
+    <tbody th:if="${usuarios != null and #lists.size(usuarios) > 0}">
+      <tr th:each="usuarioInst,iter : ${usuarios}" class="linha-usuario">
+        <td th:text="${usuarioInst.username} ?: '---'">U001</td> 
+
+        <td>
+          <strong th:if="${usuarioInst.pessoaDisponivel}" th:text="${usuarioInst.nomePessoa} ?: ''">Nome do Usuário</strong>
+          <span th:unless="${usuarioInst.pessoaDisponivel}" class="text-muted"><em>Não informado</em></span>
+        </td>      
+       
+        <td>
+          <span th:if="${usuarioInst.pessoaDisponivel}" th:text="${usuarioInst.emailPessoa} ?: ''">email@exemplo.com</span>
+          <span th:unless="${usuarioInst.pessoaDisponivel}" class="text-muted"><em>Não informado</em></span>
+        </td>
+        <td>
+          <span th:text="${usuarioInst.localizacaoFormatada}"></span>
+        </td>
+        <td>
+          <span th:text="${usuarioInst.celularFormatado}"></span>
+        </td>
+        <td>
+          <span th:text="${usuarioInst.subInstituicaoNome}"></span>
+        </td>
+        <td class="text-center" th:text="${usuarioInst.nivelAcesso}"></td>
+        <td th:text="${usuarioInst.nivelAcesso}"></td>
+        <td th:text="${usuarioInst.autorDisponivel}"></td>
+        <td>
+          <span th:switch="${usuarioInst.situacaoAcesso}">
+            <span th:case="'A'" class="badge" style="background-color: #28a745; color: #fff">A</span>
+            <span th:case="'B'" class="badge" style="background-color: #ff9800; color: #fff">B</span>
+            <span th:case="'C'" class="badge" style="background-color: #dc3545; color: #fff">C</span>
+            <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.situacaoAcesso} ?: '-'">-</span>
+          </span>
+        </td>
+        <td>
+          <!-- Ícone Editar Usuário -->
+          <a th:if="${usuarioInst != null and usuarioInst.pessoaDisponivel}"
+            href="#"
+            title="Editar Usuário"
+            class="me-2"
+            data-bs-toggle="modal"
+            data-bs-target="#modalEditarUsuario"
+            th:data-usuario-id="${usuarioInst.usuarioInstituicao != null ? usuarioInst.usuarioInstituicao.id : ''}"
+            th:data-nivel-acesso="${usuarioInst.nivelAcesso} ?: ''"
+            th:data-situacao-acesso="${usuarioInst.situacaoAcesso} ?: ''"
+            th:data-nome-pessoa="${usuarioInst.nomePessoa} ?: ''"
+            th:data-email-pessoa="${usuarioInst.emailPessoa} ?: ''"
+            th:data-subinstituicao="${usuarioInst.subInstituicaoNome} ?: ''"
+            th:data-subinstituicao-id="${usuarioInst.subInstituicaoId} ?: ''"
+            th:data-identificacao="${usuarioInst.identificacaoPessoaSubInstituicao} ?: ''"
+            onclick="carregarDadosUsuario(this)">
+            <i class="fas fa-pencil-alt" style="font-size: 1.1em;"></i>
+          </a>
+          <!-- Ícone Editar Autor -->
+          <a th:if="${usuarioInst != null and usuarioInst.autorDisponivel}"
+            th:href="@{'/administrador/autor-form/' + ${usuarioInst.usuarioInstituicao != null && usuarioInst.usuarioInstituicao.getUsuario() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa() != null && usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor() != null ? usuarioInst.usuarioInstituicao.getUsuario().getPessoa().getAutor().getId() : ''}}"
+            title="Editar Autor">
+            <i class="fas fa-user-edit text-primary" style="font-size: 1.1em;"></i>
+          </a>
+          <i th:if="${usuarioInst == null or !usuarioInst.autorDisponivel}"
+            class="fas fa-user-edit text-secondary" style="font-size: 1.1em; opacity: 0.4; cursor: not-allowed;" title="Não é Autor"></i>
+        </td>
+      </tr>
+    </tbody>
+    <tbody th:unless="${usuarios != null and #lists.size(usuarios) > 0}">
+      <tr><td colspan="12" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>
+    </tbody>
             </table>
           </div>
         </div>
@@ -312,7 +317,7 @@
             <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
               <a
                 class="page-link"
-                th:href="@{/usuarios(page=${(page ?: 0) > 0 ? (page ?: 0) - 1 : 0},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
+                th:href="@{/administrador/usuarios(page=${(page ?: 0) > 0 ? (page ?: 0) - 1 : 0},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
               >Anterior</a>
             </li>
             <li
@@ -322,7 +327,7 @@
             >
               <a
                 class="page-link"
-                th:href="@{/usuarios(page=${i},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
+                th:href="@{/administrador/usuarios(page=${i},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
                 th:text="${i+1}"
               ></a>
             </li>
@@ -332,7 +337,7 @@
             >
               <a
                 class="page-link"
-                th:href="@{/usuarios(page=${(page ?: 0) + 1},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
+                th:href="@{/administrador/usuarios(page=${(page ?: 0) + 1},size=${size},filtroCodigo=${filtroCodigo},filtroNome=${filtroNome},filtroEmail=${filtroEmail},filtroSubInstituicao=${filtroSubInstituicao},filtroStatus=${filtroStatus},filtroPais=${filtroPais},filtroEstado=${filtroEstado},filtroCidade=${filtroCidade})}"
               >Próxima</a>
             </li>
           </ul>
@@ -395,6 +400,11 @@
                 </select>
               </div>
               <div class="mb-3">
+                <label for="identificacaoPessoaSubInstituicao" class="form-label">Identificação Sub-Inst.:</label>
+                <input type="text" class="form-control" id="identificacaoPessoaSubInstituicao" name="identificacaoPessoaSubInstituicao"
+                      th:value="${identificacaoPessoaSubInstituicao}" />
+              </div>
+              <div class="mb-3">
                 <label for="nivelAcessoUsuarioInstituicao" class="form-label"
                   >Nível de Acesso:</label
                 >
@@ -454,16 +464,18 @@
         const situacao = button.getAttribute("data-situacao-acesso");
         const nome = button.getAttribute("data-nome-pessoa");
         const email = button.getAttribute("data-email-pessoa");
-        let subinst = button.getAttribute("data-subinstituicao");
-        // Se não houver sub-instituição, setar para '-1' (Nenhuma)
-        if (!subinst) subinst = "-1";
+  let subinstId = button.getAttribute("data-subinstituicao-id");
+  let identificacao = button.getAttribute("data-identificacao");
+  // Se não houver sub-instituição, setar para '' (Manter atual)
+  if (!subinstId) subinstId = '';
 
-        document.getElementById("usuarioInstituicaoId").value = id;
-        document.getElementById("nomeUsuarioModal").value = nome;
-        document.getElementById("emailUsuarioModal").value = email;
-        document.getElementById("subInstituicaoUsuarioModal").value = subinst;
-        document.getElementById("nivelAcessoUsuarioInstituicao").value = nivel;
-        document.getElementById("sitAcessoUsuarioInstituicao").value = situacao;
+  document.getElementById("usuarioInstituicaoId").value = id;
+  document.getElementById("nomeUsuarioModal").value = nome;
+  document.getElementById("emailUsuarioModal").value = email;
+  document.getElementById("subInstituicaoUsuarioModal").value = subinstId;
+  document.getElementById("identificacaoPessoaSubInstituicao").value = identificacao || '';
+  document.getElementById("nivelAcessoUsuarioInstituicao").value = nivel;
+  document.getElementById("sitAcessoUsuarioInstituicao").value = situacao;
       }
       // Redirecionar para /usuarios após salvar no modal
       document.addEventListener('DOMContentLoaded', function() {
@@ -477,7 +489,7 @@
               method: 'POST',
               body: data
             }).then(() => {
-              window.location.href = '/usuarios';
+              window.location.href = '/administrador/usuarios';
             });
           });
         }
