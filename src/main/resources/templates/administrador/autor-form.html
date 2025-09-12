@@ -19,10 +19,13 @@
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
 
     <!-- DEBUG: Exibir objeto autor e mensagens de erro -->
+    <!-- 
     <div class="alert alert-info" th:if="${autor != null}">
       <strong>DEBUG autor:</strong>
       <pre th:text="${autor}"></pre>
     </div>
+    -->
+
     <div
       class="alert alert-danger"
       th:if="${mensagemErro != null}"
@@ -31,11 +34,14 @@
 
     <div
       class="d-flex justify-content-center align-items-center"
-      style="min-height: 90vh; background: #f8f9fa"
+      style="min-height: 80vh; background: #f8f9fa"
     >
       <div class="card shadow" style="width: 100%; max-width: 650px">
-        <div class="card-header">
-          <h4 class="mb-0">EDITAR AUTOR</h4>
+        <div class="card-header bg-light">
+          <h4 class="mb-0">
+            <i class="fas fa-user-edit me-2"></i>
+            EDITAR DADOS DE AUTOR
+          </h4>
         </div>
         <div class="card-body">
           <form
@@ -44,19 +50,214 @@
             method="post"
           >
             <input type="hidden" th:field="*{id}" />
-            <div class="mb-3">
-              <label for="nomeAutor" class="form-label">Nome do Autor</label>
-              <input
-                type="text"
-                id="nomeAutor"
-                th:value="${autor.pessoa != null ? autor.pessoa.nomePessoa : ''}"
-                class="form-control"
-                readonly
-              />
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label class="form-label"
+                  ><strong>Participante Autor:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <input
+                  type="text"
+                  th:field="*{pessoa.nomePessoa}"
+                  readonly
+                  tabindex="-1"
+                  class="form-control fw-bold"
+                  style="font-weight: bold"
+                />
+              </div>
             </div>
-            <!-- Campos removidos: emailAutor, instituicaoAutor, miniCurriculo (não existem na entidade) -->
+
+            <!-- Função do Autor -->
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label for="funcaoAutor" class="form-label"
+                  ><strong>Função do Autor:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <select
+                  name="funcaoAutor"
+                  id="funcaoAutor"
+                  class="form-select"
+                  onchange="toggleFuncaoOutra()"
+                  autocomplete="off"
+                >
+                  <option value="">Selecione uma função</option>
+                  <optgroup label="Funções Padrão">
+                    <option
+                      th:each="funcao : ${T(com.agendademais.enums.FuncaoAutor).values()}"
+                      th:value="${funcao.name()}"
+                      th:text="${funcao.descricao}"
+                      th:selected="${autor.funcaoAutor != null and autor.funcaoAutor.name() == funcao.name()}"
+                    ></option>
+                  </optgroup>
+                  <optgroup
+                    label="Funções Personalizadas"
+                    th:if="${funcoesPersonalizadas != null and !funcoesPersonalizadas.empty}"
+                  >
+                    <option
+                      th:each="funcaoCustom : ${funcoesPersonalizadas}"
+                      th:value="'CUSTOM_' + ${funcaoCustom.id}"
+                      th:text="${funcaoCustom.nomeFuncao}"
+                      th:selected="${autor.funcaoAutorCustomizada != null and autor.funcaoAutorCustomizada.id == funcaoCustom.id}"
+                    ></option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+            <!-- Campo para especificar "Outra" função -->
+            <div class="row mb-3" id="funcaoOutraDiv" style="display: none">
+              <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                  toggleFuncaoOutra();
+                });
+                function toggleFuncaoOutra() {
+                  const select = document.getElementById("funcaoAutor");
+                  const divOutra = document.getElementById("funcaoOutraDiv");
+                  const inputOutra =
+                    document.getElementById("funcaoAutorOutra");
+                  if (select && divOutra && inputOutra) {
+                    if (select.value === "OUTRA") {
+                      divOutra.style.display = "flex";
+                      inputOutra.required = true;
+                    } else {
+                      divOutra.style.display = "none";
+                      inputOutra.required = false;
+                      if (!select.value.startsWith("CUSTOM_")) {
+                        inputOutra.value = "";
+                      }
+                    }
+                  }
+                }
+              </script>
+              <div class="col-sm-4">
+                <label for="funcaoAutorOutra" class="form-label"
+                  ><strong>Especifique a Função:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <input
+                  type="text"
+                  th:field="*{funcaoAutorOutra}"
+                  id="funcaoAutorOutra"
+                  class="form-control"
+                  placeholder="Ex: Conferencista Principal, Moderador de Mesa Redonda, etc."
+                  maxlength="100"
+                />
+                <div class="form-text">
+                  Especifique sua função quando selecionada a opção "Outra".
+                </div>
+              </div>
+            </div>
+
+            <!-- Situação do Autor -->
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label for="situacaoAutor" class="form-label"
+                  ><strong>Situação do Autor:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <select
+                  th:field="*{situacaoAutor}"
+                  id="situacaoAutor"
+                  class="form-select"
+                >
+                  <option value="A" th:selected="${autor.situacaoAutor == 'A'}">
+                    Ativo
+                  </option>
+                  <option value="I" th:selected="${autor.situacaoAutor == 'I'}">
+                    Inativo
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Currículo da Função -->
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label for="curriculoFuncaoAutor" class="form-label"
+                  ><strong>Currículo da Função:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <textarea
+                  th:field="*{curriculoFuncaoAutor}"
+                  id="curriculoFuncaoAutor"
+                  class="form-control"
+                  rows="5"
+                  placeholder="Descreva as informações relevantes a sua função de autor"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Link da Imagem -->
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label for="linkImgAutor" class="form-label"
+                  ><strong>Link da Imagem:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <input
+                  type="url"
+                  th:field="*{linkImgAutor}"
+                  id="linkImgAutor"
+                  class="form-control"
+                  placeholder="https://exemplo.com/minha-foto.jpg"
+                />
+                <div class="form-text">
+                  URL para uma foto sua que será exibida em perfis e
+                  apresentações.
+                </div>
+              </div>
+            </div>
+
+            <!-- Link do Material -->
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label for="linkMaterialAutor" class="form-label"
+                  ><strong>Link do Material:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <input
+                  type="url"
+                  th:field="*{linkMaterialAutor}"
+                  id="linkMaterialAutor"
+                  class="form-control"
+                  placeholder="https://exemplo.com/meus-materiais"
+                />
+                <div class="form-text">
+                  URL para um site, blog ou repositório com seus materiais e
+                  trabalhos.
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Última Atualização (protegido) -->
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <label class="form-label"
+                  ><strong>Data Última Atualização:</strong></label
+                >
+              </div>
+              <div class="col-sm-8">
+                <input
+                  type="text"
+                  class="form-control bg-light"
+                  style="background: #e9ecef"
+                  th:value="${autor.dataUltimaAtualizacao != null ? #temporals.format(autor.dataUltimaAtualizacao, 'dd/MM/yyyy') : ''}"
+                  readonly
+                />
+              </div>
+            </div>
+
             <div class="d-flex justify-content-end gap-2 mt-4">
-              <button type="submit" class="btn btn-primary">Salvar</button>
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-save me-2"></i>Salvar
+              </button>
               <a
                 th:href="@{/administrador/usuarios(
                   filtroCodigo=${filtroCodigo},
@@ -72,7 +273,6 @@
                 )}"
                 class="btn btn-secondary"
                 >Cancelar</a
-              >
               >
             </div>
           </form>

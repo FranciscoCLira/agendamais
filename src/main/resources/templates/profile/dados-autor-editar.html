@@ -71,9 +71,7 @@
             <i class="fas fa-edit me-2 text-primary"></i>
             Editar Meus Dados de Autor
           </h2>
-          <p class="text-muted">
-            Atualize suas informações de autor
-          </p>
+          <p class="text-muted">Atualize suas informações de autor</p>
         </div>
       </div>
 
@@ -95,7 +93,6 @@
               >
                 <!-- Campo hidden para ID -->
                 <input th:field="*{id}" type="hidden" />
-                <input th:field="*{idPessoa}" type="hidden" />
                 <input type="hidden" name="origem" th:value="${origem}" />
 
                 <!-- Função do Autor -->
@@ -115,26 +112,31 @@
                       <option value="">Selecione uma função</option>
                       <!-- Funções padrão do enum -->
                       <optgroup label="Funções Padrão">
-                        <option th:each="funcao : ${T(com.agendademais.enums.FuncaoAutor).values()}" 
-                                th:value="${funcao.name()}" 
-                                th:text="${funcao.descricao}"
-                                th:selected="${autor.funcaoAutor != null and autor.funcaoAutor.name() == funcao.name()}">
-                        </option>
+                        <option
+                          th:each="funcao : ${T(com.agendademais.enums.FuncaoAutor).values()}"
+                          th:value="${funcao.name()}"
+                          th:text="${funcao.descricao}"
+                          th:selected="${autor.funcaoAutor != null and autor.funcaoAutor.name() == funcao.name()}"
+                        ></option>
                       </optgroup>
                       <!-- Funções personalizadas -->
-                      <optgroup label="Funções Personalizadas" th:if="${funcoesPersonalizadas != null and !funcoesPersonalizadas.empty}">
-                        <option th:each="funcaoCustom : ${funcoesPersonalizadas}" 
-                                th:value="'CUSTOM_' + ${funcaoCustom.id}" 
-                                th:text="${funcaoCustom.nomeFuncao}"
-                                th:selected="${autor.funcaoAutorCustomizada != null and autor.funcaoAutorCustomizada.id == funcaoCustom.id}">
-                        </option>
+                      <optgroup
+                        label="Funções Personalizadas"
+                        th:if="${funcoesPersonalizadas != null and !funcoesPersonalizadas.empty}"
+                      >
+                        <option
+                          th:each="funcaoCustom : ${funcoesPersonalizadas}"
+                          th:value="'CUSTOM_' + ${funcaoCustom.id}"
+                          th:text="${funcaoCustom.nomeFuncao}"
+                          th:selected="${autor.funcaoAutorCustomizada != null and autor.funcaoAutorCustomizada.id == funcaoCustom.id}"
+                        ></option>
                       </optgroup>
                     </select>
                   </div>
                 </div>
 
                 <!-- Campo para especificar "Outra" função -->
-                <div class="row mb-3" id="funcaoOutraDiv" style="display: none;">
+                <div class="row mb-3" id="funcaoOutraDiv" style="display: none">
                   <div class="col-sm-3">
                     <label for="funcaoAutorOutra" class="form-label">
                       <strong>Especifique a Função:</strong>
@@ -220,7 +222,10 @@
                 <!-- Botões do Formulário -->
                 <div class="row">
                   <div class="col-12 d-flex justify-content-between">
-                    <a th:href="${origem == 'administrador' ? '/administrador' : (origem == 'superusuario' ? '/superusuario' : '/autor')}" class="btn btn-secondary">
+                    <a
+                      th:href="${origem == 'administrador' ? '/administrador' : (origem == 'superusuario' ? '/superusuario' : '/autor')}"
+                      class="btn btn-secondary"
+                    >
                       <i class="fas fa-times me-2"></i>Cancelar
                     </a>
                     <button type="submit" class="btn btn-success">
@@ -237,7 +242,10 @@
       <!-- Botões de Ação Inferior -->
       <div class="row mt-4 mb-4">
         <div class="col-12 text-center">
-          <a th:href="@{/dados-autor(origem=${origem})}" class="btn btn-outline-secondary me-3">
+          <a
+            th:href="@{/dados-autor(origem=${origem})}"
+            class="btn btn-outline-secondary me-3"
+          >
             <i class="fas fa-eye me-2"></i>Visualizar Dados Atuais
           </a>
         </div>
@@ -264,19 +272,19 @@
       });
 
       function toggleFuncaoOutra() {
-        const select = document.getElementById('funcaoAutor');
-        const divOutra = document.getElementById('funcaoOutraDiv');
-        const inputOutra = document.getElementById('funcaoAutorOutra');
-        
-        if (select.value === 'OUTRA') {
-          divOutra.style.display = 'block';
+        const select = document.getElementById("funcaoAutor");
+        const divOutra = document.getElementById("funcaoOutraDiv");
+        const inputOutra = document.getElementById("funcaoAutorOutra");
+
+        if (select.value === "OUTRA") {
+          divOutra.style.display = "block";
           inputOutra.required = true;
         } else {
-          divOutra.style.display = 'none';
+          divOutra.style.display = "none";
           inputOutra.required = false;
           // Não limpar o campo se uma função personalizada estiver selecionada
-          if (!select.value.startsWith('CUSTOM_')) {
-            inputOutra.value = ''; // Limpar apenas se não for função personalizada
+          if (!select.value.startsWith("CUSTOM_")) {
+            inputOutra.value = ""; // Limpar apenas se não for função personalizada
           }
         }
       }

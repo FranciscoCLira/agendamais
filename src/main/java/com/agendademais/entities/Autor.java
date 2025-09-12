@@ -19,7 +19,7 @@ public class Autor {
 
 	@ManyToOne
 	private FuncaoAutorCustomizada funcaoAutorCustomizada; // Para funções personalizadas
-	private String situacaoAutor;
+	private String situacaoAutor; // A = Ativo ou I = Inativo
 	private String curriculoFuncaoAutor;
 	private String linkImgAutor;
 	private String linkMaterialAutor;
