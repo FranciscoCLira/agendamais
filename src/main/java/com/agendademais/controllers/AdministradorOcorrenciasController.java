@@ -51,6 +51,10 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "origem", required = false) String origem,
             Model model,
             HttpSession session) {
+        // Redireciona para login se sessão não existir ou usuário não estiver logado
+        if (session == null || session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/acesso";
+        }
         // Se veio do menu, sem atividade selecionada
         if (atividadeId == null) {
             if (origem == null || origem.isEmpty()) {

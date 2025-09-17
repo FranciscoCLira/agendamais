@@ -24,6 +24,7 @@ public class OcorrenciaAtividade {
 	private LocalTime horaFimOcorrencia;
 	private String linkMaterialTema;
 	private String assuntoDivulgacao;
+	@Lob
 	private String detalheDivulgacao;
 	private String linkImgDivulgacao;
 	private Integer qtdeParticipantes;

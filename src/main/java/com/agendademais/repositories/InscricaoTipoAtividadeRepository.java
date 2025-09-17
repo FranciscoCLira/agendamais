@@ -14,4 +14,7 @@ public interface InscricaoTipoAtividadeRepository extends JpaRepository<Inscrica
     Optional<InscricaoTipoAtividade> findByInscricaoIdAndTipoAtividadeId(Long inscricaoId, Long tipoAtividadeId);
 
     List<InscricaoTipoAtividade> findByInscricao(Inscricao inscricao);
+
+    // Conta quantas inscrições existem para um tipo de atividade e instituição
+    long countByTipoAtividadeIdAndInscricao_IdInstituicao_Id(Long tipoAtividadeId, Long instituicaoId);
 }

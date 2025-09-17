@@ -1,7 +1,5 @@
 package com.agendademais.entities;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -10,44 +8,113 @@ public class LogPostagem {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
-	private OcorrenciaAtividade idOcorrenciaAtividade;
+	// Data e hora do log
+	private java.time.LocalDateTime dataHoraPostagem;
 
-	private LocalDate dataPostagem;
-	private java.time.LocalTime horaPostagem;
+	// ID da ocorrência de atividade
+	private Long ocorrenciaAtividadeId;
 
+	// Título da atividade (de OcorrenciaAtividade)
+	private String tituloAtividade;
+
+	// Assunto da divulgação (de OcorrenciaAtividade)
+	private String assuntoDivulgacao;
+
+	// Detalhe da divulgação (de OcorrenciaAtividade)
+	@Lob
+	private String textoDetalheDivulgacao;
+
+	// Autor (id)
+	private Long autorId;
+
+	// Quantidade de e-mails enviados
+	private Integer qtEnviados;
+
+	// Quantidade de e-mails com falha
+	private Integer qtFalhas;
+
+	// Mensagem de log (e-mails com falha, mensagens pertinentes)
+	@Lob
+	private String mensagemLogPostagem;
+
+	// GETTERS AND SETTERS
 	public Long getId() {
 		return id;
 	}
-
-	// GETTERS AND SETTERS
 
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public OcorrenciaAtividade getIdOcorrenciaAtividade() {
-		return idOcorrenciaAtividade;
+	public java.time.LocalDateTime getDataHoraPostagem() {
+		return dataHoraPostagem;
 	}
 
-	public void setIdOcorrenciaAtividade(OcorrenciaAtividade idOcorrenciaAtividade) {
-		this.idOcorrenciaAtividade = idOcorrenciaAtividade;
+	public void setDataHoraPostagem(java.time.LocalDateTime dataHoraPostagem) {
+		this.dataHoraPostagem = dataHoraPostagem;
 	}
 
-	public LocalDate getDataPostagem() {
-		return dataPostagem;
+	public Long getOcorrenciaAtividadeId() {
+		return ocorrenciaAtividadeId;
 	}
 
-	public void setDataPostagem(LocalDate dataPostagem) {
-		this.dataPostagem = dataPostagem;
+	public void setOcorrenciaAtividadeId(Long ocorrenciaAtividadeId) {
+		this.ocorrenciaAtividadeId = ocorrenciaAtividadeId;
 	}
 
-	public java.time.LocalTime getHoraPostagem() {
-		return horaPostagem;
+	public String getTituloAtividade() {
+		return tituloAtividade;
 	}
 
-	public void setHoraPostagem(java.time.LocalTime horaPostagem) {
-		this.horaPostagem = horaPostagem;
+	public void setTituloAtividade(String tituloAtividade) {
+		this.tituloAtividade = tituloAtividade;
 	}
 
+	public String getAssuntoDivulgacao() {
+		return assuntoDivulgacao;
+	}
+
+	public void setAssuntoDivulgacao(String assuntoDivulgacao) {
+		this.assuntoDivulgacao = assuntoDivulgacao;
+	}
+
+	public String getTextoDetalheDivulgacao() {
+		return textoDetalheDivulgacao;
+	}
+
+	public void setTextoDetalheDivulgacao(String textoDetalheDivulgacao) {
+		this.textoDetalheDivulgacao = textoDetalheDivulgacao;
+	}
+
+	public Long getAutorId() {
+		return autorId;
+	}
+
+	public void setAutorId(Long autorId) {
+		this.autorId = autorId;
+	}
+
+	public Integer getQtEnviados() {
+		return qtEnviados;
+	}
+
+	public void setQtEnviados(Integer qtEnviados) {
+		this.qtEnviados = qtEnviados;
+	}
+
+	public Integer getQtFalhas() {
+		return qtFalhas;
+	}
+
+	public void setQtFalhas(Integer qtFalhas) {
+		this.qtFalhas = qtFalhas;
+	}
+
+	public String getMensagemLogPostagem() {
+		return mensagemLogPostagem;
+	}
+
+	public void setMensagemLogPostagem(String mensagemLogPostagem) {
+		this.mensagemLogPostagem = mensagemLogPostagem;
+	}
 }
