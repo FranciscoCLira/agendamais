@@ -41,4 +41,3 @@ document.addEventListener('click', function(e) {
     suggestions.innerHTML = '';
   }
 });
-

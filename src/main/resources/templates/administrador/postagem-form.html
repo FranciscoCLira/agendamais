@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Nova Postagem</title>
+    <link rel="stylesheet" href="/css/estilo.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('#conteudoPostagem').summernote({
+          placeholder: 'Digite o conteúdo da postagem...',
+          tabsize: 2,
+          height: 250,
+          lang: 'pt-BR',
+          toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['link', 'table']],
+            ['view', ['undo', 'redo', 'codeview']]
+          ]
+        });
+      });
+    </script>
+</head>
+<body>
+<div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+<div class="container mt-4" style="max-width: 700px">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">Nova Postagem</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" th:action="@{/administrador/postagens/salvar}" th:object="${postagemForm}">
+                <div class="mb-3">
+                    <label class="form-label">Ocorrência da Atividade *</label>
+                    <input type="hidden" th:field="*{ocorrenciaAtividade}" id="ocorrenciaAtividadeHidden" />
+                    <input type="text" class="form-control" id="ocorrenciaAutocomplete" th:value="${ocorrenciaTitulo}" placeholder="Busque ou selecione a ocorrência..." autocomplete="off" th:disabled="${ocorrenciaId != null}" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Título da Postagem *</label>
+                    <input type="text" class="form-control" th:field="*{titulo}" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Conteúdo *</label>
+                    <textarea class="form-control" th:field="*{conteudo}" id="conteudoPostagem" rows="6"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Salvar Postagem</button>
+                <a th:href="@{/administrador/postagens/lista}" class="btn btn-secondary ms-2">Ver Postagens</a>
+                <a th:href="@{/administrador/ocorrencias}" class="btn btn-outline-secondary ms-2">Voltar</a>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+// Exemplo de autocomplete de ocorrência (AJAX)
+$('#ocorrenciaAutocomplete').autocomplete({
+    source: function(request, response) {
+        $.getJSON('/administrador/ocorrencias/autocomplete', { term: request.term }, function(data) {
+            response($.map(data, function(item) {
+                return {
+                    label: item.temaOcorrencia + ' - ' + item.dataOcorrencia,
+                    value: item.temaOcorrencia,
+                    id: item.id
+                };
+            }));
+        });
+    },
+    minLength: 2,
+    select: function(event, ui) {
+    $("#ocorrenciaAtividadeHidden").val(ui.item.id);
+    }
+});
+</script>
+</body>
+</html>
