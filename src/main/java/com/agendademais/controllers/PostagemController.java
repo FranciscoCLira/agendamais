@@ -40,7 +40,8 @@ public class PostagemController {
     private com.agendademais.repositories.InscricaoTipoAtividadeRepository inscricaoTipoAtividadeRepository;
 
     @GetMapping("/nova")
-    public String previewPostagem(@RequestParam("ocorrenciaId") Long ocorrenciaId, Model model, jakarta.servlet.http.HttpSession session) {
+    public String previewPostagem(@RequestParam("ocorrenciaId") Long ocorrenciaId, Model model,
+            jakarta.servlet.http.HttpSession session) {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
         }
@@ -118,7 +119,8 @@ public class PostagemController {
 
     // View de acompanhamento do disparo
     @GetMapping("/andamento/{ocorrenciaId}")
-    public String andamentoDisparo(@PathVariable Long ocorrenciaId, Model model, jakarta.servlet.http.HttpSession session) {
+    public String andamentoDisparo(@PathVariable Long ocorrenciaId, Model model,
+            jakarta.servlet.http.HttpSession session) {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
         }
@@ -139,7 +141,8 @@ public class PostagemController {
 
     // Simulação de destinatários
     @PostMapping("/simular-disparo")
-    public String simularDisparo(@ModelAttribute OcorrenciaAtividade ocorrencia, Model model, jakarta.servlet.http.HttpSession session) {
+    public String simularDisparo(@ModelAttribute OcorrenciaAtividade ocorrencia, Model model,
+            jakarta.servlet.http.HttpSession session) {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
         }
@@ -231,7 +234,7 @@ public class PostagemController {
     @GetMapping("/autocomplete-autor")
     @ResponseBody
     public java.util.List<String> autocompleteAutor(@RequestParam("term") String term) {
-    return logPostagemRepository.findDistinctAutorNomeOuEmailByTerm(term);
+        return logPostagemRepository.findDistinctAutorNomeOuEmailByTerm(term);
     }
 
 }
