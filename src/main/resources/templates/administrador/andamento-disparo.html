@@ -40,14 +40,12 @@
           <div id="concluidoBox" class="alert alert-success d-none">
             Disparo concluído!
           </div>
-          <a th:href="@{/administrador/postagens/lista}" class="btn btn-primary"
+          <a
+            th:href="@{/administrador/postagens/lista(origem='/administrador/postagens/nova')}"
+            class="btn btn-primary"
             >Histórico Postagens</a
           >
-          <a
-            th:href="@{/administrador/ocorrencias}"
-            class="btn btn-secondary ms-2"
-            >Voltar</a
-          >
+          <a th:href="${origem}" class="btn btn-secondary ms-2">Voltar</a>
         </div>
       </div>
     </div>

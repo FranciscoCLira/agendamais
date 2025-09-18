@@ -288,7 +288,7 @@
             aria-disabled="true"
             style="pointer-events: none; opacity: 0.7"
             >Nova Ocorrência</a>
-          <a th:href="@{/administrador/postagens/lista}" class="btn btn-outline-info ms-2">Histórico Postagens</a>
+          <a th:href="@{/administrador/postagens/lista(origem=${origem})}" class="btn btn-outline-info ms-2">Histórico Postagens</a>
         </div>
       </div>
       <div class="card">
@@ -420,6 +420,10 @@
               <a href="#" id="limparFiltrosBtn" class="btn btn-outline-secondary">Limpar</a>
             </div>
           </div>
+              <div th:if="${param.erroExclusao == '1'}" class="alert alert-danger mt-3">
+                    Não é possível excluir a ocorrência: existem postagens relacionadas a ela.<br/>
+                    Exclua os logs de postagem antes de tentar remover a ocorrência.
+              </div>
         </form>
           <div th:if="${atividadeSelecionada == null}">
             <div class="alert alert-info">
@@ -497,12 +501,21 @@
                       )}"
                       class="btn btn-sm btn-outline-danger ms-1"
                       title="Excluir"
+                      th:if="${!ocorrenciasComLogs.contains(ocorrencia.id)}"
                       onclick="return confirm('Confirma exclusão?')"
                     >
                       <i class="fa fa-times"></i>
                     </a>
+                    <span
+                      class="btn btn-sm btn-outline-danger ms-1 disabled"
+                      th:if="${ocorrenciasComLogs.contains(ocorrencia.id)}"
+                      title="Não é possível excluir: existem postagens relacionadas."
+                      style="pointer-events: none; opacity: 0.6;"
+                    >
+                      <i class="fa fa-lock"></i>
+                    </span>
                     <a
-                      th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id})}"
+                      th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id}, origem=${origem})}"
                       class="btn btn-sm btn-outline-primary ms-1 btn-nova-postagem"
                       title="Nova Postagem"
                       th:attr="data-situacao=${ocorrencia.situacaoOcorrencia},data-data=${#temporals.format(ocorrencia.dataOcorrencia, 'yyyy-MM-dd')}"

@@ -82,18 +82,17 @@
               th:object="${ocorrencia}"
             >
               <input type="hidden" th:field="*{id}" />
+              <input type="hidden" name="origem" th:value="${origem}" />
               <button type="submit" class="btn btn-success">
                 Disparar Email
               </button>
             </form>
             <a
-              th:href="@{/administrador/postagens/lista}"
+              th:href="@{/administrador/postagens/lista(origem='/administrador/postagens/nova')}"
               class="btn btn-primary"
               >Histórico Postagens</a
             >
-            <a th:href="@{/administrador/ocorrencias}" class="btn btn-secondary"
-              >Cancelar</a
-            >
+            <a th:href="${origem}" class="btn btn-secondary">Cancelar</a>
           </div>
           <div th:if="${simulacao}" class="alert alert-info mt-3">
             <b>Simulação:</b> O e-mail será enviado para
