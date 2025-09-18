@@ -35,6 +35,8 @@ public class AdministradorOcorrenciasController {
     private AtividadeRepository atividadeRepository;
     @Autowired
     private AutorRepository autorRepository;
+    @Autowired
+    private com.agendademais.repositories.LogPostagemRepository logPostagemRepository;
 
     @GetMapping
     public String listarOcorrencias(
@@ -118,6 +120,14 @@ public class AdministradorOcorrenciasController {
         Page<OcorrenciaAtividade> ocorrencias = ocorrenciaAtividadeRepository.findAll(spec, pageable);
         model.addAttribute("atividadeSelecionada", atividade);
         model.addAttribute("ocorrencias", ocorrencias);
+        // IDs de ocorrências com logs relacionados
+        java.util.Set<Long> ocorrenciasComLogs = new java.util.HashSet<>();
+        for (var oc : ocorrencias) {
+            if (!logPostagemRepository.findByOcorrenciaAtividadeId(oc.getId()).isEmpty()) {
+                ocorrenciasComLogs.add(oc.getId());
+            }
+        }
+        model.addAttribute("ocorrenciasComLogs", ocorrenciasComLogs);
         // Lista de autores presentes em todas as ocorrências da atividade (para
         // autocomplete), ignorando filtro de autor
         Specification<OcorrenciaAtividade> specAutores = (root, query, cb) -> cb.equal(root.get("idAtividade"),
@@ -162,10 +172,29 @@ public class AdministradorOcorrenciasController {
         }
         model.addAttribute("autoresDasOcorrenciasList", autoresDasOcorrenciasList);
         model.addAttribute("totalOcorrencias", ocorrencias.getTotalElements());
-        if (origem == null || origem.isEmpty()) {
-            origem = "menu";
-        }
-        model.addAttribute("origem", origem);
+        // Monta a URL de origem completa com todos os filtros atuais
+        StringBuilder origemCompleta = new StringBuilder("/administrador/ocorrencias?");
+        origemCompleta.append("page=").append(page);
+        origemCompleta.append("&origem=menu");
+        if (atividadeId != null)
+            origemCompleta.append("&atividadeId=").append(atividadeId);
+        if (ordem != null)
+            origemCompleta.append("&ordem=").append(ordem);
+        if (dataInicio != null)
+            origemCompleta.append("&dataInicio=").append(dataInicio);
+        if (dataFim != null)
+            origemCompleta.append("&dataFim=").append(dataFim);
+        if (temaOcorrencia != null)
+            origemCompleta.append("&temaOcorrencia=").append(temaOcorrencia);
+        if (autorNome != null)
+            origemCompleta.append("&autorNome=").append(autorNome);
+        if (autorId != null)
+            origemCompleta.append("&autorId=").append(autorId);
+        if (situacao != null)
+            origemCompleta.append("&situacao=").append(situacao);
+        if (size != 25)
+            origemCompleta.append("&size=").append(size);
+        model.addAttribute("origem", origemCompleta.toString());
         return "administrador/ocorrencias";
     }
 
@@ -344,6 +373,40 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
             @RequestParam(value = "autorId", required = false) Long autorId,
             @RequestParam(value = "autorNome", required = false) String autorNome) {
+        // Verifica se há logs relacionados à ocorrência
+        java.util.List<com.agendademais.entities.LogPostagem> logsRelacionados = logPostagemRepository
+                .findByOcorrenciaAtividadeId(id);
+        if (logsRelacionados != null && !logsRelacionados.isEmpty()) {
+            // Não permite exclusão, redireciona com mensagem de erro
+            StringBuilder redirect = new StringBuilder("/administrador/ocorrencias?");
+            if (atividadeId != null)
+                redirect.append("atividadeId=").append(atividadeId).append("&");
+            if (origem != null)
+                redirect.append("origem=").append(origem).append("&");
+            if (page != null)
+                redirect.append("page=").append(page).append("&");
+            if (size != null)
+                redirect.append("size=").append(size).append("&");
+            if (situacao != null)
+                redirect.append("situacao=").append(situacao).append("&");
+            if (ordem != null)
+                redirect.append("ordem=").append(ordem).append("&");
+            if (dataInicio != null)
+                redirect.append("dataInicio=").append(dataInicio).append("&");
+            if (dataFim != null)
+                redirect.append("dataFim=").append(dataFim).append("&");
+            if (temaOcorrencia != null)
+                redirect.append("temaOcorrencia=").append(temaOcorrencia).append("&");
+            if (autorId != null)
+                redirect.append("autorId=").append(autorId).append("&");
+            if (autorNome != null)
+                redirect.append("autorNome=").append(autorNome).append("&");
+            if (redirect.charAt(redirect.length() - 1) == '&') {
+                redirect.deleteCharAt(redirect.length() - 1);
+            }
+            redirect.append("&erroExclusao=1");
+            return "redirect:" + redirect.toString();
+        }
         ocorrenciaAtividadeRepository.deleteById(id);
         StringBuilder redirect = new StringBuilder("/administrador/ocorrencias?");
         if (atividadeId != null)
