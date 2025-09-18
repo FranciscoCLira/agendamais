@@ -31,15 +31,15 @@
               "/administrador/ocorrencias/autocomplete-atividade",
               { term: request.term },
               function (data) {
-                response(
-                  $.map(data, function (item) {
-                    return {
-                      label: item.tituloAtividade,
-                      value: item.tituloAtividade,
-                      id: item.id,
-                    };
-                  })
-                );
+                // Garante que cada item tenha label/value/id para o autocomplete
+                var mapped = data.map(function(item) {
+                  return {
+                    label: item.tituloAtividade,
+                    value: item.tituloAtividade,
+                    id: item.id
+                  };
+                });
+                response(mapped);
               }
             );
           },
@@ -97,19 +97,15 @@
         if ($atividadeId.val()) {
           $.getJSON(
             "/administrador/ocorrencias/autocomplete-atividade",
-            { term: "" },
+            { id: $atividadeId.val() },
             function (data) {
-              var atividade = data.find(function (item) {
-                return item.id == $atividadeId.val();
-              });
-              if (atividade) {
-                $tituloAtividade.val(atividade.tituloAtividade);
+              if (data && data.length > 0) {
+                $tituloAtividade.val(data[0].tituloAtividade);
                 $novaOcorrenciaBtn
                   .removeClass("disabled")
                   .attr("tabindex", "0")
                   .attr("aria-disabled", "false");
               } else {
-                // Se não encontrar, limpa o campo e desabilita o botão
                 $tituloAtividade.val("");
                 $novaOcorrenciaBtn
                   .addClass("disabled")
@@ -235,22 +231,13 @@
         // Corrige propagação do parâmetro origem para o Voltar
         function getOrigemForVoltar() {
           // Busca o parâmetro origem do backend (preferencial) ou da URL
-          var origem = /*[[${origem}]]*/ '';
-          if (!origem || origem === 'menu') return 'menu';
-          if (origem === 'atividades') return 'atividades';
-          // fallback: se não houver origem, decide pelo estado da atividade
-          if (!$("#atividadeId").val()) return "menu";
-          return "atividades";
+          // Sempre volta para o menu principal
+          return 'menu';
         }
         $("a.btn-outline-secondary").on("click", function(e) {
           if ($(this).attr("id") === "voltarBtn") {
             e.preventDefault();
-            var origem = getOrigemForVoltar();
-            if (origem === "menu") {
-              window.location.href = "/administrador?origem=menu";
-            } else {
-              window.location.href = "/administrador/atividades?origem=atividades";
-            }
+            window.location.href = "/administrador?origem=menu";
           }
         });
       });
@@ -301,38 +288,47 @@
         <form method="get" th:action="@{/administrador/ocorrencias}" class="mb-3" id="filtroOcorrenciasForm">
     <input type="hidden" name="page" value="0" />
     <input type="hidden" name="origem" th:value="${origem}" />
-            <!-- Linha destacada para Título Atividade -->
-            <div class="row mb-2">
-              <div class="col-12">
-                <div style="background: #e9ecef; padding: 8px 12px; border-radius: 4px;">
-                  <label for="tituloAtividade" class="form-label fw-bold mb-1">Título da Atividade <span style="font-weight:normal; color:#888;">(autocomplete)</span></label>
-                  <input
-                    type="text"
-                    class="form-control border-0 bg-transparent fw-bold"
-                    id="tituloAtividade"
-                    name="tituloAtividade"
-                    placeholder="Digite para buscar a atividade..."
-                    th:value="${param.tituloAtividade}"
-                    required
-                    style="font-size: 1.1rem; font-weight: bold; background: transparent; box-shadow: none; outline: none; width:100%;"
-                    autocomplete="off"
-                  />
-                  <input
-                    type="hidden"
-                    id="atividadeId"
-                    name="atividadeId"
-                    th:value="${param.atividadeId}"
-                  />
-                </div>
-              </div>
-            </div>
-            <!-- Linha para Data, Tema, Autor -->
-            <div class="row g-2 mb-1">
-              <div class="col-md-5 col-lg-5">
-                <div class="input-group" style="min-width:320px; max-width:410px;">
-                  <input type="date" class="form-control" style="min-width:140px; max-width:170px;" name="dataInicio" id="dataInicioFiltro" th:value="${param.dataInicio}" placeholder="De" onchange="onDateFilterChange()" />
-                  <span class="input-group-text">à</span>
-                  <input type="date" class="form-control" style="min-width:140px; max-width:170px;" name="dataFim" id="dataFimFiltro" th:value="${param.dataFim}" placeholder="Até" onchange="onDateFilterChange()" />
+    <!-- Linha destacada para Título Atividade -->
+    <div class="row mb-2">
+      <div class="col-12">
+        <div style="background: #e9ecef; padding: 8px 12px; border-radius: 4px;">
+          <label for="tituloAtividade" class="form-label fw-bold mb-1">Título da Atividade <span style="font-weight:normal; color:#888;">(autocomplete)</span></label>
+          <input
+            type="text"
+            class="form-control border-0 bg-transparent fw-bold"
+            id="tituloAtividade"
+            name="tituloAtividade"
+            placeholder="Digite para buscar a atividade..."
+            th:value="${param.tituloAtividade}"
+            required
+            style="font-size: 1.1rem; font-weight: bold; background: transparent; box-shadow: none; outline: none; width:100%;"
+            autocomplete="off"
+          />
+          <input
+            type="hidden"
+            id="atividadeId"
+            name="atividadeId"
+            th:value="${param.atividadeId}"
+          />
+        </div>
+      </div>
+    </div>
+    <!-- Linha para Data, Assunto Divulg., Tema, Autor -->
+    <div class="row g-2 mb-1">
+      <div class="col-md-3 col-lg-3">
+        <input type="date" class="form-control" name="dataInicio" id="dataInicioFiltro" th:value="${param.dataInicio}" placeholder="De" onchange="onDateFilterChange()" />
+      </div>
+      <div class="col-md-3 col-lg-3">
+        <input type="date" class="form-control" name="dataFim" id="dataFimFiltro" th:value="${param.dataFim}" placeholder="Até" onchange="onDateFilterChange()" />
+      </div>
+      <div class="col-md-3 col-lg-3">
+        <input type="text" class="form-control" id="assuntoDivulgacaoFiltro" name="assuntoDivulgacao" placeholder="Assunto Divulg.(autocomplete)" th:value="${param.assuntoDivulgacao}" autocomplete="off" />
+      </div>
+      <div class="col-md-3 col-lg-3">
+        <input type="text" class="form-control" id="autorNomeFiltro" name="autorNome" placeholder="Autor (autocomplete)" th:value="${param.autorNome}" autocomplete="off" style="max-width: 200px;" />
+        <input type="hidden" id="autorIdFiltro" name="autorId" th:value="${param.autorId}" />
+      </div>
+    </div>
     <script>
       // Validação e sensibilização do filtro de datas
       function onDateFilterChange() {
@@ -348,34 +344,22 @@
           document.getElementById('filtroOcorrenciasForm').submit();
         }
       }
+      // Autocomplete para Assunto Divulgacao
+      $(function() {
+        $("#assuntoDivulgacaoFiltro").autocomplete({
+          source: function(request, response) {
+            $.getJSON("/administrador/ocorrencias/autocomplete-assunto", { term: request.term }, function(data) {
+              response(data);
+            });
+          },
+          minLength: 2,
+          select: function(event, ui) {
+            $(this).val(ui.item.value);
+            setTimeout(function() { $("#filtroOcorrenciasForm").submit(); }, 100);
+          }
+        });
+      });
     </script>
-                </div>
-              </div>
-              <div class="col-md-4 col-lg-4">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="temaOcorrenciaFiltro"
-                  name="temaOcorrencia"
-                  placeholder="Tema (autocomplete)"
-                  th:value="${param.temaOcorrencia}"
-                  autocomplete="off"
-                />
-              </div>
-              <div class="col-md-3 col-lg-3">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="autorNomeFiltro"
-                  name="autorNome"
-                  placeholder="Autor (autocomplete)"
-                  th:value="${param.autorNome}"
-                  autocomplete="off"
-                  style="max-width: 200px;"
-                />
-                <input type="hidden" id="autorIdFiltro" name="autorId" th:value="${param.autorId}" />
-              </div>
-            </div>
             <div class="row g-2">
             <div class="col-md-3">
               <select
@@ -435,10 +419,12 @@
             <table class="table table-bordered table-hover align-middle">
               <thead class="table-light">
                 <tr>
+                  <th>#Ocor.</th>
                   <th>DATA</th>
                   <th>HR.INIC/FIM</th>
                   <th>SIT.</th>
                   <th>Q.PARTIC</th>
+                  <th>ASSUNTO DIVULGAÇÃO</th>
                   <th>TEMA</th>
                   <th>AUTOR</th>
                   <th style="width: 100px">Ações</th>
@@ -446,36 +432,18 @@
               </thead>
               <tbody>
                 <tr th:each="ocorrencia : ${ocorrencias}">
-                  <td
-                    th:text="${ocorrencia.dataOcorrencia != null ? #temporals.format(ocorrencia.dataOcorrencia, 'dd/MM/yy') : ''}"
-                  ></td>
-                  <td
-                    th:text="${ocorrencia.horaInicioOcorrencia} + ' - ' + ${ocorrencia.horaFimOcorrencia}"
-                  ></td>
+                  <td th:text="${ocorrencia.id}"></td>
+                  <td th:text="${ocorrencia.dataOcorrencia != null ? #temporals.format(ocorrencia.dataOcorrencia, 'dd/MM/yy') : ''}"></td>
+                  <td th:text="${ocorrencia.horaInicioOcorrencia} + ' - ' + ${ocorrencia.horaFimOcorrencia}"></td>
                   <td>
-                    <span
-                      th:if="${ocorrencia.situacaoOcorrencia} == 'P'"
-                      class="fw-bold text-success"
-                      >P</span
-                    >
-                    <span
-                      th:if="${ocorrencia.situacaoOcorrencia} == 'R'"
-                      class="fw-bold text-primary"
-                      >R</span
-                    >
-                    <span
-                      th:if="${ocorrencia.situacaoOcorrencia} == 'C'"
-                      class="fw-bold text-danger"
-                      >C</span
-                    >
+                    <span th:if="${ocorrencia.situacaoOcorrencia} == 'P'" class="fw-bold text-success">P</span>
+                    <span th:if="${ocorrencia.situacaoOcorrencia} == 'R'" class="fw-bold text-primary">R</span>
+                    <span th:if="${ocorrencia.situacaoOcorrencia} == 'C'" class="fw-bold text-danger">C</span>
                   </td>
                   <td th:text="${ocorrencia.qtdeParticipantes}"></td>
-                  <td
-                    th:text="${#strings.abbreviate(ocorrencia.temaOcorrencia, 35)}"
-                  ></td>
-                  <td
-                    th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.pessoa != null ? ocorrencia.idAutor.pessoa.nomePessoa : '', 20)}"
-                  ></td>
+                  <td th:text="${#strings.abbreviate(ocorrencia.assuntoDivulgacao, 50)}"></td>
+                  <td th:text="${#strings.abbreviate(ocorrencia.temaOcorrencia, 35)}"></td>
+                  <td th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.pessoa != null ? ocorrencia.idAutor.pessoa.nomePessoa : '', 20)}"></td>
                   <td>
                     <a
                       th:href="@{/administrador/ocorrencias/editar/{id}(id=${ocorrencia.id}, origem=${origem})}"

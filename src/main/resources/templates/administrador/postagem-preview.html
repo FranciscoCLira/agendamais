@@ -92,7 +92,11 @@
               class="btn btn-primary"
               >Histórico Postagens</a
             >
-            <a th:href="${origem}" class="btn btn-secondary">Cancelar</a>
+            <a
+              th:href="${origem != null && !#strings.isEmpty(origem) ? origem : '/administrador/ocorrencias'}"
+              class="btn btn-secondary"
+              >Cancelar</a
+            >
           </div>
           <div th:if="${simulacao}" class="alert alert-info mt-3">
             <b>Simulação:</b> O e-mail será enviado para

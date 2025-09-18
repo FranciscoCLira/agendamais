@@ -45,7 +45,11 @@
             class="btn btn-primary"
             >Histórico Postagens</a
           >
-          <a th:href="${origem}" class="btn btn-secondary ms-2">Voltar</a>
+          <a
+            th:href="${origem != null && !#strings.isEmpty(origem) ? origem : '/administrador/ocorrencias'}"
+            class="btn btn-secondary ms-2"
+            >Voltar</a
+          >
         </div>
       </div>
     </div>

@@ -40,7 +40,7 @@ public class AdministradorOcorrenciasController {
 
     @GetMapping
     public String listarOcorrencias(
-            @RequestParam(value = "atividadeId", required = false) Long atividadeId,
+            @RequestParam(value = "atividadeId", required = false) String atividadeIdParam,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "25") int size,
             @RequestParam(value = "situacao", required = false) String situacao,
@@ -58,6 +58,19 @@ public class AdministradorOcorrenciasController {
             return "redirect:/acesso";
         }
         // Se veio do menu, sem atividade selecionada
+        Long atividadeId = null;
+        if (atividadeIdParam != null && !atividadeIdParam.isEmpty()) {
+            // Corrige caso venha duplicado ou como lista: "[29,29]" ou "29,29"
+            String clean = atividadeIdParam.replaceAll("[\\[\\]\\s]", "");
+            String[] parts = clean.split(",");
+            if (parts.length > 0) {
+                try {
+                    atividadeId = Long.parseLong(parts[0]);
+                } catch (Exception e) {
+                    atividadeId = null;
+                }
+            }
+        }
         if (atividadeId == null) {
             if (origem == null || origem.isEmpty()) {
                 origem = "menu";
@@ -440,8 +453,24 @@ public class AdministradorOcorrenciasController {
 
     @GetMapping("/autocomplete-atividade")
     @ResponseBody
-    public List<Atividade> autocompleteAtividade(@RequestParam("term") String term) {
+    public List<Atividade> autocompleteAtividade(@RequestParam(value = "term", required = false) String term,
+            @RequestParam(value = "id", required = false) Long id) {
+        if (id != null) {
+            return atividadeRepository.findById(id).map(List::of).orElse(List.of());
+        }
+        if (term == null || term.isBlank()) {
+            return atividadeRepository.findAll();
+        }
         return atividadeRepository.findByTituloAtividadeContainingIgnoreCase(term);
+    }
+
+    @GetMapping("/autocomplete-assunto")
+    @ResponseBody
+    public java.util.List<String> autocompleteAssunto(@RequestParam("term") String term) {
+        if (term == null || term.isBlank()) {
+            return java.util.Collections.emptyList();
+        }
+        return ocorrenciaAtividadeRepository.findDistinctAssuntoDivulgacaoByTerm(term);
     }
 
     @GetMapping("/autocomplete-autor")

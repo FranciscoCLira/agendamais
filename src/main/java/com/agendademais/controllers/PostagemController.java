@@ -48,6 +48,17 @@ public class PostagemController {
             model.addAttribute("msgErro", "Ocorrência não encontrada.");
             return "redirect:/administrador/ocorrencias";
         }
+        // Corrige origem se vier nula, vazia ou "null"
+        if (origem == null || origem.isBlank() || origem.equals("null")) {
+            // Monta origem padrão para voltar à tela de ocorrências com filtros mínimos
+            StringBuilder origemPadrao = new StringBuilder("/administrador/ocorrencias?atividadeId=");
+            if (ocorrencia.getIdAtividade() != null) {
+                origemPadrao.append(ocorrencia.getIdAtividade().getId());
+            } else {
+                origemPadrao.append("");
+            }
+            origem = origemPadrao.toString();
+        }
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("origem", origem);
         return "administrador/postagem-preview";
@@ -265,8 +276,17 @@ public class PostagemController {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
         }
-        // Simulação de progresso (em produção, usar serviço/estado real)
         OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
+        // Corrige origem se vier nula, vazia ou "null"
+        if (origem == null || origem.isBlank() || origem.equals("null")) {
+            StringBuilder origemPadrao = new StringBuilder("/administrador/ocorrencias?atividadeId=");
+            if (ocorrencia != null && ocorrencia.getIdAtividade() != null) {
+                origemPadrao.append(ocorrencia.getIdAtividade().getId());
+            } else {
+                origemPadrao.append("");
+            }
+            origem = origemPadrao.toString();
+        }
         int total = 42; // Buscar total real de destinatários
         int enviados = (int) (System.currentTimeMillis() / 3000 % (total + 1)); // Simula progresso
         int falhas = enviados > 35 ? 2 : 0;
