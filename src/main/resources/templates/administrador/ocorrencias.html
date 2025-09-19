@@ -480,7 +480,7 @@
                     <span
                       th:if="${ocorrenciasComLogs.contains(ocorrencia.id) and ocorrencia.assuntoDivulgacao != null and !ocorrencia.assuntoDivulgacao.isEmpty()}"
                     >
-                      <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${origem})}"
+                      <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${(origem != null and origem != 'null' and origem != 'menu' and !#strings.isEmpty(origem)) ? origem : '/administrador/ocorrencias'})}"
                          class="btn btn-sm btn-outline-info ms-1"
                          title="Ver Histórico de Postagens deste Assunto">
                         <i class="fa fa-history"></i>
