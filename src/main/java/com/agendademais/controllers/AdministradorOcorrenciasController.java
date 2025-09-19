@@ -50,6 +50,8 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
             @RequestParam(value = "autorId", required = false) Long autorId,
             @RequestParam(value = "autorNome", required = false) String autorNome,
+            @RequestParam(value = "assuntoDivulgacao", required = false) String assuntoDivulgacao,
+            @RequestParam(value = "tituloAtividade", required = false) String tituloAtividade,
             @RequestParam(value = "origem", required = false) String origem,
             Model model,
             HttpSession session) {
@@ -101,27 +103,58 @@ public class AdministradorOcorrenciasController {
             } else if (ordem.equals("autor")) {
                 sort = Sort.by("idAutor.pessoa.nomePessoa").ascending().and(Sort.by("dataOcorrencia").descending())
                         .and(Sort.by("horaInicioOcorrencia").descending());
+            } else if (ordem.equals("dataAsc")) {
+                sort = Sort.by("dataOcorrencia").ascending().and(Sort.by("horaInicioOcorrencia").ascending());
             } else if (ordem.equals("data")) {
                 sort = Sort.by("dataOcorrencia").descending().and(Sort.by("horaInicioOcorrencia").descending());
             }
         }
         Pageable pageable = PageRequest.of(page, size, sort);
-        // Specification para filtrar por atividade e situação
+        // Specification para filtrar por atividade, situação, tema, autor e
+        // assuntoDivulgacao
         Specification<OcorrenciaAtividade> spec = (root, query, cb) -> cb.equal(root.get("idAtividade"), atividade);
         if (situacao != null && !situacao.isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("situacaoOcorrencia"), situacao));
         }
         if (dataInicio != null && !dataInicio.isEmpty()) {
-            java.time.LocalDate dataIni = java.time.LocalDate.parse(dataInicio);
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("dataOcorrencia"), dataIni));
+            String[] parts = dataInicio.split(",");
+            for (String part : parts) {
+                String clean = part.trim();
+                if (clean.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    try {
+                        java.time.LocalDate dataIni = java.time.LocalDate.parse(clean);
+                        spec = spec
+                                .and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("dataOcorrencia"), dataIni));
+                        break; // só usa o primeiro válido
+                    } catch (Exception e) {
+                        // ignora valor inválido
+                    }
+                }
+            }
         }
         if (dataFim != null && !dataFim.isEmpty()) {
-            java.time.LocalDate dataF = java.time.LocalDate.parse(dataFim);
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("dataOcorrencia"), dataF));
+            String[] parts = dataFim.split(",");
+            for (String part : parts) {
+                String clean = part.trim();
+                if (clean.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    try {
+                        java.time.LocalDate dataF = java.time.LocalDate.parse(clean);
+                        spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("dataOcorrencia"), dataF));
+                        break; // só usa o primeiro válido
+                    } catch (Exception e) {
+                        // ignora valor inválido
+                    }
+                }
+            }
         }
         if (temaOcorrencia != null && !temaOcorrencia.isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("temaOcorrencia")),
                     "%" + temaOcorrencia.toLowerCase() + "%"));
+        }
+        // Filtro para assuntoDivulgacao (case-insensitive, busca parcial)
+        if (assuntoDivulgacao != null && !assuntoDivulgacao.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("assuntoDivulgacao")),
+                    "%" + assuntoDivulgacao.toLowerCase() + "%"));
         }
         if (autorId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("idAutor").get("id"), autorId));
@@ -185,10 +218,10 @@ public class AdministradorOcorrenciasController {
         }
         model.addAttribute("autoresDasOcorrenciasList", autoresDasOcorrenciasList);
         model.addAttribute("totalOcorrencias", ocorrencias.getTotalElements());
-        // Monta a URL de origem completa com todos os filtros atuais
+        // Monta a URL de origem completa com todos os filtros atuais, incluindo
+        // tituloAtividade e assuntoDivulgacao
         StringBuilder origemCompleta = new StringBuilder("/administrador/ocorrencias?");
         origemCompleta.append("page=").append(page);
-        origemCompleta.append("&origem=menu");
         if (atividadeId != null)
             origemCompleta.append("&atividadeId=").append(atividadeId);
         if (ordem != null)
@@ -207,6 +240,10 @@ public class AdministradorOcorrenciasController {
             origemCompleta.append("&situacao=").append(situacao);
         if (size != 25)
             origemCompleta.append("&size=").append(size);
+        if (tituloAtividade != null)
+            origemCompleta.append("&tituloAtividade=").append(tituloAtividade);
+        if (assuntoDivulgacao != null)
+            origemCompleta.append("&assuntoDivulgacao=").append(assuntoDivulgacao);
         model.addAttribute("origem", origemCompleta.toString());
         return "administrador/ocorrencias";
     }
@@ -376,7 +413,7 @@ public class AdministradorOcorrenciasController {
     @GetMapping("/deletar/{id}")
     public String deletarOcorrencia(@PathVariable("id") Long id,
             @RequestParam(value = "origem", required = false) String origem,
-            @RequestParam(value = "atividadeId", required = false) Long atividadeId,
+            @RequestParam(value = "atividadeId", required = false) String atividadeIdParam,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "situacao", required = false) String situacao,
@@ -386,6 +423,19 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
             @RequestParam(value = "autorId", required = false) Long autorId,
             @RequestParam(value = "autorNome", required = false) String autorNome) {
+        // Corrige atividadeId vindo como string tipo "[29, 29]" ou "29,29"
+        Long atividadeId = null;
+        if (atividadeIdParam != null && !atividadeIdParam.isEmpty()) {
+            String clean = atividadeIdParam.replaceAll("[\\[\\]\s]", "");
+            String[] parts = clean.split(",");
+            if (parts.length > 0) {
+                try {
+                    atividadeId = Long.parseLong(parts[0]);
+                } catch (Exception e) {
+                    atividadeId = null;
+                }
+            }
+        }
         // Verifica se há logs relacionados à ocorrência
         java.util.List<com.agendademais.entities.LogPostagem> logsRelacionados = logPostagemRepository
                 .findByOcorrenciaAtividadeId(id);

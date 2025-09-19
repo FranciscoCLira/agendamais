@@ -273,10 +273,9 @@
               </div>
               <button type="submit" class="btn btn-primary">Salvar</button>
               <a
-                th:href="@{/administrador/ocorrencias(atividadeId=${ocorrencia.idAtividade != null ? ocorrencia.idAtividade.id : atividadeId}, origem=${origem})}"
+                th:href="${#strings.startsWith(origem, '/administrador/ocorrencias') ? origem : (origem == 'menu' ? '/administrador/ocorrencias' : (origem == 'atividades' ? '/administrador/atividades' : '/administrador/ocorrencias'))}"
                 class="btn btn-secondary ms-2"
-                >Cancelar</a
-              >
+                >Cancelar</a>
             </form>
           </div>
         </div>

@@ -54,7 +54,7 @@
               .attr("aria-disabled", "false");
             setTimeout(() => { $("#filtroOcorrenciasForm").submit(); }, 100); // Submete após preencher
           },
-            change: function (event, ui) {
+          change: function (event, ui) {
             // Só limpa se o campo estiver realmente vazio
             if (!ui.item && !$tituloAtividade.val()) {
                 atividadeSelecionada = null;
@@ -64,7 +64,7 @@
                 .attr("tabindex", "-1")
                 .attr("aria-disabled", "true");
             }
-          },
+          }
         });
 
         var enterPressed = false;
@@ -196,13 +196,14 @@
 
         $("#limparFiltrosBtn").on("click", function(e) {
         e.preventDefault();
-        $("input[name='temaOcorrencia']").val("");
-        $("input[name='autorNome']").val("");
-        $("#autorIdFiltro").val("");
-        $("select[name='situacao']").val("");
-        $("select[name='ordem']").val("");
-        $("select[name='size']").val("25");
-        $("#filtroOcorrenciasForm").submit();
+  $("input[name='temaOcorrencia']").val("");
+  $("input[name='autorNome']").val("");
+  $("#autorIdFiltro").val("");
+  $("input[name='assuntoDivulgacao']").val("");
+  $("select[name='situacao']").val("");
+  $("select[name='ordem']").val("data");
+  $("select[name='size']").val("25");
+  $("#filtroOcorrenciasForm").submit();
         });       
 
         // Força seleção da sugestão ao pressionar Enter (Título da Atividade)
@@ -263,7 +264,7 @@
         <div class="col text-end d-flex gap-2 justify-content-end">
           <a
             th:if="${atividadeSelecionada != null}"
-            th:href="@{/administrador/ocorrencias/nova(atividadeId=${atividadeSelecionada.id}, origem=${param.origem})}"
+            th:href="@{/administrador/ocorrencias/nova(atividadeId=${atividadeSelecionada.id}, origem=${origem})}"
             class="btn btn-primary"
             tabindex="0"
             aria-disabled="false"
@@ -349,7 +350,10 @@
         $("#assuntoDivulgacaoFiltro").autocomplete({
           source: function(request, response) {
             $.getJSON("/administrador/ocorrencias/autocomplete-assunto", { term: request.term }, function(data) {
-              response(data);
+              var mapped = data.map(function(item) {
+                return { label: item, value: item };
+              });
+              response(mapped);
             });
           },
           minLength: 2,
@@ -380,9 +384,10 @@
                 name="ordem"
                 onchange="this.form.page.value=0; this.form.submit();"
               >
-                <option value="data" th:selected="${#strings.isEmpty(param.ordem) or param.ordem == 'data'}">Ordem: Data e Hora Inic</option>
-                <option value="situacao" th:selected="${param.ordem?.toString() == 'situacao'}">Sit., Data e Hora Inic</option>
-                <option value="autor" th:selected="${param.ordem?.toString() == 'autor'}">Autor, Data e Hora Inic</option>
+                <option value="data" th:selected="${#strings.isEmpty(param.ordem) or param.ordem == 'data'}">Ordem: Data/HR.Inic Desc.</option>
+                <option value="dataAsc" th:selected="${param.ordem?.toString() == 'dataAsc'}">Ordem: Data/HR.Inic Asc.</option>
+                <option value="situacao" th:selected="${param.ordem?.toString() == 'situacao'}">SIT., Data/HR.Inic</option>
+                <option value="autor" th:selected="${param.ordem?.toString() == 'autor'}">Autor, Data/HR.Inic</option>
               </select>
             </div>
             <div class="col-md-2">
@@ -425,7 +430,6 @@
                   <th>SIT.</th>
                   <th>Q.PARTIC</th>
                   <th>ASSUNTO DIVULGAÇÃO</th>
-                  <th>TEMA</th>
                   <th>AUTOR</th>
                   <th style="width: 100px">Ações</th>
                 </tr>
@@ -442,7 +446,6 @@
                   </td>
                   <td th:text="${ocorrencia.qtdeParticipantes}"></td>
                   <td th:text="${#strings.abbreviate(ocorrencia.assuntoDivulgacao, 50)}"></td>
-                  <td th:text="${#strings.abbreviate(ocorrencia.temaOcorrencia, 35)}"></td>
                   <td th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.pessoa != null ? ocorrencia.idAutor.pessoa.nomePessoa : '', 20)}"></td>
                   <td>
                     <a
@@ -475,12 +478,13 @@
                       <i class="fa fa-times"></i>
                     </a>
                     <span
-                      class="btn btn-sm btn-outline-danger ms-1 disabled"
-                      th:if="${ocorrenciasComLogs.contains(ocorrencia.id)}"
-                      title="Não é possível excluir: existem postagens relacionadas."
-                      style="pointer-events: none; opacity: 0.6;"
+                      th:if="${ocorrenciasComLogs.contains(ocorrencia.id) and ocorrencia.assuntoDivulgacao != null and !ocorrencia.assuntoDivulgacao.isEmpty()}"
                     >
-                      <i class="fa fa-lock"></i>
+                      <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${origem})}"
+                         class="btn btn-sm btn-outline-info ms-1"
+                         title="Ver Histórico de Postagens deste Assunto">
+                        <i class="fa fa-history"></i>
+                      </a>
                     </span>
                     <a
                       th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id}, origem=${origem})}"
