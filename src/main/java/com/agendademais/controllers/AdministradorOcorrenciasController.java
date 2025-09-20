@@ -302,9 +302,10 @@ public class AdministradorOcorrenciasController {
         Long atividadeId = (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getId() != null)
                 ? ocorrencia.getIdAtividade().getId()
                 : null;
-        String tituloAtividade = (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getTituloAtividade() != null)
-                ? ocorrencia.getIdAtividade().getTituloAtividade()
-                : "";
+        String tituloAtividade = (ocorrencia.getIdAtividade() != null
+                && ocorrencia.getIdAtividade().getTituloAtividade() != null)
+                        ? ocorrencia.getIdAtividade().getTituloAtividade()
+                        : "";
         StringBuilder redirect = new StringBuilder("/administrador/ocorrencias");
         boolean hasQuery = false;
         if (atividadeId != null) {
@@ -315,7 +316,8 @@ public class AdministradorOcorrenciasController {
             try {
                 redirect.append(hasQuery ? "&" : "?");
                 redirect.append("tituloAtividade=")
-                        .append(java.net.URLEncoder.encode(tituloAtividade, java.nio.charset.StandardCharsets.UTF_8.toString()));
+                        .append(java.net.URLEncoder.encode(tituloAtividade,
+                                java.nio.charset.StandardCharsets.UTF_8.toString()));
                 hasQuery = true;
             } catch (Exception e) {
                 // fallback: não adiciona
@@ -323,7 +325,8 @@ public class AdministradorOcorrenciasController {
         }
         if (origem != null && !origem.isEmpty()) {
             redirect.append(hasQuery ? "&" : "?");
-            redirect.append("origem=").append(java.net.URLEncoder.encode(origem, java.nio.charset.StandardCharsets.UTF_8));
+            redirect.append("origem=")
+                    .append(java.net.URLEncoder.encode(origem, java.nio.charset.StandardCharsets.UTF_8));
         }
         return "redirect:" + redirect.toString();
     }
