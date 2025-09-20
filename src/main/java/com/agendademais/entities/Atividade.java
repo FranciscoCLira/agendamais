@@ -30,7 +30,7 @@ public class Atividade {
     @JoinColumn(name = "id_solicitante")
     private Pessoa idSolicitante;
 
-    @Column(length = 30)
+    @Column(length = 40)
     private String tituloAtividade;
 
     private String situacaoAtividade; // P=Proposta, A=Aprovada, R=Rejeitada, C=Cancelada, F=Finalizada

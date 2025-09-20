@@ -9,7 +9,8 @@ public class AtividadeSpecs {
     public static Specification<Atividade> filtro(
             String titulo, String situacao, String forma, String alvo,
             Long subInstituicao, Long solicitante,
-            LocalDate dataInicio, LocalDate dataFim) {
+            LocalDate dataInicio, LocalDate dataFim,
+            Long instituicaoId) {
         return (root, query, cb) -> {
             Predicate p = cb.conjunction();
             if (titulo != null && !titulo.isEmpty())
@@ -28,6 +29,8 @@ public class AtividadeSpecs {
                 p = cb.and(p, cb.greaterThanOrEqualTo(root.get("dataAtualizacao"), dataInicio));
             if (dataFim != null)
                 p = cb.and(p, cb.lessThanOrEqualTo(root.get("dataAtualizacao"), dataFim));
+            if (instituicaoId != null)
+                p = cb.and(p, cb.equal(root.get("instituicao").get("id"), instituicaoId));
             return p;
         };
     }

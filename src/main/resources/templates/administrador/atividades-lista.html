@@ -131,7 +131,7 @@
                         <span th:case="*">---</span>
                     </td>
                     <td th:text="${#strings.abbreviate(atividade.subInstituicao != null ? atividade.subInstituicao.nomeSubInstituicao : '---', 20)}"></td>
-                    <td><b th:text="${#strings.abbreviate(atividade.tituloAtividade, 20)}"></b></td>
+                    <td><b th:text="${#strings.abbreviate(atividade.tituloAtividade, 40)}"></b></td>
                     <td th:text="${#strings.abbreviate(atividade.idSolicitante != null ? atividade.idSolicitante.nomePessoa : '---', 20)}"></td>
                     <td>
                         <a th:href="@{'/atividades/editar/' + ${atividade.id}}" class="btn btn-sm btn-outline-secondary" title="Editar">

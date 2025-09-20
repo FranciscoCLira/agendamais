@@ -26,8 +26,6 @@ public class AdministradorAtividadesController {
     private AtividadeRepository atividadeRepo;
     @Autowired
     private SubInstituicaoRepository subInstituicaoRepo;
-    @Autowired
-    private PessoaRepository pessoaRepo;
 
     @GetMapping
     public String listar(
@@ -104,22 +102,28 @@ public class AdministradorAtividadesController {
             }
         }
 
+        // Recuperar instituição da sessão
+        var instituicao = session.getAttribute("instituicaoSelecionada");
+        Long instituicaoId = null;
+        List<SubInstituicao> subinstituicoes;
+        List<Pessoa> pessoas;
+        if (instituicao != null && instituicao instanceof com.agendademais.entities.Instituicao) {
+            instituicaoId = ((com.agendademais.entities.Instituicao) instituicao).getId();
+            subinstituicoes = subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(
+                    (com.agendademais.entities.Instituicao) instituicao, "A");
+            // Buscar apenas solicitantes com atividades na instituição logada
+            pessoas = atividadeRepo.findDistinctSolicitantesByInstituicaoId(instituicaoId);
+        } else {
+            subinstituicoes = subInstituicaoRepo.findAll();
+            pessoas = java.util.Collections.emptyList();
+        }
         // Filtros dinâmicos
         var spec = AtividadeSpecs.filtro(
                 titulo, situacao, forma, alvo,
                 subInstituicao, solicitante,
-                dataIni, dataFinal);
+                dataIni, dataFinal,
+                instituicaoId);
         Page<Atividade> atividadesPage = atividadeRepo.findAll(spec, PageRequest.of(page, size, sort));
-        // Recuperar instituição da sessão
-        var instituicao = session.getAttribute("instituicaoSelecionada");
-        List<SubInstituicao> subinstituicoes;
-        if (instituicao != null && instituicao instanceof com.agendademais.entities.Instituicao) {
-            subinstituicoes = subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(
-                    (com.agendademais.entities.Instituicao) instituicao, "A");
-        } else {
-            subinstituicoes = subInstituicaoRepo.findAll();
-        }
-        List<Pessoa> pessoas = pessoaRepo.findAll();
         model.addAttribute("atividades", atividadesPage.getContent());
         model.addAttribute("page", atividadesPage);
         model.addAttribute("size", size);

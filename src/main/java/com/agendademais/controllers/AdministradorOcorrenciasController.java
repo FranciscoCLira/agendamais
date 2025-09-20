@@ -110,9 +110,15 @@ public class AdministradorOcorrenciasController {
             }
         }
         Pageable pageable = PageRequest.of(page, size, sort);
-        // Specification para filtrar por atividade, situação, tema, autor e
-        // assuntoDivulgacao
-        Specification<OcorrenciaAtividade> spec = (root, query, cb) -> cb.equal(root.get("idAtividade"), atividade);
+        // Filtro por instituição logada
+        var instituicao = session.getAttribute("instituicaoSelecionada");
+        Long instituicaoId = null;
+        if (instituicao != null && instituicao instanceof com.agendademais.entities.Instituicao) {
+            instituicaoId = ((com.agendademais.entities.Instituicao) instituicao).getId();
+        }
+        Specification<OcorrenciaAtividade> spec = com.agendademais.specs.OcorrenciaAtividadeSpecs
+                .porInstituicao(instituicaoId)
+                .and((root, query, cb) -> cb.equal(root.get("idAtividade"), atividade));
         if (situacao != null && !situacao.isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("situacaoOcorrencia"), situacao));
         }
@@ -504,14 +510,26 @@ public class AdministradorOcorrenciasController {
     @GetMapping("/autocomplete-atividade")
     @ResponseBody
     public List<Atividade> autocompleteAtividade(@RequestParam(value = "term", required = false) String term,
-            @RequestParam(value = "id", required = false) Long id) {
+            @RequestParam(value = "id", required = false) Long id,
+            HttpSession session) {
+        // Busca por id (caso uso específico)
         if (id != null) {
             return atividadeRepository.findById(id).map(List::of).orElse(List.of());
         }
-        if (term == null || term.isBlank()) {
-            return atividadeRepository.findAll();
+        // Recupera instituição logada
+        var instituicao = session.getAttribute("instituicaoSelecionada");
+        Long instituicaoId = null;
+        if (instituicao != null && instituicao instanceof com.agendademais.entities.Instituicao) {
+            instituicaoId = ((com.agendademais.entities.Instituicao) instituicao).getId();
         }
-        return atividadeRepository.findByTituloAtividadeContainingIgnoreCase(term);
+        if (instituicaoId == null) {
+            return List.of(); // Não retorna nada se não houver instituição logada
+        }
+        if (term == null || term.isBlank()) {
+            // Retorna todas as atividades da instituição logada
+            return atividadeRepository.findByTituloAtividadeAndInstituicaoId("", instituicaoId);
+        }
+        return atividadeRepository.findByTituloAtividadeAndInstituicaoId(term, instituicaoId);
     }
 
     @GetMapping("/autocomplete-assunto")

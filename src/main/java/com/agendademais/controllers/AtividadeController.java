@@ -61,13 +61,14 @@ public class AtividadeController {
             return "redirect:/login";
         }
         model.addAttribute("atividade", new Atividade());
-        model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
         com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
                 .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada != null) {
+            model.addAttribute("tiposAtividade", tipoAtividadeRepo.findByInstituicao(instituicaoSelecionada));
             model.addAttribute("subinstituicoes",
                     subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
         } else {
+            model.addAttribute("tiposAtividade", java.util.Collections.emptyList());
             model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
         }
         model.addAttribute("pessoas", pessoaRepo.findAll());

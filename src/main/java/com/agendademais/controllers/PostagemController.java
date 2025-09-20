@@ -159,13 +159,18 @@ public class PostagemController {
                 return "administrador/lista-postagem";
             }
         }
-        // Filtros dinâmicos
+        // Filtro por instituição logada
+        var instituicao = session.getAttribute("instituicaoSelecionada");
+        Long instituicaoId = null;
+        if (instituicao != null && instituicao instanceof com.agendademais.entities.Instituicao) {
+            instituicaoId = ((com.agendademais.entities.Instituicao) instituicao).getId();
+        }
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
                 pagina, itensPorPagina, org.springframework.data.domain.Sort.Direction.DESC, "dataHoraPostagem");
 
         // Monta Specification dinâmica
-        org.springframework.data.jpa.domain.Specification<com.agendademais.entities.LogPostagem> spec = (root, query,
-                cb) -> cb.conjunction();
+        org.springframework.data.jpa.domain.Specification<com.agendademais.entities.LogPostagem> spec = com.agendademais.specs.LogPostagemSpecs
+                .porInstituicao(instituicaoId, ocorrenciaAtividadeRepository);
         if (dataInicio != null && !dataInicio.isEmpty()) {
             java.time.LocalDate dataIni = java.time.LocalDate.parse(dataInicio);
             spec = spec.and(
@@ -176,6 +181,7 @@ public class PostagemController {
             spec = spec.and(
                     (root, query, cb) -> cb.lessThanOrEqualTo(root.get("dataHoraPostagem"), dataF.atTime(23, 59, 59)));
         }
+        // Se vier filtro de título de atividade, já filtra ao carregar a view
         if (tituloAtividade != null && !tituloAtividade.isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("tituloAtividade")),
                     "%" + tituloAtividade.toLowerCase() + "%"));
