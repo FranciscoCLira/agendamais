@@ -302,19 +302,30 @@ public class AdministradorOcorrenciasController {
         Long atividadeId = (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getId() != null)
                 ? ocorrencia.getIdAtividade().getId()
                 : null;
+        String tituloAtividade = (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getTituloAtividade() != null)
+                ? ocorrencia.getIdAtividade().getTituloAtividade()
+                : "";
+        StringBuilder redirect = new StringBuilder("/administrador/ocorrencias");
+        boolean hasQuery = false;
         if (atividadeId != null) {
-            String redirect = "/administrador/ocorrencias?atividadeId=" + atividadeId;
-            if (origem != null && !origem.isEmpty()) {
-                redirect += "&origem=" + origem;
-            }
-            return "redirect:" + redirect;
-        } else {
-            String redirect = "/administrador/ocorrencias";
-            if (origem != null && !origem.isEmpty()) {
-                redirect += "?origem=" + origem;
-            }
-            return "redirect:" + redirect;
+            redirect.append("?atividadeId=").append(atividadeId);
+            hasQuery = true;
         }
+        if (tituloAtividade != null && !tituloAtividade.isEmpty()) {
+            try {
+                redirect.append(hasQuery ? "&" : "?");
+                redirect.append("tituloAtividade=")
+                        .append(java.net.URLEncoder.encode(tituloAtividade, java.nio.charset.StandardCharsets.UTF_8.toString()));
+                hasQuery = true;
+            } catch (Exception e) {
+                // fallback: não adiciona
+            }
+        }
+        if (origem != null && !origem.isEmpty()) {
+            redirect.append(hasQuery ? "&" : "?");
+            redirect.append("origem=").append(java.net.URLEncoder.encode(origem, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        return "redirect:" + redirect.toString();
     }
 
     @GetMapping("/editar/{id}")
