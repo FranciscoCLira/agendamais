@@ -246,25 +246,22 @@
   </head>
   <body>
     <!-- Cabeçalho padrão -->
-    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+  <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
     <div class="container mt-4" style="max-width: 900px">
       <div class="row mb-2 align-items-center">
         <div class="col-auto">
-          <a id="voltarBtn"
-            th:if="${origem == 'atividades' or param.origem == 'atividades'}"
-            th:href="@{/administrador/atividades(origem='atividades')}"
-            class="btn btn-outline-secondary me-3">&larr; Voltar</a>
 
-          <a id="voltarBtn"
-            th:if="${origem != 'atividades' and param.origem != 'atividades'}"
-            th:href="@{/administrador(origem='menu')}"
-            class="btn btn-outline-secondary me-3">&larr; Voltar</a>
+       <a th:if="${origem != null and origem.startsWith('/administrador/atividades')}"
+         th:href="${origem}"
+         class="btn btn-outline-secondary me-3">&larr; Voltar</a>
+       <a th:if="${origem == null or !origem.startsWith('/administrador/atividades')}"
+         th:href="@{/administrador}" class="btn btn-outline-secondary me-3">&larr; Voltar</a>
 
         </div>
         <div class="col text-end d-flex gap-2 justify-content-end">
           <a
             th:if="${atividadeSelecionada != null}"
-            th:href="@{/administrador/ocorrencias/nova(atividadeId=${atividadeSelecionada.id}, origem=${origem})}"
+            th:href="@{/administrador/ocorrencias/nova(atividadeId=${atividadeSelecionada.id}, origem=${urlAtual})}"
             class="btn btn-primary"
             tabindex="0"
             aria-disabled="false"
@@ -276,7 +273,7 @@
             aria-disabled="true"
             style="pointer-events: none; opacity: 0.7"
             >Nova Ocorrência</a>
-          <a th:href="@{/administrador/postagens/lista(origem=${origem})}" class="btn btn-outline-info ms-2">Histórico Postagens</a>
+          <a th:href="@{'/administrador/postagens/lista'(origem=${urlAtual}, tituloAtividade=${param.tituloAtividade})}" class="btn btn-outline-info ms-2">Histórico Postagens</a>
         </div>
       </div>
       <div class="card">
@@ -480,7 +477,7 @@
                     <span
                       th:if="${ocorrenciasComLogs.contains(ocorrencia.id) and ocorrencia.assuntoDivulgacao != null and !ocorrencia.assuntoDivulgacao.isEmpty()}"
                     >
-                      <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${(origem != null and origem != 'null' and origem != 'menu' and !#strings.isEmpty(origem)) ? origem : '/administrador/ocorrencias'})}"
+                      <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${urlAtual})}"
                          class="btn btn-sm btn-outline-info ms-1"
                          title="Ver Histórico de Postagens deste Assunto">
                         <i class="fa fa-history"></i>

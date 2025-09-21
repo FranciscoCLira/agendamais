@@ -54,7 +54,8 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "tituloAtividade", required = false) String tituloAtividade,
             @RequestParam(value = "origem", required = false) String origem,
             Model model,
-            HttpSession session) {
+            HttpSession session,
+            jakarta.servlet.http.HttpServletRequest request) {
         // Redireciona para login se sessão não existir ou usuário não estiver logado
         if (session == null || session.getAttribute("usuarioLogado") == null) {
             return "redirect:/acesso";
@@ -74,12 +75,20 @@ public class AdministradorOcorrenciasController {
             }
         }
         if (atividadeId == null) {
-            if (origem == null || origem.isEmpty()) {
-                origem = "menu";
+            // Se origem veio e é válida, propaga; senão, volta para menu
+            if (origem == null || origem.isEmpty() || !origem.startsWith("/administrador/")) {
+                origem = "/administrador/atividades";
             }
+            System.out.println("[DEBUG OCORRENCIAS] origem recebida (atividadeId==null): " + origem);
             model.addAttribute("ocorrencias", org.springframework.data.domain.Page.empty());
             model.addAttribute("atividadeSelecionada", null);
             model.addAttribute("origem", origem);
+            // Adiciona urlAtual para o template
+            String urlAtual = request.getRequestURI();
+            if (request.getQueryString() != null) {
+                urlAtual += "?" + request.getQueryString();
+            }
+            model.addAttribute("urlAtual", urlAtual);
             return "administrador/ocorrencias";
         }
         // Se veio da tela de atividades
@@ -224,33 +233,40 @@ public class AdministradorOcorrenciasController {
         }
         model.addAttribute("autoresDasOcorrenciasList", autoresDasOcorrenciasList);
         model.addAttribute("totalOcorrencias", ocorrencias.getTotalElements());
-        // Monta a URL de origem completa com todos os filtros atuais, incluindo
-        // tituloAtividade e assuntoDivulgacao
-        StringBuilder origemCompleta = new StringBuilder("/administrador/ocorrencias?");
-        origemCompleta.append("page=").append(page);
-        if (atividadeId != null)
-            origemCompleta.append("&atividadeId=").append(atividadeId);
-        if (ordem != null)
-            origemCompleta.append("&ordem=").append(ordem);
-        if (dataInicio != null)
-            origemCompleta.append("&dataInicio=").append(dataInicio);
-        if (dataFim != null)
-            origemCompleta.append("&dataFim=").append(dataFim);
-        if (temaOcorrencia != null)
-            origemCompleta.append("&temaOcorrencia=").append(temaOcorrencia);
-        if (autorNome != null)
-            origemCompleta.append("&autorNome=").append(autorNome);
-        if (autorId != null)
-            origemCompleta.append("&autorId=").append(autorId);
-        if (situacao != null)
-            origemCompleta.append("&situacao=").append(situacao);
-        if (size != 25)
-            origemCompleta.append("&size=").append(size);
-        if (tituloAtividade != null)
-            origemCompleta.append("&tituloAtividade=").append(tituloAtividade);
-        if (assuntoDivulgacao != null)
-            origemCompleta.append("&assuntoDivulgacao=").append(assuntoDivulgacao);
-        model.addAttribute("origem", origemCompleta.toString());
+        // Corrige origem: só propaga se for rota válida e existente
+        String origemFinal = null;
+        if (origem != null && origem.startsWith("/administrador/")) {
+            // Não propaga URLs inválidas (ex: /administrador/postagens/atividades)
+            if (origem.startsWith("/administrador/atividades")) {
+                origemFinal = origem;
+            } else if (origem.startsWith("/administrador/ocorrencias")) {
+                origemFinal = origem;
+            } else {
+                // fallback seguro
+                origemFinal = "/administrador/atividades";
+            }
+        } else {
+            // Se não veio origem, monta a URL de atividades com filtros
+            StringBuilder origemAtividades = new StringBuilder("/administrador/atividades?");
+            if (tituloAtividade != null)
+                origemAtividades.append("tituloAtividade=").append(tituloAtividade).append("&");
+            if (atividadeId != null)
+                origemAtividades.append("atividadeId=").append(atividadeId).append("&");
+            // Remove & final se houver
+            origemFinal = origemAtividades.toString();
+            if (origemFinal.endsWith("&"))
+                origemFinal = origemFinal.substring(0, origemFinal.length() - 1);
+            if (origemFinal.endsWith("?"))
+                origemFinal = origemFinal.substring(0, origemFinal.length() - 1);
+        }
+        System.out.println("[DEBUG OCORRENCIAS] origem propagada: " + origemFinal);
+        model.addAttribute("origem", origemFinal);
+        // Adiciona urlAtual para o template
+        String urlAtual = request.getRequestURI();
+        if (request.getQueryString() != null) {
+            urlAtual += "?" + request.getQueryString();
+        }
+        model.addAttribute("urlAtual", urlAtual);
         return "administrador/ocorrencias";
     }
 
@@ -324,9 +340,14 @@ public class AdministradorOcorrenciasController {
             }
         }
         if (origem != null && !origem.isEmpty()) {
+            String origemLimpa = origem;
+            // Se a origem contém a palavra 'atividades', propaga apenas 'atividades'
+            if (origem.contains("atividades")) {
+                origemLimpa = "atividades";
+            }
             redirect.append(hasQuery ? "&" : "?");
             redirect.append("origem=")
-                    .append(java.net.URLEncoder.encode(origem, java.nio.charset.StandardCharsets.UTF_8));
+                    .append(java.net.URLEncoder.encode(origemLimpa, java.nio.charset.StandardCharsets.UTF_8));
         }
         return "redirect:" + redirect.toString();
     }
