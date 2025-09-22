@@ -15,19 +15,53 @@
   <body>
     <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
     <main class="container py-4">
+      <!-- Modal de erro -->
       <div
+        class="modal fade"
+        id="modalErro"
+        tabindex="-1"
+        aria-labelledby="modalErroLabel"
+        aria-hidden="true"
         th:if="${mensagemErro}"
-        class="alert alert-danger alert-dismissible fade show"
-        role="alert"
       >
-        <span th:text="${mensagemErro}"></span>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-          aria-label="Close"
-        ></button>
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title" id="modalErroLabel">Atenção</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Fechar"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <span th:text="${mensagemErro}"></span>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Exibe o modal automaticamente se houver mensagem de erro
+        if (
+          /*[[${mensagemErro != null}]]*/ false &&
+          document.getElementById("modalErro")
+        ) {
+          var modal = new bootstrap.Modal(document.getElementById("modalErro"));
+          modal.show();
+        }
+        /*]]>*/
+      </script>
       <div
         th:if="${mensagemSucesso}"
         class="alert alert-success alert-dismissible fade show"
@@ -357,14 +391,14 @@
                 >
                   <i class="fa fa-pencil-alt"></i>
                 </a>
-                <a
-                  th:href="@{'/atividades/deletar/' + ${atividade.id}}"
+                <button
+                  type="button"
                   class="btn btn-sm btn-outline-danger ms-1"
                   title="Excluir"
-                  onclick="return confirm('Confirma exclusão?')"
+                  th:onclick="|if(confirm('Confirma exclusão?')) document.getElementById('deleteForm' + '${atividade.id}').submit();|"
                 >
                   <i class="fa fa-times"></i>
-                </a>
+                </button>
                 <a
                   th:href="@{'/administrador/ocorrencias?atividadeId=' + ${atividade.id} + '&origem=atividades'}"
                   class="btn btn-sm btn-outline-warning ms-1 d-inline-flex align-items-center p-1"

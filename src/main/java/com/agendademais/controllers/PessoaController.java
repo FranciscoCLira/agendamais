@@ -34,7 +34,7 @@ public class PessoaController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping
+    @GetMapping("/pessoas")
     public String listar(Model model) {
         model.addAttribute("pessoas", pessoaRepository.findAll());
         return "pessoas/lista";

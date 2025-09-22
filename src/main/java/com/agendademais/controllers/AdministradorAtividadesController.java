@@ -177,7 +177,7 @@ public class AdministradorAtividadesController {
                 .count((root, query, cb) -> cb.equal(root.get("idAtividade").get("id"), id));
         if (ocorrenciasVinculadas > 0) {
             model.addAttribute("mensagemErro",
-                    "Não é possível excluir esta Atividade pois existem Ocorrências vinculadas.");
+                    "Não é possível excluir esta Atividade porque existem Ocorrências vinculadas a ela. Exclua primeiro as Ocorrências relacionadas.");
         } else {
             try {
                 atividadeRepo.deleteById(id);

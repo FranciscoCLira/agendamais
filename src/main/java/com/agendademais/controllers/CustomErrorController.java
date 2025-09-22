@@ -17,7 +17,7 @@ public class CustomErrorController implements ErrorController {
         Object errorMessage = request.getAttribute("javax.servlet.error.message");
         Object requestUri = request.getAttribute("javax.servlet.error.request_uri");
         Object exception = request.getAttribute("javax.servlet.error.exception");
-        
+
         // Fallback para obter status da resposta HTTP
         if (status == null) {
             status = request.getAttribute("org.springframework.boot.web.servlet.error.DefaultErrorAttributes.ERROR");
@@ -31,7 +31,7 @@ public class CustomErrorController implements ErrorController {
                 }
             }
         }
-        
+
         // Fallback para URI
         if (requestUri == null) {
             requestUri = request.getRequestURI();
@@ -45,7 +45,7 @@ public class CustomErrorController implements ErrorController {
         System.out.println("Exception: " + exception);
         System.out.println("Request Method: " + request.getMethod());
         System.out.println("Query String: " + request.getQueryString());
-        
+
         // Se há uma exceção, imprimir stack trace completo
         if (exception instanceof Exception) {
             System.out.println("*** STACK TRACE COMPLETO ***");
@@ -56,13 +56,13 @@ public class CustomErrorController implements ErrorController {
         String errorCode = "Desconhecido";
         String errorTitle = "Erro";
         String errorDescription = "Ocorreu um erro inesperado.";
-        
+
         // Adicionar informações específicas do erro no template
         if (status != null) {
             errorCode = status.toString();
             model.addAttribute("httpStatus", status);
         }
-        
+
         if (exception instanceof Exception) {
             Exception ex = (Exception) exception;
             errorDescription = "Erro: " + ex.getClass().getSimpleName();
@@ -72,18 +72,18 @@ public class CustomErrorController implements ErrorController {
             model.addAttribute("exceptionType", ex.getClass().getSimpleName());
             model.addAttribute("exceptionMessage", ex.getMessage());
         }
-        
+
         if (requestUri != null) {
             model.addAttribute("requestUri", requestUri);
         }
         String errorDetails = "";
-        
+
         // Se o status ainda for null mas há exceção, assumir erro 500
         if (status == null && exception != null) {
             status = 500;
             System.out.println("*** FORÇANDO STATUS 500 DEVIDO À EXCEÇÃO ***");
         }
-        
+
         // Se ainda não temos status mas a URI indica erro de servidor, assumir 500
         if (status == null && requestUri != null && requestUri.toString().contains("/administrador/")) {
             status = 500;
@@ -128,21 +128,22 @@ public class CustomErrorController implements ErrorController {
             } else if (statusCode == 500) {
                 errorTitle = "Erro interno do servidor (500)";
                 errorDescription = "Ocorreu um erro interno no servidor. Tente novamente em alguns minutos.";
-                
+
                 // Adicionar informações técnicas detalhadas para erro 500
                 model.addAttribute("timestamp", new java.util.Date());
                 model.addAttribute("httpMethod", request.getMethod());
                 model.addAttribute("userAgent", request.getHeader("User-Agent"));
                 model.addAttribute("remoteAddr", request.getRemoteAddr());
-                model.addAttribute("sessionId", request.getSession(false) != null ? request.getSession().getId() : "N/A");
-                
+                model.addAttribute("sessionId",
+                        request.getSession(false) != null ? request.getSession().getId() : "N/A");
+
                 // Adicionar parâmetros da requisição
                 StringBuilder parameters = new StringBuilder();
                 request.getParameterMap().forEach((key, values) -> {
                     parameters.append(key).append("=").append(String.join(",", values)).append("\n");
                 });
                 model.addAttribute("requestParameters", parameters.toString());
-                
+
                 // Adicionar headers importantes
                 StringBuilder headers = new StringBuilder();
                 headers.append("Accept: ").append(request.getHeader("Accept")).append("\n");
@@ -150,7 +151,7 @@ public class CustomErrorController implements ErrorController {
                 headers.append("Content-Type: ").append(request.getHeader("Content-Type")).append("\n");
                 headers.append("Referer: ").append(request.getHeader("Referer")).append("\n");
                 model.addAttribute("requestHeaders", headers.toString());
-                
+
                 model.addAttribute("homeLink", "/acesso");
                 model.addAttribute("homeLinkText", "Voltar ao Login");
                 model.addAttribute("errorCode", errorCode);
@@ -159,6 +160,11 @@ public class CustomErrorController implements ErrorController {
                 model.addAttribute("errorDetails", errorDetails);
                 return "error/500";
             } else if (statusCode == 403) {
+                // Se for tentativa de exclusão GET de atividade, redireciona para lista com
+                // mensagem amigável
+                if (requestUri != null && requestUri.toString().contains("/atividades/deletar/")) {
+                    return "redirect:/administrador/atividades?erro=Exclus%C3%A3o%20de%20atividade%20s%C3%B3%20pode%20ser%20feita%20via%20POST.";
+                }
                 errorTitle = "Acesso negado (403)";
                 errorDescription = "Você não tem permissão para acessar este recurso.";
                 model.addAttribute("homeLink", "/acesso");
