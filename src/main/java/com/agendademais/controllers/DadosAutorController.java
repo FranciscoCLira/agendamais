@@ -32,9 +32,6 @@ public class DadosAutorController {
     private PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository;
 
     @Autowired
-    private SubInstituicaoRepository subInstituicaoRepository;
-
-    @Autowired
     private FuncaoAutorCustomizadaRepository funcaoCustomizadaRepository;
 
     /**

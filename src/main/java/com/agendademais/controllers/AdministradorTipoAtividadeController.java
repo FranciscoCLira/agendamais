@@ -1,27 +1,20 @@
 package com.agendademais.controllers;
 
 import com.agendademais.entities.TipoAtividade;
-import com.agendademais.entities.Instituicao;
 import com.agendademais.repositories.TipoAtividadeRepository;
-import com.agendademais.repositories.InstituicaoRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/administrador/tipos-atividade")
 public class AdministradorTipoAtividadeController {
 
     private final TipoAtividadeRepository tipoAtividadeRepository;
-    private final InstituicaoRepository instituicaoRepository;
 
-    public AdministradorTipoAtividadeController(TipoAtividadeRepository tipoAtividadeRepository,
-            InstituicaoRepository instituicaoRepository) {
+    public AdministradorTipoAtividadeController(TipoAtividadeRepository tipoAtividadeRepository) {
         this.tipoAtividadeRepository = tipoAtividadeRepository;
-        this.instituicaoRepository = instituicaoRepository;
     }
 
     @GetMapping

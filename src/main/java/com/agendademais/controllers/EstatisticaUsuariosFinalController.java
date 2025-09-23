@@ -1,7 +1,5 @@
 package com.agendademais.controllers;
 
-import com.agendademais.entities.Usuario;
-import com.agendademais.entities.Instituicao;
 import com.agendademais.entities.UsuarioInstituicao;
 import com.agendademais.repositories.UsuarioInstituicaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;

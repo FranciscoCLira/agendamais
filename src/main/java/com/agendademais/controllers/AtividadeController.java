@@ -36,9 +36,11 @@ public class AtividadeController {
         }
         model.addAttribute("atividade", new Atividade());
         model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
-        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
+                .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada != null) {
-            model.addAttribute("subinstituicoes", subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
+            model.addAttribute("subinstituicoes",
+                    subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
         } else {
             model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
         }
@@ -124,9 +126,11 @@ public class AtividadeController {
         model.addAttribute("atividade", atividade);
         model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
         model.addAttribute("instituicoes", instituicaoRepo.findAll());
-        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session.getAttribute("instituicaoSelecionada");
+        com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
+                .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada != null) {
-            model.addAttribute("subinstituicoes", subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
+            model.addAttribute("subinstituicoes",
+                    subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
         } else {
             model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
         }

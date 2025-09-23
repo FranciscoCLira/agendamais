@@ -78,18 +78,6 @@ public class CustomErrorController implements ErrorController {
         }
         String errorDetails = "";
 
-        // Se o status ainda for null mas há exceção, assumir erro 500
-        if (status == null && exception != null) {
-            status = 500;
-            System.out.println("*** FORÇANDO STATUS 500 DEVIDO À EXCEÇÃO ***");
-        }
-
-        // Se ainda não temos status mas a URI indica erro de servidor, assumir 500
-        if (status == null && requestUri != null && requestUri.toString().contains("/administrador/")) {
-            status = 500;
-            System.out.println("*** FORÇANDO STATUS 500 DEVIDO À URI ADMINISTRATIVA ***");
-        }
-
         if (status != null) {
             Integer statusCode;
             try {
