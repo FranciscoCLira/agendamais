@@ -8,16 +8,19 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-	
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-	
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(org.springframework.http.HttpMethod.GET,
+								"/administrador/atividades/deletar/**")
+						.permitAll()
 						.requestMatchers("/**").permitAll() // Permitir tudo - desabilitar segurança do Spring
 				)
 				.formLogin(form -> form.disable()) // Desabilitar completamente o form login do Spring

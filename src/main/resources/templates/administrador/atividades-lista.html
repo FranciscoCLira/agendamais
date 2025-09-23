@@ -7,6 +7,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -22,7 +23,7 @@
         tabindex="-1"
         aria-labelledby="modalErroLabel"
         aria-hidden="true"
-        th:if="${mensagemErro}"
+        th:if="${mensagemErro != null and !mensagemErro.trim().isEmpty()}"
       >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -52,14 +53,15 @@
       </div>
       <script th:inline="javascript">
         /*<![CDATA[*/
-        // Exibe o modal automaticamente se houver mensagem de erro
-        if (
-          /*[[${mensagemErro != null}]]*/ false &&
-          document.getElementById("modalErro")
-        ) {
-          var modal = new bootstrap.Modal(document.getElementById("modalErro"));
-          modal.show();
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+          var modalErro = document.getElementById("modalErro");
+          if (modalErro) {
+            setTimeout(function () {
+              var modal = new bootstrap.Modal(modalErro);
+              modal.show();
+            }, 100);
+          }
+        });
         /*]]>*/
       </script>
       <div
@@ -122,7 +124,7 @@
               value=""
               th:selected="${param.situacao == null or param.situacao == ''}"
             >
-              Todas
+              Todas Situações
             </option>
             <option
               value="P"
@@ -166,19 +168,19 @@
               value=""
               th:selected="${param.forma == null or param.forma == ''}"
             >
-              Todas
+              Todas Formas Apresentação
             </option>
             <option value="1" th:selected="${param.forma?.toString() == '1'}">
-              Presencial
+              1 - Presencial
             </option>
             <option value="2" th:selected="${param.forma?.toString() == '2'}">
-              Online
+              2 - Online
             </option>
             <option value="3" th:selected="${param.forma?.toString() == '3'}">
-              Híbrido
+              3 - Híbrido
             </option>
             <option value="4" th:selected="${param.forma?.toString() == '4'}">
-              Outro
+              4 - Outra
             </option>
           </select>
         </div>
@@ -192,19 +194,19 @@
               value=""
               th:selected="${param.alvo == null or param.alvo == ''}"
             >
-              Todos
+              Todos Alvos
             </option>
             <option value="1" th:selected="${param.alvo?.toString() == '1'}">
-              Público
+              1 - Público
             </option>
             <option value="2" th:selected="${param.alvo?.toString() == '2'}">
-              Restrito
+              2 - Restrito
             </option>
             <option value="3" th:selected="${param.alvo?.toString() == '3'}">
-              Acadêmico
+              3 - Acadêmico
             </option>
             <option value="4" th:selected="${param.alvo?.toString() == '4'}">
-              Outro
+              4 - Outro
             </option>
           </select>
         </div>
@@ -412,7 +414,7 @@
                 </a>
                 <!-- Corrigir para manter filtros ao excluir -->
                 <form
-                  th:action="@{'/atividades/deletar/' + ${atividade.id}}"
+                  th:action="@{'/administrador/atividades/deletar/' + ${atividade.id}}"
                   method="post"
                   style="display: none"
                   th:id="'deleteForm' + ${atividade.id}"

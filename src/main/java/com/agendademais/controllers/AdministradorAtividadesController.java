@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.util.StringUtils;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -45,8 +48,15 @@ public class AdministradorAtividadesController {
             @RequestParam(required = false) String ordenacao,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size,
+            @ModelAttribute("mensagemErro") String mensagemErro,
             Model model,
             HttpSession session) {
+        if (StringUtils.hasText(mensagemErro)) {
+            System.out.println("[DEBUG] mensagemErro no model: " + mensagemErro);
+            model.addAttribute("mensagemErro", mensagemErro);
+        } else {
+            System.out.println("[DEBUG] mensagemErro está vazio, nulo ou só espaços");
+        }
         if (session.getAttribute("usuarioLogado") == null) {
             // Mensagem padrão de sessão expirada
             model.addAttribute("mensagemErro", "Sessão expirada. Faça login novamente.");
@@ -159,43 +169,29 @@ public class AdministradorAtividadesController {
 
     @PostMapping("/deletar/{id}")
     public String deletarAtividade(@org.springframework.web.bind.annotation.PathVariable("id") Long id,
-            @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) String situacao,
-            @RequestParam(required = false) String forma,
-            @RequestParam(required = false) String alvo,
-            @RequestParam(required = false) Long subInstituicao,
-            @RequestParam(required = false) Long solicitante,
-            @RequestParam(required = false) String dataInicio,
-            @RequestParam(required = false) String dataFim,
-            @RequestParam(required = false) String ordenacao,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "25") int size,
-            Model model,
-            HttpSession session) {
-        // Verifica se existem ocorrências vinculadas antes de tentar deletar
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         long ocorrenciasVinculadas = ocorrenciaAtividadeRepository
                 .count((root, query, cb) -> cb.equal(root.get("idAtividade").get("id"), id));
         if (ocorrenciasVinculadas > 0) {
-            model.addAttribute("mensagemErro",
+            redirectAttributes.addFlashAttribute("mensagemErro",
                     "Não é possível excluir esta Atividade porque existem Ocorrências vinculadas a ela. Exclua primeiro as Ocorrências relacionadas.");
         } else {
             try {
                 atividadeRepo.deleteById(id);
-                model.addAttribute("mensagemSucesso", "Atividade excluída com sucesso.");
+                redirectAttributes.addFlashAttribute("mensagemSucesso", "Atividade excluída com sucesso.");
             } catch (Exception ex) {
                 ex.printStackTrace();
-                model.addAttribute("mensagemErro", "Erro ao excluir Atividade.");
+                redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao excluir Atividade.");
             }
         }
-        // Redireciona para a lista mantendo os filtros
-        return listar(titulo, situacao, forma, alvo, subInstituicao, solicitante, dataInicio, dataFim, ordenacao, page,
-                size, model, session);
+        return "redirect:/administrador/atividades";
     }
 
     // Protege contra exclusão via GET: apenas redireciona com mensagem de erro
     @GetMapping("/deletar/{id}")
     public String deletarAtividadeGet(@org.springframework.web.bind.annotation.PathVariable("id") Long id,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        System.out.println("[DEBUG] GET /administrador/atividades/deletar/" + id + " chamado!");
         redirectAttributes.addFlashAttribute("mensagemErro", "Exclusão de atividade só pode ser feita via POST.");
         return "redirect:/administrador/atividades";
     }
