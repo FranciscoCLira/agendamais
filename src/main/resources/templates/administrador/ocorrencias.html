@@ -485,7 +485,7 @@
                         </a>
                       </span>
                       <a
-                        th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id}, origem=${origem})}"
+                        th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id}, origem='/administrador/ocorrencias?atividadeId=' + ${atividadeSelecionada.id} + '&origem=atividades')}"
                         class="btn btn-sm btn-outline-primary btn-nova-postagem"
                         title="Nova Postagem"
                         th:attr="data-situacao=${ocorrencia.situacaoOcorrencia},data-data=${#temporals.format(ocorrencia.dataOcorrencia, 'yyyy-MM-dd')}"
