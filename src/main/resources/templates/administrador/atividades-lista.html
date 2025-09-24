@@ -370,7 +370,9 @@
           <tbody th:if="${atividades != null and !#lists.isEmpty(atividades)}">
             <!-- Loop seguro: só processa se atividades não está vazia -->
             <tr th:each="atividade : ${atividades}">
-              <td th:text="${atividade.dataAtualizacao}"></td>
+              <td
+                th:text="${atividade.dataAtualizacao != null ? #temporals.format(atividade.dataAtualizacao, 'dd/MM/yy') : ''}"
+              ></td>
               <td class="text-center">
                 <span
                   th:if="${atividade.situacaoAtividade} == 'P'"

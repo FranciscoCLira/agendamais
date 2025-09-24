@@ -421,19 +421,19 @@
             <table class="table table-bordered table-hover align-middle">
               <thead class="table-light">
                 <tr>
-                  <th>#Ocor.</th>
+                  <th>#Ocorr.</th>
                   <th>DATA</th>
                   <th>HR.INIC/FIM</th>
                   <th>SIT.</th>
                   <th>Q.PARTIC</th>
                   <th>ASSUNTO DIVULGAÇÃO</th>
                   <th>AUTOR</th>
-                  <th style="width: 100px">Ações</th>
+                  <th style="width: 140px">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="ocorrencia : ${ocorrencias}">
-                  <td th:text="${ocorrencia.id}" class="text-center"></td>
+                  <td th:text="${ocorrencia.id}" class="fw-bold text-center"></td>
                   <td th:text="${ocorrencia.dataOcorrencia != null ? #temporals.format(ocorrencia.dataOcorrencia, 'dd/MM/yy') : ''}"></td>
                   <td th:text="${ocorrencia.horaInicioOcorrencia} + ' - ' + ${ocorrencia.horaFimOcorrencia}"></td>
                   <td class="text-center">  
@@ -441,56 +441,58 @@
                     <span th:if="${ocorrencia.situacaoOcorrencia} == 'R'" class="fw-bold text-primary">R</span>
                     <span th:if="${ocorrencia.situacaoOcorrencia} == 'C'" class="fw-bold text-danger">C</span>
                   </td>
-                  <td th:text="${ocorrencia.qtdeParticipantes}" class="text-center"></td>></td>
+                  <td th:text="${ocorrencia.qtdeParticipantes}" class="text-center"></td>
                   <td th:text="${#strings.abbreviate(ocorrencia.assuntoDivulgacao, 50)}"></td>
                   <td th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.pessoa != null ? ocorrencia.idAutor.pessoa.nomePessoa : '', 20)}"></td>
                   <td>
-                    <a
-                      th:href="@{/administrador/ocorrencias/editar/{id}(id=${ocorrencia.id}, origem=${origem})}"
-                      class="btn btn-sm btn-outline-secondary"
-                      title="Editar"
-                    >
-                      <i class="fa fa-pencil-alt"></i>
-                    </a>
-                    <a
-                      th:href="@{/administrador/ocorrencias/deletar/{id}(
-                        id=${ocorrencia.id},
-                        atividadeId=${param.atividadeId},
-                        origem=${origem},
-                        page=${param.page},
-                        size=${param.size},
-                        situacao=${param.situacao},
-                        ordem=${param.ordem},
-                        dataInicio=${param.dataInicio},
-                        dataFim=${param.dataFim},
-                        temaOcorrencia=${param.temaOcorrencia},
-                        autorId=${param.autorId},
-                        autorNome=${param.autorNome}
-                      )}"
-                      class="btn btn-sm btn-outline-danger ms-1"
-                      title="Excluir"
-                      th:if="${!ocorrenciasComLogs.contains(ocorrencia.id)}"
-                      onclick="return confirm('Confirma exclusão?')"
-                    >
-                      <i class="fa fa-times"></i>
-                    </a>
-                    <span
-                      th:if="${ocorrenciasComLogs.contains(ocorrencia.id) and ocorrencia.assuntoDivulgacao != null and !ocorrencia.assuntoDivulgacao.isEmpty()}"
-                    >
-                      <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${urlAtual})}"
-                         class="btn btn-sm btn-outline-info ms-1"
-                         title="Ver Histórico de Postagens deste Assunto">
-                        <i class="fa fa-history"></i>
+                    <div class="d-flex flex-row align-items-center gap-1">
+                      <a
+                        th:href="@{/administrador/ocorrencias/editar/{id}(id=${ocorrencia.id}, origem=${origem})}"
+                        class="btn btn-sm btn-outline-secondary"
+                        title="Editar"
+                      >
+                        <i class="fa fa-pencil-alt"></i>
                       </a>
-                    </span>
-                    <a
-                      th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id}, origem=${origem})}"
-                      class="btn btn-sm btn-outline-primary ms-1 btn-nova-postagem"
-                      title="Nova Postagem"
-                      th:attr="data-situacao=${ocorrencia.situacaoOcorrencia},data-data=${#temporals.format(ocorrencia.dataOcorrencia, 'yyyy-MM-dd')}"
-                    >
-                      <i class="fa fa-bullhorn"></i>
-                    </a>
+                      <a
+                        th:href="@{/administrador/ocorrencias/deletar/{id}(
+                          id=${ocorrencia.id},
+                          atividadeId=${param.atividadeId},
+                          origem=${origem},
+                          page=${param.page},
+                          size=${param.size},
+                          situacao=${param.situacao},
+                          ordem=${param.ordem},
+                          dataInicio=${param.dataInicio},
+                          dataFim=${param.dataFim},
+                          temaOcorrencia=${param.temaOcorrencia},
+                          autorId=${param.autorId},
+                          autorNome=${param.autorNome}
+                        )}"
+                        class="btn btn-sm btn-outline-danger"
+                        title="Excluir"
+                        th:if="${!ocorrenciasComLogs.contains(ocorrencia.id)}"
+                        onclick="return confirm('Confirma exclusão?')"
+                      >
+                        <i class="fa fa-times"></i>
+                      </a>
+                      <span
+                        th:if="${ocorrenciasComLogs.contains(ocorrencia.id) and ocorrencia.assuntoDivulgacao != null and !ocorrencia.assuntoDivulgacao.isEmpty()}"
+                      >
+                        <a th:href="@{'/administrador/postagens/lista'(assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}, origem=${urlAtual})}"
+                           class="btn btn-sm btn-outline-info"
+                           title="Ver Histórico de Postagens deste Assunto">
+                          <i class="fa fa-history"></i>
+                        </a>
+                      </span>
+                      <a
+                        th:href="@{/administrador/postagens/nova(ocorrenciaId=${ocorrencia.id}, origem=${origem})}"
+                        class="btn btn-sm btn-outline-primary btn-nova-postagem"
+                        title="Nova Postagem"
+                        th:attr="data-situacao=${ocorrencia.situacaoOcorrencia},data-data=${#temporals.format(ocorrencia.dataOcorrencia, 'yyyy-MM-dd')}"
+                      >
+                        <i class="fa fa-bullhorn"></i>
+                      </a>
+                    </div>
 <script>
 $(function() {
   $('.btn-nova-postagem').off('click').on('click', function(e) {
