@@ -369,7 +369,7 @@
                 name="situacao"
                 onchange="this.form.page.value=0; this.form.submit();"
               >
-                <option value="" th:selected="${#strings.isEmpty(param.situacao)}">Todas</option>
+                <option value="" th:selected="${#strings.isEmpty(param.situacao)}">Todas situações</option>
                 <option value="P" th:selected="${param.situacao?.toString() == 'P'}">Programada</option>
                 <option value="R" th:selected="${param.situacao?.toString() == 'R'}">Realizada</option>
                 <option value="C" th:selected="${param.situacao?.toString() == 'C'}">Cancelada</option>
@@ -433,15 +433,15 @@
               </thead>
               <tbody>
                 <tr th:each="ocorrencia : ${ocorrencias}">
-                  <td th:text="${ocorrencia.id}"></td>
+                  <td th:text="${ocorrencia.id}" class="text-center"></td>
                   <td th:text="${ocorrencia.dataOcorrencia != null ? #temporals.format(ocorrencia.dataOcorrencia, 'dd/MM/yy') : ''}"></td>
                   <td th:text="${ocorrencia.horaInicioOcorrencia} + ' - ' + ${ocorrencia.horaFimOcorrencia}"></td>
-                  <td>
+                  <td class="text-center">  
                     <span th:if="${ocorrencia.situacaoOcorrencia} == 'P'" class="fw-bold text-success">P</span>
                     <span th:if="${ocorrencia.situacaoOcorrencia} == 'R'" class="fw-bold text-primary">R</span>
                     <span th:if="${ocorrencia.situacaoOcorrencia} == 'C'" class="fw-bold text-danger">C</span>
                   </td>
-                  <td th:text="${ocorrencia.qtdeParticipantes}"></td>
+                  <td th:text="${ocorrencia.qtdeParticipantes}" class="text-center"></td>></td>
                   <td th:text="${#strings.abbreviate(ocorrencia.assuntoDivulgacao, 50)}"></td>
                   <td th:text="${#strings.abbreviate(ocorrencia.idAutor != null && ocorrencia.idAutor.pessoa != null ? ocorrencia.idAutor.pessoa.nomePessoa : '', 20)}"></td>
                   <td>

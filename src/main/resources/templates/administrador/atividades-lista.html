@@ -358,9 +358,9 @@
           <thead class="table-light">
             <tr>
               <th>Data</th>
-              <th>Sit.</th>
-              <th>Forma</th>
-              <th>Alvo</th>
+              <th class="text-center">Sit.</th>
+              <th class="text-center">Forma</th>
+              <th class="text-center">Alvo</th>
               <th>Sub-Instituição</th>
               <th>Título Atividade</th>
               <th>Solicitante</th>
@@ -371,9 +371,41 @@
             <!-- Loop seguro: só processa se atividades não está vazia -->
             <tr th:each="atividade : ${atividades}">
               <td th:text="${atividade.dataAtualizacao}"></td>
-              <td th:text="${atividade.situacaoAtividade}"></td>
-              <td th:text="${atividade.formaApresentacao}"></td>
-              <td th:text="${atividade.publicoAlvo}"></td>
+              <td class="text-center">
+                <span
+                  th:if="${atividade.situacaoAtividade} == 'P'"
+                  class="fw-bold"
+                  style="color: orange"
+                  >P</span
+                >
+                <span
+                  th:if="${atividade.situacaoAtividade} == 'A'"
+                  class="fw-bold text-success"
+                  >A</span
+                >
+                <span
+                  th:if="${atividade.situacaoAtividade} == 'R'"
+                  class="fw-bold"
+                  style="color: #ff6b6b"
+                  >R</span
+                >
+                <span
+                  th:if="${atividade.situacaoAtividade} == 'C'"
+                  class="fw-bold"
+                  style="color: #d9534f"
+                  >C</span
+                >
+                <span
+                  th:if="${atividade.situacaoAtividade} == 'F'"
+                  class="fw-bold text-primary"
+                  >F</span
+                >
+              </td>
+              <td
+                class="text-center"
+                th:text="${atividade.formaApresentacao}"
+              ></td>
+              <td class="text-center" th:text="${atividade.publicoAlvo}"></td>
               <td
                 th:text="${#strings.abbreviate(atividade.subInstituicao != null ? atividade.subInstituicao.nomeSubInstituicao : '---', 20)}"
               ></td>

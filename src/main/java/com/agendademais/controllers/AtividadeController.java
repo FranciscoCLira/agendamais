@@ -35,13 +35,14 @@ public class AtividadeController {
             return "redirect:/login";
         }
         model.addAttribute("atividade", new Atividade());
-        model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
         com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
                 .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada != null) {
+            model.addAttribute("tiposAtividade", tipoAtividadeRepo.findByInstituicao(instituicaoSelecionada));
             model.addAttribute("subinstituicoes",
                     subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
         } else {
+            model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
             model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
         }
         model.addAttribute("pessoas", pessoaRepo.findAll());
@@ -124,16 +125,17 @@ public class AtividadeController {
         Atividade atividade = atividadeRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("ID inválido: " + id));
         model.addAttribute("atividade", atividade);
-        model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
-        model.addAttribute("instituicoes", instituicaoRepo.findAll());
         com.agendademais.entities.Instituicao instituicaoSelecionada = (com.agendademais.entities.Instituicao) session
                 .getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada != null) {
+            model.addAttribute("tiposAtividade", tipoAtividadeRepo.findByInstituicao(instituicaoSelecionada));
             model.addAttribute("subinstituicoes",
                     subInstituicaoRepo.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A"));
         } else {
+            model.addAttribute("tiposAtividade", tipoAtividadeRepo.findAll());
             model.addAttribute("subinstituicoes", subInstituicaoRepo.findAll());
         }
+        model.addAttribute("instituicoes", instituicaoRepo.findAll());
         model.addAttribute("pessoas", pessoaRepo.findAll());
         return "atividade-form";
     }
