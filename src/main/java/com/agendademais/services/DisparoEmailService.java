@@ -23,6 +23,7 @@ public class DisparoEmailService {
         public int falhas;
         public List<String> erros = new ArrayList<>();
         public boolean concluido;
+        public String fatalError; // New field for fatal errors
     }
 
     // Simulação de progresso por ocorrenciaId
@@ -53,7 +54,10 @@ public class DisparoEmailService {
             // Salvar log ao final do disparo
             try {
                 OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
-                if (ocorrencia != null) {
+                if (ocorrencia == null) {
+                    System.err.println("[LogPostagem] OcorrenciaAtividade não encontrada para ID: " + ocorrenciaId);
+                    progresso.fatalError = "OcorrenciaAtividade não encontrada para ID: " + ocorrenciaId;
+                } else {
                     LogPostagem log = new LogPostagem();
                     log.setDataHoraPostagem(LocalDateTime.now());
                     log.setOcorrenciaAtividadeId(ocorrencia.getId());
@@ -80,11 +84,19 @@ public class DisparoEmailService {
                     } else {
                         log.setMensagemLogPostagem("Nenhuma rejeição registrada.");
                     }
-                    logPostagemRepository.save(log);
+                    try {
+                        logPostagemRepository.save(log);
+                    } catch (Exception saveEx) {
+                        System.err.println("[LogPostagem] Falha ao salvar log para ocorrenciaId=" + ocorrenciaId);
+                        saveEx.printStackTrace();
+                        progresso.fatalError = "Erro ao salvar log: " + saveEx.getMessage();
+                    }
                 }
             } catch (Exception ex) {
-                // Não interrompe o sistema se falhar ao salvar o log
+                System.err
+                        .println("[LogPostagem] Erro inesperado ao criar/salvar log para ocorrenciaId=" + ocorrenciaId);
                 ex.printStackTrace();
+                progresso.fatalError = "Erro inesperado: " + ex.getMessage();
             }
         }).start();
     }

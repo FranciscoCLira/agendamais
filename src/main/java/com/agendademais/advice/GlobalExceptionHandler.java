@@ -1,6 +1,7 @@
 package com.agendademais.advice;
 
 import com.agendademais.exceptions.BusinessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.ui.Model;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -35,5 +36,13 @@ public class GlobalExceptionHandler {
         model.addAttribute("mensagemErro",
                 "Ação não permitida. Por favor, retorne à página inicial ou faça login novamente.");
         return "acesso-negado"; // Use uma página amigável!
+    }
+
+    // Tratar exceções de violação de integridade de dados
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public String handleDatabaseConstraint(Exception ex, Model model) {
+        model.addAttribute("errorTitle", "Erro de Integridade de Dados");
+        model.addAttribute("errorMessage", ex.getMessage());
+        return "error/custom-db-error";
     }
 }

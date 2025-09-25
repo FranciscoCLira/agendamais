@@ -17,8 +17,11 @@
           <h4 class="mb-0">Andamento do Disparo de E-mails</h4>
         </div>
         <div class="card-body">
+          <div id="fatalErrorBox" class="alert alert-danger d-none"></div>
           <div class="mb-3">
-            <b>Ocorrência:</b>
+            <b># Ocorrencia:</b>
+            <span th:text="${ocorrencia.id}"></span>
+            <span> - Tema: </span>
             <span th:text="${ocorrencia.temaOcorrencia}"></span><br />
             <b>Atividade:</b>
             <span th:text="${ocorrencia.idAtividade.tituloAtividade}"></span>
@@ -41,7 +44,11 @@
             Disparo concluído!
           </div>
           <a
-            th:href="@{/administrador/postagens/lista(origem='/administrador/postagens/nova')}"
+            th:href="@{/administrador/postagens/lista(
+                origem='/administrador/postagens/nova',
+                tituloAtividade=${ocorrencia.idAtividade.tituloAtividade},
+                assuntoDivulgacao=${ocorrencia.assuntoDivulgacao}
+              )}"
             class="btn btn-primary"
             >Histórico Postagens</a
           >
@@ -66,6 +73,14 @@
             var bar = document.getElementById("progressBar");
             bar.style.width = pct + "%";
             bar.textContent = data.enviados + " / " + data.total;
+            // Fatal error display
+            var fatalErrorBox = document.getElementById("fatalErrorBox");
+            if (data.fatalError) {
+              fatalErrorBox.textContent = data.fatalError;
+              fatalErrorBox.classList.remove("d-none");
+            } else {
+              fatalErrorBox.classList.add("d-none");
+            }
             // Falhas
             var falhasBox = document.getElementById("falhasBox");
             var errosList = document.getElementById("errosList");
