@@ -273,7 +273,7 @@
             aria-disabled="true"
             style="pointer-events: none; opacity: 0.7"
             >Nova Ocorrência</a>
-          <a th:href="@{'/administrador/postagens/lista'(origem=${urlAtual}, tituloAtividade=${param.tituloAtividade})}" class="btn btn-outline-info ms-2">Histórico Postagens</a>
+          <a th:href="@{'/administrador/postagens/lista'(origem=${urlAtual}, tituloAtividade=${atividadeSelecionada != null ? atividadeSelecionada.tituloAtividade : param.tituloAtividade})}" class="btn btn-outline-info ms-2">Histórico Postagens</a>
         </div>
       </div>
       <div class="card">
