@@ -176,8 +176,22 @@ public class LoginController {
         }
 
         if (instituicoesVinculadasAtivas.isEmpty()) {
-            redirectAttributes.addFlashAttribute("mensagemErro",
-                    "Seu acesso foi bloqueado ou cancelado. Consulte o administrador.");
+            // Busca todos os vínculos para mostrar mensagem adequada
+            List<UsuarioInstituicao> vinculos = usuarioInstituicaoRepository.findByUsuarioId(usuario.getId());
+            String mensagem = "Seu acesso foi bloqueado ou cancelado. Consulte o administrador.";
+            for (UsuarioInstituicao v : vinculos) {
+                Instituicao inst = v.getInstituicao();
+                if (inst != null) {
+                    String sit = inst.getSituacaoInstituicao();
+                    int nivel = v.getNivelAcessoUsuarioInstituicao();
+                    if ((nivel < 5 && !"A".equals(sit)) || (nivel == 5 && "I".equals(sit))) {
+                        mensagem = inst.getNomeInstituicao()
+                                + " encontra-se no momento bloqueado ou inativo, consulte o administrador.";
+                        break;
+                    }
+                }
+            }
+            redirectAttributes.addFlashAttribute("mensagemErro", mensagem);
             return "redirect:/acesso";
         }
 
@@ -185,10 +199,15 @@ public class LoginController {
         boolean ehSuperUsuario = vinculosAtivos.stream()
                 .anyMatch(v -> v.getNivelAcessoUsuarioInstituicao() == 9);
 
-        // SuperUsuário, sempre exibe a escolha mesmo com 1 vínculo
         if (ehSuperUsuario) {
+            // Para superusuário, mostrar todas as instituições vinculadas, independente do
+            // status
+            List<UsuarioInstituicao> todosVinculos = usuarioInstituicaoRepository.findByUsuarioId(usuario.getId());
+            List<Instituicao> todasInstituicoes = todosVinculos.stream()
+                    .map(UsuarioInstituicao::getInstituicao)
+                    .toList();
             redirectAttributes.addFlashAttribute("exibirInstituicoes", true);
-            redirectAttributes.addFlashAttribute("instituicoes", instituicoesVinculadasAtivas);
+            redirectAttributes.addFlashAttribute("instituicoes", todasInstituicoes);
             redirectAttributes.addFlashAttribute("username", username);
             redirectAttributes.addFlashAttribute("password", password);
             redirectAttributes.addFlashAttribute("exibirControleTotal", true);
@@ -246,8 +265,14 @@ public class LoginController {
 
         Usuario usuario = usuarioOpt.get();
 
-        if (!usuario.getPassword().equals(password)) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "password inválida.");
+        boolean senhaValida = false;
+        if (usuario.getPassword().startsWith("$2a$") || usuario.getPassword().startsWith("$2b$")) {
+            senhaValida = passwordEncoder.matches(password, usuario.getPassword());
+        } else {
+            senhaValida = usuario.getPassword().equals(password);
+        }
+        if (!senhaValida) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Senha invalida.");
             redirectAttributes.addFlashAttribute("username", username);
             return "redirect:/acesso";
         }
