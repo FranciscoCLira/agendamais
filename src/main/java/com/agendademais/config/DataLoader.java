@@ -81,18 +81,21 @@ public class DataLoader implements CommandLineRunner {
         inst1.setNomeInstituicao("Instituto Aurora");
         inst1.setSituacaoInstituicao("A");
         inst1.setDataUltimaAtualizacao(LocalDate.now());
+        inst1.setEmailInstituicao("instituto-aurora@exemplo.com");
         instituicaoRepository.save(inst1);
 
         Instituicao inst2 = new Instituicao();
         inst2.setNomeInstituicao("Instituto Luz");
         inst2.setSituacaoInstituicao("A");
         inst2.setDataUltimaAtualizacao(LocalDate.now());
+        inst2.setEmailInstituicao("instituto-luz@exemplo.com");
         instituicaoRepository.save(inst2);
 
         Instituicao inst3 = new Instituicao();
         inst3.setNomeInstituicao("Instituto Cruz");
         inst3.setSituacaoInstituicao("A");
         inst3.setDataUltimaAtualizacao(LocalDate.now());
+        inst3.setEmailInstituicao("instituto-cruz@exemplo.com");
         instituicaoRepository.save(inst3);
 
         // SUBINSTITUICOES DA INSTITUICAO 1

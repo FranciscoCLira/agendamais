@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Editar Instituição</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h2>Editar Dados da Instituição</h2>
+      <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+      <div
+        th:if="${success}"
+        class="alert alert-success"
+        th:text="${success}"
+      ></div>
+      <form
+        th:action="@{/administrador/instituicao/editar}"
+        th:object="${instituicao}"
+        method="post"
+      >
+        <input type="hidden" th:field="*{id}" />
+        <div class="mb-3">
+          <label for="nomeInstituicao" class="form-label"
+            >Nome da Instituição</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="nomeInstituicao"
+            th:field="*{nomeInstituicao}"
+            readonly
+          />
+        </div>
+        <div class="mb-3">
+          <label for="emailInstituicao" class="form-label"
+            >E-mail da Instituição</label
+          >
+          <input
+            type="email"
+            class="form-control"
+            id="emailInstituicao"
+            th:field="*{emailInstituicao}"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="situacaoInstituicao" class="form-label">Situação</label>
+          <select
+            class="form-select"
+            id="situacaoInstituicao"
+            th:field="*{situacaoInstituicao}"
+          >
+            <option value="A">Ativa</option>
+            <option value="B">Bloqueada</option>
+            <option value="I">Inativa</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </form>
+    </div>
+  </body>
+</html>

@@ -15,6 +15,7 @@ import com.agendademais.entities.UsuarioInstituicao;
 
 @Repository
 public interface UsuarioInstituicaoRepository extends JpaRepository<UsuarioInstituicao, Long> {
+        long countByInstituicaoId(Long instituicaoId);
 
         // checar se existem vínculos
         boolean existsByUsuarioId(Long usuarioId);

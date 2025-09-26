@@ -18,4 +18,7 @@ public interface SubInstituicaoRepository extends JpaRepository<SubInstituicao, 
 
 	// Novo método para buscar sub-instituições ativas por instituição
 	List<SubInstituicao> findByInstituicaoAndSituacaoSubInstituicao(Instituicao instituicao, String situacao);
+
+	// Conta quantas subinstituições existem para uma instituição
+	long countByInstituicaoId(Long instituicaoId);
 }

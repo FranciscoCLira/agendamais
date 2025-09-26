@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PessoaInstituicaoRepository extends JpaRepository<PessoaInstituicao, Long> {
+    long countByInstituicaoId(Long instituicaoId);
 
     boolean existsByPessoaId(Long pessoaId);
 

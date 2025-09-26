@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Editar Instituição</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+    <div class="container mt-4">
+      <h2>Editar Dados da Instituição</h2>
+      <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+      <div
+        th:if="${success}"
+        class="alert alert-success"
+        th:text="${success}"
+      ></div>
+      <form
+        th:action="@{/administrador/instituicao/editar}"
+        th:object="${instituicao}"
+        method="post"
+      >
+        <input type="hidden" th:field="*{id}" />
+        <div class="mb-3" style="width: 60%">
+          <label for="emailInstituicao" class="form-label"
+            >E-mail da Instituição</label
+          >
+          <input
+            type="email"
+            class="form-control"
+            id="emailInstituicao"
+            th:field="*{emailInstituicao}"
+            required
+            th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+          />
+        </div>
+        <div class="mb-3" style="width: 25%">
+          <label for="situacaoInstituicao" class="form-label">Situação</label>
+          <select
+            class="form-select"
+            id="situacaoInstituicao"
+            th:field="*{situacaoInstituicao}"
+            th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+          >
+            <option value="A">Ativa</option>
+            <option value="B">Bloqueada</option>
+          </select>
+        </div>
+        <div class="d-flex gap-2">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+          >
+            Salvar
+          </button>
+          <a th:href="@{/administrador}" class="btn btn-secondary">Voltar</a>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

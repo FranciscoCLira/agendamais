@@ -127,7 +127,21 @@ public class LoginController {
 
         List<UsuarioInstituicao> vinculosAtivos = usuarioInstituicaoRepository
                 .findByUsuarioIdAndSitAcessoUsuarioInstituicao(usuario.getId(), "A").stream()
-                .filter(v -> v.getInstituicao() != null && "A".equals(v.getInstituicao().getSituacaoInstituicao()))
+                .filter(v -> {
+                    if (v.getInstituicao() == null)
+                        return false;
+                    String sit = v.getInstituicao().getSituacaoInstituicao();
+                    int nivel = v.getNivelAcessoUsuarioInstituicao();
+                    // Permite acesso se instituição Ativa, Bloqueada (admin+), ou Inativa (apenas
+                    // superuser)
+                    if ("A".equals(sit))
+                        return true;
+                    if ("B".equals(sit) && nivel >= 5)
+                        return true;
+                    if ("I".equals(sit) && nivel == 9)
+                        return true;
+                    return false;
+                })
                 .toList();
 
         List<Instituicao> instituicoesVinculadasAtivas = vinculosAtivos.stream()
@@ -277,24 +291,16 @@ public class LoginController {
         Optional<UsuarioInstituicao> vinculoOpt = usuarioInstituicaoRepository
                 .findByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao);
 
-        // System.out.println("*** ");
-        // System.out.println("*** C. LoginController.java POST /acesso/entrar
-        // vinculoOpt= " +
-        // usuarioInstituicaoRepository.findByUsuarioIdAndInstituicaoId(usuario.getId(),
-        // instituicao));
-        // System.out.println("*** ");
-
-        if (vinculoOpt.isEmpty()
-                || !"A".equals(vinculoOpt.get().getSitAcessoUsuarioInstituicao())
-                || !"A".equals(vinculoOpt.get().getInstituicao().getSituacaoInstituicao())) {
-
-            // System.out.println("*** ");
-            // System.out.println("*** D.LoginController.java POST /acesso/entrar Entrou =>
-            // vinculoOpt Empty ou SitUsuarioInstitucao ≠ A ou Sit Institucao ≠ A");
-            // System.out.println("*** D.LoginController.java POST /acesso/entrar
-            // redirect:/cadastro-relacionamentos");
-            // System.out.println("*** ");
-
+        if (vinculoOpt.isEmpty() ||
+                !"A".equals(vinculoOpt.get().getSitAcessoUsuarioInstituicao()) ||
+                !("A".equals(vinculoOpt.get().getInstituicao().getSituacaoInstituicao()) ||
+                        ("B".equals(vinculoOpt.get().getInstituicao().getSituacaoInstituicao()) &&
+                                vinculoOpt.get().getNivelAcessoUsuarioInstituicao() >= 5)
+                        ||
+                        ("I".equals(vinculoOpt.get().getInstituicao().getSituacaoInstituicao()) &&
+                                vinculoOpt.get().getNivelAcessoUsuarioInstituicao() == 9))) {
+            // Só permite acesso se instituição Ativa, Bloqueada (admin+), ou Inativa
+            // (apenas superuser)
             session.setAttribute("usuarioPendencia", usuario);
             return "redirect:/cadastro-relacionamentos";
         }
