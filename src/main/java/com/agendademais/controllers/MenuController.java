@@ -1,6 +1,5 @@
 package com.agendademais.controllers;
 
-import com.agendademais.entities.Usuario;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,10 +38,10 @@ public class MenuController {
 
     // === ENDPOINTS EM CONSTRUÇÃO PARA CONTROLE TOTAL ===
 
-    @GetMapping("/gerenciar-instituicoes")
-    public String gerenciarInstituicoes() {
-        return "info/em-construcao"; // Página em construção
-    }
+    // @GetMapping("/gerenciar-instituicoes")
+    // public String gerenciarInstituicoes() {
+    // return "info/em-construcao"; // Página em construção
+    // }
 
     @GetMapping("/gestao-usuarios")
     public String gestaoUsuarios() {

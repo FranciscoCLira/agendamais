@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
 
 /**
  * Controller unificado para meus-dados - funciona para todos os níveis de
@@ -60,13 +59,19 @@ public class MeusDadosController {
      */
     @GetMapping("/meus-dados")
     public String exibirMeusDados(Model model, HttpSession session) {
-        // Formatar celular para exibição
+        // Sempre recarrega o usuário e pessoa do banco para garantir dados atualizados
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         if (usuario != null && usuario.getPessoa() != null) {
-            Pessoa pessoa = usuario.getPessoa();
-            if (pessoa.getCelularPessoa() != null && pessoa.getCelularPessoa().length() == 13) {
-                pessoa.setCelularPessoa(
-                        com.agendademais.utils.StringUtils.formatarCelularParaExibicao(pessoa.getCelularPessoa()));
+            Long pessoaId = usuario.getPessoa().getId();
+            Pessoa pessoaAtualizada = pessoaRepository.findById(pessoaId).orElse(null);
+            if (pessoaAtualizada != null) {
+                usuario.setPessoa(pessoaAtualizada);
+                session.setAttribute("usuarioLogado", usuario);
+                if (pessoaAtualizada.getCelularPessoa() != null && pessoaAtualizada.getCelularPessoa().length() == 13) {
+                    pessoaAtualizada.setCelularPessoa(
+                            com.agendademais.utils.StringUtils
+                                    .formatarCelularParaExibicao(pessoaAtualizada.getCelularPessoa()));
+                }
             }
         }
         return processarMeusDados(model, session);
@@ -100,7 +105,7 @@ public class MeusDadosController {
 
         return atualizarMeusDados(pessoa, paisOutro, estadoOutro, cidadeOutro,
                 nomePaisPessoa, nomeEstadoPessoa, nomeCidadePessoa,
-                null, null, false, false,
+                null, null, null, false, false,
                 session, model, redirectAttributes);
     }
 
@@ -193,6 +198,7 @@ public class MeusDadosController {
             @RequestParam String nomeCidadePessoa,
             @RequestParam(required = false) String subInstituicaoNome,
             @RequestParam(required = false) String identificacaoSubInstituicao,
+            @RequestParam(required = false) String dataAfiliacaoSubInstituicao,
             @RequestParam(required = false) Boolean excluirSubInstituicao,
             @RequestParam(required = false) Boolean possuiaVinculo,
             HttpSession session,
@@ -285,13 +291,21 @@ public class MeusDadosController {
             // Processa informações de Sub-Instituição
             try {
                 processarSubInstituicao(pessoaAtual, subInstituicaoNome, identificacaoSubInstituicao,
-                        excluirSubInstituicao, possuiaVinculo, session);
+                        excluirSubInstituicao, possuiaVinculo, session, dataAfiliacaoSubInstituicao);
             } catch (Exception e) {
                 System.err.println("Erro específico ao processar sub-instituição: " + e.getMessage());
                 e.printStackTrace();
                 redirectAttributes.addFlashAttribute("mensagemErro",
                         "Dados pessoais salvos, mas houve erro ao processar sub-instituição: " + e.getMessage());
                 return "redirect:/meus-dados";
+            }
+
+            // RELOAD pessoaAtual from DB and update session
+            Pessoa pessoaAtualizada = pessoaRepository.findById(pessoaAtual.getId()).orElse(pessoaAtual);
+            Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
+            if (usuarioLogado != null) {
+                usuarioLogado.setPessoa(pessoaAtualizada);
+                session.setAttribute("usuarioLogado", usuarioLogado);
             }
 
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Dados atualizados com sucesso!");
@@ -311,15 +325,31 @@ public class MeusDadosController {
     @Transactional
     private void processarSubInstituicao(Pessoa pessoa, String subInstituicaoNome,
             String identificacao, Boolean excluir,
-            Boolean possuiaVinculo, HttpSession session) {
+            Boolean possuiaVinculo, HttpSession session,
+            String dataAfiliacaoStr) {
+        java.time.LocalDate dataAfiliacaoInformada = null;
+        if (dataAfiliacaoStr != null && !dataAfiliacaoStr.isBlank()) {
+            try {
+                dataAfiliacaoInformada = java.time.LocalDate.parse(dataAfiliacaoStr);
+                if (dataAfiliacaoInformada.isAfter(java.time.LocalDate.now())) {
+                    throw new RuntimeException("A data de afiliação não pode ser posterior à data atual.");
+                }
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException("Data de afiliação inválida.");
+            }
+        }
+        System.out.println("[DEBUG] dataAfiliacaoStr (raw): '" + dataAfiliacaoStr + "'");
         try {
             System.out.println("=== ");
             System.out.println("=== PROCESSANDO SUB-INSTITUIÇÃO ===");
             System.out.println("Pessoa ID: " + pessoa.getId());
-            System.out.println("Sub-Instituição Nome: " + subInstituicaoNome);
-            System.out.println("Identificação: " + identificacao);
-            System.out.println("Excluir: " + excluir);
-            System.out.println("Possuía Vínculo: " + possuiaVinculo);
+            System.out.println("[DEBUG] subInstituicaoNome (raw): '" + subInstituicaoNome + "'");
+            System.out.println("[DEBUG] identificacao (raw): '" + identificacao + "'");
+            System.out.println("[DEBUG] excluir (raw): '" + excluir + "' (type: "
+                    + (excluir == null ? "null" : excluir.getClass().getName()) + ")");
+            System.out.println("[DEBUG] possuiaVinculo (raw): '" + possuiaVinculo + "'");
             System.out.println("=== ");
 
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
@@ -342,24 +372,39 @@ public class MeusDadosController {
                 System.out.println("Executando exclusão do vínculo...");
                 PessoaSubInstituicao vinculo = vinculoExistente.get();
                 System.out.println("Vínculo a ser excluído - ID: " + vinculo.getId());
+                pessoaSubInstituicaoRepository.deleteById(vinculo.getId());
+                pessoaSubInstituicaoRepository.flush();
+                System.out.println("[DEBUG] Pós-delete: vínculo existe? "
+                        + pessoaSubInstituicaoRepository.findById(vinculo.getId()).isPresent());
+                System.out.println("Vínculo com sub-instituição removido com sucesso");
+                return;
+            }
+
+            // Declaração única das variáveis de controle
+            boolean subInstituicaoVazia = (subInstituicaoNome == null || subInstituicaoNome.trim().isEmpty());
+            boolean identificacaoVazia = (identificacao == null || identificacao.trim().isEmpty());
+
+            // Caso 1: Exclusão de vínculo existente (checkbox ou ambos campos em branco)
+            if ((Boolean.TRUE.equals(excluir) || (subInstituicaoVazia && identificacaoVazia))
+                    && vinculoExistente.isPresent()) {
+                System.out.println("Executando exclusão do vínculo (checkbox ou ambos campos em branco)...");
+                PessoaSubInstituicao vinculo = vinculoExistente.get();
+                System.out.println("Vínculo a ser excluído - ID: " + vinculo.getId());
                 pessoaSubInstituicaoRepository.delete(vinculo);
+                pessoaSubInstituicaoRepository.flush();
                 System.out.println("Vínculo com sub-instituição removido com sucesso");
                 return;
             }
 
             // Caso 2: Exclusão marcada mas sem vínculo existente
-            if (Boolean.TRUE.equals(excluir) && !vinculoExistente.isPresent()) {
-                System.out.println("Exclusão marcada mas não há vínculo para remover");
+            if ((Boolean.TRUE.equals(excluir) || (subInstituicaoVazia && identificacaoVazia))
+                    && !vinculoExistente.isPresent()) {
+                System.out.println("Exclusão marcada ou ambos campos em branco, mas não há vínculo para remover");
                 return;
             }
 
-            // Caso 3: Não há dados de sub-instituição para processar
-            boolean subInstituicaoVazia = (subInstituicaoNome == null || subInstituicaoNome.trim().isEmpty());
-            boolean identificacaoVazia = (identificacao == null || identificacao.trim().isEmpty());
-            if (subInstituicaoVazia && identificacaoVazia) {
-                System.out.println("Não há dados de sub-instituição para processar");
-                return;
-            }
+            // Caso 3: Não há dados de sub-instituição para processar (já tratado acima)
+
             // Se identificacao preenchida sem subInstituicao, erro
             if (!subInstituicaoVazia && identificacaoVazia) {
                 // subInstituicao preenchida, identificacao vazia: PERMITIDO
@@ -390,27 +435,30 @@ public class MeusDadosController {
             }
 
             // Caso 5: Atualiza ou cria vínculo
-            PessoaSubInstituicao vinculo;
+            PessoaSubInstituicao vinculoToSave;
             if (vinculoExistente.isPresent()) {
                 // Atualiza vínculo existente
                 System.out.println("Atualizando vínculo existente");
-                vinculo = vinculoExistente.get();
-                vinculo.setSubInstituicao(subInstituicao);
-                vinculo.setIdentificacaoPessoaSubInstituicao(identificacao != null ? identificacao.trim() : null);
+                vinculoToSave = vinculoExistente.get();
+                vinculoToSave.setSubInstituicao(subInstituicao);
+                vinculoToSave.setIdentificacaoPessoaSubInstituicao(identificacao != null ? identificacao.trim() : null);
+                vinculoToSave.setDataAfiliacao(dataAfiliacaoInformada);
+                vinculoToSave.setDataUltimaAtualizacao(java.time.LocalDate.now());
                 System.out.println("Vínculo com sub-instituição atualizado");
             } else {
                 // Cria novo vínculo
                 System.out.println("Criando novo vínculo");
-                vinculo = new PessoaSubInstituicao();
-                vinculo.setPessoa(pessoa);
-                vinculo.setInstituicao(instituicao);
-                vinculo.setSubInstituicao(subInstituicao);
-                vinculo.setIdentificacaoPessoaSubInstituicao(identificacao != null ? identificacao.trim() : null);
-                vinculo.setDataAfiliacao(LocalDate.now());
+                vinculoToSave = new PessoaSubInstituicao();
+                vinculoToSave.setPessoa(pessoa);
+                vinculoToSave.setInstituicao(instituicao);
+                vinculoToSave.setSubInstituicao(subInstituicao);
+                vinculoToSave.setIdentificacaoPessoaSubInstituicao(identificacao != null ? identificacao.trim() : null);
+                vinculoToSave.setDataAfiliacao(dataAfiliacaoInformada);
+                vinculoToSave.setDataUltimaAtualizacao(java.time.LocalDate.now());
                 System.out.println("Novo vínculo com sub-instituição criado");
             }
 
-            PessoaSubInstituicao vinculoSalvo = pessoaSubInstituicaoRepository.save(vinculo);
+            PessoaSubInstituicao vinculoSalvo = pessoaSubInstituicaoRepository.save(vinculoToSave);
             System.out.println("Vínculo salvo com ID: " + vinculoSalvo.getId());
             System.out.println("=== PROCESSAMENTO CONCLUÍDO ===");
 
@@ -454,13 +502,14 @@ public class MeusDadosController {
         try {
             Object instituicaoSelecionada = session.getAttribute("instituicaoSelecionada");
             if (!(instituicaoSelecionada instanceof Instituicao)) {
+                System.out.println("[DEBUG] /api/sub-instituicoes: instituicaoSelecionada ausente ou inválida");
                 return ResponseEntity.ok(List.of());
             }
 
             Instituicao instituicao = (Instituicao) instituicaoSelecionada;
+            System.out.println("[DEBUG] /api/sub-instituicoes: instituicaoSelecionada=" + instituicao.getId()
+                    + ", nome=" + instituicao.getNomeInstituicao() + ", q='" + q + "'");
 
-            // Se não há termo de busca, retorna todas as sub-instituições ativas da
-            // instituição
             List<SubInstituicao> subInstituicoes;
             if (q == null || q.trim().isEmpty()) {
                 subInstituicoes = subInstituicaoRepository
@@ -475,6 +524,8 @@ public class MeusDadosController {
                         .filter(si -> si.getInstituicao().getId().equals(instituicao.getId()))
                         .toList();
             }
+
+            System.out.println("[DEBUG] /api/sub-instituicoes: encontrados " + subInstituicoes.size() + " resultados");
 
             // Converte para lista de nomes
             List<String> nomes = subInstituicoes.stream()

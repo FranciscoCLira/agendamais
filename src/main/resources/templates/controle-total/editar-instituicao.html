@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title
+      th:text="${instituicao.id != null} ? 'Editar Instituição' : 'Nova Instituição'"
+    ></title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+    <main class="main-content">
+      <div
+        style="
+          max-width: 600px;
+          margin: 40px auto;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 2px 12px #0001;
+          padding: 32px;
+        "
+      >
+        <h2
+          style="text-align: center; margin-bottom: 28px"
+          th:text="${instituicao.id != null} ? 'Editar Instituição' : 'Nova Instituição'"
+        ></h2>
+        <form
+          th:action="@{/gerenciar-instituicoes/salvar}"
+          th:object="${instituicao}"
+          method="post"
+        >
+          <input type="hidden" th:field="*{id}" />
+          <div style="margin-bottom: 18px">
+            <label
+              for="nomeInstituicao"
+              style="display: block; font-weight: bold"
+              >Nome:</label
+            >
+            <input
+              type="text"
+              id="nomeInstituicao"
+              th:field="*{nomeInstituicao}"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 18px">
+            <label
+              for="emailInstituicao"
+              style="display: block; font-weight: bold"
+              >Email:</label
+            >
+            <input
+              type="email"
+              id="emailInstituicao"
+              th:field="*{emailInstituicao}"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 24px">
+            <label
+              for="situacaoInstituicao"
+              style="display: block; font-weight: bold"
+              >Situação:</label
+            >
+            <select
+              id="situacaoInstituicao"
+              th:field="*{situacaoInstituicao}"
+              style="
+                width: 100%;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            >
+              <option value="A">Ativa</option>
+              <option value="B">Bloqueada</option>
+              <option value="I">Inativa</option>
+            </select>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 12px">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              style="
+                background: #4f2683;
+                color: #fff;
+                padding: 8px 18px;
+                border-radius: 6px;
+                font-weight: bold;
+                border: none;
+              "
+            >
+              Salvar
+            </button>
+            <a
+              th:href="@{/gerenciar-instituicoes}"
+              class="btn btn-secondary"
+              style="
+                background: #eee;
+                color: #4f2683;
+                padding: 8px 18px;
+                border-radius: 6px;
+                font-weight: bold;
+                text-decoration: none;
+                border: 1px solid #4f2683;
+              "
+              >Voltar</a
+            >
+          </div>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>

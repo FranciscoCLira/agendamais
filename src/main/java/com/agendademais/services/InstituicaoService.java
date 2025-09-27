@@ -9,6 +9,17 @@ import java.util.Optional;
 
 @Service
 public class InstituicaoService {
+
+    @Autowired
+    private com.agendademais.repositories.UsuarioInstituicaoRepository usuarioInstituicaoRepository;
+
+    @Autowired
+    private com.agendademais.repositories.PessoaInstituicaoRepository pessoaInstituicaoRepository;
+
+    public java.util.List<Instituicao> findAll() {
+        return instituicaoRepository.findAll();
+    }
+
     @Autowired
     private InstituicaoRepository instituicaoRepository;
 
@@ -29,7 +40,19 @@ public class InstituicaoService {
 
     @Transactional
     public boolean deleteIfNoRelations(Long id) {
-        // Implement relation checks as needed
+        Optional<Instituicao> opt = instituicaoRepository.findById(id);
+        if (opt.isEmpty())
+            return false;
+        Instituicao inst = opt.get();
+        // Only allow delete if status is Inativa and no user/person links
+        if (!"I".equalsIgnoreCase(inst.getSituacaoInstituicao())) {
+            return false;
+        }
+        long usuarioLinks = usuarioInstituicaoRepository.countByInstituicaoId(id);
+        long pessoaLinks = pessoaInstituicaoRepository.countByInstituicaoId(id);
+        if (usuarioLinks > 0 || pessoaLinks > 0) {
+            return false;
+        }
         instituicaoRepository.deleteById(id);
         return true;
     }
