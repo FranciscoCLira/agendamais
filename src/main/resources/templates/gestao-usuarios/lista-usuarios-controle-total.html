@@ -386,20 +386,28 @@
       window.paginaAtual = 1;
       function atualizarInfoPaginacao() {
         // Recebe o total de linhas filtradas ANTES da paginação
-        const itensPorPagina = parseInt(document.getElementById("itensPorPagina").value);
+        const itensPorPagina = parseInt(
+          document.getElementById("itensPorPagina").value
+        );
         const total = atualizarInfoPaginacao.totalFiltrados || 0;
         const totalPaginas = Math.ceil(total / itensPorPagina) || 1;
         const paginaAtual = window.paginaAtual;
-        document.getElementById("infoPaginacao").textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+        document.getElementById(
+          "infoPaginacao"
+        ).textContent = `Página ${paginaAtual} de ${totalPaginas}`;
         document.getElementById("btnAnterior").disabled = paginaAtual === 1;
-        document.getElementById("btnProximo").disabled = paginaAtual === totalPaginas;
+        document.getElementById("btnProximo").disabled =
+          paginaAtual === totalPaginas;
       }
 
       function paginarTabela() {
         if (!window.linhasFiltradas) return;
         // Exibe só as linhas da página atual, esconde as demais
         window.linhasFiltradas.forEach((linha, idx) => {
-          if (idx >= (window.paginaAtual - 1) * window.itensPorPagina && idx < window.paginaAtual * window.itensPorPagina) {
+          if (
+            idx >= (window.paginaAtual - 1) * window.itensPorPagina &&
+            idx < window.paginaAtual * window.itensPorPagina
+          ) {
             linha.style.display = "";
             linha.removeAttribute("data-hide-by-pagination");
           } else {
@@ -409,33 +417,44 @@
         });
         atualizarInfoPaginacao.totalFiltrados = window.linhasFiltradas.length;
         // Corrige paginaAtual se estiver fora do limite
-        const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
-        if (window.paginaAtual > totalPaginas) window.paginaAtual = totalPaginas;
+        const totalPaginas =
+          Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
+        if (window.paginaAtual > totalPaginas)
+          window.paginaAtual = totalPaginas;
         if (window.paginaAtual < 1) window.paginaAtual = 1;
         atualizarInfoPaginacao();
       }
 
       function filtrarTabela() {
-        const filtro = document.getElementById("filtroUsuario").value.toLowerCase();
+        const filtro = document
+          .getElementById("filtroUsuario")
+          .value.toLowerCase();
         const filtroInst = document.getElementById("filtroInstituicao").value;
-        const linhas = Array.from(document.querySelectorAll("#tabelaUsuarios tbody tr"));
+        const linhas = Array.from(
+          document.querySelectorAll("#tabelaUsuarios tbody tr")
+        );
         // Aplica filtro e armazena resultado globalmente
         window.linhasFiltradas = linhas.filter(function (linha) {
           const textoLinha = linha.textContent.toLowerCase();
-          const inst = linha.querySelector("td:nth-child(4) .badge").textContent.trim().toLowerCase();
+          const inst = linha
+            .querySelector("td:nth-child(4) .badge")
+            .textContent.trim()
+            .toLowerCase();
           const matchFiltro = !filtro || textoLinha.includes(filtro);
           const matchInst = !filtroInst || inst === filtroInst;
           return matchFiltro && matchInst;
         });
         // Exibe só as linhas filtradas, oculta as demais
-        linhas.forEach(linha => {
+        linhas.forEach((linha) => {
           if (window.linhasFiltradas.includes(linha)) {
             linha.style.display = "";
           } else {
             linha.style.display = "none";
           }
         });
-        window.itensPorPagina = parseInt(document.getElementById("itensPorPagina").value);
+        window.itensPorPagina = parseInt(
+          document.getElementById("itensPorPagina").value
+        );
         // Só resetar para página 1 se o filtro ou itens por página mudarem
         if (filtrarTabela.resetToFirstPage) {
           window.paginaAtual = 1;
@@ -489,9 +508,12 @@
         document
           .getElementById("btnProximo")
           .addEventListener("click", function () {
-            const itensPorPagina = parseInt(document.getElementById("itensPorPagina").value);
+            const itensPorPagina = parseInt(
+              document.getElementById("itensPorPagina").value
+            );
             const totalFiltrados = atualizarInfoPaginacao.totalFiltrados || 0;
-            const totalPaginas = Math.ceil(totalFiltrados / itensPorPagina) || 1;
+            const totalPaginas =
+              Math.ceil(totalFiltrados / itensPorPagina) || 1;
             if (window.paginaAtual < totalPaginas) {
               window.paginaAtual++;
               paginarTabela();
