@@ -199,7 +199,7 @@ public class MeusDadosController {
             @RequestParam(required = false) String subInstituicaoNome,
             @RequestParam(required = false) String identificacaoSubInstituicao,
             @RequestParam(required = false) String dataAfiliacaoSubInstituicao,
-            @RequestParam(required = false) Boolean excluirSubInstituicao,
+            @RequestParam(required = false) String excluirSubInstituicao,
             @RequestParam(required = false) Boolean possuiaVinculo,
             HttpSession session,
             Model model,
@@ -290,8 +290,11 @@ public class MeusDadosController {
 
             // Processa informações de Sub-Instituição
             try {
+                Boolean excluirBool = "true".equalsIgnoreCase(excluirSubInstituicao);
+                System.out.println("[DEBUG] excluirSubInstituicao recebido: '" + excluirSubInstituicao
+                        + "' (convertido: " + excluirBool + ")");
                 processarSubInstituicao(pessoaAtual, subInstituicaoNome, identificacaoSubInstituicao,
-                        excluirSubInstituicao, possuiaVinculo, session, dataAfiliacaoSubInstituicao);
+                        excluirBool, possuiaVinculo, session, dataAfiliacaoSubInstituicao);
             } catch (Exception e) {
                 System.err.println("Erro específico ao processar sub-instituição: " + e.getMessage());
                 e.printStackTrace();
@@ -327,6 +330,11 @@ public class MeusDadosController {
             String identificacao, Boolean excluir,
             Boolean possuiaVinculo, HttpSession session,
             String dataAfiliacaoStr) {
+        // Always fetch Pessoa from repository to ensure it is managed and attached to
+        // the session
+        Pessoa pessoaManaged = pessoaRepository.findById(pessoa.getId())
+                .orElseThrow(() -> new RuntimeException("Pessoa não encontrada ao atualizar sub-instituição"));
+
         java.time.LocalDate dataAfiliacaoInformada = null;
         if (dataAfiliacaoStr != null && !dataAfiliacaoStr.isBlank()) {
             try {
@@ -363,7 +371,7 @@ public class MeusDadosController {
 
             // Busca vínculo existente
             Optional<PessoaSubInstituicao> vinculoExistente = pessoaSubInstituicaoRepository
-                    .findByPessoaAndInstituicao(pessoa, instituicao);
+                    .findByPessoaAndInstituicao(pessoaManaged, instituicao);
 
             System.out.println("Vínculo existente encontrado: " + vinculoExistente.isPresent());
 
@@ -372,11 +380,24 @@ public class MeusDadosController {
                 System.out.println("Executando exclusão do vínculo...");
                 PessoaSubInstituicao vinculo = vinculoExistente.get();
                 System.out.println("Vínculo a ser excluído - ID: " + vinculo.getId());
-                pessoaSubInstituicaoRepository.deleteById(vinculo.getId());
+                // Remove from Pessoa's list to trigger orphanRemoval
+                if (pessoaManaged.getPessoaSubInstituicao() != null) {
+                    pessoaManaged.getPessoaSubInstituicao().removeIf(v -> v.getId().equals(vinculo.getId()));
+                }
+                // Save Pessoa to persist orphan removal
+                pessoaRepository.save(pessoaManaged);
                 pessoaSubInstituicaoRepository.flush();
-                System.out.println("[DEBUG] Pós-delete: vínculo existe? "
-                        + pessoaSubInstituicaoRepository.findById(vinculo.getId()).isPresent());
-                System.out.println("Vínculo com sub-instituição removido com sucesso");
+                boolean aindaExiste = pessoaSubInstituicaoRepository.findById(vinculo.getId()).isPresent();
+                System.out.println("[DEBUG] Pós-delete: vínculo existe? " + aindaExiste);
+                // Busca por pessoa e instituição para garantir que não há mais vínculo
+                Optional<PessoaSubInstituicao> checkVinculo = pessoaSubInstituicaoRepository
+                        .findByPessoaAndInstituicao(pessoa, instituicao);
+                System.out.println("[DEBUG] Pós-delete: findByPessoaAndInstituicao: " + checkVinculo.isPresent());
+                if (aindaExiste || checkVinculo.isPresent()) {
+                    System.err.println("[ALERTA] Vínculo NÃO removido do banco!");
+                } else {
+                    System.out.println("Vínculo com sub-instituição removido com sucesso");
+                }
                 return;
             }
 
@@ -390,8 +411,15 @@ public class MeusDadosController {
                 System.out.println("Executando exclusão do vínculo (checkbox ou ambos campos em branco)...");
                 PessoaSubInstituicao vinculo = vinculoExistente.get();
                 System.out.println("Vínculo a ser excluído - ID: " + vinculo.getId());
-                pessoaSubInstituicaoRepository.delete(vinculo);
+                // Remove from Pessoa's list to trigger orphanRemoval
+                if (pessoaManaged.getPessoaSubInstituicao() != null) {
+                    pessoaManaged.getPessoaSubInstituicao().removeIf(v -> v.getId().equals(vinculo.getId()));
+                }
+                // Save Pessoa to persist orphan removal
+                pessoaRepository.save(pessoaManaged);
                 pessoaSubInstituicaoRepository.flush();
+                boolean aindaExiste = pessoaSubInstituicaoRepository.findById(vinculo.getId()).isPresent();
+                System.out.println("[DEBUG] Pós-delete: vínculo existe? " + aindaExiste);
                 System.out.println("Vínculo com sub-instituição removido com sucesso");
                 return;
             }

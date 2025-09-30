@@ -70,14 +70,7 @@ public class CadastroRelacionamentoController {
             return "redirect:/acesso";
         }
 
-        model.addAttribute("username", usuario.getUsername());
-        model.addAttribute("nomeUsuario",
-                usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
-
-        // Listar somente instituições e subinstituições ativas
-        model.addAttribute("instituicoes", instituicaoRepository.findBySituacaoInstituicao("A"));
-        model.addAttribute("subInstituicoes", subInstituicaoRepository.findBySituacaoSubInstituicao("A"));
-
+        prepararTela(model, usuario.getUsername(), usuario, new java.util.HashMap<>(), null);
         return "cadastro-relacionamentos";
     }
 
@@ -97,154 +90,180 @@ public class CadastroRelacionamentoController {
         // System.out.println("====================================================================");
 
         String username = allParams.get("username");
-        if (username == null || username.isEmpty()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Código de usuário não informado.");
-            return "redirect:/acesso";
-        }
+        Usuario usuario = null;
+        try {
+            if (username == null || username.isEmpty()) {
+                redirectAttributes.addFlashAttribute("mensagemErro", "Código de usuário não informado.");
+                return "redirect:/acesso";
+            }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
-        if (usuarioOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
-            return "redirect:/acesso";
-        }
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+            if (usuarioOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
+                return "redirect:/acesso";
+            }
 
-        Usuario usuario = usuarioOpt.get();
-        Pessoa pessoa = usuario.getPessoa();
-        if (pessoa == null) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não possui cadastro de pessoa.");
-            return "redirect:/acesso";
-        }
+            usuario = usuarioOpt.get();
+            Pessoa pessoa = usuario.getPessoa();
+            if (pessoa == null) {
+                redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não possui cadastro de pessoa.");
+                return "redirect:/acesso";
+            }
 
-        if (instituicoesSelecionadas == null || instituicoesSelecionadas.length == 0) {
-            // Chama método de exclusão do cadastro
-            cancelarCadastro(username, redirectAttributes, session);
-            return "redirect:/acesso";
-        }
+            if (instituicoesSelecionadas == null || instituicoesSelecionadas.length == 0) {
+                // Chama método de exclusão do cadastro
+                cancelarCadastro(username, redirectAttributes, session);
+                return "redirect:/acesso";
+            }
 
-        // ===== 1) VALIDAÇÃO PRÉVIA - NÃO DELETA NADA AINDA =====
-        for (String key : allParams.keySet()) {
-            if (key.startsWith("instituicoesSelecionadas")) {
-                String instIdStr = allParams.get(key);
-                Long instId = Long.parseLong(instIdStr);
+            // ===== 1) VALIDAÇÃO PRÉVIA - NÃO DELETA NADA AINDA =====
+            for (String key : allParams.keySet()) {
+                if (key.startsWith("instituicoesSelecionadas")) {
+                    String instIdStr = allParams.get(key);
+                    Long instId = Long.parseLong(instIdStr);
 
-                // Data afiliação Instituição
-                String dataAfiliacaoStr = allParams.get("dataAfiliacao_" + instId);
-                if (dataAfiliacaoStr != null && !dataAfiliacaoStr.isEmpty()) {
-                    LocalDate dataAfiliacao = LocalDate.parse(dataAfiliacaoStr);
-                    if (dataAfiliacao.isAfter(LocalDate.now())) {
-                        model.addAttribute("mensagemErro",
-                                "A data de afiliação da instituição não pode ser no futuro.");
-                        prepararTela(model, username, usuario, allParams);
-                        return "cadastro-relacionamentos";
-                    }
-                }
-
-                // SubInstituição
-                String subInstIdStr = allParams.get("subInstituicao_" + instId);
-                if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
-                    String dataAfiliacaoSubStr = allParams.get("dataAfiliacaoSub_" + instId);
-                    if (dataAfiliacaoSubStr != null && !dataAfiliacaoSubStr.isEmpty()) {
-                        LocalDate dataAfiliacaoSub = LocalDate.parse(dataAfiliacaoSubStr);
-                        if (dataAfiliacaoSub.isAfter(LocalDate.now())) {
+                    // Data afiliação Instituição
+                    String dataAfiliacaoStr = allParams.get("dataAfiliacao_" + instId);
+                    if (dataAfiliacaoStr != null && !dataAfiliacaoStr.isEmpty()) {
+                        LocalDate dataAfiliacao = LocalDate.parse(dataAfiliacaoStr);
+                        if (dataAfiliacao.isAfter(LocalDate.now())) {
                             model.addAttribute("mensagemErro",
-                                    "A data de afiliação da subinstituição não pode ser no futuro.");
-                            prepararTela(model, username, usuario, allParams);
+                                    "A data de afiliação da instituição não pode ser no futuro.");
+                            prepararTela(model, username, usuario, allParams, instituicoesSelecionadas);
                             return "cadastro-relacionamentos";
+                        }
+                    }
+
+                    // SubInstituição
+                    String subInstIdStr = allParams.get("subInstituicao_" + instId);
+                    if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
+                        String dataAfiliacaoSubStr = allParams.get("dataAfiliacaoSub_" + instId);
+                        if (dataAfiliacaoSubStr != null && !dataAfiliacaoSubStr.isEmpty()) {
+                            LocalDate dataAfiliacaoSub = LocalDate.parse(dataAfiliacaoSubStr);
+                            if (dataAfiliacaoSub.isAfter(LocalDate.now())) {
+                                model.addAttribute("mensagemErro",
+                                        "A data de afiliação da subinstituição não pode ser no futuro.");
+                                prepararTela(model, username, usuario, allParams, instituicoesSelecionadas);
+                                return "cadastro-relacionamentos";
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // ===== 2) TUDO VALIDADO: Deleta antigos =====
-        usuarioInstituicaoRepository.deleteAllByUsuarioId(usuario.getId());
-        pessoaInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
-        pessoaSubInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
+            // ===== 2) TUDO VALIDADO: Deleta antigos =====
+            usuarioInstituicaoRepository.deleteAllByUsuarioId(usuario.getId());
+            pessoaInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
+            pessoaSubInstituicaoRepository.deleteAllByPessoaId(pessoa.getId());
 
-        // ===== 3) Insere os novos vínculos =====
-        for (String instIdStr : instituicoesSelecionadas) {
-            Long instId = Long.parseLong(instIdStr);
+            // ===== 3) Insere os novos vínculos =====
+            for (String instIdStr : instituicoesSelecionadas) {
+                Long instId = Long.parseLong(instIdStr);
 
-            // Data afiliação
-            String dataAfiliacaoStr = allParams.get("dataAfiliacao_" + instId);
-            LocalDate dataAfiliacao = (dataAfiliacaoStr != null && !dataAfiliacaoStr.isEmpty())
-                    ? LocalDate.parse(dataAfiliacaoStr)
-                    : null;
+                // Data afiliação
+                String dataAfiliacaoStr = allParams.get("dataAfiliacao_" + instId);
+                LocalDate dataAfiliacao = (dataAfiliacaoStr != null && !dataAfiliacaoStr.isEmpty())
+                        ? LocalDate.parse(dataAfiliacaoStr)
+                        : null;
+                if (dataAfiliacao != null && dataAfiliacao.isAfter(LocalDate.now())) {
+                    throw new RuntimeException("A data de afiliação da instituição não pode ser no futuro.");
+                }
 
-            // Inclui PessoaInstituicao
-            PessoaInstituicao psi = new PessoaInstituicao();
-            psi.setPessoa(pessoa);
-            psi.setInstituicao(instituicaoRepository.findById(instId).orElse(null));
-            psi.setDataUltimaAtualizacao(LocalDate.now());
-            psi.setDataAfiliacao(dataAfiliacao);
+                // Inclui PessoaInstituicao
+                PessoaInstituicao psi = new PessoaInstituicao();
+                psi.setPessoa(pessoa);
+                psi.setInstituicao(instituicaoRepository.findById(instId).orElse(null));
+                psi.setDataUltimaAtualizacao(LocalDate.now());
+                psi.setDataAfiliacao(dataAfiliacao);
 
-            String identificacao = allParams.get("identificacao_" + instId);
-            psi.setIdentificacaoPessoaInstituicao(identificacao);
-            pessoaInstituicaoRepository.save(psi);
+                String identificacao = allParams.get("identificacao_" + instId);
+                psi.setIdentificacaoPessoaInstituicao(identificacao);
+                pessoaInstituicaoRepository.save(psi);
 
-            // Inclui UsuarioInstituicao
-            UsuarioInstituicao ui = new UsuarioInstituicao();
-            ui.setUsuario(usuario);
-            ui.setInstituicao(psi.getInstituicao());
-            ui.setSitAcessoUsuarioInstituicao("A");
-            ui.setNivelAcessoUsuarioInstituicao(1); // Nível padrão: Participante
-            usuarioInstituicaoRepository.save(ui);
+                // Inclui UsuarioInstituicao
+                UsuarioInstituicao ui = new UsuarioInstituicao();
+                ui.setUsuario(usuario);
+                ui.setInstituicao(psi.getInstituicao());
+                ui.setSitAcessoUsuarioInstituicao("A");
+                ui.setNivelAcessoUsuarioInstituicao(1); // Nível padrão: Participante
+                usuarioInstituicaoRepository.save(ui);
 
-            // SubInstituição
-            String subInstIdStr = allParams.get("subInstituicao_" + instId);
-            if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
-                Long subInstId = Long.parseLong(subInstIdStr);
-                SubInstituicao subInst = subInstituicaoRepository.findById(subInstId).orElse(null);
+                // SubInstituição
+                String subInstIdStr = allParams.get("subInstituicao_" + instId);
+                if (subInstIdStr != null && !subInstIdStr.isEmpty()) {
+                    Long subInstId = Long.parseLong(subInstIdStr);
+                    SubInstituicao subInst = subInstituicaoRepository.findById(subInstId).orElse(null);
 
-                if (subInst != null) {
-                    String dataAfiliacaoSubStr = allParams.get("dataAfiliacaoSub_" + instId);
-                    LocalDate dataAfiliacaoSub = (dataAfiliacaoSubStr != null && !dataAfiliacaoSubStr.isEmpty())
-                            ? LocalDate.parse(dataAfiliacaoSubStr)
-                            : null;
+                    if (subInst != null) {
+                        String dataAfiliacaoSubStr = allParams.get("dataAfiliacaoSub_" + instId);
+                        LocalDate dataAfiliacaoSub = (dataAfiliacaoSubStr != null && !dataAfiliacaoSubStr.isEmpty())
+                                ? LocalDate.parse(dataAfiliacaoSubStr)
+                                : null;
+                        if (dataAfiliacaoSub != null && dataAfiliacaoSub.isAfter(LocalDate.now())) {
+                            throw new RuntimeException("A data de afiliação da subinstituição não pode ser no futuro.");
+                        }
 
-                    PessoaSubInstituicao psiSub = new PessoaSubInstituicao();
-                    psiSub.setPessoa(pessoa);
-                    psiSub.setSubInstituicao(subInst);
-                    psiSub.setInstituicao(subInst.getInstituicao());
-                    psiSub.setDataUltimaAtualizacao(LocalDate.now());
-                    psiSub.setDataAfiliacao(dataAfiliacaoSub);
+                        PessoaSubInstituicao psiSub = new PessoaSubInstituicao();
+                        psiSub.setPessoa(pessoa);
+                        psiSub.setSubInstituicao(subInst);
+                        psiSub.setInstituicao(subInst.getInstituicao());
+                        psiSub.setDataUltimaAtualizacao(LocalDate.now());
+                        psiSub.setDataAfiliacao(dataAfiliacaoSub);
 
-                    psiSub.setIdentificacaoPessoaSubInstituicao(
-                            allParams.get("identificacaoSub_" + instId));
+                        psiSub.setIdentificacaoPessoaSubInstituicao(
+                                allParams.get("identificacaoSub_" + instId));
 
-                    pessoaSubInstituicaoRepository.save(psiSub);
+                        pessoaSubInstituicaoRepository.save(psiSub);
+                    }
                 }
             }
-        }
 
-        // Remove dados de sessão
-        session.removeAttribute("usuarioPendencia");
+            // Remove dados de sessão
+            session.removeAttribute("usuarioPendencia");
 
-        // Redireciona baseado na origem do cadastro
-        String origemCadastro = (String) session.getAttribute("origemCadastro");
-        session.removeAttribute("origemCadastro");
+            // Redireciona baseado na origem do cadastro
+            String origemCadastro = (String) session.getAttribute("origemCadastro");
+            session.removeAttribute("origemCadastro");
 
-        redirectAttributes.addFlashAttribute("mensagemSucesso",
-                "Cadastro concluído com sucesso! Usuário: "
-                        + usuario.getUsername()
-                        + " - " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : ""));
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Cadastro concluído com sucesso! Usuário: "
+                            + usuario.getUsername()
+                            + " - " + (pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : ""));
 
-        // Redireciona para onde o cadastro foi iniciado para permitir novos cadastros
-        if ("administrador".equals(origemCadastro)) {
-            return "redirect:/cadastro-usuario?origem=administrador";
-        } else if ("superusuario".equals(origemCadastro)) {
-            return "redirect:/cadastro-usuario?origem=superusuario";
-        } else {
-            return "redirect:/acesso";
+            // Redireciona para onde o cadastro foi iniciado para permitir novos cadastros
+            if ("administrador".equals(origemCadastro)) {
+                return "redirect:/cadastro-usuario?origem=administrador";
+            } else if ("superusuario".equals(origemCadastro)) {
+                return "redirect:/cadastro-usuario?origem=superusuario";
+            } else {
+                return "redirect:/acesso";
+            }
+        } catch (RuntimeException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            prepararTela(model, username, usuario, allParams, instituicoesSelecionadas);
+            return "cadastro-relacionamentos";
         }
     }
 
-    private void prepararTela(Model model, String username, Usuario usuario, Map<String, String> allParams) {
-        model.addAttribute("instituicoes", instituicaoRepository.findAll());
-        model.addAttribute("subInstituicoes", subInstituicaoRepository.findAll());
+    private void prepararTela(Model model, String username, Usuario usuario, Map<String, String> allParams,
+            String[] instituicoesSelecionadas) {
+        model.addAttribute("instituicoes", instituicaoRepository.findBySituacaoInstituicao("A"));
+        model.addAttribute("subInstituicoes", subInstituicaoRepository.findBySituacaoSubInstituicao("A"));
         model.addAttribute("username", username);
         model.addAttribute("nomeUsuario", usuario.getPessoa() != null ? usuario.getPessoa().getNomePessoa() : "");
         model.addAttribute("parametrosForm", allParams);
+
+        // Usa o array recebido diretamente
+        java.util.List<Long> selecionadasLong = new java.util.ArrayList<>();
+        if (instituicoesSelecionadas != null) {
+            for (String s : instituicoesSelecionadas) {
+                try {
+                    selecionadasLong.add(Long.parseLong(s.trim()));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        model.addAttribute("instituicoesSelecionadas", selecionadasLong);
     }
 
     @GetMapping("/cancelar")

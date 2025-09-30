@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <title>Gestão de Usuários - Controle Total</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <!-- FontAwesome 5 CDN para ícones -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -76,7 +77,7 @@
 
       <!-- Filtros -->
       <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-5">
           <div class="input-group">
             <span class="input-group-text">
               <i class="fas fa-search"></i>
@@ -89,10 +90,19 @@
             />
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <select class="form-select" id="filtroInstituicao">
             <option value="">Todas as Instituições</option>
             <!-- Opções serão populadas dinamicamente -->
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="itensPorPagina">
+            <option value="10">10 por página</option>
+            <option value="50">50 por página</option>
+            <option value="100">100 por página</option>
+            <option value="200">200 por página</option>
+            <option value="300">300 por página</option>
           </select>
         </div>
       </div>
@@ -102,9 +112,7 @@
         <div class="card-header bg-light">
           <h5 class="mb-0">
             <i class="fas fa-list me-2"></i>
-            Lista Completa de Usuários (<span th:text="${#lists.size(usuarios)}"
-              >0</span
-            >
+            Lista de Usuários (<span th:text="${#lists.size(usuarios)}">0</span>
             usuários)
           </h5>
         </div>
@@ -126,7 +134,7 @@
               </thead>
               <tbody>
                 <tr th:each="usuarioInst : ${usuarios}" class="linha-usuario">
-                  <td th:text="${usuarioInst.usuario.username}">U001</td>
+                  <td th:text="${usuarioInst.usuario.username}">U00001</td>
                   <td>
                     <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
                       >Nome do Usuário</strong
@@ -143,15 +151,12 @@
                     >
                   </td>
                   <td>
-                    <th:block
+                    <span
                       th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao != null and usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() > 0}"
+                      class="badge bg-info"
+                      th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao}"
+                      >Sub</span
                     >
-                      <span
-                        th:text="${usuarioInst.usuario.pessoa.pessoaSubInstituicao[0].subInstituicao.nomeSubInstituicao}"
-                        class="badge bg-info"
-                      >
-                      </span>
-                    </th:block>
                     <span
                       th:if="${usuarioInst.usuario.pessoa.pessoaSubInstituicao == null or usuarioInst.usuario.pessoa.pessoaSubInstituicao.size() == 0}"
                       class="text-muted"
@@ -159,6 +164,7 @@
                     >
                   </td>
                   <td>
+                    <!-- Nivel de acesso -->
                     <span
                       th:switch="${usuarioInst.nivelAcessoUsuarioInstituicao}"
                     >
@@ -181,6 +187,7 @@
                     </span>
                   </td>
                   <td>
+                    <!-- Sit. Usuário -->
                     <span
                       th:switch="${usuarioInst.sitAcessoUsuarioInstituicao}"
                     >
@@ -200,6 +207,7 @@
                     </span>
                   </td>
                   <td>
+                    <!-- Sit. Pessoa -->
                     <span
                       th:switch="${usuarioInst.usuario.pessoa.situacaoPessoa}"
                     >
@@ -224,14 +232,41 @@
                       class="btn btn-sm btn-outline-danger"
                       data-bs-toggle="modal"
                       data-bs-target="#modalEditarUsuarioControlTotal"
-                      th:onclick="'carregarDadosUsuario(' + ${usuarioInst.id} + ', ' + ${usuarioInst.nivelAcessoUsuarioInstituicao} + ', \'' + ${usuarioInst.sitAcessoUsuarioInstituicao} + '\', \'' + ${usuarioInst.usuario.pessoa.situacaoPessoa} + '\', \'' + ${usuarioInst.usuario.pessoa.nomePessoa} + '\')'"
+                      th:attr="
+                        data-id=${usuarioInst.id},
+                        data-nivel=${usuarioInst.nivelAcessoUsuarioInstituicao},
+                        data-sitacesso=${usuarioInst.sitAcessoUsuarioInstituicao},
+                        data-situacaopessoa=${usuarioInst.usuario.pessoa.situacaoPessoa},
+                        data-nomepessoa=${usuarioInst.usuario.pessoa.nomePessoa}"
+                      onclick="carregarDadosUsuarioFromButton(this)"
                     >
-                      <i class="fas fa-edit"></i> Editar
+                      <i class="fas fa-pencil-alt"></i>
                     </button>
                   </td>
                 </tr>
               </tbody>
             </table>
+            <!-- Controle de Paginação -->
+            <div
+              class="d-flex justify-content-center align-items-center my-3"
+              id="paginacaoUsuarios"
+            >
+              <button
+                class="btn btn-outline-secondary btn-sm me-2"
+                id="btnAnterior"
+                type="button"
+              >
+                &laquo; Anterior
+              </button>
+              <span id="infoPaginacao" class="mx-2"></span>
+              <button
+                class="btn btn-outline-secondary btn-sm ms-2"
+                id="btnProximo"
+                type="button"
+              >
+                Próximo &raquo;
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -347,74 +382,135 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Filtro de busca
-      document
-        .getElementById("filtroUsuario")
-        .addEventListener("keyup", function () {
-          filtrarTabela();
-        });
+      // --- PAGINAÇÃO E FILTROS ---
+      window.paginaAtual = 1;
+      function atualizarInfoPaginacao() {
+        // Recebe o total de linhas filtradas ANTES da paginação
+        const itensPorPagina = parseInt(document.getElementById("itensPorPagina").value);
+        const total = atualizarInfoPaginacao.totalFiltrados || 0;
+        const totalPaginas = Math.ceil(total / itensPorPagina) || 1;
+        const paginaAtual = window.paginaAtual;
+        document.getElementById("infoPaginacao").textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+        document.getElementById("btnAnterior").disabled = paginaAtual === 1;
+        document.getElementById("btnProximo").disabled = paginaAtual === totalPaginas;
+      }
 
-      document
-        .getElementById("filtroInstituicao")
-        .addEventListener("change", function () {
-          filtrarTabela();
+      function paginarTabela() {
+        if (!window.linhasFiltradas) return;
+        // Exibe só as linhas da página atual, esconde as demais
+        window.linhasFiltradas.forEach((linha, idx) => {
+          if (idx >= (window.paginaAtual - 1) * window.itensPorPagina && idx < window.paginaAtual * window.itensPorPagina) {
+            linha.style.display = "";
+            linha.removeAttribute("data-hide-by-pagination");
+          } else {
+            linha.style.display = "none";
+            linha.setAttribute("data-hide-by-pagination", "true");
+          }
         });
+        atualizarInfoPaginacao.totalFiltrados = window.linhasFiltradas.length;
+        // Corrige paginaAtual se estiver fora do limite
+        const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
+        if (window.paginaAtual > totalPaginas) window.paginaAtual = totalPaginas;
+        if (window.paginaAtual < 1) window.paginaAtual = 1;
+        atualizarInfoPaginacao();
+      }
 
       function filtrarTabela() {
-        const filtroTexto = document
-          .getElementById("filtroUsuario")
-          .value.toLowerCase();
-        const filtroInst = document
-          .getElementById("filtroInstituicao")
-          .value.toLowerCase();
-        const linhas = document.querySelectorAll(".linha-usuario");
-
-        linhas.forEach(function (linha) {
-          const texto = linha.textContent.toLowerCase();
-          const mostraTexto = filtroTexto === "" || texto.includes(filtroTexto);
-          const mostraInst = filtroInst === "" || texto.includes(filtroInst);
-
-          linha.style.display = mostraTexto && mostraInst ? "" : "none";
+        const filtro = document.getElementById("filtroUsuario").value.toLowerCase();
+        const filtroInst = document.getElementById("filtroInstituicao").value;
+        const linhas = Array.from(document.querySelectorAll("#tabelaUsuarios tbody tr"));
+        // Aplica filtro e armazena resultado globalmente
+        window.linhasFiltradas = linhas.filter(function (linha) {
+          const textoLinha = linha.textContent.toLowerCase();
+          const inst = linha.querySelector("td:nth-child(4) .badge").textContent.trim().toLowerCase();
+          const matchFiltro = !filtro || textoLinha.includes(filtro);
+          const matchInst = !filtroInst || inst === filtroInst;
+          return matchFiltro && matchInst;
         });
+        // Exibe só as linhas filtradas, oculta as demais
+        linhas.forEach(linha => {
+          if (window.linhasFiltradas.includes(linha)) {
+            linha.style.display = "";
+          } else {
+            linha.style.display = "none";
+          }
+        });
+        window.itensPorPagina = parseInt(document.getElementById("itensPorPagina").value);
+        // Só resetar para página 1 se o filtro ou itens por página mudarem
+        if (filtrarTabela.resetToFirstPage) {
+          window.paginaAtual = 1;
+          filtrarTabela.resetToFirstPage = false;
+        }
+        paginarTabela();
       }
 
       // Carregar dados no modal (Controle Total)
-      function carregarDadosUsuario(
-        id,
-        nivel,
-        situacaoUsuario,
-        situacaoPessoa,
-        nome
-      ) {
-        document.getElementById("usuarioInstituicaoIdCT").value = id;
-        document.getElementById("nomeUsuarioModalCT").value = nome;
+      function carregarDadosUsuarioFromButton(btn) {
+        document.getElementById("usuarioInstituicaoIdCT").value =
+          btn.getAttribute("data-id");
+        document.getElementById("nomeUsuarioModalCT").value =
+          btn.getAttribute("data-nomepessoa");
         document.getElementById("nivelAcessoUsuarioInstituicaoCT").value =
-          nivel;
+          btn.getAttribute("data-nivel");
         document.getElementById("sitAcessoUsuarioInstituicaoCT").value =
-          situacaoUsuario;
-        document.getElementById("situacaoPessoaCT").value = situacaoPessoa;
+          btn.getAttribute("data-sitacesso");
+        document.getElementById("situacaoPessoaCT").value = btn.getAttribute(
+          "data-situacaopessoa"
+        );
       }
 
       // Popular filtro de instituições
       document.addEventListener("DOMContentLoaded", function () {
+        // Popular filtro de instituições
         const filtroInstituicao = document.getElementById("filtroInstituicao");
         const instituicoes = new Set();
-
-        // Coletar todas as instituições da tabela
         document.querySelectorAll(".linha-usuario").forEach(function (linha) {
           const badgeInstituicao = linha.querySelector(".badge.bg-primary");
           if (badgeInstituicao) {
-            instituicoes.add(badgeInstituicao.textContent.trim());
+            instituicoes.add(badgeInstituicao.textContent.trim().toLowerCase());
           }
         });
-
-        // Adicionar as opções ao select
         instituicoes.forEach(function (instituicao) {
           const option = document.createElement("option");
-          option.value = instituicao.toLowerCase();
-          option.textContent = instituicao;
+          option.value = instituicao;
+          option.textContent =
+            instituicao.charAt(0).toUpperCase() + instituicao.slice(1);
           filtroInstituicao.appendChild(option);
         });
+
+        document
+          .getElementById("btnAnterior")
+          .addEventListener("click", function () {
+            if (window.paginaAtual > 1) {
+              window.paginaAtual--;
+              paginarTabela();
+            }
+          });
+        document
+          .getElementById("btnProximo")
+          .addEventListener("click", function () {
+            const itensPorPagina = parseInt(document.getElementById("itensPorPagina").value);
+            const totalFiltrados = atualizarInfoPaginacao.totalFiltrados || 0;
+            const totalPaginas = Math.ceil(totalFiltrados / itensPorPagina) || 1;
+            if (window.paginaAtual < totalPaginas) {
+              window.paginaAtual++;
+              paginarTabela();
+            }
+          });
+        document
+          .getElementById("filtroUsuario")
+          .addEventListener("keyup", filtrarTabela);
+        document
+          .getElementById("filtroInstituicao")
+          .addEventListener("change", filtrarTabela);
+        document
+          .getElementById("itensPorPagina")
+          .addEventListener("change", function () {
+            filtrarTabela.resetToFirstPage = true;
+            filtrarTabela();
+          });
+        // Inicialização
+        filtrarTabela();
       });
     </script>
   </body>

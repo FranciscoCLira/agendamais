@@ -567,9 +567,11 @@ O script local-form.js cuida de:
             "identificacaoSubInstituicao"
           );
           if (excluirCheckbox && excluirCheckbox.checked) {
-            subInstituicaoInput.value = "";
-            identificacaoInput.value = "";
+            // Não limpe os campos! Apenas desabilite visualmente se quiser.
+            // subInstituicaoInput.readOnly = true;
+            // identificacaoInput.readOnly = true;
           }
+
           // Debug: Log all form values before submission
           const formData = new FormData(this);
           console.log("=== FORM DATA DEBUG ===");
