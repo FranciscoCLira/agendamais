@@ -214,6 +214,7 @@ public class GestaoUsuariosController {
             // Paginação manual
             int safeSize = (size == null || size <= 0) ? 10 : size;
             int totalElements = usuarios.size();
+            model.addAttribute("totalFiltrados", totalElements);
             int fromIndex = Math.min(page * safeSize, totalElements);
             int toIndex = Math.min(fromIndex + safeSize, totalElements);
             if (fromIndex > toIndex) {
