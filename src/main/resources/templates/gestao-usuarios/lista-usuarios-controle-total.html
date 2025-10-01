@@ -401,71 +401,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Restore filter state from query parameters on page load
-      function getQueryParam(name) {
-        const url = new URL(window.location.href);
-        return url.searchParams.get(name);
-      }
-      document.addEventListener('DOMContentLoaded', function () {
-  // Always call filtrarTabela after restoring filters so UI and logic are in sync
-  filtrarTabela.resetToFirstPage = true;
-  filtrarTabela();
-        // After restoring from query params, update localStorage for all logic
-        if (anyFilter) {
-          salvarFiltros();
-        }
-        // After restoring from query params, save to localStorage for rest of page logic
-        if (anyFilter) {
-          localStorage.setItem(
-            "filtrosUsuarios",
-            JSON.stringify({
-              usuario: document.getElementById('filtroUsuarioMain').value,
-              instituicao: document.getElementById('filtroInstituicaoMain').value,
-              dataIni: document.getElementById('filtroDataIniMain').value,
-              dataFim: document.getElementById('filtroDataFimMain').value,
-              ordenacao: document.getElementById('filtroOrdenacaoMain').value,
-              itensPorPagina: document.getElementById('itensPorPaginaMain').value,
-            })
-          );
-        }
-        var filtroUsuario = getQueryParam('filtroUsuario');
-        var filtroInstituicao = getQueryParam('filtroInstituicao');
-        var filtroDataIni = getQueryParam('filtroDataIni');
-        var filtroDataFim = getQueryParam('filtroDataFim');
-        var filtroOrdenacao = getQueryParam('filtroOrdenacao');
-        var itensPorPagina = getQueryParam('itensPorPagina');
-        var anyFilter = filtroUsuario || filtroInstituicao || filtroDataIni || filtroDataFim || filtroOrdenacao || itensPorPagina;
-        if (anyFilter) {
-          if (filtroUsuario !== null) document.getElementById('filtroUsuarioMain').value = filtroUsuario;
-          if (filtroInstituicao !== null) document.getElementById('filtroInstituicaoMain').value = filtroInstituicao;
-          if (filtroDataIni !== null) document.getElementById('filtroDataIniMain').value = filtroDataIni;
-          if (filtroDataFim !== null) document.getElementById('filtroDataFimMain').value = filtroDataFim;
-          if (filtroOrdenacao !== null) document.getElementById('filtroOrdenacaoMain').value = filtroOrdenacao;
-          if (itensPorPagina !== null) document.getElementById('itensPorPaginaMain').value = itensPorPagina;
-          window.itensPorPagina = parseInt(document.getElementById('itensPorPaginaMain').value);
-          filtrarTabela.resetToFirstPage = true;
-          filtrarTabela();
-          // Prevent localStorage restoration from overwriting query param values
-          window.__restoredFromQuery = true;
-        }
-    </script>
-    <script>
-      // --- PAGINAÇÃO E FILTROS ---
+      // --- Funções de filtro, paginação e persistência ---
       window.paginaAtual = 1;
       function atualizarInfoPaginacao() {
-        // Recebe o total de linhas filtradas ANTES da paginação
-        const itensPorPagina = parseInt(
-          document.getElementById("itensPorPaginaMain").value
-        );
+        const itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
         const total = atualizarInfoPaginacao.totalFiltrados || 0;
         const totalPaginas = Math.ceil(total / itensPorPagina) || 1;
         const paginaAtual = window.paginaAtual;
-        document.getElementById(
-          "infoPaginacao"
-        ).textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+        document.getElementById("infoPaginacao").textContent = `Página ${paginaAtual} de ${totalPaginas}`;
         document.getElementById("btnAnterior").disabled = paginaAtual === 1;
-        document.getElementById("btnProximo").disabled =
-          paginaAtual === totalPaginas;
+        document.getElementById("btnProximo").disabled = paginaAtual === totalPaginas;
         if (document.getElementById("totalFiltrados")) {
           document.getElementById("totalFiltrados").textContent = total;
         }
@@ -473,12 +418,8 @@
 
       function paginarTabela() {
         if (!window.linhasFiltradas) return;
-        // Exibe só as linhas da página atual, esconde as demais
         window.linhasFiltradas.forEach((linha, idx) => {
-          if (
-            idx >= (window.paginaAtual - 1) * window.itensPorPagina &&
-            idx < window.paginaAtual * window.itensPorPagina
-          ) {
+          if (idx >= (window.paginaAtual - 1) * window.itensPorPagina && idx < window.paginaAtual * window.itensPorPagina) {
             linha.style.display = "";
             linha.removeAttribute("data-hide-by-pagination");
           } else {
@@ -487,21 +428,18 @@
           }
         });
         atualizarInfoPaginacao.totalFiltrados = window.linhasFiltradas.length;
-        // Corrige paginaAtual se estiver fora do limite
-        const totalPaginas =
-          Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
-        if (window.paginaAtual > totalPaginas)
-          window.paginaAtual = totalPaginas;
+        const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
+        if (window.paginaAtual > totalPaginas) window.paginaAtual = totalPaginas;
         if (window.paginaAtual < 1) window.paginaAtual = 1;
         atualizarInfoPaginacao();
       }
 
       function filtrarTabela() {
-  const filtro = document.getElementById("filtroUsuarioMain").value.toLowerCase();
-    const filtroInst = document.getElementById("filtroInstituicaoMain").value;
-    const filtroDataIni = document.getElementById("filtroDataIniMain").value;
-    const filtroDataFim = document.getElementById("filtroDataFimMain").value;
-    const filtroOrdenacao = document.getElementById("filtroOrdenacaoMain").value;
+        const filtro = document.getElementById("filtroUsuarioMain").value.toLowerCase();
+        const filtroInst = document.getElementById("filtroInstituicaoMain").value;
+        const filtroDataIni = document.getElementById("filtroDataIniMain").value;
+        const filtroDataFim = document.getElementById("filtroDataFimMain").value;
+        const filtroOrdenacao = document.getElementById("filtroOrdenacaoMain").value;
         const linhas = Array.from(document.querySelectorAll("#tabelaUsuarios tbody tr"));
         window.linhasFiltradas = linhas.filter(function (linha) {
           const codigo = linha.querySelector("td:nth-child(2)").textContent.toLowerCase();
@@ -509,7 +447,6 @@
           const email = linha.querySelector("td:nth-child(4)").textContent.toLowerCase();
           const inst = linha.querySelector("td:nth-child(5) .badge").textContent.trim().toLowerCase();
           const textoBusca = `${codigo} ${nome} ${email} ${inst}`;
-          // Data Ult.Atualiz
           const dataStr = linha.querySelector("td:nth-child(1)").textContent.trim();
           let dataVal = null;
           if (/^\d{2}\/\d{2}\/\d{2}$/.test(dataStr)) {
@@ -527,24 +464,17 @@
             const fim = new Date(`20${yf}`, mf - 1, df);
             matchData = matchData && dataVal <= fim;
           }
-          // Institution filter: if set, must match institution (exact), but search should match partial institution name
           const matchInst = !filtroInst || inst === filtroInst;
-          // Search filter: matches any field, including institution
           const matchFiltro = !filtro || textoBusca.toLowerCase().includes(filtro);
           return matchInst && matchFiltro && matchData;
         });
-        // Reset to first page if current page exceeds total pages after filtering
         const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
-        if (window.paginaAtual > totalPaginas) {
-          window.paginaAtual = 1;
-        }
-        // Ordena linhas filtradas
+        if (window.paginaAtual > totalPaginas) window.paginaAtual = 1;
         if (filtroOrdenacao === "dataDesc" || filtroOrdenacao === "dataAsc") {
           window.linhasFiltradas.sort((a, b) => {
             const daStr = a.querySelector("td:nth-child(1)").textContent.trim();
             const dbStr = b.querySelector("td:nth-child(1)").textContent.trim();
-            let da = null,
-              db = null;
+            let da = null, db = null;
             if (/^\d{2}\/\d{2}\/\d{2}$/.test(daStr)) {
               const [d, m, y] = daStr.split("/");
               da = new Date(`20${y}`, m - 1, d);
@@ -558,27 +488,17 @@
           });
         } else if (filtroOrdenacao === "codigo") {
           window.linhasFiltradas.sort((a, b) =>
-            a
-              .querySelector("td:nth-child(2)")
-              .textContent.localeCompare(
-                b.querySelector("td:nth-child(2)").textContent
-              )
+            a.querySelector("td:nth-child(2)").textContent.localeCompare(b.querySelector("td:nth-child(2)").textContent)
           );
         } else if (filtroOrdenacao === "nome") {
           window.linhasFiltradas.sort((a, b) =>
-            a
-              .querySelector("td:nth-child(3)")
-              .textContent.localeCompare(
-                b.querySelector("td:nth-child(3)").textContent
-              )
+            a.querySelector("td:nth-child(3)").textContent.localeCompare(b.querySelector("td:nth-child(3)").textContent)
           );
         }
-        // Re-append sorted rows to tbody so DOM order matches filter order
         const tbody = document.querySelector("#tabelaUsuarios tbody");
         window.linhasFiltradas.forEach((linha) => {
           tbody.appendChild(linha);
         });
-        // Exibe só as linhas filtradas, oculta as demais
         linhas.forEach((linha) => {
           if (window.linhasFiltradas.includes(linha)) {
             linha.style.display = "";
@@ -586,7 +506,6 @@
             linha.style.display = "none";
           }
         });
-        // Só resetar para página 1 se o filtro ou itens por página mudarem
         if (filtrarTabela.resetToFirstPage) {
           window.paginaAtual = 1;
           filtrarTabela.resetToFirstPage = false;
@@ -594,50 +513,34 @@
         paginarTabela();
       }
 
-      // Carregar dados no modal (Controle Total)
       function carregarDadosUsuarioFromButton(btn) {
-        document.getElementById("usuarioInstituicaoIdCT").value =
-          btn.getAttribute("data-id");
-        document.getElementById("nomeUsuarioModalCT").value =
-          btn.getAttribute("data-nomepessoa");
-        document.getElementById("nivelAcessoUsuarioInstituicaoCT").value =
-          btn.getAttribute("data-nivel");
-        document.getElementById("sitAcessoUsuarioInstituicaoCT").value =
-          btn.getAttribute("data-sitacesso");
-        document.getElementById("situacaoPessoaCT").value = btn.getAttribute(
-          "data-situacaopessoa"
-        );
-
-      // Preencher campos ocultos exclusivos do formulário de edição com os filtros atuais
-      document.getElementById('filtroUsuarioEdit').value = document.getElementById('filtroUsuarioMain').value;
-      document.getElementById('filtroInstituicaoEdit').value = document.getElementById('filtroInstituicaoMain').value;
-      document.getElementById('filtroDataIniEdit').value = document.getElementById('filtroDataIniMain').value;
-      document.getElementById('filtroDataFimEdit').value = document.getElementById('filtroDataFimMain').value;
-      document.getElementById('filtroOrdenacaoEdit').value = document.getElementById('filtroOrdenacaoMain').value;
-      document.getElementById('itensPorPaginaEdit').value = document.getElementById('itensPorPaginaMain').value;      }
-
-      // Popular filtro de instituições
-      // Função para salvar filtros
-      function salvarFiltros() {
-        localStorage.setItem(
-          "filtrosUsuarios",
-          JSON.stringify({
-            usuario: document.getElementById("filtroUsuarioMain").value,
-            instituicao: document.getElementById("filtroInstituicaoMain").value,
-            dataIni: document.getElementById("filtroDataIniMain").value,
-            dataFim: document.getElementById("filtroDataFimMain").value,
-            ordenacao: document.getElementById("filtroOrdenacaoMain").value,
-            itensPorPagina: document.getElementById("itensPorPaginaMain").value,
-          })
-        );
+        document.getElementById("usuarioInstituicaoIdCT").value = btn.getAttribute("data-id");
+        document.getElementById("nomeUsuarioModalCT").value = btn.getAttribute("data-nomepessoa");
+        document.getElementById("nivelAcessoUsuarioInstituicaoCT").value = btn.getAttribute("data-nivel");
+        document.getElementById("sitAcessoUsuarioInstituicaoCT").value = btn.getAttribute("data-sitacesso");
+        document.getElementById("situacaoPessoaCT").value = btn.getAttribute("data-situacaopessoa");
+        document.getElementById('filtroUsuarioEdit').value = document.getElementById('filtroUsuarioMain').value;
+        document.getElementById('filtroInstituicaoEdit').value = document.getElementById('filtroInstituicaoMain').value;
+        document.getElementById('filtroDataIniEdit').value = document.getElementById('filtroDataIniMain').value;
+        document.getElementById('filtroDataFimEdit').value = document.getElementById('filtroDataFimMain').value;
+        document.getElementById('filtroOrdenacaoEdit').value = document.getElementById('filtroOrdenacaoMain').value;
+        document.getElementById('itensPorPaginaEdit').value = document.getElementById('itensPorPaginaMain').value;
       }
 
-      // Função para restaurar filtros
+      function salvarFiltros() {
+        localStorage.setItem("filtrosUsuarios", JSON.stringify({
+          usuario: document.getElementById("filtroUsuarioMain").value,
+          instituicao: document.getElementById("filtroInstituicaoMain").value,
+          dataIni: document.getElementById("filtroDataIniMain").value,
+          dataFim: document.getElementById("filtroDataFimMain").value,
+          ordenacao: document.getElementById("filtroOrdenacaoMain").value,
+          itensPorPagina: document.getElementById("itensPorPaginaMain").value,
+        }));
+      }
+
       function restaurarFiltros() {
         const urlParams = new URLSearchParams(window.location.search);
         const filtrosStorage = JSON.parse(localStorage.getItem("filtrosUsuarios") || "null");
-
-        // Verifica se todos os filtros da URL estão vazios
         const filtrosUrl = [
           urlParams.get("filtroUsuario"),
           urlParams.get("filtroInstituicao"),
@@ -647,24 +550,19 @@
           urlParams.get("itensPorPagina")
         ];
         const todosVazios = filtrosUrl.every(v => v === null || v === undefined || v.trim() === "");
-
         function getFiltro(param, storageKey, defaultValue) {
           const val = urlParams.get(param);
           if (!todosVazios && val !== null && val !== undefined && val.trim() !== "") return val;
           if (filtrosStorage && filtrosStorage[storageKey]) return filtrosStorage[storageKey];
           return defaultValue;
         }
-
-  document.getElementById("filtroUsuarioMain").value = getFiltro("filtroUsuario", "usuario", "");
-  document.getElementById("filtroInstituicaoMain").value = getFiltro("filtroInstituicao", "instituicao", "");
-  document.getElementById("filtroDataIniMain").value = getFiltro("filtroDataIni", "dataIni", "");
-  document.getElementById("filtroDataFimMain").value = getFiltro("filtroDataFim", "dataFim", "");
-  document.getElementById("filtroOrdenacaoMain").value = getFiltro("filtroOrdenacao", "ordenacao", "dataDesc");
-  document.getElementById("itensPorPaginaMain").value = getFiltro("itensPorPagina", "itensPorPagina", "10");
-  // Sincroniza variável global com filtro restaurado
-  window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
-
-        // Só salva filtros se houver pelo menos um preenchido
+        document.getElementById("filtroUsuarioMain").value = getFiltro("filtroUsuario", "usuario", "");
+        document.getElementById("filtroInstituicaoMain").value = getFiltro("filtroInstituicao", "instituicao", "");
+        document.getElementById("filtroDataIniMain").value = getFiltro("filtroDataIni", "dataIni", "");
+        document.getElementById("filtroDataFimMain").value = getFiltro("filtroDataFim", "dataFim", "");
+        document.getElementById("filtroOrdenacaoMain").value = getFiltro("filtroOrdenacao", "ordenacao", "dataDesc");
+        document.getElementById("itensPorPaginaMain").value = getFiltro("itensPorPagina", "itensPorPagina", "10");
+        window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
         const algumPreenchido = [
           document.getElementById("filtroUsuarioMain").value,
           document.getElementById("filtroInstituicaoMain").value,
@@ -673,108 +571,86 @@
           document.getElementById("filtroOrdenacaoMain").value,
           document.getElementById("itensPorPaginaMain").value
         ].some(v => v && v.trim() !== "");
-        if (algumPreenchido) {
-          salvarFiltros();
-        }
+        if (algumPreenchido) salvarFiltros();
+        filtrarTabela.resetToFirstPage = true;
         filtrarTabela();
       }
 
       document.addEventListener("DOMContentLoaded", function () {
+        // Popular filtro de instituições
+        const filtroInstituicao = document.getElementById("filtroInstituicaoMain");
+        const instituicoes = new Set();
+        document.querySelectorAll(".linha-usuario").forEach(function (linha) {
+          const badgeInstituicao = linha.querySelector(".badge.bg-primary");
+          if (badgeInstituicao) {
+            instituicoes.add(badgeInstituicao.textContent.trim().toLowerCase());
+          }
+        });
+        instituicoes.forEach(function (instituicao) {
+          const option = document.createElement("option");
+          option.value = instituicao;
+          option.textContent = instituicao.charAt(0).toUpperCase() + instituicao.slice(1);
+          filtroInstituicao.appendChild(option);
+        });
+
         // Restaurar filtros ao carregar a página
         restaurarFiltros();
-        // Adicionar listeners após restaurar filtros
-        document
-            .getElementById("filtroUsuarioMain")
-            .addEventListener("input", function () {
-              salvarFiltros();
-              filtrarTabela();
-            });
-        document
-            .getElementById("filtroInstituicaoMain")
-            .addEventListener("change", function () {
-              salvarFiltros();
-              filtrarTabela.resetToFirstPage = true;
-              filtrarTabela();
-            });
-        document
-            .getElementById("filtroDataIniMain")
-            .addEventListener("input", function () {
-              salvarFiltros();
-              filtrarTabela();
-            });
-        document
-            .getElementById("filtroDataFimMain")
-            .addEventListener("input", function () {
-              salvarFiltros();
-              filtrarTabela();
-            });
-        document
-            .getElementById("filtroOrdenacaoMain")
-            .addEventListener("change", function () {
-              salvarFiltros();
-              filtrarTabela.resetToFirstPage = true;
-              filtrarTabela();
-            });
-        document
-            .getElementById("itensPorPaginaMain")
-            .addEventListener("change", function () {
-              salvarFiltros();
-              window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
-              filtrarTabela.resetToFirstPage = true;
-              filtrarTabela();
-            });
-        document
-            .getElementById("btnLimparFiltros")
-            .addEventListener("click", function () {
-              document.getElementById("filtroUsuarioMain").value = "";
-              document.getElementById("filtroInstituicaoMain").value = "";
-              document.getElementById("filtroDataIniMain").value = "";
-              document.getElementById("filtroDataFimMain").value = "";
-              document.getElementById("filtroOrdenacaoMain").value = "dataDesc";
-              salvarFiltros();
-              filtrarTabela.resetToFirstPage = true;
-              filtrarTabela();
-            });
-      });
-      // Popular filtro de instituições
-    const filtroInstituicao = document.getElementById("filtroInstituicaoMain");
-      const instituicoes = new Set();
-      document.querySelectorAll(".linha-usuario").forEach(function (linha) {
-        const badgeInstituicao = linha.querySelector(".badge.bg-primary");
-        if (badgeInstituicao) {
-          instituicoes.add(badgeInstituicao.textContent.trim().toLowerCase());
-        }
-      });
-      instituicoes.forEach(function (instituicao) {
-        const option = document.createElement("option");
-        option.value = instituicao;
-        option.textContent =
-          instituicao.charAt(0).toUpperCase() + instituicao.slice(1);
-        filtroInstituicao.appendChild(option);
-      });
 
-      document
-        .getElementById("btnAnterior")
-        .addEventListener("click", function () {
+        // Listeners de filtros
+        document.getElementById("filtroUsuarioMain").addEventListener("input", function () {
+          salvarFiltros();
+          filtrarTabela();
+        });
+        document.getElementById("filtroInstituicaoMain").addEventListener("change", function () {
+          salvarFiltros();
+          filtrarTabela.resetToFirstPage = true;
+          filtrarTabela();
+        });
+        document.getElementById("filtroDataIniMain").addEventListener("input", function () {
+          salvarFiltros();
+          filtrarTabela();
+        });
+        document.getElementById("filtroDataFimMain").addEventListener("input", function () {
+          salvarFiltros();
+          filtrarTabela();
+        });
+        document.getElementById("filtroOrdenacaoMain").addEventListener("change", function () {
+          salvarFiltros();
+          filtrarTabela.resetToFirstPage = true;
+          filtrarTabela();
+        });
+        document.getElementById("itensPorPaginaMain").addEventListener("change", function () {
+          salvarFiltros();
+          window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
+          filtrarTabela.resetToFirstPage = true;
+          filtrarTabela();
+        });
+        document.getElementById("btnLimparFiltros").addEventListener("click", function () {
+          document.getElementById("filtroUsuarioMain").value = "";
+          document.getElementById("filtroInstituicaoMain").value = "";
+          document.getElementById("filtroDataIniMain").value = "";
+          document.getElementById("filtroDataFimMain").value = "";
+          document.getElementById("filtroOrdenacaoMain").value = "dataDesc";
+          salvarFiltros();
+          filtrarTabela.resetToFirstPage = true;
+          filtrarTabela();
+        });
+
+        // Paginação
+        document.getElementById("btnAnterior").addEventListener("click", function () {
           if (window.paginaAtual > 1) {
             window.paginaAtual--;
             paginarTabela();
           }
         });
-      document
-        .getElementById("btnProximo")
-        .addEventListener("click", function () {
+        document.getElementById("btnProximo").addEventListener("click", function () {
           const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
           if (window.paginaAtual < totalPaginas) {
             window.paginaAtual++;
             paginarTabela();
           }
         });
-      // Event listeners já adicionados no bloco anterior
-      // Inicialização
-    window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
-  filtrarTabela.resetToFirstPage = true;
-  filtrarTabela();
+      });
     </script>
   </body>
 </html>
