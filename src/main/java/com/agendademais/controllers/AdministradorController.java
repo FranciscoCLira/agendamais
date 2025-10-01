@@ -18,4 +18,14 @@ public class AdministradorController {
         model.addAttribute("nomeInstituicao", nomeInstituicao);
         return "menus/menu-administrador";
     }
+
+    @GetMapping("/administrador/subinstituicoes")
+    public String gerenciarSubInstituicoes(HttpSession session, Model model) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            model.addAttribute("mensagemErro", "Sessão expirada. Faça login novamente.");
+            return "login";
+        }
+        // Aqui futuramente pode-se adicionar lógica para filtrar subinstituições da instituição logada
+        return "administrador/gerenciar-subinstituicoes";
+    }
 }

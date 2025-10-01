@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Gerenciar Sub-Instituições</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/administrador"><i class="fas fa-home"></i> Administrador</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-sitemap"></i> Gerenciar Sub-Instituições</li>
+            </ol>
+        </nav>
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-sitemap me-2 text-primary"></i> Gerenciar Sub-Instituições</h2>
+                <p class="text-muted">Administre as sub-instituições vinculadas à sua instituição</p>
+            </div>
+        </div>
+        <div class="alert alert-info mt-4" role="alert">
+            <i class="fas fa-tools me-2"></i> Página em Construção
+        </div>
+    </div>
+</body>
+</html>
