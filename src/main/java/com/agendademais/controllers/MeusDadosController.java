@@ -103,10 +103,18 @@ public class MeusDadosController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        return atualizarMeusDados(pessoa, paisOutro, estadoOutro, cidadeOutro,
+        return atualizarMeusDados(
+                pessoa, paisOutro, estadoOutro, cidadeOutro,
                 nomePaisPessoa, nomeEstadoPessoa, nomeCidadePessoa,
-                null, null, null, false, false,
+                null, null, null, null, // quatro Strings
+                false, // Boolean
                 session, model, redirectAttributes);
+
+        // return atualizarMeusDados(pessoa, paisOutro, estadoOutro, cidadeOutro,
+        // nomePaisPessoa, nomeEstadoPessoa, nomeCidadePessoa,
+        // null, null, null, false, false,
+        // session, model, redirectAttributes);
+
     }
 
     /**

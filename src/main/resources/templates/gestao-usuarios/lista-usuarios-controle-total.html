@@ -60,7 +60,6 @@
           data-bs-dismiss="alert"
         ></button>
       </div>
-
       <div
         th:if="${mensagemErro}"
         class="alert alert-danger alert-dismissible fade show"
@@ -77,33 +76,76 @@
 
       <!-- Filtros -->
       <div class="row mb-3">
-        <div class="col-md-5">
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="fas fa-search"></i>
-            </span>
+        <div class="col-md-3">
+          <label class="form-label mb-1">Ult.Atualiz: Início - Fim</label>
+          <div class="d-flex">
+            <input
+              type="text"
+              class="form-control me-1"
+              id="filtroDataIniMain"
+              placeholder="dd/mm/aa"
+              maxlength="8"
+            />
             <input
               type="text"
               class="form-control"
-              id="filtroUsuario"
-              placeholder="Buscar por nome, código, email ou instituição..."
+              id="filtroDataFimMain"
+              placeholder="dd/mm/aa"
+              maxlength="8"
             />
           </div>
         </div>
-        <div class="col-md-4">
-          <select class="form-select" id="filtroInstituicao">
+        <div class="col-md-3">
+          <label class="form-label mb-1">Ordenação</label>
+          <select class="form-select" id="filtroOrdenacaoMain">
+            <option value="dataDesc">Ult.Atualiz desc</option>
+            <option value="dataAsc">Ult.Atualiz asc</option>
+            <option value="codigo">Código</option>
+            <option value="nome">Nome</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1">Instituição</label>
+          <select class="form-select" id="filtroInstituicaoMain">
             <option value="">Todas as Instituições</option>
             <!-- Opções serão populadas dinamicamente -->
           </select>
         </div>
-        <div class="col-md-3">
-          <select class="form-select" id="itensPorPagina">
-            <option value="10">10 por página</option>
-            <option value="50">50 por página</option>
-            <option value="100">100 por página</option>
-            <option value="200">200 por página</option>
-            <option value="300">300 por página</option>
-          </select>
+        <div class="col-md-1 d-flex flex-column align-items-end">
+          <label class="form-label mb-1">&nbsp;</label>
+          <button
+            class="btn btn-outline-secondary"
+            id="btnLimparFiltros"
+            type="button"
+          >
+            <i class="fas fa-eraser"></i> Limpar
+          </button>
+        </div>
+        <div class="col-md-12 mt-2">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search"></i>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="filtroUsuarioMain"
+                    placeholder="Buscar por código, nome, email ou instituição"
+                    autocomplete="off"
+                    style="min-width:360px;"
+                  />
+                  <span class="input-group-text bg-white border-0" style="width:8px;"></span>
+                  <select
+                    class="form-select"
+                    id="itensPorPaginaMain"
+                    style="max-width: 150px"
+                  >
+                    <option value="10">10 por página</option>
+                    <option value="50">50 por página</option>
+                    <option value="100">100 por página</option>
+                    <option value="200">200 por página</option>
+                  </select>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -112,8 +154,7 @@
         <div class="card-header bg-light">
           <h5 class="mb-0">
             <i class="fas fa-list me-2"></i>
-            Lista de Usuários (<span th:text="${#lists.size(usuarios)}">0</span>
-            usuários)
+            Lista de Usuários (<span id="totalFiltrados">0</span> usuários)
           </h5>
         </div>
         <div class="card-body p-0">
@@ -121,19 +162,25 @@
             <table class="table table-hover mb-0" id="tabelaUsuarios">
               <thead class="table-dark">
                 <tr>
+                  <th><i class="fas fa-calendar-alt"></i> Ult.Atualiz</th>
                   <th><i class="fas fa-hashtag"></i> Código</th>
                   <th><i class="fas fa-user"></i> Nome</th>
                   <th><i class="fas fa-envelope"></i> Email</th>
                   <th><i class="fas fa-university"></i> Instituição</th>
                   <th><i class="fas fa-sitemap"></i> Sub-Instituição</th>
                   <th><i class="fas fa-user-tag"></i> Nível</th>
-                  <th><i class="fas fa-toggle-on"></i> Sit. Usuário</th>
-                  <th><i class="fas fa-user-check"></i> Sit. Pessoa</th>
+                  <th>Sit.Usuário</th>
+                  <th>Sit.Pessoa</th>
                   <th><i class="fas fa-cogs"></i> Ações</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="usuarioInst : ${usuarios}" class="linha-usuario">
+                  <td
+                    th:text="${#temporals.format(usuarioInst.usuario.pessoa.dataUltimaAtualizacao, 'dd/MM/yy')}"
+                  >
+                    01/01/25
+                  </td>
                   <td th:text="${usuarioInst.usuario.username}">U00001</td>
                   <td>
                     <strong th:text="${usuarioInst.usuario.pessoa.nomePessoa}"
@@ -169,14 +216,14 @@
                       th:switch="${usuarioInst.nivelAcessoUsuarioInstituicao}"
                     >
                       <span th:case="1" class="badge bg-secondary"
-                        >Participante</span
+                        >1-Participante</span
                       >
-                      <span th:case="2" class="badge bg-primary">Autor</span>
+                      <span th:case="2" class="badge bg-primary">2-Autor</span>
                       <span th:case="5" class="badge bg-warning text-dark"
-                        >Administrador</span
+                        >5-Administrador</span
                       >
                       <span th:case="9" class="badge bg-danger"
-                        >SuperUsuário</span
+                        >9-SuperUsuário</span
                       >
                       <span
                         th:case="*"
@@ -239,6 +286,7 @@
                         data-situacaopessoa=${usuarioInst.usuario.pessoa.situacaoPessoa},
                         data-nomepessoa=${usuarioInst.usuario.pessoa.nomePessoa}"
                       onclick="carregarDadosUsuarioFromButton(this)"
+                      title="Editar"
                     >
                       <i class="fas fa-pencil-alt"></i>
                     </button>
@@ -296,72 +344,43 @@
           </div>
           <form action="/controle-total/atualizar-usuario" method="post">
             <div class="modal-body">
-              <input
-                type="hidden"
-                id="usuarioInstituicaoIdCT"
-                name="usuarioInstituicaoId"
-              />
-
+              <input type="hidden" id="usuarioInstituicaoIdCT" name="usuarioInstituicaoId" />
               <div class="mb-3">
-                <label for="nomeUsuarioModalCT" class="form-label"
-                  >Nome do Usuário:</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nomeUsuarioModalCT"
-                  readonly
-                />
+                <label for="nomeUsuarioModalCT" class="form-label">Nome do Usuário:</label>
+                <input type="text" class="form-control" id="nomeUsuarioModalCT" name="nomePessoa" readonly />
               </div>
-
               <div class="mb-3">
-                <label for="nivelAcessoUsuarioInstituicaoCT" class="form-label"
-                  >Nível de Acesso:</label
-                >
-                <select
-                  class="form-select"
-                  id="nivelAcessoUsuarioInstituicaoCT"
-                  name="nivelAcessoUsuarioInstituicao"
-                  required
-                >
+                <label for="nivelAcessoUsuarioInstituicaoCT" class="form-label">Nível de Acesso:</label>
+                <select class="form-select" id="nivelAcessoUsuarioInstituicaoCT" name="nivelAcessoUsuarioInstituicao" required>
                   <option value="1">Participante</option>
                   <option value="2">Autor</option>
                   <option value="5">Administrador</option>
                   <option value="9">SuperUsuário</option>
                 </select>
               </div>
-
               <div class="mb-3">
-                <label for="sitAcessoUsuarioInstituicaoCT" class="form-label"
-                  >Situação de Acesso (Usuário):</label
-                >
-                <select
-                  class="form-select"
-                  id="sitAcessoUsuarioInstituicaoCT"
-                  name="sitAcessoUsuarioInstituicao"
-                  required
-                >
+                <label for="sitAcessoUsuarioInstituicaoCT" class="form-label">Situação de Acesso (Usuário):</label>
+                <select class="form-select" id="sitAcessoUsuarioInstituicaoCT" name="sitAcessoUsuarioInstituicao" required>
                   <option value="A">Ativo</option>
                   <option value="B">Bloqueado</option>
                   <option value="C">Cancelado</option>
                 </select>
               </div>
-
               <div class="mb-3">
-                <label for="situacaoPessoaCT" class="form-label"
-                  >Situação da Pessoa:</label
-                >
-                <select
-                  class="form-select"
-                  id="situacaoPessoaCT"
-                  name="situacaoPessoa"
-                  required
-                >
+                <label for="situacaoPessoaCT" class="form-label">Situação da Pessoa:</label>
+                <select class="form-select" id="situacaoPessoaCT" name="situacaoPessoa" required>
                   <option value="A">Ativo</option>
                   <option value="B">Bloqueado</option>
                   <option value="C">Cancelado</option>
                 </select>
               </div>
+              <!-- Campos ocultos exclusivos para persistir filtros -->
+              <input type="hidden" id="filtroUsuarioEdit" name="filtroUsuario" />
+              <input type="hidden" id="filtroInstituicaoEdit" name="filtroInstituicao" />
+              <input type="hidden" id="filtroDataIniEdit" name="filtroDataIni" />
+              <input type="hidden" id="filtroDataFimEdit" name="filtroDataFim" />
+              <input type="hidden" id="filtroOrdenacaoEdit" name="filtroOrdenacao" />
+              <input type="hidden" id="itensPorPaginaEdit" name="itensPorPagina" />
             </div>
             <div class="modal-footer">
               <button
@@ -382,12 +401,61 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      // Restore filter state from query parameters on page load
+      function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+      }
+      document.addEventListener('DOMContentLoaded', function () {
+  // Always call filtrarTabela after restoring filters so UI and logic are in sync
+  filtrarTabela.resetToFirstPage = true;
+  filtrarTabela();
+        // After restoring from query params, update localStorage for all logic
+        if (anyFilter) {
+          salvarFiltros();
+        }
+        // After restoring from query params, save to localStorage for rest of page logic
+        if (anyFilter) {
+          localStorage.setItem(
+            "filtrosUsuarios",
+            JSON.stringify({
+              usuario: document.getElementById('filtroUsuarioMain').value,
+              instituicao: document.getElementById('filtroInstituicaoMain').value,
+              dataIni: document.getElementById('filtroDataIniMain').value,
+              dataFim: document.getElementById('filtroDataFimMain').value,
+              ordenacao: document.getElementById('filtroOrdenacaoMain').value,
+              itensPorPagina: document.getElementById('itensPorPaginaMain').value,
+            })
+          );
+        }
+        var filtroUsuario = getQueryParam('filtroUsuario');
+        var filtroInstituicao = getQueryParam('filtroInstituicao');
+        var filtroDataIni = getQueryParam('filtroDataIni');
+        var filtroDataFim = getQueryParam('filtroDataFim');
+        var filtroOrdenacao = getQueryParam('filtroOrdenacao');
+        var itensPorPagina = getQueryParam('itensPorPagina');
+        var anyFilter = filtroUsuario || filtroInstituicao || filtroDataIni || filtroDataFim || filtroOrdenacao || itensPorPagina;
+        if (anyFilter) {
+          if (filtroUsuario !== null) document.getElementById('filtroUsuarioMain').value = filtroUsuario;
+          if (filtroInstituicao !== null) document.getElementById('filtroInstituicaoMain').value = filtroInstituicao;
+          if (filtroDataIni !== null) document.getElementById('filtroDataIniMain').value = filtroDataIni;
+          if (filtroDataFim !== null) document.getElementById('filtroDataFimMain').value = filtroDataFim;
+          if (filtroOrdenacao !== null) document.getElementById('filtroOrdenacaoMain').value = filtroOrdenacao;
+          if (itensPorPagina !== null) document.getElementById('itensPorPaginaMain').value = itensPorPagina;
+          window.itensPorPagina = parseInt(document.getElementById('itensPorPaginaMain').value);
+          filtrarTabela.resetToFirstPage = true;
+          filtrarTabela();
+          // Prevent localStorage restoration from overwriting query param values
+          window.__restoredFromQuery = true;
+        }
+    </script>
+    <script>
       // --- PAGINAÇÃO E FILTROS ---
       window.paginaAtual = 1;
       function atualizarInfoPaginacao() {
         // Recebe o total de linhas filtradas ANTES da paginação
         const itensPorPagina = parseInt(
-          document.getElementById("itensPorPagina").value
+          document.getElementById("itensPorPaginaMain").value
         );
         const total = atualizarInfoPaginacao.totalFiltrados || 0;
         const totalPaginas = Math.ceil(total / itensPorPagina) || 1;
@@ -398,6 +466,9 @@
         document.getElementById("btnAnterior").disabled = paginaAtual === 1;
         document.getElementById("btnProximo").disabled =
           paginaAtual === totalPaginas;
+        if (document.getElementById("totalFiltrados")) {
+          document.getElementById("totalFiltrados").textContent = total;
+        }
       }
 
       function paginarTabela() {
@@ -426,23 +497,86 @@
       }
 
       function filtrarTabela() {
-        const filtro = document
-          .getElementById("filtroUsuario")
-          .value.toLowerCase();
-        const filtroInst = document.getElementById("filtroInstituicao").value;
-        const linhas = Array.from(
-          document.querySelectorAll("#tabelaUsuarios tbody tr")
-        );
-        // Aplica filtro e armazena resultado globalmente
+  const filtro = document.getElementById("filtroUsuarioMain").value.toLowerCase();
+    const filtroInst = document.getElementById("filtroInstituicaoMain").value;
+    const filtroDataIni = document.getElementById("filtroDataIniMain").value;
+    const filtroDataFim = document.getElementById("filtroDataFimMain").value;
+    const filtroOrdenacao = document.getElementById("filtroOrdenacaoMain").value;
+        const linhas = Array.from(document.querySelectorAll("#tabelaUsuarios tbody tr"));
         window.linhasFiltradas = linhas.filter(function (linha) {
-          const textoLinha = linha.textContent.toLowerCase();
-          const inst = linha
-            .querySelector("td:nth-child(4) .badge")
-            .textContent.trim()
-            .toLowerCase();
-          const matchFiltro = !filtro || textoLinha.includes(filtro);
+          const codigo = linha.querySelector("td:nth-child(2)").textContent.toLowerCase();
+          const nome = linha.querySelector("td:nth-child(3)").textContent.toLowerCase();
+          const email = linha.querySelector("td:nth-child(4)").textContent.toLowerCase();
+          const inst = linha.querySelector("td:nth-child(5) .badge").textContent.trim().toLowerCase();
+          const textoBusca = `${codigo} ${nome} ${email} ${inst}`;
+          // Data Ult.Atualiz
+          const dataStr = linha.querySelector("td:nth-child(1)").textContent.trim();
+          let dataVal = null;
+          if (/^\d{2}\/\d{2}\/\d{2}$/.test(dataStr)) {
+            const [d, m, y] = dataStr.split("/");
+            dataVal = new Date(`20${y}`, m - 1, d);
+          }
+          let matchData = true;
+          if (filtroDataIni && dataVal) {
+            const [di, mi, yi] = filtroDataIni.split("/");
+            const ini = new Date(`20${yi}`, mi - 1, di);
+            matchData = dataVal >= ini;
+          }
+          if (filtroDataFim && dataVal) {
+            const [df, mf, yf] = filtroDataFim.split("/");
+            const fim = new Date(`20${yf}`, mf - 1, df);
+            matchData = matchData && dataVal <= fim;
+          }
+          // Institution filter: if set, must match institution (exact), but search should match partial institution name
           const matchInst = !filtroInst || inst === filtroInst;
-          return matchFiltro && matchInst;
+          // Search filter: matches any field, including institution
+          const matchFiltro = !filtro || textoBusca.toLowerCase().includes(filtro);
+          return matchInst && matchFiltro && matchData;
+        });
+        // Reset to first page if current page exceeds total pages after filtering
+        const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
+        if (window.paginaAtual > totalPaginas) {
+          window.paginaAtual = 1;
+        }
+        // Ordena linhas filtradas
+        if (filtroOrdenacao === "dataDesc" || filtroOrdenacao === "dataAsc") {
+          window.linhasFiltradas.sort((a, b) => {
+            const daStr = a.querySelector("td:nth-child(1)").textContent.trim();
+            const dbStr = b.querySelector("td:nth-child(1)").textContent.trim();
+            let da = null,
+              db = null;
+            if (/^\d{2}\/\d{2}\/\d{2}$/.test(daStr)) {
+              const [d, m, y] = daStr.split("/");
+              da = new Date(`20${y}`, m - 1, d);
+            }
+            if (/^\d{2}\/\d{2}\/\d{2}$/.test(dbStr)) {
+              const [d, m, y] = dbStr.split("/");
+              db = new Date(`20${y}`, m - 1, d);
+            }
+            if (!da || !db) return 0;
+            return filtroOrdenacao === "dataDesc" ? db - da : da - db;
+          });
+        } else if (filtroOrdenacao === "codigo") {
+          window.linhasFiltradas.sort((a, b) =>
+            a
+              .querySelector("td:nth-child(2)")
+              .textContent.localeCompare(
+                b.querySelector("td:nth-child(2)").textContent
+              )
+          );
+        } else if (filtroOrdenacao === "nome") {
+          window.linhasFiltradas.sort((a, b) =>
+            a
+              .querySelector("td:nth-child(3)")
+              .textContent.localeCompare(
+                b.querySelector("td:nth-child(3)").textContent
+              )
+          );
+        }
+        // Re-append sorted rows to tbody so DOM order matches filter order
+        const tbody = document.querySelector("#tabelaUsuarios tbody");
+        window.linhasFiltradas.forEach((linha) => {
+          tbody.appendChild(linha);
         });
         // Exibe só as linhas filtradas, oculta as demais
         linhas.forEach((linha) => {
@@ -452,9 +586,6 @@
             linha.style.display = "none";
           }
         });
-        window.itensPorPagina = parseInt(
-          document.getElementById("itensPorPagina").value
-        );
         // Só resetar para página 1 se o filtro ou itens por página mudarem
         if (filtrarTabela.resetToFirstPage) {
           window.paginaAtual = 1;
@@ -476,64 +607,174 @@
         document.getElementById("situacaoPessoaCT").value = btn.getAttribute(
           "data-situacaopessoa"
         );
-      }
+
+      // Preencher campos ocultos exclusivos do formulário de edição com os filtros atuais
+      document.getElementById('filtroUsuarioEdit').value = document.getElementById('filtroUsuarioMain').value;
+      document.getElementById('filtroInstituicaoEdit').value = document.getElementById('filtroInstituicaoMain').value;
+      document.getElementById('filtroDataIniEdit').value = document.getElementById('filtroDataIniMain').value;
+      document.getElementById('filtroDataFimEdit').value = document.getElementById('filtroDataFimMain').value;
+      document.getElementById('filtroOrdenacaoEdit').value = document.getElementById('filtroOrdenacaoMain').value;
+      document.getElementById('itensPorPaginaEdit').value = document.getElementById('itensPorPaginaMain').value;      }
 
       // Popular filtro de instituições
+      // Função para salvar filtros
+      function salvarFiltros() {
+        localStorage.setItem(
+          "filtrosUsuarios",
+          JSON.stringify({
+            usuario: document.getElementById("filtroUsuarioMain").value,
+            instituicao: document.getElementById("filtroInstituicaoMain").value,
+            dataIni: document.getElementById("filtroDataIniMain").value,
+            dataFim: document.getElementById("filtroDataFimMain").value,
+            ordenacao: document.getElementById("filtroOrdenacaoMain").value,
+            itensPorPagina: document.getElementById("itensPorPaginaMain").value,
+          })
+        );
+      }
+
+      // Função para restaurar filtros
+      function restaurarFiltros() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filtrosStorage = JSON.parse(localStorage.getItem("filtrosUsuarios") || "null");
+
+        // Verifica se todos os filtros da URL estão vazios
+        const filtrosUrl = [
+          urlParams.get("filtroUsuario"),
+          urlParams.get("filtroInstituicao"),
+          urlParams.get("filtroDataIni"),
+          urlParams.get("filtroDataFim"),
+          urlParams.get("filtroOrdenacao"),
+          urlParams.get("itensPorPagina")
+        ];
+        const todosVazios = filtrosUrl.every(v => v === null || v === undefined || v.trim() === "");
+
+        function getFiltro(param, storageKey, defaultValue) {
+          const val = urlParams.get(param);
+          if (!todosVazios && val !== null && val !== undefined && val.trim() !== "") return val;
+          if (filtrosStorage && filtrosStorage[storageKey]) return filtrosStorage[storageKey];
+          return defaultValue;
+        }
+
+  document.getElementById("filtroUsuarioMain").value = getFiltro("filtroUsuario", "usuario", "");
+  document.getElementById("filtroInstituicaoMain").value = getFiltro("filtroInstituicao", "instituicao", "");
+  document.getElementById("filtroDataIniMain").value = getFiltro("filtroDataIni", "dataIni", "");
+  document.getElementById("filtroDataFimMain").value = getFiltro("filtroDataFim", "dataFim", "");
+  document.getElementById("filtroOrdenacaoMain").value = getFiltro("filtroOrdenacao", "ordenacao", "dataDesc");
+  document.getElementById("itensPorPaginaMain").value = getFiltro("itensPorPagina", "itensPorPagina", "10");
+  // Sincroniza variável global com filtro restaurado
+  window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
+
+        // Só salva filtros se houver pelo menos um preenchido
+        const algumPreenchido = [
+          document.getElementById("filtroUsuarioMain").value,
+          document.getElementById("filtroInstituicaoMain").value,
+          document.getElementById("filtroDataIniMain").value,
+          document.getElementById("filtroDataFimMain").value,
+          document.getElementById("filtroOrdenacaoMain").value,
+          document.getElementById("itensPorPaginaMain").value
+        ].some(v => v && v.trim() !== "");
+        if (algumPreenchido) {
+          salvarFiltros();
+        }
+        filtrarTabela();
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
-        // Popular filtro de instituições
-        const filtroInstituicao = document.getElementById("filtroInstituicao");
-        const instituicoes = new Set();
-        document.querySelectorAll(".linha-usuario").forEach(function (linha) {
-          const badgeInstituicao = linha.querySelector(".badge.bg-primary");
-          if (badgeInstituicao) {
-            instituicoes.add(badgeInstituicao.textContent.trim().toLowerCase());
+        // Restaurar filtros ao carregar a página
+        restaurarFiltros();
+        // Adicionar listeners após restaurar filtros
+        document
+            .getElementById("filtroUsuarioMain")
+            .addEventListener("input", function () {
+              salvarFiltros();
+              filtrarTabela();
+            });
+        document
+            .getElementById("filtroInstituicaoMain")
+            .addEventListener("change", function () {
+              salvarFiltros();
+              filtrarTabela.resetToFirstPage = true;
+              filtrarTabela();
+            });
+        document
+            .getElementById("filtroDataIniMain")
+            .addEventListener("input", function () {
+              salvarFiltros();
+              filtrarTabela();
+            });
+        document
+            .getElementById("filtroDataFimMain")
+            .addEventListener("input", function () {
+              salvarFiltros();
+              filtrarTabela();
+            });
+        document
+            .getElementById("filtroOrdenacaoMain")
+            .addEventListener("change", function () {
+              salvarFiltros();
+              filtrarTabela.resetToFirstPage = true;
+              filtrarTabela();
+            });
+        document
+            .getElementById("itensPorPaginaMain")
+            .addEventListener("change", function () {
+              salvarFiltros();
+              window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
+              filtrarTabela.resetToFirstPage = true;
+              filtrarTabela();
+            });
+        document
+            .getElementById("btnLimparFiltros")
+            .addEventListener("click", function () {
+              document.getElementById("filtroUsuarioMain").value = "";
+              document.getElementById("filtroInstituicaoMain").value = "";
+              document.getElementById("filtroDataIniMain").value = "";
+              document.getElementById("filtroDataFimMain").value = "";
+              document.getElementById("filtroOrdenacaoMain").value = "dataDesc";
+              salvarFiltros();
+              filtrarTabela.resetToFirstPage = true;
+              filtrarTabela();
+            });
+      });
+      // Popular filtro de instituições
+    const filtroInstituicao = document.getElementById("filtroInstituicaoMain");
+      const instituicoes = new Set();
+      document.querySelectorAll(".linha-usuario").forEach(function (linha) {
+        const badgeInstituicao = linha.querySelector(".badge.bg-primary");
+        if (badgeInstituicao) {
+          instituicoes.add(badgeInstituicao.textContent.trim().toLowerCase());
+        }
+      });
+      instituicoes.forEach(function (instituicao) {
+        const option = document.createElement("option");
+        option.value = instituicao;
+        option.textContent =
+          instituicao.charAt(0).toUpperCase() + instituicao.slice(1);
+        filtroInstituicao.appendChild(option);
+      });
+
+      document
+        .getElementById("btnAnterior")
+        .addEventListener("click", function () {
+          if (window.paginaAtual > 1) {
+            window.paginaAtual--;
+            paginarTabela();
           }
         });
-        instituicoes.forEach(function (instituicao) {
-          const option = document.createElement("option");
-          option.value = instituicao;
-          option.textContent =
-            instituicao.charAt(0).toUpperCase() + instituicao.slice(1);
-          filtroInstituicao.appendChild(option);
+      document
+        .getElementById("btnProximo")
+        .addEventListener("click", function () {
+          const totalPaginas = Math.ceil(window.linhasFiltradas.length / window.itensPorPagina) || 1;
+          if (window.paginaAtual < totalPaginas) {
+            window.paginaAtual++;
+            paginarTabela();
+          }
         });
-
-        document
-          .getElementById("btnAnterior")
-          .addEventListener("click", function () {
-            if (window.paginaAtual > 1) {
-              window.paginaAtual--;
-              paginarTabela();
-            }
-          });
-        document
-          .getElementById("btnProximo")
-          .addEventListener("click", function () {
-            const itensPorPagina = parseInt(
-              document.getElementById("itensPorPagina").value
-            );
-            const totalFiltrados = atualizarInfoPaginacao.totalFiltrados || 0;
-            const totalPaginas =
-              Math.ceil(totalFiltrados / itensPorPagina) || 1;
-            if (window.paginaAtual < totalPaginas) {
-              window.paginaAtual++;
-              paginarTabela();
-            }
-          });
-        document
-          .getElementById("filtroUsuario")
-          .addEventListener("keyup", filtrarTabela);
-        document
-          .getElementById("filtroInstituicao")
-          .addEventListener("change", filtrarTabela);
-        document
-          .getElementById("itensPorPagina")
-          .addEventListener("change", function () {
-            filtrarTabela.resetToFirstPage = true;
-            filtrarTabela();
-          });
-        // Inicialização
-        filtrarTabela();
-      });
+      // Event listeners já adicionados no bloco anterior
+      // Inicialização
+    window.itensPorPagina = parseInt(document.getElementById("itensPorPaginaMain").value);
+  filtrarTabela.resetToFirstPage = true;
+  filtrarTabela();
     </script>
   </body>
 </html>
