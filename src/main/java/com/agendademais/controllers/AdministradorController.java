@@ -4,9 +4,17 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.agendademais.repositories.SubInstituicaoRepository;
+import com.agendademais.entities.Instituicao;
+import com.agendademais.entities.SubInstituicao;
+import java.util.List;
 
 @Controller
 public class AdministradorController {
+
+    @Autowired
+    private SubInstituicaoRepository subInstituicaoRepository;
 
     @GetMapping("/administrador")
     public String exibirPainelAdministrador(HttpSession session, Model model) {
@@ -25,7 +33,14 @@ public class AdministradorController {
             model.addAttribute("mensagemErro", "Sessão expirada. Faça login novamente.");
             return "login";
         }
-        // Aqui futuramente pode-se adicionar lógica para filtrar subinstituições da instituição logada
+        Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        List<SubInstituicao> subinstituicoes = null;
+        if (instituicaoSelecionada != null) {
+            subinstituicoes = subInstituicaoRepository
+                    .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
+        }
+        model.addAttribute("subinstituicoes", subinstituicoes);
+        model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
         return "administrador/gerenciar-subinstituicoes";
     }
 }

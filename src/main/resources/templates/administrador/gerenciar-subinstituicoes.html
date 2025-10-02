@@ -1,29 +1,175 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Gerenciar Sub-Instituições</title>
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body>
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
     <div class="container mt-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/administrador"><i class="fas fa-home"></i> Administrador</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-sitemap"></i> Gerenciar Sub-Instituições</li>
-            </ol>
-        </nav>
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2><i class="fas fa-sitemap me-2 text-primary"></i> Gerenciar Sub-Instituições</h2>
-                <p class="text-muted">Administre as sub-instituições vinculadas à sua instituição</p>
-            </div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="/administrador"
+              ><i class="fas fa-home"></i> Administrador</a
+            >
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-sitemap"></i> Gerenciar Sub-Instituições
+          </li>
+        </ol>
+      </nav>
+      <div class="row mb-2">
+        <div class="col-12">
+          <h2>
+            <i class="fas fa-sitemap me-2 text-primary"></i> Gerenciar
+            Sub-Instituições
+          </h2>
+          <p class="text-muted">
+            Administre as sub-instituições vinculadas à sua instituição
+          </p>
         </div>
-        <div class="alert alert-info mt-4" role="alert">
-            <i class="fas fa-tools me-2"></i> Página em Construção
+      </div>
+      <div class="d-flex justify-content-end mb-3">
+        <a href="#" class="btn btn-success">
+          <i class="fas fa-plus"></i> Nova Sub-Instituição
+        </a>
+      </div>
+      <!-- Filtros -->
+      <form
+        class="row mb-2"
+        method="get"
+        action="/administrador/subinstituicoes"
+      >
+        <div class="col-md-3">
+          <label class="form-label mb-1">Ult.Atualiz: Início - Fim</label>
+          <div class="d-flex">
+            <input
+              type="text"
+              class="form-control me-1"
+              name="dataIni"
+              placeholder="dd/mm/aa"
+              maxlength="8"
+            />
+            <input
+              type="text"
+              class="form-control"
+              name="dataFim"
+              placeholder="dd/mm/aa"
+              maxlength="8"
+            />
+          </div>
         </div>
+        <div class="col-md-3">
+          <label class="form-label mb-1">Sub.Instituição</label>
+          <select class="form-select" name="subId">
+            <option value="">Todas</option>
+            <option
+              th:each="sub : ${subinstituicoes}"
+              th:value="${sub.id}"
+              th:text="${sub.nomeSubInstituicao}"
+            ></option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1">Situação</label>
+          <select class="form-select" name="situacao">
+            <option value="">Todas</option>
+            <option value="A">Ativa</option>
+            <option value="I">Inativa</option>
+            <option value="B">Bloqueada</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1">Ordenar</label>
+          <select class="form-select" name="ordenar">
+            <option value="dataDesc">Ult.Atualiz desc</option>
+            <option value="dataAsc">Ult.Atualiz asc</option>
+            <option value="nome">Sub.Instituição</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1">Itens por página</label>
+          <select class="form-select" name="itensPorPagina">
+            <option value="10">10</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </div>
+        <div class="col-md-12 mt-2 text-end">
+          <button type="submit" class="btn btn-outline-secondary">
+            <i class="fas fa-filter"></i> Filtrar
+          </button>
+        </div>
+      </form>
+      <div class="card mt-2">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Ult.Atualiz</th>
+                <th>Nome Sub.Instituição</th>
+                <th>Sit.</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="sub : ${subinstituicoes}">
+                <td
+                  th:text="${#temporals.format(sub.dataUltimaAtualizacao, 'dd/MM/yy')}"
+                >
+                  01/01/25
+                </td>
+                <td th:text="${sub.nomeSubInstituicao}">Nome Sub</td>
+                <td>
+                  <span th:switch="${sub.situacaoSubInstituicao}">
+                    <span th:case="'A'" class="badge bg-success">A</span>
+                    <span
+                      th:case="'I'"
+                      class="badge bg-danger-subtle text-danger"
+                      >I</span
+                    >
+                    <span th:case="'B'" class="badge bg-danger">B</span>
+                    <span
+                      th:case="*"
+                      class="badge bg-secondary"
+                      th:text="${sub.situacaoSubInstituicao}"
+                      >?</span
+                    >
+                  </span>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary me-1"
+                    title="Editar"
+                  >
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    title="Excluir"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

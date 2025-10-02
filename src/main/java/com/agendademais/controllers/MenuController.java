@@ -123,11 +123,6 @@ public class MenuController {
         return "info/em-construcao";
     }
 
-    @GetMapping("/administrador/subinstituicoes")
-    public String gerenciarSubInstituicoes() {
-        return "info/em-construcao";
-    }
-
     // @GetMapping("/administrador/atividades")
     // public String gerenciarAtividades() {
     // return "redirect:/atividades";
