@@ -39,6 +39,165 @@
             Administre as sub-instituições vinculadas à sua instituição
           </p>
         </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const filtroDataIni = document.getElementById("filtroDataIni");
+            const filtroDataFim = document.getElementById("filtroDataFim");
+            const filtroNomeSub = document.getElementById("filtroNomeSub");
+            const filtroSituacao = document.getElementById("filtroSituacao");
+            const filtroOrdenar = document.getElementById("filtroOrdenar");
+            const filtroItensPorPagina = document.getElementById(
+              "filtroItensPorPagina"
+            );
+            const linhas = Array.from(document.querySelectorAll("tbody tr"));
+            let paginaAtual = 1;
+            let linhasFiltradas = linhas;
+
+            function filtrarTabela(keepPage = false) {
+              const nomeBusca = filtroNomeSub.value.trim().toLowerCase();
+              const sit = filtroSituacao.value;
+              const dataIni = filtroDataIni.value;
+              const dataFim = filtroDataFim.value;
+              let filtradas = linhas.filter(function (linha) {
+                const nome = linha
+                  .querySelector("td:nth-child(2)")
+                  .textContent.toLowerCase();
+                const situacao = linha
+                  .querySelector("td:nth-child(3) .badge")
+                  .textContent.trim();
+                const dataStr = linha
+                  .querySelector("td:nth-child(1)")
+                  .textContent.trim();
+                let dataVal = null;
+                if (/^\d{2}\/\d{2}\/\d{2}$/.test(dataStr)) {
+                  const [d, m, y] = dataStr.split("/");
+                  dataVal = new Date("20" + y, m - 1, d);
+                }
+                let matchData = true;
+                if (dataIni && dataVal) {
+                  const [di, mi, yi] = dataIni.split("/");
+                  const ini = new Date(`20${yi}`, mi - 1, di);
+                  matchData = dataVal >= ini;
+                }
+                if (dataFim && dataVal) {
+                  const [df, mf, yf] = dataFim.split("/");
+                  const fim = new Date(`20${yf}`, mf - 1, df);
+                  matchData = matchData && dataVal <= fim;
+                }
+                const matchNome = !nomeBusca || nome.includes(nomeBusca);
+                const matchSit = !sit || situacao === sit;
+                return matchNome && matchSit && matchData;
+              });
+              // Ordenação
+              if (
+                filtroOrdenar.value === "dataDesc" ||
+                filtroOrdenar.value === "dataAsc"
+              ) {
+                filtradas.sort((a, b) => {
+                  const daStr = a
+                    .querySelector("td:nth-child(1)")
+                    .textContent.trim();
+                  const dbStr = b
+                    .querySelector("td:nth-child(1)")
+                    .textContent.trim();
+                  let da = null,
+                    db = null;
+                  if (/^\d{2}\/\d{2}\/\d{2}$/.test(daStr)) {
+                    const [d, m, y] = daStr.split("/");
+                    da = new Date("20" + y, m - 1, d);
+                  }
+                  if (/^\d{2}\/\d{2}\/\d{2}$/.test(dbStr)) {
+                    const [d, m, y] = dbStr.split("/");
+                    db = new Date("20" + y, m - 1, d);
+                  }
+                  if (!da || !db) return 0;
+                  return filtroOrdenar.value === "dataDesc" ? db - da : da - db;
+                });
+              } else if (filtroOrdenar.value === "nome") {
+                filtradas.sort((a, b) =>
+                  a
+                    .querySelector("td:nth-child(2)")
+                    .textContent.localeCompare(
+                      b.querySelector("td:nth-child(2)").textContent
+                    )
+                );
+              }
+              linhasFiltradas = filtradas;
+              if (!keepPage) paginaAtual = 1;
+              paginarTabela();
+            }
+
+            function paginarTabela() {
+              const itensPorPagina = parseInt(filtroItensPorPagina.value);
+              const totalPaginas =
+                Math.ceil(linhasFiltradas.length / itensPorPagina) || 1;
+              if (paginaAtual > totalPaginas) paginaAtual = 1;
+              linhas.forEach((linha) => (linha.style.display = "none"));
+              linhasFiltradas.forEach((linha, idx) => {
+                if (
+                  idx >= (paginaAtual - 1) * itensPorPagina &&
+                  idx < paginaAtual * itensPorPagina
+                ) {
+                  linha.style.display = "";
+                }
+              });
+            }
+
+            // Listeners
+            [
+              filtroDataIni,
+              filtroDataFim,
+              filtroNomeSub,
+              filtroSituacao,
+              filtroOrdenar,
+              filtroItensPorPagina,
+            ].forEach((el) => {
+              el.addEventListener("input", filtrarTabela);
+              el.addEventListener("change", filtrarTabela);
+            });
+
+            filtrarTabela();
+          });
+
+          document
+            .getElementById("formNovaSub")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              const nome = document.getElementById("novaNome").value;
+              const situacao = document.getElementById("novaSituacao").value;
+              const tbody = document.querySelector("table tbody");
+              const tr = document.createElement("tr");
+              const now = new Date();
+              const dataStr = now.toLocaleDateString("pt-BR").slice(0, 8);
+              tr.innerHTML = `<td>${dataStr}</td><td>${nome}</td><td><span class=\"badge ${
+                situacao === "A"
+                  ? "bg-success"
+                  : situacao === "I"
+                  ? "bg-danger-subtle text-danger"
+                  : "bg-danger"
+              }\">${situacao}</span></td><td><button type='button' class='btn btn-sm btn-outline-primary me-1' title='Editar' onclick='editarSubInstituicao(\"new\")'><i class='fas fa-pencil-alt'></i></button><button type='button' class='btn btn-sm btn-outline-danger' title='Excluir' onclick='excluirSubInstituicao(\"new\")'><i class='fas fa-times'></i></button></td>`;
+              tbody.appendChild(tr);
+              linhas.push(tr);
+              var modal = bootstrap.Modal.getInstance(
+                document.getElementById("modalNovaSub")
+              );
+              modal.hide();
+              e.target.reset();
+              filtrarTabela(true);
+            });
+
+          // Funções dos ícones
+          function editarSubInstituicao(id) {
+            alert("Editar Sub-Instituição: " + id);
+            // Aqui pode abrir modal ou redirecionar para página de edição
+          }
+          function excluirSubInstituicao(id) {
+            if (confirm("Confirma exclusão da Sub-Instituição " + id + "?")) {
+              alert("Excluindo Sub-Instituição: " + id);
+              // Aqui pode chamar endpoint de exclusão
+            }
+          }
+        </script>
       </div>
       <div class="d-flex justify-content-end mb-3">
         <a href="#" class="btn btn-success">
@@ -51,72 +210,69 @@
         method="get"
         action="/administrador/subinstituicoes"
       >
-        <div class="col-md-3">
-          <label class="form-label mb-1">Ult.Atualiz: Início - Fim</label>
-          <div class="d-flex">
-            <input
-              type="text"
-              class="form-control me-1"
-              name="dataIni"
-              placeholder="dd/mm/aa"
-              maxlength="8"
-            />
+        <!-- Filtros dinâmicos -->
+        <div class="row mb-2">
+          <div class="col-md-3">
+            <label class="form-label mb-1">Ult.Atualiz: Início - Fim</label>
+            <div class="d-flex">
+              <input
+                type="text"
+                class="form-control me-1"
+                id="filtroDataIni"
+                placeholder="dd/mm/aa"
+                maxlength="8"
+              />
+              <input
+                type="text"
+                class="form-control"
+                id="filtroDataFim"
+                placeholder="dd/mm/aa"
+                maxlength="8"
+              />
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label mb-1">Buscar Sub-Instituições</label>
             <input
               type="text"
               class="form-control"
-              name="dataFim"
-              placeholder="dd/mm/aa"
-              maxlength="8"
+              id="filtroNomeSub"
+              placeholder="Digite para buscar..."
+              autocomplete="off"
             />
           </div>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label mb-1">Sub.Instituição</label>
-          <select class="form-select" name="subId">
-            <option value="">Todas</option>
-            <option
-              th:each="sub : ${subinstituicoes}"
-              th:value="${sub.id}"
-              th:text="${sub.nomeSubInstituicao}"
-            ></option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label mb-1">Situação</label>
-          <select class="form-select" name="situacao">
-            <option value="">Todas</option>
-            <option value="A">Ativa</option>
-            <option value="I">Inativa</option>
-            <option value="B">Bloqueada</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label mb-1">Ordenar</label>
-          <select class="form-select" name="ordenar">
-            <option value="dataDesc">Ult.Atualiz desc</option>
-            <option value="dataAsc">Ult.Atualiz asc</option>
-            <option value="nome">Sub.Instituição</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label mb-1">Itens por página</label>
-          <select class="form-select" name="itensPorPagina">
-            <option value="10">10</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-          </select>
-        </div>
-        <div class="col-md-12 mt-2 text-end">
-          <button type="submit" class="btn btn-outline-secondary">
-            <i class="fas fa-filter"></i> Filtrar
-          </button>
+          <div class="col-md-2">
+            <label class="form-label mb-1">Situação</label>
+            <select class="form-select" id="filtroSituacao">
+              <option value="">Todas</option>
+              <option value="A">Ativa</option>
+              <option value="I">Inativa</option>
+              <option value="B">Bloqueada</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-1">Ordenar</label>
+            <select class="form-select" id="filtroOrdenar">
+              <option value="dataDesc">Ult.Atualiz desc</option>
+              <option value="dataAsc">Ult.Atualiz asc</option>
+              <option value="nome">Sub.Instituição</option>
+            </select>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label mb-1">Itens</label>
+            <select class="form-select" id="filtroItensPorPagina">
+              <option value="10">10</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </div>
         </div>
       </form>
       <div class="card mt-2">
         <div class="table-responsive">
           <table class="table table-hover mb-0">
-            <thead class="table-dark">
+            <thead class="bg-light">
               <tr>
                 <th>Ult.Atualiz</th>
                 <th>Nome Sub.Instituição</th>
@@ -154,6 +310,7 @@
                     type="button"
                     class="btn btn-sm btn-outline-primary me-1"
                     title="Editar"
+                    onclick="editarSubInstituicao('[[${sub.id}]]')"
                   >
                     <i class="fas fa-pencil-alt"></i>
                   </button>
@@ -161,6 +318,7 @@
                     type="button"
                     class="btn btn-sm btn-outline-danger"
                     title="Excluir"
+                    onclick="editarSubInstituicao('[[${sub.id}]]')"
                   >
                     <i class="fas fa-times"></i>
                   </button>
@@ -168,6 +326,69 @@
               </tr>
             </tbody>
           </table>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span id="totalCount" class="font-weight-bold"></span>
+            <nav>
+              <ul id="pagination" class="pagination mb-0"></ul>
+            </nav>
+          </div>
+        </div>
+        <!-- Modal Nova Sub-Instituição -->
+        <div
+          class="modal fade"
+          id="modalNovaSub"
+          tabindex="-1"
+          aria-labelledby="modalNovaSubLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalNovaSubLabel">
+                  Nova Sub-Instituição
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <form id="formNovaSub" autocomplete="off">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="novaNome" class="form-label">Nome</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="novaNome"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="novaSituacao" class="form-label"
+                      >Situação</label
+                    >
+                    <select class="form-select" id="novaSituacao" required>
+                      <option value="A">Ativa</option>
+                      <option value="I">Inativa</option>
+                      <option value="B">Bloqueada</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" class="btn btn-success">Salvar</button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
