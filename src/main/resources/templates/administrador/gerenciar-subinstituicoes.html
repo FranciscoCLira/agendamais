@@ -13,6 +13,31 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
+    <style>
+      /* Force minimal spacing between table columns */
+      .table th,
+      .table td {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+      }
+      .table th:not(:last-child),
+      .table td:not(:last-child) {
+        margin-right: 0 !important;
+      }
+
+      /* Restore space at left edge, reduce only between first and second column */
+      .table th:nth-child(1),
+      .table td:nth-child(1) {
+        padding-left: 12px !important; /* space from border */
+        padding-right: 2px !important; /* minimal space to next column */
+      }
+      .table th:nth-child(2),
+      .table td:nth-child(2) {
+        padding-left: 2px !important;
+      }
+    </style>
   </head>
   <body>
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
@@ -84,6 +109,7 @@
                   const fim = new Date(`20${yf}`, mf - 1, df);
                   matchData = matchData && dataVal <= fim;
                 }
+                // Partial match for any substring in nome
                 const matchNome = !nomeBusca || nome.includes(nomeBusca);
                 const matchSit = !sit || situacao === sit;
                 return matchNome && matchSit && matchData;
@@ -110,17 +136,19 @@
                     const [d, m, y] = dbStr.split("/");
                     db = new Date("20" + y, m - 1, d);
                   }
-                  if (!da || !db) return 0;
+                  if (!da || !db || isNaN(da) || isNaN(db)) return 0;
                   return filtroOrdenar.value === "dataDesc" ? db - da : da - db;
                 });
               } else if (filtroOrdenar.value === "nome") {
-                filtradas.sort((a, b) =>
-                  a
+                filtradas.sort((a, b) => {
+                  const nomeA = a
                     .querySelector("td:nth-child(2)")
-                    .textContent.localeCompare(
-                      b.querySelector("td:nth-child(2)").textContent
-                    )
-                );
+                    .textContent.toLowerCase();
+                  const nomeB = b
+                    .querySelector("td:nth-child(2)")
+                    .textContent.toLowerCase();
+                  return nomeA.localeCompare(nomeB);
+                });
               }
               linhasFiltradas = filtradas;
               if (!keepPage) paginaAtual = 1;
@@ -129,8 +157,10 @@
 
             function paginarTabela() {
               const itensPorPagina = parseInt(filtroItensPorPagina.value);
-              const totalPaginas =
-                Math.ceil(linhasFiltradas.length / itensPorPagina) || 1;
+              const totalPaginas = Math.max(
+                1,
+                Math.ceil(linhasFiltradas.length / itensPorPagina)
+              );
               if (paginaAtual > totalPaginas) paginaAtual = 1;
               linhas.forEach((linha) => (linha.style.display = "none"));
               linhasFiltradas.forEach((linha, idx) => {
@@ -141,9 +171,74 @@
                   linha.style.display = "";
                 }
               });
+              // Show total filtered count (now handled above the table)
+              document.getElementById(
+                "totalCount"
+              ).textContent = `Total: ${linhasFiltradas.length} Sub-instituições`;
+              // Show pagination controls
+              const pagination = document.getElementById("pagination");
+              pagination.innerHTML = "";
+              if (totalPaginas > 1) {
+                for (let i = 1; i <= totalPaginas; i++) {
+                  const li = document.createElement("li");
+                  li.className =
+                    "page-item" + (i === paginaAtual ? " active" : "");
+                  const a = document.createElement("a");
+                  a.className = "page-link";
+                  a.href = "#";
+                  a.textContent = i;
+                  a.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    paginaAtual = i;
+                    paginarTabela();
+                  });
+                  li.appendChild(a);
+                  pagination.appendChild(li);
+                }
+              }
             }
 
-            // Listeners
+            // Autocomplete for Buscar Sub-Instituições
+            let autocompleteList = document.createElement("div");
+            autocompleteList.setAttribute("id", "autocomplete-list");
+            autocompleteList.setAttribute("class", "autocomplete-items");
+            filtroNomeSub.parentNode.appendChild(autocompleteList);
+            filtroNomeSub.addEventListener("input", function () {
+              const val = this.value.toLowerCase();
+              autocompleteList.innerHTML = "";
+              if (!val) return;
+              let matches = linhas
+                .map(
+                  (linha) => linha.querySelector("td:nth-child(2)").textContent
+                )
+                .filter((nome) => nome.toLowerCase().startsWith(val));
+              matches = [...new Set(matches)];
+              matches.forEach((nome) => {
+                const item = document.createElement("div");
+                item.textContent = nome;
+                item.className = "autocomplete-item";
+                item.onclick = function () {
+                  filtroNomeSub.value = nome;
+                  autocompleteList.innerHTML = "";
+                  filtrarTabela();
+                  // Limpar filtros (except Itens)
+                  document.getElementById("btnLimparFiltros").onclick =
+                    function () {
+                      filtroDataIni.value = "";
+                      filtroDataFim.value = "";
+                      filtroNomeSub.value = "";
+                      filtroSituacao.value = "";
+                      filtroOrdenar.value = "dataDesc";
+                      filtrarTabela();
+                    };
+                };
+                autocompleteList.appendChild(item);
+              });
+            });
+            document.addEventListener("click", function (e) {
+              if (e.target !== filtroNomeSub) autocompleteList.innerHTML = "";
+            });
+
             [
               filtroDataIni,
               filtroDataFim,
@@ -200,9 +295,16 @@
         </script>
       </div>
       <div class="d-flex justify-content-end mb-3">
-        <a href="#" class="btn btn-success">
-          <i class="fas fa-plus"></i> Nova Sub-Instituição
-        </a>
+        <div class="d-flex w-100 align-items-center mb-3">
+          <span
+            id="totalCount"
+            class="fw-bold me-auto"
+            style="align-self: center"
+          ></span>
+          <a href="#" class="btn btn-success ms-2">
+            <i class="fas fa-plus"></i> Nova Sub-Instituição
+          </a>
+        </div>
       </div>
       <!-- Filtros -->
       <form
@@ -260,42 +362,86 @@
           </div>
           <div class="col-md-1">
             <label class="form-label mb-1">Itens</label>
-            <select class="form-select" id="filtroItensPorPagina">
-              <option value="10">10</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-            </select>
+            <div class="d-flex align-items-center">
+              <select
+                class="form-select"
+                id="filtroItensPorPagina"
+                style="min-width: 80px; width: 100px"
+              >
+                <option value="10">10</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+              </select>
+              <button
+                type="button"
+                id="btnLimparFiltros"
+                class="btn btn-outline-secondary ms-2"
+              >
+                Limpar
+              </button>
+            </div>
           </div>
         </div>
       </form>
       <div class="card mt-2">
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table
+            class="table table-hover mb-0"
+            style="border-spacing: 0 0.5rem; border-collapse: separate"
+          >
             <thead class="bg-light">
               <tr>
-                <th>Ult.Atualiz</th>
-                <th>Nome Sub.Instituição</th>
-                <th>Sit.</th>
-                <th>Ações</th>
+                <th style="width: 60px; padding-right: 0; border-right: none">
+                  Ult.Atualiz
+                </th>
+                <th
+                  style="
+                    width: 120px;
+                    padding-left: 0;
+                    padding-right: 0;
+                    border-left: none;
+                    border-right: none;
+                  "
+                >
+                  Nome Sub.Instituição
+                </th>
+                <th style="width: 30px; padding-right: 0; border-left: none">
+                  Sit.
+                </th>
+                <th style="width: 50px; padding-right: 0; border-left: none">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="sub : ${subinstituicoes}">
                 <td
                   th:text="${#temporals.format(sub.dataUltimaAtualizacao, 'dd/MM/yy')}"
+                  style="padding-right: 0; border-right: none"
                 >
                   01/01/25
                 </td>
-                <td th:text="${sub.nomeSubInstituicao}">Nome Sub</td>
-                <td>
+                <td
+                  th:text="${sub.nomeSubInstituicao}"
+                  style="
+                    padding-left: 0;
+                    padding-right: 0;
+                    border-left: none;
+                    border-right: none;
+                  "
+                >
+                  Nome Sub
+                </td>
+                <td style="padding-right: 0; border-left: none">
                   <span th:switch="${sub.situacaoSubInstituicao}">
                     <span th:case="'A'" class="badge bg-success">A</span>
                     <span
                       th:case="'I'"
                       class="badge bg-danger-subtle text-danger"
-                      >I</span
                     >
+                      I
+                    </span>
                     <span th:case="'B'" class="badge bg-danger">B</span>
                     <span
                       th:case="*"
@@ -305,7 +451,7 @@
                     >
                   </span>
                 </td>
-                <td>
+                <td style="padding-right: 0; border-left: none">
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-primary me-1"
