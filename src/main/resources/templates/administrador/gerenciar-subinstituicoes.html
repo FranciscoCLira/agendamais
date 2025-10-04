@@ -83,6 +83,16 @@
             let paginaAtual = 1;
             let linhasFiltradas = linhas;
 
+            // Limpar filtros
+            document.getElementById("btnLimparFiltros").onclick = function () {
+              filtroDataIni.value = "";
+              filtroDataFim.value = "";
+              filtroNomeSub.value = "";
+              filtroSituacao.value = "";
+              filtroOrdenar.value = "dataDesc";
+              filtrarTabela();
+            };
+
             function filtrarTabela(keepPage = false) {
               const nomeBusca = filtroNomeSub.value.trim().toLowerCase();
               const sit = filtroSituacao.value;
@@ -120,6 +130,7 @@
                 return matchNome && matchSit && matchData;
               });
               // Ordenação
+              console.log("Ordenar:", filtroOrdenar.value);
               if (
                 filtroOrdenar.value === "dataDesc" ||
                 filtroOrdenar.value === "dataAsc"
@@ -131,18 +142,20 @@
                   const dbStr = b
                     .querySelector("td:nth-child(1)")
                     .textContent.trim();
-                  let da = null,
-                    db = null;
-                  if (/^\d{2}\/\d{2}\/\d{2}$/.test(daStr)) {
-                    const [d, m, y] = daStr.split("/");
-                    da = new Date("20" + y, m - 1, d);
+                  // Parse dd/MM/yy as yyyy-mm-dd
+                  function parseDMY(str) {
+                    const match = str.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+                    if (!match) return null;
+                    const [_, d, m, y] = match;
+                    return new Date(`20${y}-${m}-${d}`);
                   }
-                  if (/^\d{2}\/\d{2}\/\d{2}$/.test(dbStr)) {
-                    const [d, m, y] = dbStr.split("/");
-                    db = new Date("20" + y, m - 1, d);
-                  }
-                  if (!da || !db || isNaN(da) || isNaN(db)) return 0;
-                  return filtroOrdenar.value === "dataDesc" ? db - da : da - db;
+                  const da = parseDMY(daStr);
+                  const db = parseDMY(dbStr);
+                  if (!da || !db || isNaN(da.getTime()) || isNaN(db.getTime()))
+                    return 0;
+                  return filtroOrdenar.value === "dataDesc"
+                    ? db.getTime() - da.getTime()
+                    : da.getTime() - db.getTime();
                 });
               } else if (filtroOrdenar.value === "nome") {
                 filtradas.sort((a, b) => {
@@ -155,6 +168,9 @@
                   return nomeA.localeCompare(nomeB);
                 });
               }
+              // Force table update by reattaching sorted rows
+              const tbody = document.querySelector("table tbody");
+              filtradas.forEach((tr) => tbody.appendChild(tr));
               linhasFiltradas = filtradas;
               if (!keepPage) paginaAtual = 1;
               paginarTabela();
@@ -176,11 +192,9 @@
                   linha.style.display = "";
                 }
               });
-              // Show total filtered count (now handled above the table)
               document.getElementById(
                 "totalCount"
               ).textContent = `Total: ${linhasFiltradas.length} Sub-instituições`;
-              // Show pagination controls
               const pagination = document.getElementById("pagination");
               pagination.innerHTML = "";
               if (totalPaginas > 1) {
@@ -222,26 +236,44 @@
                 const item = document.createElement("div");
                 item.textContent = nome;
                 item.className = "autocomplete-item";
+                item.tabIndex = 0;
                 item.onclick = function () {
                   filtroNomeSub.value = nome;
                   autocompleteList.innerHTML = "";
                   filtrarTabela();
-                  // Limpar filtros (except Itens)
-                  document.getElementById("btnLimparFiltros").onclick =
-                    function () {
-                      filtroDataIni.value = "";
-                      filtroDataFim.value = "";
-                      filtroNomeSub.value = "";
-                      filtroSituacao.value = "";
-                      filtroOrdenar.value = "dataDesc";
-                      filtrarTabela();
-                    };
                 };
+                item.addEventListener("keydown", function (ev) {
+                  if (ev.key === "Enter" || ev.key === "Tab") {
+                    filtroNomeSub.value = nome;
+                    autocompleteList.innerHTML = "";
+                    filtrarTabela();
+                    filtroNomeSub.focus();
+                    ev.preventDefault();
+                  }
+                });
                 autocompleteList.appendChild(item);
               });
             });
             document.addEventListener("click", function (e) {
               if (e.target !== filtroNomeSub) autocompleteList.innerHTML = "";
+            });
+
+            // Fix: Enter/Tab in input only filters by input value, never auto-selects dropdown
+            filtroNomeSub.addEventListener("keydown", function (e) {
+              if (e.key === "Enter" || e.key === "Tab") {
+                // If a dropdown item is focused, select it
+                const focused = document.activeElement;
+                if (focused.classList.contains("autocomplete-item")) {
+                  filtroNomeSub.value = focused.textContent;
+                  autocompleteList.innerHTML = "";
+                  filtrarTabela();
+                  e.preventDefault();
+                } else {
+                  // Otherwise, just filter by input value and close dropdown
+                  autocompleteList.innerHTML = "";
+                  filtrarTabela();
+                }
+              }
             });
 
             [
@@ -255,7 +287,16 @@
               el.addEventListener("input", filtrarTabela);
               el.addEventListener("change", filtrarTabela);
             });
+            // Ensure Ordenar filter triggers sorting
+            filtroOrdenar.addEventListener("change", function () {
+              filtrarTabela();
+            });
+            filtroOrdenar.addEventListener("input", function () {
+              filtrarTabela();
+            });
 
+            // Show all rows on initial load
+            linhas.forEach((linha) => (linha.style.display = ""));
             filtrarTabela();
           });
 
@@ -393,33 +434,67 @@
         <div class="table-responsive">
           <table
             class="table table-hover mb-0"
-            style="border-spacing: 0; border-collapse: separate; table-layout: fixed; width: 100%;"
+            style="
+              border-spacing: 0;
+              border-collapse: separate;
+              table-layout: fixed;
+              width: 100%;
+            "
           >
             <thead class="bg-light">
               <tr>
-                <th style="padding-right: 1px;">Ult.Atualiz</th>
-                <th style="padding-left: 1px;">Nome Sub.Instituição</th>
-                <th style="padding-right: 1px;">Sit.</th>
-                <th style="padding-left: 1px; padding-right: 1px;">Ações</th>
+                <th style="padding-right: 1px">Ult.Atualiz</th>
+                <th style="padding-left: 1px">Nome Sub.Instituição</th>
+                <th style="padding-right: 1px">Sit.</th>
+                <th style="padding-left: 1px; padding-right: 1px">Ações</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="sub : ${subinstituicoes}">
-                <td th:text="${#temporals.format(sub.dataUltimaAtualizacao, 'dd/MM/yy')}" style="padding-right: 1px;">01/01/25</td>
-                <td th:text="${sub.nomeSubInstituicao}" style="padding-left: 1px;">Nome Sub</td>
-                <td style="padding-right: 1px;">
+                <td
+                  th:text="${#temporals.format(sub.dataUltimaAtualizacao, 'dd/MM/yy')}"
+                  style="padding-right: 1px"
+                >
+                  01/01/25
+                </td>
+                <td
+                  th:text="${sub.nomeSubInstituicao}"
+                  style="padding-left: 1px"
+                >
+                  Nome Sub
+                </td>
+                <td style="padding-right: 1px">
                   <span th:switch="${sub.situacaoSubInstituicao}">
                     <span th:case="'A'" class="badge bg-success">A</span>
-                    <span th:case="'I'" class="badge bg-danger-subtle text-danger">I</span>
+                    <span
+                      th:case="'I'"
+                      class="badge bg-danger-subtle text-danger"
+                      >I</span
+                    >
                     <span th:case="'B'" class="badge bg-danger">B</span>
-                    <span th:case="*" class="badge bg-secondary" th:text="${sub.situacaoSubInstituicao}">?</span>
+                    <span
+                      th:case="*"
+                      class="badge bg-secondary"
+                      th:text="${sub.situacaoSubInstituicao}"
+                      >?</span
+                    >
                   </span>
                 </td>
-                <td style="padding-left: 1px; padding-right: 1px;">
-                  <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Editar" onclick="editarSubInstituicao('[[${sub.id}]]')">
+                <td style="padding-left: 1px; padding-right: 1px">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary me-1"
+                    title="Editar"
+                    onclick="editarSubInstituicao('[[${sub.id}]]')"
+                  >
                     <i class="fas fa-pencil-alt"></i>
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="editarSubInstituicao('[[${sub.id}]]')">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    title="Excluir"
+                    onclick="editarSubInstituicao('[[${sub.id}]]')"
+                  >
                     <i class="fas fa-times"></i>
                   </button>
                 </td>

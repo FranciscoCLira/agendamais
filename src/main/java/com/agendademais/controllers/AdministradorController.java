@@ -36,8 +36,7 @@ public class AdministradorController {
         Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
         List<SubInstituicao> subinstituicoes = null;
         if (instituicaoSelecionada != null) {
-            subinstituicoes = subInstituicaoRepository
-                    .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
+            subinstituicoes = subInstituicaoRepository.findByInstituicao(instituicaoSelecionada);
         }
         model.addAttribute("subinstituicoes", subinstituicoes);
         model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
