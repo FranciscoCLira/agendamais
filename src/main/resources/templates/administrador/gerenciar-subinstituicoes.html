@@ -388,84 +388,33 @@
         <div class="table-responsive">
           <table
             class="table table-hover mb-0"
-            style="border-spacing: 0 0.5rem; border-collapse: separate"
+            style="border-spacing: 0; border-collapse: separate; table-layout: fixed; width: 100%;"
           >
             <thead class="bg-light">
               <tr>
-                <th style="width: 60px; padding-right: 0; border-right: none">
-                  Ult.Atualiz
-                </th>
-                <th
-                  style="
-                    width: 120px;
-                    padding-left: 0;
-                    padding-right: 0;
-                    border-left: none;
-                    border-right: none;
-                  "
-                >
-                  Nome Sub.Instituição
-                </th>
-                <th style="width: 30px; padding-right: 0; border-left: none">
-                  Sit.
-                </th>
-                <th style="width: 50px; padding-right: 0; border-left: none">
-                  Ações
-                </th>
+                <th style="padding-right: 1px;">Ult.Atualiz</th>
+                <th style="padding-left: 1px;">Nome Sub.Instituição</th>
+                <th style="padding-right: 1px;">Sit.</th>
+                <th style="padding-left: 1px; padding-right: 1px;">Ações</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="sub : ${subinstituicoes}">
-                <td
-                  th:text="${#temporals.format(sub.dataUltimaAtualizacao, 'dd/MM/yy')}"
-                  style="padding-right: 0; border-right: none"
-                >
-                  01/01/25
-                </td>
-                <td
-                  th:text="${sub.nomeSubInstituicao}"
-                  style="
-                    padding-left: 0;
-                    padding-right: 0;
-                    border-left: none;
-                    border-right: none;
-                  "
-                >
-                  Nome Sub
-                </td>
-                <td style="padding-right: 0; border-left: none">
+                <td th:text="${#temporals.format(sub.dataUltimaAtualizacao, 'dd/MM/yy')}" style="padding-right: 1px;">01/01/25</td>
+                <td th:text="${sub.nomeSubInstituicao}" style="padding-left: 1px;">Nome Sub</td>
+                <td style="padding-right: 1px;">
                   <span th:switch="${sub.situacaoSubInstituicao}">
                     <span th:case="'A'" class="badge bg-success">A</span>
-                    <span
-                      th:case="'I'"
-                      class="badge bg-danger-subtle text-danger"
-                    >
-                      I
-                    </span>
+                    <span th:case="'I'" class="badge bg-danger-subtle text-danger">I</span>
                     <span th:case="'B'" class="badge bg-danger">B</span>
-                    <span
-                      th:case="*"
-                      class="badge bg-secondary"
-                      th:text="${sub.situacaoSubInstituicao}"
-                      >?</span
-                    >
+                    <span th:case="*" class="badge bg-secondary" th:text="${sub.situacaoSubInstituicao}">?</span>
                   </span>
                 </td>
-                <td style="padding-right: 0; border-left: none">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-primary me-1"
-                    title="Editar"
-                    onclick="editarSubInstituicao('[[${sub.id}]]')"
-                  >
+                <td style="padding-left: 1px; padding-right: 1px;">
+                  <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Editar" onclick="editarSubInstituicao('[[${sub.id}]]')">
                     <i class="fas fa-pencil-alt"></i>
                   </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    title="Excluir"
-                    onclick="editarSubInstituicao('[[${sub.id}]]')"
-                  >
+                  <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="editarSubInstituicao('[[${sub.id}]]')">
                     <i class="fas fa-times"></i>
                   </button>
                 </td>
