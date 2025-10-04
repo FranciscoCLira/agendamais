@@ -14,28 +14,33 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
     <style>
-      /* Force minimal spacing between table columns */
+      /* Aggressive CSS override for minimal column gap */
+      .table {
+        border-spacing: 0 !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+        width: 100% !important;
+      }
       .table th,
       .table td {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        min-width: 0 !important;
+        width: auto !important;
+        font-size: 1rem;
+      }
+      .table th:first-child,
+      .table td:first-child {
+        padding-left: 8px !important;
+      }
+      .table th + th,
+      .table td + td {
         padding-left: 0 !important;
-        padding-right: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
       }
-      .table th:not(:last-child),
-      .table td:not(:last-child) {
-        margin-right: 0 !important;
-      }
-
-      /* Restore space at left edge, reduce only between first and second column */
-      .table th:nth-child(1),
-      .table td:nth-child(1) {
-        padding-left: 12px !important; /* space from border */
-        padding-right: 2px !important; /* minimal space to next column */
-      }
-      .table th:nth-child(2),
-      .table td:nth-child(2) {
-        padding-left: 2px !important;
+      /* Light blue header background */
+      .table thead th {
+        background-color: #e3f2fd !important;
       }
     </style>
   </head>
