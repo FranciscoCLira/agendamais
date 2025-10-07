@@ -40,6 +40,23 @@ public class AdministradorController {
         }
         model.addAttribute("subinstituicoes", subinstituicoes);
         model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
+        model.addAttribute("subInstituicao", new SubInstituicao());
         return "administrador/gerenciar-subinstituicoes";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/administrador/subinstituicoes/nova")
+    public String salvarNovaSubInstituicao(
+            @org.springframework.web.bind.annotation.ModelAttribute SubInstituicao subInstituicao,
+            HttpSession session,
+            Model model) {
+        Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        if (instituicaoSelecionada == null) {
+            model.addAttribute("mensagemErro", "Instituição não selecionada.");
+            return "redirect:/administrador/subinstituicoes";
+        }
+        subInstituicao.setInstituicao(instituicaoSelecionada);
+        subInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
+        subInstituicaoRepository.save(subInstituicao);
+        return "redirect:/administrador/subinstituicoes";
     }
 }

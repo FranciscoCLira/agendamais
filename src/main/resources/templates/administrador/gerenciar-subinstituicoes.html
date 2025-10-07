@@ -347,7 +347,12 @@
             class="fw-bold me-auto"
             style="align-self: center"
           ></span>
-          <a href="#" class="btn btn-success ms-2">
+          <a
+            href="#"
+            class="btn btn-success ms-2"
+            data-bs-toggle="modal"
+            data-bs-target="#modalNovaSub"
+          >
             <i class="fas fa-plus"></i> Nova Sub-Instituição
           </a>
         </div>
@@ -529,7 +534,13 @@
                   aria-label="Close"
                 ></button>
               </div>
-              <form id="formNovaSub" autocomplete="off">
+              <form
+                id="formNovaSub"
+                th:action="@{/administrador/subinstituicoes/nova}"
+                th:object="${subInstituicao}"
+                method="post"
+                autocomplete="off"
+              >
                 <div class="modal-body">
                   <div class="mb-3">
                     <label for="novaNome" class="form-label">Nome</label>
@@ -537,6 +548,7 @@
                       type="text"
                       class="form-control"
                       id="novaNome"
+                      th:field="*{nomeSubInstituicao}"
                       required
                     />
                   </div>
@@ -544,7 +556,12 @@
                     <label for="novaSituacao" class="form-label"
                       >Situação</label
                     >
-                    <select class="form-select" id="novaSituacao" required>
+                    <select
+                      class="form-select"
+                      id="novaSituacao"
+                      th:field="*{situacaoSubInstituicao}"
+                      required
+                    >
                       <option value="A">Ativa</option>
                       <option value="I">Inativa</option>
                       <option value="B">Bloqueada</option>
