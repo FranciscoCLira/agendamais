@@ -59,4 +59,44 @@ public class AdministradorController {
         subInstituicaoRepository.save(subInstituicao);
         return "redirect:/administrador/subinstituicoes";
     }
+
+    @org.springframework.web.bind.annotation.GetMapping("/administrador/subinstituicoes/editar/{id}")
+    public String editarSubInstituicao(@org.springframework.web.bind.annotation.PathVariable Long id, Model model,
+            HttpSession session) {
+        SubInstituicao sub = subInstituicaoRepository.findById(id).orElse(null);
+        if (sub == null) {
+            model.addAttribute("mensagemErro", "Sub-Instituição não encontrada.");
+            return "redirect:/administrador/subinstituicoes";
+        }
+        Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        List<SubInstituicao> subinstituicoes = null;
+        if (instituicaoSelecionada != null) {
+            subinstituicoes = subInstituicaoRepository.findByInstituicao(instituicaoSelecionada);
+        }
+        model.addAttribute("subinstituicoes", subinstituicoes);
+        model.addAttribute("instituicaoSelecionada", instituicaoSelecionada);
+        model.addAttribute("subInstituicao", sub);
+        return "administrador/gerenciar-subinstituicoes";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/administrador/subinstituicoes/editar")
+    public String salvarEdicaoSubInstituicao(
+            @org.springframework.web.bind.annotation.ModelAttribute SubInstituicao subInstituicao, HttpSession session,
+            Model model) {
+        Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        if (instituicaoSelecionada == null) {
+            model.addAttribute("mensagemErro", "Instituição não selecionada.");
+            return "redirect:/administrador/subinstituicoes";
+        }
+        subInstituicao.setInstituicao(instituicaoSelecionada);
+        subInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
+        subInstituicaoRepository.save(subInstituicao);
+        return "redirect:/administrador/subinstituicoes";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/administrador/subinstituicoes/excluir/{id}")
+    public String excluirSubInstituicao(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        subInstituicaoRepository.deleteById(id);
+        return "redirect:/administrador/subinstituicoes";
+    }
 }

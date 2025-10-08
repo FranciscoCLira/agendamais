@@ -486,14 +486,13 @@
                   </span>
                 </td>
                 <td style="padding-left: 1px; padding-right: 1px">
-                  <button
-                    type="button"
+                  <a
+                    th:href="@{'/administrador/subinstituicoes/editar/' + ${sub.id}}"
                     class="btn btn-sm btn-outline-primary me-1"
                     title="Editar"
-                    onclick="editarSubInstituicao('[[${sub.id}]]')"
                   >
                     <i class="fas fa-pencil-alt"></i>
-                  </button>
+                  </a>
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-danger"
@@ -525,7 +524,12 @@
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="modalNovaSubLabel">
-                  Nova Sub-Instituição
+                  <span th:if="${subInstituicao.id == null}"
+                    >Nova Sub-Instituição</span
+                  >
+                  <span th:if="${subInstituicao.id != null}"
+                    >Editar Sub-Instituição</span
+                  >
                 </h5>
                 <button
                   type="button"
@@ -536,12 +540,13 @@
               </div>
               <form
                 id="formNovaSub"
-                th:action="@{/administrador/subinstituicoes/nova}"
+                th:action="@{${subInstituicao.id == null} ? '/administrador/subinstituicoes/nova' : '/administrador/subinstituicoes/editar'}"
                 th:object="${subInstituicao}"
                 method="post"
                 autocomplete="off"
               >
                 <div class="modal-body">
+                  <input type="hidden" th:field="*{id}" />
                   <div class="mb-3">
                     <label for="novaNome" class="form-label">Nome</label>
                     <input
@@ -576,7 +581,10 @@
                   >
                     Cancelar
                   </button>
-                  <button type="submit" class="btn btn-success">Salvar</button>
+                  <button type="submit" class="btn btn-success">
+                    <span th:if="${subInstituicao.id == null}">Salvar</span>
+                    <span th:if="${subInstituicao.id != null}">Atualizar</span>
+                  </button>
                 </div>
               </form>
             </div>
@@ -584,5 +592,14 @@
         </div>
       </div>
     </div>
+    <script>
+      var shouldOpenEditModal = [[${subInstituicao.id != null}]];
+      document.addEventListener("DOMContentLoaded", function() {
+        if (shouldOpenEditModal) {
+          var editModal = new bootstrap.Modal(document.getElementById("modalNovaSub"));
+          editModal.show();
+        }
+      });
+    </script>
   </body>
 </html>
