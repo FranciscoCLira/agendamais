@@ -1,0 +1,17 @@
+<!-- fragments/hidden-filters-subinstituicao.html -->
+<th:block th:fragment="hiddenFiltersSubInstituicao">
+  <input type="hidden" name="filtroDataIni" th:value="${param.filtroDataIni}" />
+  <input type="hidden" name="filtroDataFim" th:value="${param.filtroDataFim}" />
+  <input type="hidden" name="filtroNomeSub" th:value="${param.filtroNomeSub}" />
+  <input
+    type="hidden"
+    name="filtroSituacao"
+    th:value="${param.filtroSituacao}"
+  />
+  <input type="hidden" name="filtroOrdenar" th:value="${param.filtroOrdenar}" />
+  <input
+    type="hidden"
+    name="filtroItensPorPagina"
+    th:value="${param.filtroItensPorPagina}"
+  />
+</th:block>

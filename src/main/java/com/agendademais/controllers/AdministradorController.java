@@ -4,17 +4,30 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.List;
+
+import com.agendademais.repositories.PessoaSubInstituicaoRepository;
 import com.agendademais.repositories.SubInstituicaoRepository;
 import com.agendademais.entities.Instituicao;
 import com.agendademais.entities.SubInstituicao;
-import java.util.List;
 
 @Controller
 public class AdministradorController {
 
     @Autowired
     private SubInstituicaoRepository subInstituicaoRepository;
+
+    @Autowired
+    private PessoaSubInstituicaoRepository pessoaSubInstituicaoRepository;
 
     @GetMapping("/administrador")
     public String exibirPainelAdministrador(HttpSession session, Model model) {
@@ -44,20 +57,22 @@ public class AdministradorController {
         return "administrador/gerenciar-subinstituicoes";
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/administrador/subinstituicoes/nova")
-    public String salvarNovaSubInstituicao(
-            @org.springframework.web.bind.annotation.ModelAttribute SubInstituicao subInstituicao,
-            HttpSession session,
-            Model model) {
+    @PostMapping("/administrador/subinstituicoes/nova")
+    public String novaSubInstituicao(
+            @ModelAttribute SubInstituicao subInstituicao,
+            @RequestParam Map<String, String> params,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
         Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada == null) {
-            model.addAttribute("mensagemErro", "Instituição não selecionada.");
-            return "redirect:/administrador/subinstituicoes";
+            redirectAttributes.addFlashAttribute("mensagemErro", "Instituição não selecionada.");
+            return buildRedirectUrlWithParams(params);
         }
         subInstituicao.setInstituicao(instituicaoSelecionada);
         subInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
         subInstituicaoRepository.save(subInstituicao);
-        return "redirect:/administrador/subinstituicoes";
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Sub-Instituição criada com sucesso.");
+        return buildRedirectUrlWithParams(params);
     }
 
     @org.springframework.web.bind.annotation.GetMapping("/administrador/subinstituicoes/editar/{id}")
@@ -79,24 +94,50 @@ public class AdministradorController {
         return "administrador/gerenciar-subinstituicoes";
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/administrador/subinstituicoes/editar")
+    @PostMapping("/administrador/subinstituicoes/editar")
     public String salvarEdicaoSubInstituicao(
-            @org.springframework.web.bind.annotation.ModelAttribute SubInstituicao subInstituicao, HttpSession session,
-            Model model) {
+            @ModelAttribute SubInstituicao subInstituicao,
+            @RequestParam Map<String, String> params,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
         Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
         if (instituicaoSelecionada == null) {
-            model.addAttribute("mensagemErro", "Instituição não selecionada.");
-            return "redirect:/administrador/subinstituicoes";
+            redirectAttributes.addFlashAttribute("mensagemErro", "Instituição não selecionada.");
+            return buildRedirectUrlWithParams(params);
         }
         subInstituicao.setInstituicao(instituicaoSelecionada);
         subInstituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
         subInstituicaoRepository.save(subInstituicao);
-        return "redirect:/administrador/subinstituicoes";
+        return buildRedirectUrlWithParams(params);
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/administrador/subinstituicoes/excluir/{id}")
-    public String excluirSubInstituicao(@org.springframework.web.bind.annotation.PathVariable Long id) {
+    public String excluirSubInstituicao(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @RequestParam Map<String, String> params,
+            RedirectAttributes redirectAttributes) {
+        long count = pessoaSubInstituicaoRepository.countBySubInstituicaoId(id);
+        if (count > 0) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Não é possível excluir: existem pessoas vinculadas a esta Sub-Instituição.");
+            return buildRedirectUrlWithParams(params);
+        }
         subInstituicaoRepository.deleteById(id);
-        return "redirect:/administrador/subinstituicoes";
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Sub-Instituição excluída com sucesso.");
+        return buildRedirectUrlWithParams(params);
+    }
+
+    private String buildRedirectUrlWithParams(Map<String, String> params) {
+        StringBuilder redirectUrl = new StringBuilder("redirect:/administrador/subinstituicoes");
+        if (!params.isEmpty()) {
+            redirectUrl.append("?");
+            params.forEach((k, v) -> {
+                if (v != null && !v.isEmpty())
+                    redirectUrl.append(k).append("=").append(URLEncoder.encode(v, StandardCharsets.UTF_8)).append("&");
+            });
+            redirectUrl.setLength(redirectUrl.length() - 1); // Remove last &
+        }
+        System.out.println("DEBUG Redirecting to: " + redirectUrl.toString());
+        return redirectUrl.toString();
     }
 }

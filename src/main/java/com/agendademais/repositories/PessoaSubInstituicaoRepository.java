@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PessoaSubInstituicaoRepository extends JpaRepository<PessoaSubInstituicao, Long> {
 
+	long countBySubInstituicaoId(Long subInstituicaoId);
+
 	void deleteByPessoa(Pessoa pessoa);
 
 	void deleteAllByPessoaId(Long pessoaId);
@@ -22,16 +24,16 @@ public interface PessoaSubInstituicaoRepository extends JpaRepository<PessoaSubI
 			List<PessoaSubInstituicao> subInstituicoes);
 
 	List<PessoaSubInstituicao> findByPessoa(Pessoa pessoa);
-	
+
 	// Método para buscar qualquer vínculo de sub-instituição de uma pessoa
 	Optional<PessoaSubInstituicao> findFirstByPessoaId(Long pessoaId);
-	
+
 	// Método para buscar todas as sub-instituições de uma pessoa por ID
 	List<PessoaSubInstituicao> findByPessoaId(Long pessoaId);
-	
+
 	// Novos métodos para CRUD de Sub-Instituições
 	boolean existsByPessoaAndSubInstituicao(Pessoa pessoa, SubInstituicao subInstituicao);
-	
+
 	// Método para buscar vínculo de uma pessoa em uma instituição específica
 	Optional<PessoaSubInstituicao> findByPessoaAndInstituicao(Pessoa pessoa, Instituicao instituicao);
 }

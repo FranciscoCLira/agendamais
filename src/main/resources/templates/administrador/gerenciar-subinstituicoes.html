@@ -47,6 +47,17 @@
   <body>
     <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
     <div class="container mt-4">
+      <!-- Add this block just after <div class="container mt-4"> -->
+      <div
+        th:if="${mensagemSucesso}"
+        class="alert alert-success"
+        th:text="${mensagemSucesso}"
+      ></div>
+      <div
+        th:if="${mensagemErro}"
+        class="alert alert-danger"
+        th:text="${mensagemErro}"
+      ></div>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
@@ -69,276 +80,6 @@
             Administre as sub-instituições vinculadas à sua instituição
           </p>
         </div>
-        <script>
-          document.addEventListener("DOMContentLoaded", function () {
-            const filtroDataIni = document.getElementById("filtroDataIni");
-            const filtroDataFim = document.getElementById("filtroDataFim");
-            const filtroNomeSub = document.getElementById("filtroNomeSub");
-            const filtroSituacao = document.getElementById("filtroSituacao");
-            const filtroOrdenar = document.getElementById("filtroOrdenar");
-            const filtroItensPorPagina = document.getElementById(
-              "filtroItensPorPagina"
-            );
-            const linhas = Array.from(document.querySelectorAll("tbody tr"));
-            let paginaAtual = 1;
-            let linhasFiltradas = linhas;
-
-            // Limpar filtros
-            document.getElementById("btnLimparFiltros").onclick = function () {
-              filtroDataIni.value = "";
-              filtroDataFim.value = "";
-              filtroNomeSub.value = "";
-              filtroSituacao.value = "";
-              filtroOrdenar.value = "dataDesc";
-              filtrarTabela();
-            };
-
-            function filtrarTabela(keepPage = false) {
-              const nomeBusca = filtroNomeSub.value.trim().toLowerCase();
-              const sit = filtroSituacao.value;
-              const dataIni = filtroDataIni.value;
-              const dataFim = filtroDataFim.value;
-              let filtradas = linhas.filter(function (linha) {
-                const nome = linha
-                  .querySelector("td:nth-child(2)")
-                  .textContent.toLowerCase();
-                const situacao = linha
-                  .querySelector("td:nth-child(3) .badge")
-                  .textContent.trim();
-                const dataStr = linha
-                  .querySelector("td:nth-child(1)")
-                  .textContent.trim();
-                let dataVal = null;
-                if (/^\d{2}\/\d{2}\/\d{2}$/.test(dataStr)) {
-                  const [d, m, y] = dataStr.split("/");
-                  dataVal = new Date("20" + y, m - 1, d);
-                }
-                let matchData = true;
-                if (dataIni && dataVal) {
-                  const [di, mi, yi] = dataIni.split("/");
-                  const ini = new Date(`20${yi}`, mi - 1, di);
-                  matchData = dataVal >= ini;
-                }
-                if (dataFim && dataVal) {
-                  const [df, mf, yf] = dataFim.split("/");
-                  const fim = new Date(`20${yf}`, mf - 1, df);
-                  matchData = matchData && dataVal <= fim;
-                }
-                // Partial match for any substring in nome
-                const matchNome = !nomeBusca || nome.includes(nomeBusca);
-                const matchSit = !sit || situacao === sit;
-                return matchNome && matchSit && matchData;
-              });
-              // Ordenação
-              console.log("Ordenar:", filtroOrdenar.value);
-              if (
-                filtroOrdenar.value === "dataDesc" ||
-                filtroOrdenar.value === "dataAsc"
-              ) {
-                filtradas.sort((a, b) => {
-                  const daStr = a
-                    .querySelector("td:nth-child(1)")
-                    .textContent.trim();
-                  const dbStr = b
-                    .querySelector("td:nth-child(1)")
-                    .textContent.trim();
-                  // Parse dd/MM/yy as yyyy-mm-dd
-                  function parseDMY(str) {
-                    const match = str.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
-                    if (!match) return null;
-                    const [_, d, m, y] = match;
-                    return new Date(`20${y}-${m}-${d}`);
-                  }
-                  const da = parseDMY(daStr);
-                  const db = parseDMY(dbStr);
-                  if (!da || !db || isNaN(da.getTime()) || isNaN(db.getTime()))
-                    return 0;
-                  return filtroOrdenar.value === "dataDesc"
-                    ? db.getTime() - da.getTime()
-                    : da.getTime() - db.getTime();
-                });
-              } else if (filtroOrdenar.value === "nome") {
-                filtradas.sort((a, b) => {
-                  const nomeA = a
-                    .querySelector("td:nth-child(2)")
-                    .textContent.toLowerCase();
-                  const nomeB = b
-                    .querySelector("td:nth-child(2)")
-                    .textContent.toLowerCase();
-                  return nomeA.localeCompare(nomeB);
-                });
-              }
-              // Force table update by reattaching sorted rows
-              const tbody = document.querySelector("table tbody");
-              filtradas.forEach((tr) => tbody.appendChild(tr));
-              linhasFiltradas = filtradas;
-              if (!keepPage) paginaAtual = 1;
-              paginarTabela();
-            }
-
-            function paginarTabela() {
-              const itensPorPagina = parseInt(filtroItensPorPagina.value);
-              const totalPaginas = Math.max(
-                1,
-                Math.ceil(linhasFiltradas.length / itensPorPagina)
-              );
-              if (paginaAtual > totalPaginas) paginaAtual = 1;
-              linhas.forEach((linha) => (linha.style.display = "none"));
-              linhasFiltradas.forEach((linha, idx) => {
-                if (
-                  idx >= (paginaAtual - 1) * itensPorPagina &&
-                  idx < paginaAtual * itensPorPagina
-                ) {
-                  linha.style.display = "";
-                }
-              });
-              document.getElementById(
-                "totalCount"
-              ).textContent = `Total: ${linhasFiltradas.length} Sub-instituições`;
-              const pagination = document.getElementById("pagination");
-              pagination.innerHTML = "";
-              if (totalPaginas > 1) {
-                for (let i = 1; i <= totalPaginas; i++) {
-                  const li = document.createElement("li");
-                  li.className =
-                    "page-item" + (i === paginaAtual ? " active" : "");
-                  const a = document.createElement("a");
-                  a.className = "page-link";
-                  a.href = "#";
-                  a.textContent = i;
-                  a.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    paginaAtual = i;
-                    paginarTabela();
-                  });
-                  li.appendChild(a);
-                  pagination.appendChild(li);
-                }
-              }
-            }
-
-            // Autocomplete for Buscar Sub-Instituições
-            let autocompleteList = document.createElement("div");
-            autocompleteList.setAttribute("id", "autocomplete-list");
-            autocompleteList.setAttribute("class", "autocomplete-items");
-            filtroNomeSub.parentNode.appendChild(autocompleteList);
-            filtroNomeSub.addEventListener("input", function () {
-              const val = this.value.toLowerCase();
-              autocompleteList.innerHTML = "";
-              if (!val) return;
-              let matches = linhas
-                .map(
-                  (linha) => linha.querySelector("td:nth-child(2)").textContent
-                )
-                .filter((nome) => nome.toLowerCase().startsWith(val));
-              matches = [...new Set(matches)];
-              matches.forEach((nome) => {
-                const item = document.createElement("div");
-                item.textContent = nome;
-                item.className = "autocomplete-item";
-                item.tabIndex = 0;
-                item.onclick = function () {
-                  filtroNomeSub.value = nome;
-                  autocompleteList.innerHTML = "";
-                  filtrarTabela();
-                };
-                item.addEventListener("keydown", function (ev) {
-                  if (ev.key === "Enter" || ev.key === "Tab") {
-                    filtroNomeSub.value = nome;
-                    autocompleteList.innerHTML = "";
-                    filtrarTabela();
-                    filtroNomeSub.focus();
-                    ev.preventDefault();
-                  }
-                });
-                autocompleteList.appendChild(item);
-              });
-            });
-            document.addEventListener("click", function (e) {
-              if (e.target !== filtroNomeSub) autocompleteList.innerHTML = "";
-            });
-
-            // Fix: Enter/Tab in input only filters by input value, never auto-selects dropdown
-            filtroNomeSub.addEventListener("keydown", function (e) {
-              if (e.key === "Enter" || e.key === "Tab") {
-                // If a dropdown item is focused, select it
-                const focused = document.activeElement;
-                if (focused.classList.contains("autocomplete-item")) {
-                  filtroNomeSub.value = focused.textContent;
-                  autocompleteList.innerHTML = "";
-                  filtrarTabela();
-                  e.preventDefault();
-                } else {
-                  // Otherwise, just filter by input value and close dropdown
-                  autocompleteList.innerHTML = "";
-                  filtrarTabela();
-                }
-              }
-            });
-
-            [
-              filtroDataIni,
-              filtroDataFim,
-              filtroNomeSub,
-              filtroSituacao,
-              filtroOrdenar,
-              filtroItensPorPagina,
-            ].forEach((el) => {
-              el.addEventListener("input", filtrarTabela);
-              el.addEventListener("change", filtrarTabela);
-            });
-            // Ensure Ordenar filter triggers sorting
-            filtroOrdenar.addEventListener("change", function () {
-              filtrarTabela();
-            });
-            filtroOrdenar.addEventListener("input", function () {
-              filtrarTabela();
-            });
-
-            // Show all rows on initial load
-            linhas.forEach((linha) => (linha.style.display = ""));
-            filtrarTabela();
-          });
-
-          document
-            .getElementById("formNovaSub")
-            .addEventListener("submit", function (e) {
-              e.preventDefault();
-              const nome = document.getElementById("novaNome").value;
-              const situacao = document.getElementById("novaSituacao").value;
-              const tbody = document.querySelector("table tbody");
-              const tr = document.createElement("tr");
-              const now = new Date();
-              const dataStr = now.toLocaleDateString("pt-BR").slice(0, 8);
-              tr.innerHTML = `<td>${dataStr}</td><td>${nome}</td><td><span class=\"badge ${
-                situacao === "A"
-                  ? "bg-success"
-                  : situacao === "I"
-                  ? "bg-danger-subtle text-danger"
-                  : "bg-danger"
-              }\">${situacao}</span></td><td><button type='button' class='btn btn-sm btn-outline-primary me-1' title='Editar' onclick='editarSubInstituicao(\"new\")'><i class='fas fa-pencil-alt'></i></button><button type='button' class='btn btn-sm btn-outline-danger' title='Excluir' onclick='excluirSubInstituicao(\"new\")'><i class='fas fa-times'></i></button></td>`;
-              tbody.appendChild(tr);
-              linhas.push(tr);
-              var modal = bootstrap.Modal.getInstance(
-                document.getElementById("modalNovaSub")
-              );
-              modal.hide();
-              e.target.reset();
-              filtrarTabela(true);
-            });
-
-          // Funções dos ícones
-          function editarSubInstituicao(id) {
-            alert("Editar Sub-Instituição: " + id);
-            // Aqui pode abrir modal ou redirecionar para página de edição
-          }
-          function excluirSubInstituicao(id) {
-            if (confirm("Confirma exclusão da Sub-Instituição " + id + "?")) {
-              alert("Excluindo Sub-Instituição: " + id);
-              // Aqui pode chamar endpoint de exclusão
-            }
-          }
-        </script>
       </div>
       <div class="d-flex justify-content-end mb-3">
         <div class="d-flex w-100 align-items-center mb-3">
@@ -372,6 +113,8 @@
                 type="text"
                 class="form-control me-1"
                 id="filtroDataIni"
+                name="filtroDataIni"
+                th:value="${param.filtroDataIni}"
                 placeholder="dd/mm/aa"
                 maxlength="8"
               />
@@ -379,6 +122,8 @@
                 type="text"
                 class="form-control"
                 id="filtroDataFim"
+                name="filtroDataFim"
+                th:value="${param.filtroDataFim}"
                 placeholder="dd/mm/aa"
                 maxlength="8"
               />
@@ -390,25 +135,57 @@
               type="text"
               class="form-control"
               id="filtroNomeSub"
+              name="filtroNomeSub"
+              th:value="${param.filtroNomeSub}"
               placeholder="Digite para buscar..."
               autocomplete="off"
             />
           </div>
           <div class="col-md-2">
             <label class="form-label mb-1">Situação</label>
-            <select class="form-select" id="filtroSituacao">
-              <option value="">Todas</option>
-              <option value="A">Ativa</option>
-              <option value="I">Inativa</option>
-              <option value="B">Bloqueada</option>
+            <select
+              class="form-select"
+              id="filtroSituacao"
+              name="filtroSituacao"
+            >
+              <option
+                value=""
+                th:selected="${param.filtroSituacao == null or param.filtroSituacao == ''}"
+              >
+                Todas
+              </option>
+              <option value="A" th:selected="${param.filtroSituacao == 'A'}">
+                Ativa
+              </option>
+              <option value="I" th:selected="${param.filtroSituacao == 'I'}">
+                Inativa
+              </option>
+              <option value="B" th:selected="${param.filtroSituacao == 'B'}">
+                Bloqueada
+              </option>
             </select>
           </div>
           <div class="col-md-2">
             <label class="form-label mb-1">Ordenar</label>
-            <select class="form-select" id="filtroOrdenar">
-              <option value="dataDesc">Ult.Atualiz desc</option>
-              <option value="dataAsc">Ult.Atualiz asc</option>
-              <option value="nome">Sub.Instituição</option>
+            <select class="form-select" id="filtroOrdenar" name="filtroOrdenar">
+              <option
+                value="dataDesc"
+                th:selected="${param.filtroOrdenar == null or param.filtroOrdenar == 'dataDesc'}"
+              >
+                Ult.Atualiz desc
+              </option>
+              <option
+                value="dataAsc"
+                th:selected="${param.filtroOrdenar == 'dataAsc'}"
+              >
+                Ult.Atualiz asc
+              </option>
+              <option
+                value="nome"
+                th:selected="${param.filtroOrdenar == 'nome'}"
+              >
+                Sub.Instituição
+              </option>
             </select>
           </div>
           <div class="col-md-1">
@@ -417,12 +194,33 @@
               <select
                 class="form-select"
                 id="filtroItensPorPagina"
+                name="filtroItensPorPagina"
                 style="min-width: 80px; width: 100px"
               >
-                <option value="10">10</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
+                <option
+                  value="10"
+                  th:selected="${param.filtroItensPorPagina == null or param.filtroItensPorPagina == '10'}"
+                >
+                  10
+                </option>
+                <option
+                  value="50"
+                  th:selected="${param.filtroItensPorPagina == '50'}"
+                >
+                  50
+                </option>
+                <option
+                  value="100"
+                  th:selected="${param.filtroItensPorPagina == '100'}"
+                >
+                  100
+                </option>
+                <option
+                  value="200"
+                  th:selected="${param.filtroItensPorPagina == '200'}"
+                >
+                  200
+                </option>
               </select>
               <button
                 type="button"
@@ -486,21 +284,32 @@
                   </span>
                 </td>
                 <td style="padding-left: 1px; padding-right: 1px">
-                  <a
-                    th:href="@{'/administrador/subinstituicoes/editar/' + ${sub.id}}"
-                    class="btn btn-sm btn-outline-primary me-1"
-                    title="Editar"
-                  >
-                    <i class="fas fa-pencil-alt"></i>
-                  </a>
                   <button
                     type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    title="Excluir"
-                    onclick="editarSubInstituicao('[[${sub.id}]]')"
+                    class="btn btn-sm btn-outline-primary me-1"
+                    title="Editar"
+                    th:attr="onclick=|openEditModal('${sub.id}', '${sub.nomeSubInstituicao}', '${sub.situacaoSubInstituicao}')|"
                   >
-                    <i class="fas fa-times"></i>
+                    <i class="fas fa-pencil-alt"></i>
                   </button>
+                  <form
+                    th:action="@{'/administrador/subinstituicoes/excluir/' + ${sub.id}}"
+                    method="post"
+                    style="display: inline"
+                    th:attr="data-nome=${sub.nomeSubInstituicao}"
+                    onsubmit="copyFiltersToHidden(this); return confirmDelete(this);"
+                  >
+                    <th:block
+                      th:replace="fragments/hidden-filters-subinstituicao :: hiddenFiltersSubInstituicao"
+                    ></th:block>
+                    <button
+                      type="submit"
+                      class="btn btn-sm btn-outline-danger"
+                      title="Excluir"
+                    >
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </form>
                 </td>
               </tr>
             </tbody>
@@ -544,7 +353,11 @@
                 th:object="${subInstituicao}"
                 method="post"
                 autocomplete="off"
+                onsubmit="copyFiltersToHidden(this)"
               >
+                <th:block
+                  th:replace="fragments/hidden-filters-subinstituicao :: hiddenFiltersSubInstituicao"
+                ></th:block>
                 <div class="modal-body">
                   <input type="hidden" th:field="*{id}" />
                   <div class="mb-3">
@@ -593,13 +406,335 @@
       </div>
     </div>
     <script>
-      var shouldOpenEditModal = [[${subInstituicao.id != null}]];
-      document.addEventListener("DOMContentLoaded", function() {
+      // Script to set filter fields from URL params
+      document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filtroSituacao = document.getElementById("filtroSituacao");
+        const filtroOrdenar = document.getElementById("filtroOrdenar");
+        const filtroItensPorPagina = document.getElementById(
+          "filtroItensPorPagina"
+        );
+        if (filtroSituacao && urlParams.has("filtroSituacao")) {
+          filtroSituacao.value = urlParams.get("filtroSituacao");
+        }
+        if (filtroOrdenar && urlParams.has("filtroOrdenar")) {
+          filtroOrdenar.value = urlParams.get("filtroOrdenar");
+        }
+        if (filtroItensPorPagina && urlParams.has("filtroItensPorPagina")) {
+          filtroItensPorPagina.value = urlParams.get("filtroItensPorPagina");
+        }
+      });
+    </script>
+    <script>
+      // Script for modal open
+      var shouldOpenEditModal = "[[${subInstituicao.id != null}]]" === "true";
+      document.addEventListener("DOMContentLoaded", function () {
         if (shouldOpenEditModal) {
-          var editModal = new bootstrap.Modal(document.getElementById("modalNovaSub"));
+          var editModal = new bootstrap.Modal(
+            document.getElementById("modalNovaSub")
+          );
           editModal.show();
         }
       });
+    </script>
+    <script>
+      // Script for confirmDelete
+      function confirmDelete(form) {
+        var nome = form.getAttribute("data-nome");
+        return confirm(
+          "Deseja realmente excluir a Sub-Instituição: " + nome + " ?"
+        );
+      }
+    </script>
+    <script>
+      // Script for copyFiltersToHidden
+      function copyFiltersToHidden(form) {
+        const filterIds = [
+          "filtroDataIni",
+          "filtroDataFim",
+          "filtroNomeSub",
+          "filtroSituacao",
+          "filtroOrdenar",
+          "filtroItensPorPagina",
+        ];
+        filterIds.forEach((id) => {
+          const visible = document.getElementById(id);
+          if (visible) {
+            const hidden = form.querySelector('input[name="' + id + '"]');
+            if (hidden) hidden.value = visible.value;
+          }
+        });
+      }
+    </script>
+    <script>
+      // Script to force selects to update (optional)
+      document.addEventListener("DOMContentLoaded", function () {
+        // Force selects to update to the value from the URL (set by Thymeleaf)
+        ["filtroSituacao", "filtroOrdenar", "filtroItensPorPagina"].forEach(
+          function (id) {
+            var sel = document.getElementById(id);
+            if (sel && sel.value) {
+              sel.value = sel.value; // This triggers the browser to update the visual state
+            }
+          }
+        );
+      });
+    </script>
+    <script>
+      // Script for openEditModal
+      function openEditModal(id, nome, situacao) {
+        document.getElementById("modalNovaSubLabel").textContent =
+          "Editar Sub-Instituição";
+        document.getElementById("novaNome").value = nome;
+        document.getElementById("novaSituacao").value = situacao;
+        document.querySelector('#formNovaSub input[name="id"]').value = id;
+        var modal = new bootstrap.Modal(
+          document.getElementById("modalNovaSub")
+        );
+        modal.show();
+      }
+    </script>
+
+    <script>
+      // === MAIN FILTERING SCRIPT (with filtrarTabela()) ===
+      document.addEventListener("DOMContentLoaded", function () {
+        const filtroDataIni = document.getElementById("filtroDataIni");
+        const filtroDataFim = document.getElementById("filtroDataFim");
+        const filtroNomeSub = document.getElementById("filtroNomeSub");
+        const filtroSituacao = document.getElementById("filtroSituacao");
+        const filtroOrdenar = document.getElementById("filtroOrdenar");
+        const filtroItensPorPagina = document.getElementById(
+          "filtroItensPorPagina"
+        );
+        const linhas = Array.from(document.querySelectorAll("tbody tr"));
+        let paginaAtual = 1;
+        let linhasFiltradas = linhas;
+
+        // Limpar filtros
+        document.getElementById("btnLimparFiltros").onclick = function () {
+          filtroDataIni.value = "";
+          filtroDataFim.value = "";
+          filtroNomeSub.value = "";
+          filtroSituacao.value = "";
+          filtroOrdenar.value = "dataDesc";
+          filtrarTabela();
+        };
+
+        function filtrarTabela(keepPage = false) {
+          const nomeBusca = filtroNomeSub.value.trim().toLowerCase();
+          const sit = filtroSituacao.value;
+          const dataIni = filtroDataIni.value;
+          const dataFim = filtroDataFim.value;
+          let filtradas = linhas.filter(function (linha) {
+            const nome = linha
+              .querySelector("td:nth-child(2)")
+              .textContent.toLowerCase();
+            const situacao = linha
+              .querySelector("td:nth-child(3) .badge")
+              .textContent.trim();
+            const dataStr = linha
+              .querySelector("td:nth-child(1)")
+              .textContent.trim();
+            let dataVal = null;
+            if (/^\d{2}\/\d{2}\/\d{2}$/.test(dataStr)) {
+              const [d, m, y] = dataStr.split("/");
+              dataVal = new Date("20" + y, m - 1, d);
+            }
+            let matchData = true;
+            if (dataIni && dataVal) {
+              const [di, mi, yi] = dataIni.split("/");
+              const ini = new Date(`20${yi}`, mi - 1, di);
+              matchData = dataVal >= ini;
+            }
+            if (dataFim && dataVal) {
+              const [df, mf, yf] = dataFim.split("/");
+              const fim = new Date(`20${yf}`, mf - 1, df);
+              matchData = matchData && dataVal <= fim;
+            }
+            // Partial match for any substring in nome
+            const matchNome = !nomeBusca || nome.includes(nomeBusca);
+            const matchSit = !sit || situacao === sit;
+            return matchNome && matchSit && matchData;
+          });
+          // Ordenação
+          console.log("Ordenar:", filtroOrdenar.value);
+          if (
+            filtroOrdenar.value === "dataDesc" ||
+            filtroOrdenar.value === "dataAsc"
+          ) {
+            filtradas.sort((a, b) => {
+              const daStr = a
+                .querySelector("td:nth-child(1)")
+                .textContent.trim();
+              const dbStr = b
+                .querySelector("td:nth-child(1)")
+                .textContent.trim();
+              // Parse dd/MM/yy as yyyy-mm-dd
+              function parseDMY(str) {
+                const match = str.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+                if (!match) return null;
+                const [_, d, m, y] = match;
+                return new Date(`20${y}-${m}-${d}`);
+              }
+              const da = parseDMY(daStr);
+              const db = parseDMY(dbStr);
+              if (!da || !db || isNaN(da.getTime()) || isNaN(db.getTime()))
+                return 0;
+              return filtroOrdenar.value === "dataDesc"
+                ? db.getTime() - da.getTime()
+                : da.getTime() - db.getTime();
+            });
+          } else if (filtroOrdenar.value === "nome") {
+            filtradas.sort((a, b) => {
+              const nomeA = a
+                .querySelector("td:nth-child(2)")
+                .textContent.toLowerCase();
+              const nomeB = b
+                .querySelector("td:nth-child(2)")
+                .textContent.toLowerCase();
+              return nomeA.localeCompare(nomeB);
+            });
+          }
+          // Force table update by reattaching sorted rows
+          const tbody = document.querySelector("table tbody");
+          filtradas.forEach((tr) => tbody.appendChild(tr));
+          linhasFiltradas = filtradas;
+          if (!keepPage) paginaAtual = 1;
+          paginarTabela();
+        }
+
+        function paginarTabela() {
+          const itensPorPagina = parseInt(filtroItensPorPagina.value);
+          const totalPaginas = Math.max(
+            1,
+            Math.ceil(linhasFiltradas.length / itensPorPagina)
+          );
+          if (paginaAtual > totalPaginas) paginaAtual = 1;
+          linhas.forEach((linha) => (linha.style.display = "none"));
+          linhasFiltradas.forEach((linha, idx) => {
+            if (
+              idx >= (paginaAtual - 1) * itensPorPagina &&
+              idx < paginaAtual * itensPorPagina
+            ) {
+              linha.style.display = "";
+            }
+          });
+          document.getElementById(
+            "totalCount"
+          ).textContent = `Total: ${linhasFiltradas.length} Sub-instituições`;
+          const pagination = document.getElementById("pagination");
+          pagination.innerHTML = "";
+          if (totalPaginas > 1) {
+            for (let i = 1; i <= totalPaginas; i++) {
+              const li = document.createElement("li");
+              li.className = "page-item" + (i === paginaAtual ? " active" : "");
+              const a = document.createElement("a");
+              a.className = "page-link";
+              a.href = "#";
+              a.textContent = i;
+              a.addEventListener("click", function (e) {
+                e.preventDefault();
+                paginaAtual = i;
+                paginarTabela();
+              });
+              li.appendChild(a);
+              pagination.appendChild(li);
+            }
+          }
+        }
+
+        // Autocomplete for Buscar Sub-Instituições
+        let autocompleteList = document.createElement("div");
+        autocompleteList.setAttribute("id", "autocomplete-list");
+        autocompleteList.setAttribute("class", "autocomplete-items");
+        filtroNomeSub.parentNode.appendChild(autocompleteList);
+        filtroNomeSub.addEventListener("input", function () {
+          const val = this.value.toLowerCase();
+          autocompleteList.innerHTML = "";
+          if (!val) return;
+          let matches = linhas
+            .map((linha) => linha.querySelector("td:nth-child(2)").textContent)
+            .filter((nome) => nome.toLowerCase().startsWith(val));
+          matches = [...new Set(matches)];
+          matches.forEach((nome) => {
+            const item = document.createElement("div");
+            item.textContent = nome;
+            item.className = "autocomplete-item";
+            item.tabIndex = 0;
+            item.onclick = function () {
+              filtroNomeSub.value = nome;
+              autocompleteList.innerHTML = "";
+              filtrarTabela();
+            };
+            item.addEventListener("keydown", function (ev) {
+              if (ev.key === "Enter" || ev.key === "Tab") {
+                filtroNomeSub.value = nome;
+                autocompleteList.innerHTML = "";
+                filtrarTabela();
+                filtroNomeSub.focus();
+                ev.preventDefault();
+              }
+            });
+            autocompleteList.appendChild(item);
+          });
+        });
+        document.addEventListener("click", function (e) {
+          if (e.target !== filtroNomeSub) autocompleteList.innerHTML = "";
+        });
+
+        // Fix: Enter/Tab in input only filters by input value, never auto-selects dropdown
+        filtroNomeSub.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === "Tab") {
+            // If a dropdown item is focused, select it
+            const focused = document.activeElement;
+            if (focused.classList.contains("autocomplete-item")) {
+              filtroNomeSub.value = focused.textContent;
+              autocompleteList.innerHTML = "";
+              filtrarTabela();
+              e.preventDefault();
+            } else {
+              // Otherwise, just filter by input value and close dropdown
+              autocompleteList.innerHTML = "";
+              filtrarTabela();
+            }
+          }
+        });
+
+        [
+          filtroDataIni,
+          filtroDataFim,
+          filtroNomeSub,
+          filtroSituacao,
+          filtroOrdenar,
+          filtroItensPorPagina,
+        ].forEach((el) => {
+          el.addEventListener("input", filtrarTabela);
+          el.addEventListener("change", filtrarTabela);
+        });
+        // Ensure Ordenar filter triggers sorting
+        filtroOrdenar.addEventListener("change", function () {
+          filtrarTabela();
+        });
+        filtroOrdenar.addEventListener("input", function () {
+          filtrarTabela();
+        });
+
+        // Show all rows on initial load
+        linhas.forEach((linha) => (linha.style.display = ""));
+        filtrarTabela();
+      });
+
+      // Funções dos ícones
+      function editarSubInstituicao(id) {
+        alert("Editar Sub-Instituição: " + id);
+        // Aqui pode abrir modal ou redirecionar para página de edição
+      }
+      function excluirSubInstituicao(id) {
+        if (confirm("Confirma exclusão da Sub-Instituição " + id + "?")) {
+          alert("Excluindo Sub-Instituição: " + id);
+          // Aqui pode chamar endpoint de exclusão
+        }
+      }
     </script>
   </body>
 </html>
