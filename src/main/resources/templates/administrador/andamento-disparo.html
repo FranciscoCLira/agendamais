@@ -13,18 +13,23 @@
     <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
     <div class="container mt-4" style="max-width: 700px">
       <div class="card">
-        <div class="card-header">
-          <h4 class="mb-0">Andamento do Disparo de E-mails</h4>
-        </div>
         <div class="card-body">
+          <div class="mb-3">
+            <b>Atividade:</b>
+            <span th:text="${ocorrencia.idAtividade.tituloAtividade}"></span
+            ><br />
+            <b>Tipo de Atividade:</b>
+            <span th:text="${ocorrencia.idAtividade.tipoAtividade.id}"></span>
+            <span
+              th:text="${ocorrencia.idAtividade.tipoAtividade.tituloTipoAtividade}"
+            ></span>
+          </div>
           <div id="fatalErrorBox" class="alert alert-danger d-none"></div>
           <div class="mb-3">
             <b># Ocorrencia:</b>
             <span th:text="${ocorrencia.id}"></span>
             <span> - Tema: </span>
             <span th:text="${ocorrencia.temaOcorrencia}"></span><br />
-            <b>Atividade:</b>
-            <span th:text="${ocorrencia.idAtividade.tituloAtividade}"></span>
           </div>
           <div class="mb-3">
             <b>Total de destinatários:</b> <span id="total"></span><br />
@@ -76,7 +81,15 @@
             // Fatal error display
             var fatalErrorBox = document.getElementById("fatalErrorBox");
             if (data.fatalError) {
-              fatalErrorBox.textContent = data.fatalError;
+              // Mensagem customizada para nenhum destinatário ativo
+              if (
+                data.fatalError.indexOf("Nenhuma Pessoa ativa inscrita") !== -1
+              ) {
+                fatalErrorBox.textContent =
+                  "Email não disparado. Nenhuma Pessoa ativa inscrita neste Tipo de Atividade";
+              } else {
+                fatalErrorBox.textContent = data.fatalError;
+              }
               fatalErrorBox.classList.remove("d-none");
             } else {
               fatalErrorBox.classList.add("d-none");

@@ -13,7 +13,7 @@ public class Pessoa {
 	private Long id;
 
 	private String nomePessoa;
-	private String situacaoPessoa;
+	private String situacaoPessoa; // A=Ativa, B=Bloqueada, C=Cancelada
 
 	@Column(name = "email_pessoa", unique = true, nullable = false)
 	private String emailPessoa;

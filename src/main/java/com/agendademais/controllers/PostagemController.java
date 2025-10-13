@@ -303,11 +303,11 @@ public class PostagemController {
             }
             origem = origemPadrao.toString();
         }
-        int total = 42; // Buscar total real de destinatários
-        int enviados = (int) (System.currentTimeMillis() / 3000 % (total + 1)); // Simula progresso
-        int falhas = enviados > 35 ? 2 : 0;
-        java.util.List<String> erros = java.util.Arrays.asList("email1@exemplo.com falhou",
-                "email2@exemplo.com falhou");
+        DisparoEmailService.ProgressoDisparo progresso = disparoEmailService.getProgresso(ocorrenciaId);
+        int total = progresso != null ? progresso.total : 0;
+        int enviados = progresso != null ? progresso.enviados : 0;
+        int falhas = progresso != null ? progresso.falhas : 0;
+        java.util.List<String> erros = progresso != null ? progresso.erros : java.util.Collections.emptyList();
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("total", total);
         model.addAttribute("enviados", enviados);
@@ -333,17 +333,28 @@ public class PostagemController {
             completa = ocorrencia; // fallback para não quebrar
 
         // Busca o tipo de atividade e a instituição
-        Long tipoAtividadeId = null;
-        Long instituicaoId = null;
+        final Long tipoAtividadeId;
+        final Long instituicaoId;
         if (completa != null && completa.getIdAtividade() != null
                 && completa.getIdAtividade().getTipoAtividade() != null) {
             tipoAtividadeId = completa.getIdAtividade().getTipoAtividade().getId();
             instituicaoId = completa.getIdAtividade().getInstituicao().getId();
+        } else {
+            tipoAtividadeId = null;
+            instituicaoId = null;
         }
         long totalDestinatarios = 0;
         if (tipoAtividadeId != null && instituicaoId != null) {
-            totalDestinatarios = inscricaoTipoAtividadeRepository
-                    .countByTipoAtividadeIdAndInscricao_IdInstituicao_Id(tipoAtividadeId, instituicaoId);
+            java.util.List<com.agendademais.entities.InscricaoTipoAtividade> inscricoes = inscricaoTipoAtividadeRepository
+                    .findAll();
+            totalDestinatarios = inscricoes.stream()
+                    .filter(ita -> ita.getTipoAtividade() != null
+                            && ita.getTipoAtividade().getId().equals(tipoAtividadeId))
+                    .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getIdInstituicao() != null
+                            && ita.getInscricao().getIdInstituicao().getId().equals(instituicaoId))
+                    .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getPessoa() != null
+                            && "A".equalsIgnoreCase(ita.getInscricao().getPessoa().getSituacaoPessoa()))
+                    .count();
         }
         // Adiciona email da instituição logada ao model
         Instituicao instituicaoLogada = (Instituicao) session.getAttribute("instituicaoSelecionada");
