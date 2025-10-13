@@ -447,6 +447,42 @@
                   <td>
                     <div class="d-flex flex-row align-items-center gap-1">
                       <a
+                        th:href="@{/administrador/postagens/exportar-inscritos-csv/{id}(id=${ocorrencia.id})}"
+                        class="btn btn-sm btn-outline-success btn-exportar-inscritos"
+                        title="Exportar Inscritos"
+                        data-ocorrencia-id="[[${ocorrencia.id}]]"
+                      >
+                        <i class="fa fa-file-csv"></i>
+                      </a>
+<!-- Export Loading Modal (fora do loop) -->
+<div id="exportLoading" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:30px 50px;border-radius:8px;box-shadow:0 2px 8px #888;font-size:1.3rem;display:flex;align-items:center;gap:15px;">
+    <span class="spinner-border text-success" role="status" aria-hidden="true"></span>
+    Exportando inscritos, aguarde...
+  </div>
+</div>
+
+<!-- Script para exportação (fora do loop) -->
+<script>
+$(function() {
+  $(document).off('click', '.btn-exportar-inscritos').on('click', '.btn-exportar-inscritos', function(e) {
+    e.preventDefault();
+    var url = $(this).attr('href');
+    $('#exportLoading').fadeIn(200);
+    // Cria um iframe oculto para download
+    var iframe = $('<iframe style="display:none;"></iframe>');
+    iframe.attr('src', url);
+    $('body').append(iframe);
+    // Esconde loading após 5s (ou refine para detectar fim do download)
+    setTimeout(function() {
+      $('#exportLoading').fadeOut(300);
+      iframe.remove();
+      alert('Exportação concluída! O arquivo CSV foi gerado.');
+    }, 5000);
+  });
+});
+</script>
+                      <a
                         th:href="@{/administrador/ocorrencias/editar/{id}(id=${ocorrencia.id}, origem=${origem})}"
                         class="btn btn-sm btn-outline-secondary"
                         title="Editar"

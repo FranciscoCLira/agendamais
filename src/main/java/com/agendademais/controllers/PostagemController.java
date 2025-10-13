@@ -5,17 +5,77 @@ import com.agendademais.entities.OcorrenciaAtividade;
 import com.agendademais.repositories.LogPostagemRepository;
 import com.agendademais.repositories.AutorRepository;
 import com.agendademais.repositories.OcorrenciaAtividadeRepository;
+import com.agendademais.repositories.UsuarioRepository;
+import com.agendademais.services.DisparoEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.agendademais.services.DisparoEmailService;
-
 @Controller
 @RequestMapping("/administrador/postagens")
 public class PostagemController {
+    @GetMapping("/exportar-inscritos-csv/{ocorrenciaId}")
+    @ResponseBody
+    public void exportarInscritosCsv(@PathVariable Long ocorrenciaId, jakarta.servlet.http.HttpServletResponse response)
+            throws java.io.IOException {
+        OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
+        if (ocorrencia == null || ocorrencia.getIdAtividade() == null
+                || ocorrencia.getIdAtividade().getTipoAtividade() == null) {
+            response.setStatus(404);
+            response.getWriter().write("Ocorrência não encontrada ou inválida");
+            return;
+        }
+        Long tipoAtividadeId = ocorrencia.getIdAtividade().getTipoAtividade().getId();
+        Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
+        java.util.List<com.agendademais.entities.InscricaoTipoAtividade> inscricoes = inscricaoTipoAtividadeRepository
+                .findAll();
+        java.util.List<com.agendademais.entities.InscricaoTipoAtividade> filtradas = inscricoes.stream()
+                .filter(ita -> ita.getTipoAtividade() != null && ita.getTipoAtividade().getId().equals(tipoAtividadeId))
+                .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getIdInstituicao() != null
+                        && ita.getInscricao().getIdInstituicao().getId().equals(instituicaoId))
+                .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getPessoa() != null
+                        && "A".equalsIgnoreCase(ita.getInscricao().getPessoa().getSituacaoPessoa()))
+                .toList();
+
+        response.setContentType("text/csv; charset=UTF-8");
+        String filename = "inscritos_ocorrencia_" + ocorrenciaId + ".csv";
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        java.io.PrintWriter writer = response.getWriter();
+        writer.println(
+                "idInstituicao;nomeInstituicao;idTipoAtividade;tituloTipoAtividade;Username;Nome;Email;Telefone;SituacaoPessoa;DataUltimaAtualizacao;Cidade;Estado;Pais");
+        for (var ita : filtradas) {
+            var pessoa = ita.getInscricao().getPessoa();
+            var instituicaoObj = ita.getInscricao().getIdInstituicao();
+            var tipoAtividadeObj = ita.getTipoAtividade();
+            String nome = pessoa != null ? pessoa.getNomePessoa() : "";
+            String email = pessoa != null ? pessoa.getEmailPessoa() : "";
+            String username = "";
+            if (email != null && !email.isBlank()) {
+                var usuarios = usuarioRepository.findAllByPessoaEmailPessoa(email);
+                if (usuarios != null && !usuarios.isEmpty()) {
+                    username = usuarios.get(0).getUsername();
+                }
+            }
+            String telefone = pessoa != null ? pessoa.getCelularPessoa() : "";
+            String situacaoPessoa = pessoa != null ? pessoa.getSituacaoPessoa() : "";
+            String dataUltimaAtualizacao = pessoa != null && pessoa.getDataUltimaAtualizacao() != null
+                    ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy").format(pessoa.getDataUltimaAtualizacao())
+                    : "";
+            String cidade = pessoa != null && pessoa.getCidade() != null ? pessoa.getCidade().getNomeLocal() : "";
+            String estado = pessoa != null && pessoa.getEstado() != null ? pessoa.getEstado().getNomeLocal() : "";
+            String pais = pessoa != null && pessoa.getPais() != null ? pessoa.getPais().getNomeLocal() : "";
+            String idInstituicao = instituicaoObj != null ? String.valueOf(instituicaoObj.getId()) : "";
+            String nomeInstituicao = instituicaoObj != null ? instituicaoObj.getNomeInstituicao() : "";
+            String idTipoAtividade = tipoAtividadeObj != null ? String.valueOf(tipoAtividadeObj.getId()) : "";
+            String tituloTipoAtividade = tipoAtividadeObj != null ? tipoAtividadeObj.getTituloTipoAtividade() : "";
+            writer.printf("%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
+                    idInstituicao, nomeInstituicao, idTipoAtividade, tituloTipoAtividade, username, nome, email,
+                    telefone, situacaoPessoa, dataUltimaAtualizacao, cidade, estado, pais);
+        }
+        writer.flush();
+    }
 
     // Utilitário para checar sessão ativa
     private boolean isSessaoInvalida(jakarta.servlet.http.HttpSession session) {
@@ -33,6 +93,8 @@ public class PostagemController {
     private DisparoEmailService disparoEmailService;
     @Autowired
     private com.agendademais.repositories.InscricaoTipoAtividadeRepository inscricaoTipoAtividadeRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @GetMapping("/nova")
     public String previewPostagem(
