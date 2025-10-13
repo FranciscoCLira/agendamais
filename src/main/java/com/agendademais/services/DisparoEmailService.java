@@ -1,6 +1,7 @@
 package com.agendademais.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import com.agendademais.entities.LogPostagem;
 import com.agendademais.entities.OcorrenciaAtividade;
@@ -10,12 +11,20 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
 @Service
 public class DisparoEmailService {
+
     @Autowired
     private LogPostagemRepository logPostagemRepository;
+
     @Autowired
     private OcorrenciaAtividadeRepository ocorrenciaAtividadeRepository;
+
+    @Autowired
+    private JavaMailSender mailSender;
 
     public static class ProgressoDisparo {
         public int total;
@@ -36,69 +45,104 @@ public class DisparoEmailService {
         progresso.falhas = 0;
         progresso.concluido = false;
         progressoMap.put(ocorrenciaId, progresso);
-        // Simular envio em background (em produção, usar @Async ou fila)
-        new Thread(() -> {
-            for (int i = 1; i <= totalDestinatarios; i++) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                }
-                progresso.enviados = i;
-                if (i % 15 == 0) {
-                    progresso.falhas++;
-                    progresso.erros.add("email" + i + "@exemplo.com falhou");
-                }
-            }
-            progresso.concluido = true;
 
-            // Salvar log ao final do disparo
-            try {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
                 OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
-                if (ocorrencia == null) {
-                    System.err.println("[LogPostagem] OcorrenciaAtividade não encontrada para ID: " + ocorrenciaId);
-                    progresso.fatalError = "OcorrenciaAtividade não encontrada para ID: " + ocorrenciaId;
+                String assunto = ocorrencia != null ? ocorrencia.getAssuntoDivulgacao() : "Assunto";
+                String conteudo = ocorrencia != null ? ocorrencia.getDetalheDivulgacao() : "Conteúdo";
+                String nomeInstituicao = "";
+                String emailInstituicao = "";
+                if (ocorrencia != null
+                        && ocorrencia.getIdAtividade() != null
+                        && ocorrencia.getIdAtividade().getInstituicao() != null) {
+                    nomeInstituicao = ocorrencia.getIdAtividade().getInstituicao().getNomeInstituicao();
+                    emailInstituicao = ocorrencia.getIdAtividade().getInstituicao().getEmailInstituicao();
                 } else {
-                    LogPostagem log = new LogPostagem();
-                    log.setDataHoraPostagem(LocalDateTime.now());
-                    log.setOcorrenciaAtividadeId(ocorrencia.getId());
-                    log.setTituloAtividade(
-                            ocorrencia.getIdAtividade() != null
-                                    && ocorrencia.getIdAtividade().getTituloAtividade() != null
-                                            ? ocorrencia.getIdAtividade().getTituloAtividade()
-                                            : "");
-                    log.setAssuntoDivulgacao(ocorrencia.getAssuntoDivulgacao());
-                    log.setTextoDetalheDivulgacao(ocorrencia.getDetalheDivulgacao());
-                    // AutorId pode ser null se não houver autor logado
-                    log.setAutorId(ocorrencia.getIdAutor() != null ? ocorrencia.getIdAutor().getId() : null);
-                    log.setQtEnviados(totalDestinatarios);
-                    log.setQtFalhas(progresso.falhas);
-                    // Mensagem de log
-                    if (progresso.falhas > 0) {
-                        StringBuilder msg = new StringBuilder();
-                        msg.append(progresso.falhas).append(" e-mails rejeitados. ");
-                        msg.append("Detalhes: ");
-                        for (String erro : progresso.erros) {
-                            msg.append(erro).append("; ");
-                        }
-                        log.setMensagemLogPostagem(msg.toString());
-                    } else {
-                        log.setMensagemLogPostagem("Nenhuma rejeição registrada.");
-                    }
+                    nomeInstituicao = "Instituição";
+                    emailInstituicao = "fclira.fcl@gmail.com"; // fallback para teste
+                }
+                for (int i = 1; i <= totalDestinatarios; i++) {
                     try {
-                        logPostagemRepository.save(log);
-                    } catch (Exception saveEx) {
-                        System.err.println("[LogPostagem] Falha ao salvar log para ocorrenciaId=" + ocorrenciaId);
-                        saveEx.printStackTrace();
-                        progresso.fatalError = "Erro ao salvar log: " + saveEx.getMessage();
+                        Thread.sleep(500);
+                        String destinatario = "fclira.fcl@gmail.com";
+                        try {
+                            MimeMessage message = mailSender.createMimeMessage();
+                            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                            helper.setTo(destinatario);
+                            helper.setSubject(assunto);
+                            helper.setText(conteudo, true);
+                            helper.setFrom(emailInstituicao, nomeInstituicao);
+                            mailSender.send(message);
+                        } catch (Exception ex) {
+                            progresso.falhas++;
+                            progresso.erros.add(destinatario + " falhou: " + ex.getMessage());
+                            continue;
+                        }
+                        progresso.enviados = i;
+                        if (i % 15 == 0) {
+                            progresso.falhas++;
+                            progresso.erros.add(destinatario + " falhou (simulado)");
+                        }
+                    } catch (InterruptedException e) {
+                        // ignore
                     }
                 }
-            } catch (Exception ex) {
-                System.err
-                        .println("[LogPostagem] Erro inesperado ao criar/salvar log para ocorrenciaId=" + ocorrenciaId);
-                ex.printStackTrace();
-                progresso.fatalError = "Erro inesperado: " + ex.getMessage();
+                progresso.concluido = true;
+
+                // Salvar log ao final do disparo
+                try {
+                    OcorrenciaAtividade ocorrenciaLog = ocorrenciaAtividadeRepository.findById(ocorrenciaId)
+                            .orElse(null);
+                    if (ocorrenciaLog == null) {
+                        System.err.println("[LogPostagem] OcorrenciaAtividade não encontrada para ID: " + ocorrenciaId);
+                        progresso.fatalError = "OcorrenciaAtividade não encontrada para ID: " + ocorrenciaId;
+                    } else {
+                        LogPostagem log = new LogPostagem();
+                        log.setDataHoraPostagem(LocalDateTime.now());
+                        log.setOcorrenciaAtividadeId(ocorrenciaLog.getId());
+                        log.setTituloAtividade(
+                                ocorrenciaLog.getIdAtividade() != null
+                                        && ocorrenciaLog.getIdAtividade().getTituloAtividade() != null
+                                                ? ocorrenciaLog.getIdAtividade().getTituloAtividade()
+                                                : "");
+                        log.setAssuntoDivulgacao(ocorrenciaLog.getAssuntoDivulgacao());
+                        log.setTextoDetalheDivulgacao(ocorrenciaLog.getDetalheDivulgacao());
+                        // AutorId pode ser null se não houver autor logado
+                        log.setAutorId(ocorrenciaLog.getIdAutor() != null ? ocorrenciaLog.getIdAutor().getId() : null);
+                        log.setQtEnviados(totalDestinatarios);
+                        log.setQtFalhas(progresso.falhas);
+                        // Mensagem de log
+                        if (progresso.falhas > 0) {
+                            StringBuilder msg = new StringBuilder();
+                            msg.append(progresso.falhas).append(" e-mails rejeitados. ");
+                            msg.append("Detalhes: ");
+                            for (String erro : progresso.erros) {
+                                msg.append(erro).append("; ");
+                            }
+                            log.setMensagemLogPostagem(msg.toString());
+                        } else {
+                            log.setMensagemLogPostagem("Nenhuma rejeição registrada.");
+                        }
+                        try {
+                            logPostagemRepository.save(log);
+                        } catch (Exception saveEx) {
+                            System.err.println("[LogPostagem] Falha ao salvar log para ocorrenciaId=" + ocorrenciaId);
+                            saveEx.printStackTrace();
+                            progresso.fatalError = "Erro ao salvar log: " + saveEx.getMessage();
+                        }
+                    }
+                } catch (Exception ex) {
+                    System.err
+                            .println("[LogPostagem] Erro inesperado ao criar/salvar log para ocorrenciaId="
+                                    + ocorrenciaId);
+                    ex.printStackTrace();
+                    progresso.fatalError = "Erro inesperado: " + ex.getMessage();
+                }
             }
-        }).start();
+        });
+        thread.start();
     }
 
     public ProgressoDisparo getProgresso(Long ocorrenciaId) {

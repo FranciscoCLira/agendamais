@@ -1,5 +1,6 @@
 package com.agendademais.controllers;
 
+import com.agendademais.entities.Instituicao;
 import com.agendademais.entities.OcorrenciaAtividade;
 import com.agendademais.repositories.LogPostagemRepository;
 import com.agendademais.repositories.AutorRepository;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.agendademais.services.DisparoEmailService;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/administrador/postagens")
@@ -59,6 +59,16 @@ public class PostagemController {
             }
             origem = origemPadrao.toString();
         }
+
+        Instituicao instituicaoLogada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        String emailInstituicaoLogada = instituicaoLogada != null ? instituicaoLogada.getEmailInstituicao() : "";
+
+        System.out.println("DEBUG: Instituição logada: " + instituicaoLogada);
+        System.out.println("DEBUG: Email da instituição: " + emailInstituicaoLogada);
+
+        model.addAttribute("instituicaoLogada", instituicaoLogada);
+        model.addAttribute("emailInstituicaoLogada", emailInstituicaoLogada);
+
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("origem", origem);
         return "administrador/postagem-preview";
@@ -335,6 +345,11 @@ public class PostagemController {
             totalDestinatarios = inscricaoTipoAtividadeRepository
                     .countByTipoAtividadeIdAndInscricao_IdInstituicao_Id(tipoAtividadeId, instituicaoId);
         }
+        // Adiciona email da instituição logada ao model
+        Instituicao instituicaoLogada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        String emailInstituicaoLogada = instituicaoLogada != null ? instituicaoLogada.getEmailInstituicao() : "";
+        model.addAttribute("instituicaoLogada", instituicaoLogada);
+        model.addAttribute("emailInstituicaoLogada", emailInstituicaoLogada);
         model.addAttribute("ocorrencia", completa);
         model.addAttribute("totalDestinatarios", totalDestinatarios);
         model.addAttribute("simulacao", true);
