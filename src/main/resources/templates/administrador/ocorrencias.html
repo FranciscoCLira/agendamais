@@ -490,6 +490,13 @@ $(function() {
                         <i class="fa fa-pencil-alt"></i>
                       </a>
                       <a
+                        th:href="@{/administrador/ocorrencias/copiar/{id}(id=${ocorrencia.id}, origem=${origem})}"
+                        class="btn btn-sm btn-outline-info"
+                        title="Nova cópia desta ocorrência"
+                      >
+                        <i class="fa fa-copy"></i>
+                      </a>
+                      <a
                         th:href="@{/administrador/ocorrencias/deletar/{id}(
                           id=${ocorrencia.id},
                           atividadeId=${param.atividadeId},

@@ -29,6 +29,68 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/administrador/ocorrencias")
 public class AdministradorOcorrenciasController {
+
+    @GetMapping("/copiar/{id}")
+    public String copiarOcorrencia(@PathVariable("id") Long id,
+            @RequestParam(value = "origem", required = false) String origem,
+            Model model) {
+        Optional<OcorrenciaAtividade> ocorrenciaOpt = ocorrenciaAtividadeRepository.findById(id);
+        if (ocorrenciaOpt.isEmpty()) {
+            model.addAttribute("erro", "Ocorrência não encontrada para cópia.");
+            String redirect = "/administrador/ocorrencias";
+            if (origem != null)
+                redirect += "?origem=" + origem;
+            return "redirect:" + redirect;
+        }
+        OcorrenciaAtividade original = ocorrenciaOpt.get();
+        // Redireciona para o formulário de nova ocorrência, preenchendo os campos via
+        // query params
+        StringBuilder redirect = new StringBuilder("/administrador/ocorrencias/nova?");
+        if (original.getIdAtividade() != null) {
+            redirect.append("atividadeId=").append(original.getIdAtividade().getId()).append("&");
+        }
+        if (origem != null) {
+            redirect.append("origem=")
+                    .append(java.net.URLEncoder.encode(origem, java.nio.charset.StandardCharsets.UTF_8)).append("&");
+        }
+        // Adiciona campos copiáveis como parâmetros
+        if (original.getIdAutor() != null) {
+            redirect.append("idAutorId=").append(original.getIdAutor().getId()).append("&");
+        }
+        if (original.getTemaOcorrencia() != null) {
+            redirect.append("temaOcorrencia=").append(
+                    java.net.URLEncoder.encode(original.getTemaOcorrencia(), java.nio.charset.StandardCharsets.UTF_8))
+                    .append("&");
+        }
+        if (original.getBibliografia() != null) {
+            redirect.append("bibliografia=").append(
+                    java.net.URLEncoder.encode(original.getBibliografia(), java.nio.charset.StandardCharsets.UTF_8))
+                    .append("&");
+        }
+        if (original.getAssuntoDivulgacao() != null) {
+            redirect.append("assuntoDivulgacao=").append(java.net.URLEncoder.encode(original.getAssuntoDivulgacao(),
+                    java.nio.charset.StandardCharsets.UTF_8)).append("&");
+        }
+        if (original.getDetalheDivulgacao() != null) {
+            redirect.append("detalheDivulgacao=").append(java.net.URLEncoder.encode(original.getDetalheDivulgacao(),
+                    java.nio.charset.StandardCharsets.UTF_8)).append("&");
+        }
+        if (original.getLinkMaterialTema() != null) {
+            redirect.append("linkMaterialTema=").append(
+                    java.net.URLEncoder.encode(original.getLinkMaterialTema(), java.nio.charset.StandardCharsets.UTF_8))
+                    .append("&");
+        }
+        if (original.getLinkImgDivulgacao() != null) {
+            redirect.append("linkImgDivulgacao=").append(java.net.URLEncoder.encode(original.getLinkImgDivulgacao(),
+                    java.nio.charset.StandardCharsets.UTF_8)).append("&");
+        }
+        // Remove & final se houver
+        if (redirect.charAt(redirect.length() - 1) == '&') {
+            redirect.deleteCharAt(redirect.length() - 1);
+        }
+        return "redirect:" + redirect.toString();
+    }
+
     @Autowired
     private OcorrenciaAtividadeRepository ocorrenciaAtividadeRepository;
     @Autowired
@@ -271,13 +333,37 @@ public class AdministradorOcorrenciasController {
     }
 
     @GetMapping("/nova")
-    public String novaOcorrencia(@RequestParam(value = "atividadeId", required = false) Long atividadeId,
+    public String novaOcorrencia(
+            @RequestParam(value = "atividadeId", required = false) Long atividadeId,
             @RequestParam(value = "origem", required = false) String origem,
+            @RequestParam(value = "idAutorId", required = false) Long idAutorId,
+            @RequestParam(value = "temaOcorrencia", required = false) String temaOcorrencia,
+            @RequestParam(value = "bibliografia", required = false) String bibliografia,
+            @RequestParam(value = "assuntoDivulgacao", required = false) String assuntoDivulgacao,
+            @RequestParam(value = "detalheDivulgacao", required = false) String detalheDivulgacao,
+            @RequestParam(value = "linkMaterialTema", required = false) String linkMaterialTema,
+            @RequestParam(value = "linkImgDivulgacao", required = false) String linkImgDivulgacao,
             Model model) {
         OcorrenciaAtividade ocorrencia = new OcorrenciaAtividade();
+        ocorrencia.setId(null); // Garante que nunca venha id preenchido
         if (atividadeId != null) {
             atividadeRepository.findById(atividadeId).ifPresent(ocorrencia::setIdAtividade);
         }
+        if (idAutorId != null) {
+            autorRepository.findById(idAutorId).ifPresent(ocorrencia::setIdAutor);
+        }
+        if (temaOcorrencia != null)
+            ocorrencia.setTemaOcorrencia(temaOcorrencia);
+        if (bibliografia != null)
+            ocorrencia.setBibliografia(bibliografia);
+        if (assuntoDivulgacao != null)
+            ocorrencia.setAssuntoDivulgacao(assuntoDivulgacao);
+        if (detalheDivulgacao != null)
+            ocorrencia.setDetalheDivulgacao(detalheDivulgacao);
+        if (linkMaterialTema != null)
+            ocorrencia.setLinkMaterialTema(linkMaterialTema);
+        if (linkImgDivulgacao != null)
+            ocorrencia.setLinkImgDivulgacao(linkImgDivulgacao);
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("origem", origem);
         return "administrador/ocorrencia-form";
@@ -288,6 +374,8 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "idAutorId", required = false) Long idAutorId,
             @RequestParam(value = "origem", required = false) String origem,
             Model model, HttpSession session) {
+        // Sempre garantir que o id seja null para evitar duplicidade na criação
+        ocorrencia.setId(null);
         // Buscar o Autor pelo idAutorId do formulário
         if (idAutorId != null) {
             Autor autor = autorRepository.findById(idAutorId).orElse(null);

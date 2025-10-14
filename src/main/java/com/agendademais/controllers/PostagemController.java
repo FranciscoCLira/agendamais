@@ -35,8 +35,25 @@ public class PostagemController {
                 .filter(ita -> ita.getTipoAtividade() != null && ita.getTipoAtividade().getId().equals(tipoAtividadeId))
                 .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getIdInstituicao() != null
                         && ita.getInscricao().getIdInstituicao().getId().equals(instituicaoId))
-                .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getPessoa() != null
-                        && "A".equalsIgnoreCase(ita.getInscricao().getPessoa().getSituacaoPessoa()))
+                .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getPessoa() != null)
+                .sorted((a, b) -> {
+                    String sitA = a.getInscricao().getPessoa().getSituacaoPessoa() != null
+                            ? a.getInscricao().getPessoa().getSituacaoPessoa()
+                            : "";
+                    String sitB = b.getInscricao().getPessoa().getSituacaoPessoa() != null
+                            ? b.getInscricao().getPessoa().getSituacaoPessoa()
+                            : "";
+                    int cmp = sitA.compareToIgnoreCase(sitB);
+                    if (cmp != 0)
+                        return cmp;
+                    String nomeA = a.getInscricao().getPessoa().getNomePessoa() != null
+                            ? a.getInscricao().getPessoa().getNomePessoa()
+                            : "";
+                    String nomeB = b.getInscricao().getPessoa().getNomePessoa() != null
+                            ? b.getInscricao().getPessoa().getNomePessoa()
+                            : "";
+                    return nomeA.compareToIgnoreCase(nomeB);
+                })
                 .toList();
 
         response.setContentType("text/csv; charset=UTF-8");
@@ -44,37 +61,57 @@ public class PostagemController {
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
         java.io.PrintWriter writer = response.getWriter();
         writer.println(
-                "idInstituicao;nomeInstituicao;idTipoAtividade;tituloTipoAtividade;Username;Nome;Email;Telefone;SituacaoPessoa;DataUltimaAtualizacao;Cidade;Estado;Pais");
+                "idInstituicao;nomeInstituicao;idTipoAtividade;tituloTipoAtividade;id_Pessoa;SituacaoPessoa;Usuario;Nome;Email;Telefone;DataUltimaAtualizacao;Cidade;Estado;Pais");
         for (var ita : filtradas) {
             var pessoa = ita.getInscricao().getPessoa();
             var instituicaoObj = ita.getInscricao().getIdInstituicao();
             var tipoAtividadeObj = ita.getTipoAtividade();
-            String nome = pessoa != null ? pessoa.getNomePessoa() : "";
+            String idPessoa = pessoa != null && pessoa.getId() != null ? pessoa.getId().toString() : "";
+            String nome = pessoa != null ? removerAcentos(pessoa.getNomePessoa()) : "";
             String email = pessoa != null ? pessoa.getEmailPessoa() : "";
-            String username = "";
+            String usuario = "";
             if (email != null && !email.isBlank()) {
                 var usuarios = usuarioRepository.findAllByPessoaEmailPessoa(email);
                 if (usuarios != null && !usuarios.isEmpty()) {
-                    username = usuarios.get(0).getUsername();
+                    usuario = usuarios.get(0).getUsername();
                 }
             }
             String telefone = pessoa != null ? pessoa.getCelularPessoa() : "";
+            // Força formato numérico para Excel: prefixa com tabulação se só dígitos, senão
+            // mantém
+            if (telefone != null && telefone.matches("\\d+")) {
+                telefone = "\t" + telefone;
+            }
             String situacaoPessoa = pessoa != null ? pessoa.getSituacaoPessoa() : "";
             String dataUltimaAtualizacao = pessoa != null && pessoa.getDataUltimaAtualizacao() != null
                     ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy").format(pessoa.getDataUltimaAtualizacao())
                     : "";
-            String cidade = pessoa != null && pessoa.getCidade() != null ? pessoa.getCidade().getNomeLocal() : "";
-            String estado = pessoa != null && pessoa.getEstado() != null ? pessoa.getEstado().getNomeLocal() : "";
-            String pais = pessoa != null && pessoa.getPais() != null ? pessoa.getPais().getNomeLocal() : "";
+            String cidade = pessoa != null && pessoa.getCidade() != null
+                    ? removerAcentos(pessoa.getCidade().getNomeLocal())
+                    : "";
+            String estado = pessoa != null && pessoa.getEstado() != null
+                    ? removerAcentos(pessoa.getEstado().getNomeLocal())
+                    : "";
+            String pais = pessoa != null && pessoa.getPais() != null ? removerAcentos(pessoa.getPais().getNomeLocal())
+                    : "";
             String idInstituicao = instituicaoObj != null ? String.valueOf(instituicaoObj.getId()) : "";
             String nomeInstituicao = instituicaoObj != null ? instituicaoObj.getNomeInstituicao() : "";
             String idTipoAtividade = tipoAtividadeObj != null ? String.valueOf(tipoAtividadeObj.getId()) : "";
             String tituloTipoAtividade = tipoAtividadeObj != null ? tipoAtividadeObj.getTituloTipoAtividade() : "";
-            writer.printf("%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
-                    idInstituicao, nomeInstituicao, idTipoAtividade, tituloTipoAtividade, username, nome, email,
-                    telefone, situacaoPessoa, dataUltimaAtualizacao, cidade, estado, pais);
+            writer.printf("%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
+                    idInstituicao, nomeInstituicao, idTipoAtividade, tituloTipoAtividade, idPessoa, situacaoPessoa,
+                    usuario, nome, email,
+                    telefone, dataUltimaAtualizacao, cidade, estado, pais);
         }
         writer.flush();
+    }
+
+    // Remove acentos de uma string (para exportação CSV)
+    private static String removerAcentos(String texto) {
+        if (texto == null)
+            return "";
+        return java.text.Normalizer.normalize(texto, java.text.Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");
     }
 
     // Utilitário para checar sessão ativa

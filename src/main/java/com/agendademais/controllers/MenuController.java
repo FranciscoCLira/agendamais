@@ -93,30 +93,6 @@ public class MenuController {
         return "info/em-construcao"; // Página em construção
     }
 
-    /**
-     * Determina o tipo de usuário baseado no nível de acesso da sessão
-     */
-    private String determinaTipoUsuario(HttpSession session) {
-        Integer nivel = (Integer) session.getAttribute("nivelAcessoAtual");
-
-        if (nivel == null) {
-            return "participante";
-        }
-
-        switch (nivel) {
-            case 2:
-                return "autor";
-            case 5:
-                return "administrador";
-            case 9:
-                return "superusuario";
-            case 0:
-                return "controle-total";
-            default:
-                return "participante";
-        }
-    }
-
     // Endpoints para funcionalidades do administrador
     @GetMapping("/administrador/instituicoes")
     public String administradorInstituicoes() {
@@ -127,11 +103,6 @@ public class MenuController {
     // public String gerenciarAtividades() {
     // return "redirect:/atividades";
     // }
-
-    @GetMapping("/administrador/postagens")
-    public String gerenciarPostagens() {
-        return "info/em-construcao";
-    }
 
     @GetMapping("/administrador/log-postagens")
     public String logPostagens() {
