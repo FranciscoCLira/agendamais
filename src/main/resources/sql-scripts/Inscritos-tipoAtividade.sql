@@ -1,9 +1,11 @@
+-- USUARIOS INSCRITOS EM TIPOS DE ATIVIDADES POR INSTITUICAO 
 SELECT
     i.id AS idInstituicao,
     i.nome_Instituicao,
     ta.id AS idTipoAtividade,
     ta.titulo_tipo_atividade,
     u.username,
+    p.id AS id_pessoa,
     p.nome_pessoa,
     p.email_pessoa,
     p.celular_pessoa,
@@ -25,4 +27,5 @@ FROM
 ORDER BY
     i.id,
     ta.id,
+    p.id, 
     p.nome_pessoa ASC;
