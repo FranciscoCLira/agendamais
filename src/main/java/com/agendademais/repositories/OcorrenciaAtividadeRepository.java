@@ -12,6 +12,8 @@ import java.util.List;
 
 public interface OcorrenciaAtividadeRepository
                 extends JpaRepository<OcorrenciaAtividade, Long>, JpaSpecificationExecutor<OcorrenciaAtividade> {
+        void deleteByIdAutorId(Long idAutorId);
+
         @Query("SELECT DISTINCT o.idAutor FROM OcorrenciaAtividade o WHERE (:atividadeId IS NULL OR o.idAtividade.id = :atividadeId) AND (LOWER(o.idAutor.pessoa.nomePessoa) LIKE LOWER(CONCAT('%', :term, '%')) OR LOWER(o.idAutor.pessoa.emailPessoa) LIKE LOWER(CONCAT('%', :term, '%'))) AND o.idAutor IS NOT NULL")
         List<com.agendademais.entities.Autor> findDistinctAutoresByTermAndAtividadeId(@Param("term") String term,
                         @Param("atividadeId") Long atividadeId);

@@ -33,6 +33,18 @@ public class ExcluirVinculosInstituicaoController {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Autowired
+    private AutorRepository autorRepository;
+
+    @Autowired
+    private LogPostagemRepository logPostagemRepository;
+
+    @Autowired
+    private OcorrenciaAtividadeRepository ocorrenciaAtividadeRepository;
+
+    @Autowired
+    private AtividadeRepository atividadeRepository;
+
     @Transactional
     @PostMapping("/excluir-vinculos-instituicao")
     public String excluirVinculos(HttpSession session, RedirectAttributes redirectAttributes) {
@@ -66,10 +78,23 @@ public class ExcluirVinculosInstituicaoController {
 
         // Exclui vínculos com a instituição atual
 
+        // Excluir logs de postagem do autor (referenciando UsuarioInstituicao)
+        usuarioInstituicaoRepository.findByUsuarioAndInstituicao(usuario, instituicao)
+                .ifPresent(ui -> logPostagemRepository.deleteByAutorId(ui.getId()));
+
+        // Agora sim, excluir vínculo com a instituição atual
         usuarioInstituicaoRepository.deleteByUsuarioAndInstituicao(usuario, instituicao);
         inscricaoRepository.deleteByPessoaAndIdInstituicao(pessoa, instituicao);
         pessoaInstituicaoRepository.deleteByPessoaAndInstituicao(pessoa, instituicao);
         pessoaSubInstituicaoRepository.deleteByPessoaAndInstituicao(pessoa, instituicao);
+
+        // Excluir ocorrências em que a pessoa é autor (caso exista Autor)
+        autorRepository.findByPessoa(pessoa).ifPresent(autor -> {
+            ocorrenciaAtividadeRepository.deleteByIdAutorId(autor.getId());
+        });
+
+        // Excluir atividades em que a pessoa é solicitante
+        atividadeRepository.deleteByIdSolicitante(pessoa);
 
         System.out.println("*** ");
         System.out.println("*** 3. Relacionamento com a Instituição excluído com sucesso.");

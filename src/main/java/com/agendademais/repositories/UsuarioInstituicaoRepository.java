@@ -15,6 +15,10 @@ import com.agendademais.entities.UsuarioInstituicao;
 
 @Repository
 public interface UsuarioInstituicaoRepository extends JpaRepository<UsuarioInstituicao, Long> {
+
+        java.util.Optional<UsuarioInstituicao> findByUsuarioAndInstituicao(com.agendademais.entities.Usuario usuario,
+                        com.agendademais.entities.Instituicao instituicao);
+
         long countByInstituicaoId(Long instituicaoId);
 
         // checar se existem vínculos

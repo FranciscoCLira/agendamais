@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface LogPostagemRepository extends JpaRepository<LogPostagem, Long>, JpaSpecificationExecutor<LogPostagem> {
 
+    void deleteByAutorId(Long autorId);
+
     List<LogPostagem> findByOcorrenciaAtividadeId(Long ocorrenciaAtividadeId);
 
     @Query("SELECT DISTINCT l.tituloAtividade FROM LogPostagem l WHERE LOWER(l.tituloAtividade) LIKE LOWER(CONCAT('%', :term, '%')) ORDER BY l.tituloAtividade")

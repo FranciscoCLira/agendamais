@@ -9,6 +9,8 @@ import java.util.List;
 public interface AtividadeRepository extends JpaRepository<Atividade, Long>, JpaSpecificationExecutor<Atividade> {
     List<Atividade> findByTituloAtividadeContainingIgnoreCase(String titulo);
 
+    void deleteByIdSolicitante(com.agendademais.entities.Pessoa idSolicitante);
+
     // Buscar solicitantes distintos de atividades de uma instituição
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT a.idSolicitante FROM Atividade a WHERE a.instituicao.id = :instituicaoId AND a.idSolicitante IS NOT NULL")
     List<com.agendademais.entities.Pessoa> findDistinctSolicitantesByInstituicaoId(Long instituicaoId);
