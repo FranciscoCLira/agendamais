@@ -1266,7 +1266,7 @@ public class EstatisticasFixedController {
                 return "redirect:/";
             }
 
-            // TODO: Restaurar verificação de nível 5 em produção
+            // TO DO: Restaurar verificação de nível 5 em produção
             /*
              * if (nivelAcesso < 5) {
              * System.out.

@@ -160,6 +160,7 @@ public class DisparoEmailService {
                                 String conteudo = conteudoOriginal.replace("${nomePessoa}", nomePessoa);
                                 conteudo = conteudo.replace("${dataHoraLinha}", dataHoraLinha);
                                 conteudo = conteudo.replace("${removerEmailMensagem}", removerEmailMensagem);
+                                conteudo = conteudo.replace("${nomeInstituicao}", nomeInstituicao);
                                 helper.setText(conteudo, true);
                                 helper.setFrom(emailInstituicao, nomeInstituicao);
                                 mailSender.send(message);

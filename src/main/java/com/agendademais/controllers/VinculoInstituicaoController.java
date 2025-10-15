@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
-import java.util.List;
 
 /**
  * Controller para gerenciar os vínculos do usuário com instituições
@@ -79,7 +78,8 @@ public class VinculoInstituicaoController {
         // Adicionar origem para navegação
         model.addAttribute("origem", origem);
 
-        // Como removemos a funcionalidade de vínculos múltiplos, redirecionamos para dados-autor
+        // Como removemos a funcionalidade de vínculos múltiplos, redirecionamos para
+        // dados-autor
         return "redirect:/dados-autor?origem=" + origem;
     }
 
@@ -125,7 +125,8 @@ public class VinculoInstituicaoController {
     }
 
     /**
-     * API endpoint para buscar sub-instituições por termo de pesquisa (autocomplete)
+     * API endpoint para buscar sub-instituições por termo de pesquisa
+     * (autocomplete)
      */
     @GetMapping("/api/sub-instituicoes")
     @ResponseBody
@@ -133,10 +134,10 @@ public class VinculoInstituicaoController {
         if (termo == null || termo.trim().length() < 2) {
             return List.of();
         }
-        
+
         // Buscar sub-instituições ativas que contenham o termo no nome
         return subInstituicaoRepository.findByNomeSubInstituicaoContainingIgnoreCaseAndSituacaoSubInstituicao(
-            termo.trim(), "A");
+                termo.trim(), "A");
     }
 
     /**
@@ -159,7 +160,7 @@ public class VinculoInstituicaoController {
 
             Pessoa pessoa = usuario.getPessoa();
             SubInstituicao subInstituicao = subInstituicaoRepository.findById(subInstituicaoId).orElse(null);
-            
+
             if (subInstituicao == null) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Sub-instituição não encontrada.");
                 return "redirect:/vinculo-instituicao?origem=" + origem;
@@ -168,8 +169,8 @@ public class VinculoInstituicaoController {
             // Verificar se já existe vínculo
             boolean jaExiste = pessoaSubInstituicaoRepository.existsByPessoaAndSubInstituicao(pessoa, subInstituicao);
             if (jaExiste) {
-                redirectAttributes.addFlashAttribute("mensagemErro", 
-                    "Você já possui vínculo com esta sub-instituição.");
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Você já possui vínculo com esta sub-instituição.");
                 return "redirect:/vinculo-instituicao?origem=" + origem;
             }
 
@@ -184,12 +185,12 @@ public class VinculoInstituicaoController {
 
             pessoaSubInstituicaoRepository.save(novoVinculo);
 
-            redirectAttributes.addFlashAttribute("mensagemSucesso", 
-                "Vínculo com sub-instituição adicionado com sucesso: " + subInstituicao.getNomeSubInstituicao());
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Vínculo com sub-instituição adicionado com sucesso: " + subInstituicao.getNomeSubInstituicao());
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Erro ao adicionar vínculo: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao adicionar vínculo: " + e.getMessage());
         }
 
         return "redirect:/vinculo-instituicao?origem=" + origem;
@@ -221,21 +222,22 @@ public class VinculoInstituicaoController {
 
             // Verificar se o vínculo pertence ao usuário
             if (!vinculo.getPessoa().getId().equals(usuario.getPessoa().getId())) {
-                redirectAttributes.addFlashAttribute("mensagemErro", "Você não tem permissão para alterar este vínculo.");
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Você não tem permissão para alterar este vínculo.");
                 return "redirect:/vinculo-instituicao?origem=" + origem;
             }
 
             vinculo.setIdentificacaoPessoaSubInstituicao(identificacao);
             vinculo.setDataUltimaAtualizacao(java.time.LocalDate.now());
-            
+
             pessoaSubInstituicaoRepository.save(vinculo);
 
-            redirectAttributes.addFlashAttribute("mensagemSucesso", 
-                "Vínculo atualizado com sucesso: " + vinculo.getSubInstituicao().getNomeSubInstituicao());
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Vínculo atualizado com sucesso: " + vinculo.getSubInstituicao().getNomeSubInstituicao());
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Erro ao atualizar vínculo: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao atualizar vínculo: " + e.getMessage());
         }
 
         return "redirect:/vinculo-instituicao?origem=" + origem;
@@ -267,12 +269,12 @@ public class VinculoInstituicaoController {
                 }
             }
 
-            redirectAttributes.addFlashAttribute("mensagemSucesso", 
-                removidos + " vínculo(s) removido(s) com sucesso.");
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    removidos + " vínculo(s) removido(s) com sucesso.");
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Erro ao remover vínculos: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao remover vínculos: " + e.getMessage());
         }
 
         return "redirect:/vinculo-instituicao?origem=" + origem;

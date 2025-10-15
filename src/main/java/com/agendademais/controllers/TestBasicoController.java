@@ -23,10 +23,10 @@ public class TestBasicoController {
         System.out.println("*** TEST BASICO: Usuario logado na sessão: " + (usuarioLogado != null ? "existe" : "null"));
 
         // Verificar se sessão é nula
-        if (session == null) {
-            System.out.println("*** TEST BASICO: Session é null ***");
-            return "redirect:/acesso";
-        }
+        // if (session == null) {
+        // System.out.println("*** TEST BASICO: Session é null ***");
+        // return "redirect:/acesso";
+        // }
 
         // Verificar se sessão tem ID
         System.out.println("*** TEST BASICO: Session ID: " + session.getId());

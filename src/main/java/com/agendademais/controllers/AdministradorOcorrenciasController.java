@@ -343,7 +343,7 @@ public class AdministradorOcorrenciasController {
             @RequestParam(value = "detalheDivulgacao", required = false) String detalheDivulgacao,
             @RequestParam(value = "linkMaterialTema", required = false) String linkMaterialTema,
             @RequestParam(value = "linkImgDivulgacao", required = false) String linkImgDivulgacao,
-            Model model) {
+            Model model, HttpSession session) {
         OcorrenciaAtividade ocorrencia = new OcorrenciaAtividade();
         ocorrencia.setId(null); // Garante que nunca venha id preenchido
         if (atividadeId != null) {
@@ -358,12 +358,42 @@ public class AdministradorOcorrenciasController {
             ocorrencia.setBibliografia(bibliografia);
         if (assuntoDivulgacao != null)
             ocorrencia.setAssuntoDivulgacao(assuntoDivulgacao);
-        if (detalheDivulgacao != null)
+        if (detalheDivulgacao != null) {
             ocorrencia.setDetalheDivulgacao(detalheDivulgacao);
+        } else {
+            // Texto modelo padrão para nova ocorrência (com <br> para espaçamento)
+            ocorrencia.setDetalheDivulgacao(
+                    "Prezado/a  ${nomePessoa}!<br><br>Saudações,<br><br>"
+                            + "(XXXTIPO ATIVIDADE XXX  -  XXXXX TEMA XXXXXXX)<br><br>"
+                            + "Quando: ${dataHoraLinha}<br><br>"
+                            + "Fonte: XXXXXXXXXXXXXXXXXXXX<br><br>"
+                            + "PUBLICO: {XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}<br><br>"
+                            + "Link: <br><br>"
+                            + "Atenciosamente!<br><br>"
+                            + "${nomeInstituicao}<br><br>"
+                            + "Tel.: 99-99999-9999<br><br>"
+                            + "WhatsApp: https://wa.me/55991111111111<br><br>"
+                            + "https://wa.me/55991111111111<br><br>"
+                            + "${removerEmailMensagem}");
+        }
         if (linkMaterialTema != null)
             ocorrencia.setLinkMaterialTema(linkMaterialTema);
         if (linkImgDivulgacao != null)
             ocorrencia.setLinkImgDivulgacao(linkImgDivulgacao);
+
+        // Recupera instituição logada da sessão
+        Long instituicaoId = null;
+        if (session != null) {
+            Object inst = session.getAttribute("instituicaoSelecionada");
+            if (inst instanceof com.agendademais.entities.Instituicao) {
+                instituicaoId = ((com.agendademais.entities.Instituicao) inst).getId();
+            }
+        }
+        java.util.List<Autor> autores = java.util.Collections.emptyList();
+        if (instituicaoId != null) {
+            autores = autorRepository.findAutoresVinculadosAtivosPorInstituicao(instituicaoId);
+        }
+        model.addAttribute("autores", autores);
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("origem", origem);
         return "administrador/ocorrencia-form";
@@ -667,10 +697,31 @@ public class AdministradorOcorrenciasController {
     @GetMapping("/autocomplete-autor")
     @ResponseBody
     public List<Autor> autocompleteAutor(@RequestParam("term") String term,
-            @RequestParam(value = "atividadeId", required = false) Long atividadeId) {
-        // Busca diretamente autores vinculados a ocorrências da atividade (ou geral),
-        // filtrando por nome/email
-        return ocorrenciaAtividadeRepository.findDistinctAutoresByTermAndAtividadeId(term, atividadeId).stream()
+            @RequestParam(value = "atividadeId", required = false) Long atividadeId,
+            HttpSession session) {
+        // Recupera instituição logada
+        Long instituicaoId = null;
+        if (session != null) {
+            Object inst = session.getAttribute("instituicaoSelecionada");
+            if (inst instanceof com.agendademais.entities.Instituicao) {
+                instituicaoId = ((com.agendademais.entities.Instituicao) inst).getId();
+            }
+        }
+        if (instituicaoId == null) {
+            return java.util.Collections.emptyList();
+        }
+        // Busca autores da instituição logada e filtra por nome/email
+        return autorRepository.findAutoresVinculadosAtivosPorInstituicao(instituicaoId).stream()
+                .filter(a -> {
+                    String nome = a.getPessoa() != null && a.getPessoa().getNomePessoa() != null
+                            ? a.getPessoa().getNomePessoa().toLowerCase()
+                            : "";
+                    String email = a.getPessoa() != null && a.getPessoa().getEmailPessoa() != null
+                            ? a.getPessoa().getEmailPessoa().toLowerCase()
+                            : "";
+                    String t = term != null ? term.toLowerCase() : "";
+                    return nome.contains(t) || email.contains(t);
+                })
                 .limit(10)
                 .toList();
     }

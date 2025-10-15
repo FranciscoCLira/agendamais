@@ -213,15 +213,15 @@ public class UsuarioController {
         // NOTA: Este controlador precisa ser refatorado para trabalhar com níveis por
         // instituição
         // Por enquanto, mantendo verificação básica
-        boolean permissao = nivelAcessoAtual == 9 ||
-                (nivelAcessoAtual == 5 && novoNivel < 5);
+        // boolean permissao = nivelAcessoAtual == 9 ||
+        // (nivelAcessoAtual == 5 && novoNivel < 5);
 
-        if (permissao) {
-            // FIXME: Este método não deveria mais existir - níveis são por instituição
-            // agora
-            // alvo.setNivelAcessoUsuario(novoNivel);
-            // usuarioRepository.save(alvo);
-        }
+        // if (permissao) {
+        // FIX..ME: Este método não deveria mais existir - níveis são por instituição
+        // agora
+        // alvo.setNivelAcessoUsuario(novoNivel);
+        // usuarioRepository.save(alvo);
+        // }
         return "redirect:/usuarios";
     }
 
