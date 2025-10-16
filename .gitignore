@@ -1,13 +1,17 @@
+# Ignorar arquivos de banco H2 e diretório data
+data/
+*.mv.db
+*.h2.db
+*.trace.db
+
+# Ignorar arquivos de variáveis de ambiente
+.env
+
 # Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
-# Database
-data/
-*.mv.db
-*.trace.db
 
 # IDE
 .vscode/
