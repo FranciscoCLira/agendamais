@@ -1,0 +1,45 @@
+name: CI - Env validation & tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Validate required environment variables
+        # The following env values should be configured as repository secrets
+        env:
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+          SPRING_MAIL_USERNAME: ${{ secrets.SPRING_MAIL_USERNAME }}
+          SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
+        run: |
+          pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/validate-required-env.ps1 -Required 'SPRING_MAIL_HOST,SPRING_MAIL_USERNAME,SPRING_MAIL_PASSWORD'
+
+      - name: Run runner unit tests (Pester)
+        run: |
+          pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/tests/run-tests.ps1
+
+      - name: (Optional) Build with Maven
+        if: ${{ success() }}
+        run: mvn -B -ntp -DskipTests clean package

@@ -1,6 +1,7 @@
 package com.agendademais.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import com.agendademais.entities.LogPostagem;
@@ -27,6 +28,9 @@ public class DisparoEmailService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username:}")
+    private String configuredMailUsername;
 
     public static class ProgressoDisparo {
         public int total;
@@ -162,11 +166,35 @@ public class DisparoEmailService {
                                 conteudo = conteudo.replace("${removerEmailMensagem}", removerEmailMensagem);
                                 conteudo = conteudo.replace("${nomeInstituicao}", nomeInstituicao);
                                 helper.setText(conteudo, true);
-                                helper.setFrom(emailInstituicao, nomeInstituicao);
+                                // Use authenticated SMTP user as envelope-from when available
+                                String envelopeFrom = (configuredMailUsername != null
+                                        && !configuredMailUsername.isBlank())
+                                                ? configuredMailUsername
+                                                : emailInstituicao;
+                                helper.setFrom(envelopeFrom, nomeInstituicao);
+                                // If envelope-from differs from institution email, set Reply-To to institution
+                                if (emailInstituicao != null && !emailInstituicao.isBlank()
+                                        && !emailInstituicao.equalsIgnoreCase(envelopeFrom)) {
+                                    try {
+                                        helper.setReplyTo(emailInstituicao);
+                                    } catch (Exception rtEx) {
+                                        // ignore reply-to failures, not fatal
+                                    }
+                                }
                                 mailSender.send(message);
                             } catch (Exception ex) {
                                 progresso.falhas++;
-                                progresso.erros.add(destinatario + " falhou: " + ex.getMessage());
+                                // Capture full stack trace for diagnostics
+                                java.io.StringWriter sw = new java.io.StringWriter();
+                                java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+                                ex.printStackTrace(pw);
+                                String stack = sw.toString();
+                                String errMsg = destinatario + " falhou: " + ex.toString() + "\n" + stack;
+                                progresso.erros.add(errMsg);
+                                // Also print to stderr so it's available in console logs
+                                System.err.println(
+                                        "[DisparoEmail] Erro ao enviar para " + destinatario + ": " + ex.toString());
+                                ex.printStackTrace();
                                 continue;
                             }
                             progresso.enviados = i;
