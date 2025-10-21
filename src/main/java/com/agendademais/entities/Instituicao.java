@@ -12,6 +12,12 @@ public class Instituicao {
 	private String situacaoInstituicao; // A=Ativa, I=Inativa, B=Bloqueada
 	private LocalDate dataUltimaAtualizacao;
 	private String emailInstituicao;
+	// SMTP settings (optional) to allow sending using institution SMTP credentials
+	private String smtpHost;
+	private Integer smtpPort;
+	private String smtpUsername;
+	private String smtpPassword;
+	private Boolean smtpSsl; // true = SSL (465) / false = STARTTLS (587)
 
 	// GETTERS AND SETTERS
 
@@ -53,6 +59,46 @@ public class Instituicao {
 
 	public void setEmailInstituicao(String emailInstituicao) {
 		this.emailInstituicao = emailInstituicao;
+	}
+
+	public String getSmtpHost() {
+		return smtpHost;
+	}
+
+	public void setSmtpHost(String smtpHost) {
+		this.smtpHost = smtpHost;
+	}
+
+	public Integer getSmtpPort() {
+		return smtpPort;
+	}
+
+	public void setSmtpPort(Integer smtpPort) {
+		this.smtpPort = smtpPort;
+	}
+
+	public String getSmtpUsername() {
+		return smtpUsername;
+	}
+
+	public void setSmtpUsername(String smtpUsername) {
+		this.smtpUsername = smtpUsername;
+	}
+
+	public String getSmtpPassword() {
+		return smtpPassword;
+	}
+
+	public void setSmtpPassword(String smtpPassword) {
+		this.smtpPassword = smtpPassword;
+	}
+
+	public Boolean getSmtpSsl() {
+		return smtpSsl;
+	}
+
+	public void setSmtpSsl(Boolean smtpSsl) {
+		this.smtpSsl = smtpSsl;
 	}
 
 	@Override

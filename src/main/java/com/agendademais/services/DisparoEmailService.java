@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import java.util.Properties;
 
 @Service
 public class DisparoEmailService {
@@ -29,8 +31,14 @@ public class DisparoEmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private CryptoService cryptoService;
+
     @Value("${spring.mail.username:}")
     private String configuredMailUsername;
+
+    @Value("${app.mail.useInstitutionSmtp:false}")
+    private boolean useInstitutionSmtp;
 
     public static class ProgressoDisparo {
         public int total;
@@ -128,7 +136,21 @@ public class DisparoEmailService {
                         try {
                             Thread.sleep(500);
                             try {
-                                MimeMessage message = mailSender.createMimeMessage();
+                                // Decide which mail sender to use: per-institution or default
+                                JavaMailSender senderToUse = null;
+                                com.agendademais.entities.Instituicao inst = null;
+                                if (ocorrencia != null && ocorrencia.getIdAtividade() != null
+                                        && ocorrencia.getIdAtividade().getInstituicao() != null) {
+                                    inst = ocorrencia.getIdAtividade().getInstituicao();
+                                }
+                                if (useInstitutionSmtp && inst != null && inst.getSmtpHost() != null
+                                        && inst.getSmtpUsername() != null && inst.getSmtpPassword() != null) {
+                                    senderToUse = buildSenderForInstitution(inst);
+                                } else {
+                                    senderToUse = mailSender;
+                                }
+
+                                MimeMessage message = senderToUse.createMimeMessage();
                                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                                 helper.setTo(destinatario);
                                 helper.setSubject(assunto);
@@ -167,10 +189,17 @@ public class DisparoEmailService {
                                 conteudo = conteudo.replace("${nomeInstituicao}", nomeInstituicao);
                                 helper.setText(conteudo, true);
                                 // Use authenticated SMTP user as envelope-from when available
-                                String envelopeFrom = (configuredMailUsername != null
-                                        && !configuredMailUsername.isBlank())
-                                                ? configuredMailUsername
-                                                : emailInstituicao;
+                                String envelopeFrom = null;
+                                // if using institution sender, prefer its username as envelope
+                                if (senderToUse instanceof JavaMailSenderImpl) {
+                                    JavaMailSenderImpl jm = (JavaMailSenderImpl) senderToUse;
+                                    envelopeFrom = jm.getUsername();
+                                }
+                                if (envelopeFrom == null || envelopeFrom.isBlank()) {
+                                    envelopeFrom = (configuredMailUsername != null && !configuredMailUsername.isBlank())
+                                            ? configuredMailUsername
+                                            : emailInstituicao;
+                                }
                                 helper.setFrom(envelopeFrom, nomeInstituicao);
                                 // If envelope-from differs from institution email, set Reply-To to institution
                                 if (emailInstituicao != null && !emailInstituicao.isBlank()
@@ -181,7 +210,23 @@ public class DisparoEmailService {
                                         // ignore reply-to failures, not fatal
                                     }
                                 }
-                                mailSender.send(message);
+                                try {
+                                    senderToUse.send(message);
+                                } catch (Exception sendEx) {
+                                    // If we attempted to use institution sender and it failed, fall back to default
+                                    if (senderToUse != mailSender && mailSender != null) {
+                                        try {
+                                            System.err.println(
+                                                    "[DisparoEmail] Institution SMTP failed, falling back to default sender: "
+                                                            + sendEx.toString());
+                                            mailSender.send(message);
+                                        } catch (Exception fallbackEx) {
+                                            throw fallbackEx; // handled by outer catch
+                                        }
+                                    } else {
+                                        throw sendEx;
+                                    }
+                                }
                             } catch (Exception ex) {
                                 progresso.falhas++;
                                 // Capture full stack trace for diagnostics
@@ -266,5 +311,27 @@ public class DisparoEmailService {
 
     public ProgressoDisparo getProgresso(Long ocorrenciaId) {
         return progressoMap.getOrDefault(ocorrenciaId, null);
+    }
+
+    // Helper to build JavaMailSenderImpl for a given institution
+    private JavaMailSender buildSenderForInstitution(com.agendademais.entities.Instituicao inst) {
+        JavaMailSenderImpl instSender = new JavaMailSenderImpl();
+        instSender.setHost(inst.getSmtpHost());
+        if (inst.getSmtpPort() != null)
+            instSender.setPort(inst.getSmtpPort());
+        instSender.setUsername(inst.getSmtpUsername());
+        String decrypted = cryptoService.decryptIfNeeded(inst.getSmtpPassword());
+        instSender.setPassword(decrypted);
+        Properties props = instSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        if (Boolean.TRUE.equals(inst.getSmtpSsl())) {
+            props.put("mail.smtp.ssl.enable", "true");
+        } else {
+            props.put("mail.smtp.starttls.enable", "true");
+        }
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
+        return instSender;
     }
 }

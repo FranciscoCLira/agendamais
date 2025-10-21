@@ -166,7 +166,36 @@ mvn clean spring-boot:run
 
 ---
 
-## 📖 Documentação
+## � Envio de E-mail por Instituição (SMTP dinâmico)
+
+O sistema agora suporta envio usando credenciais SMTP por instituição. Principais pontos:
+
+- Campos adicionados na entidade `Instituicao` (através de migration Flyway):
+  - `smtp_host`, `smtp_port`, `smtp_username`, `smtp_password`, `smtp_ssl`
+- Para habilitar o uso do SMTP por instituição, defina no ambiente:
+
+```
+APP_MAIL_USEINSTITUTIONSMTP=true
+```
+
+- As senhas são cifradas usando Jasypt com uma chave mestra definida na variável de ambiente `JASYPT_MASTER_KEY` (ou `MASTER_KEY`).
+
+Exemplo `.env`:
+
+```
+APP_MAIL_USEINSTITUTIONSMTP=true
+JASYPT_MASTER_KEY=uma_chave_muito_forte
+```
+
+- Administração: existe uma tela administrativa (GET `/admin/instituicao/smtp/{id}`) para editar as configurações SMTP de cada instituição e testar a conexão.
+
+Segurança e recomendações:
+
+- Não armazene senhas em texto claro em produção.
+- Use uma chave mestra forte e proteja seu ambiente.
+- Em produção, considere usar um secret manager (Vault, KeyVault) e reduzir o alcance do acesso.
+
+## �📖 Documentação
 
 - **[Estrutura de Níveis de Usuário](docs/estrutura-niveis-usuario.md)** - Definições completas dos níveis de acesso e funcionalidades
 - **[Implementação da Entidade Local](docs/implementa-local.md)** - Documentação da normalização de locais
