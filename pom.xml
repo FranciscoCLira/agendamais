@@ -164,6 +164,9 @@
                 <configuration>
                     <failsOnError>false</failsOnError>
                     <linkXRef>false</linkXRef>
+                    <!-- Use Google's Checkstyle rules (less noisy than Sun ruleset for this legacy project) -->
+                    <configLocation>config/checkstyle/google_checks.xml</configLocation>
+                    <encoding>UTF-8</encoding>
                 </configuration>
                 <executions>
                     <execution>

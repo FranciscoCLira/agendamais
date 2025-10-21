@@ -39,6 +39,11 @@ jobs:
       - name: Run Checkstyle
         run: mvn -B org.apache.maven.plugins:maven-checkstyle-plugin:checkstyle
 
+      - name: Run Checkstyle only on changed files (fail PR if new violations)
+        run: |
+          chmod +x scripts/checkstyle-diff.sh
+          scripts/checkstyle-diff.sh
+
       - name: Upload SpotBugs report
         if: always()
         uses: actions/upload-artifact@v4
