@@ -64,6 +64,22 @@ spring.sql.init.mode=always
 
 > Use `ddl-auto=create` para recriar o banco do zero (apaga dados), e `update` para manter o schema atual.
 
+#### 🔄 Recriar o Banco de Dados do Zero
+
+Para recriar o banco de dados H2 com dados iniciais (útil durante desenvolvimento):
+
+**Windows:**
+```cmd
+recreate-h2-db.bat
+```
+
+**Linux/macOS:**
+```bash
+./recreate-h2-db.sh
+```
+
+Ver [documentação completa](docs/recreate-h2-database.md) para mais detalhes.
+
 ### 4. Rodar a aplicação
 
 ```bash
@@ -201,6 +217,7 @@ Segurança e recomendações:
 - **[Implementação da Entidade Local](docs/implementa-local.md)** - Documentação da normalização de locais
 - **[ERD - Diagrama de Entidades](docs/AgendaMais_ERD-PlantUML-V2.txt)** - Modelo de dados em PlantUML
 - **[Backup e Restore](backup-tools/README-backup-tools.md)** - Ferramentas de backup e restore
+- **[Recriar Banco de Dados H2](docs/recreate-h2-database.md)** - Como recriar o banco de dados do zero para desenvolvimento
 
 ---
 
