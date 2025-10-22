@@ -13,6 +13,22 @@
 - Alternativamente, use `scripts/legacy/run-env-maven.bat` (archived) que executa um `mvn clean install` antes do `spring-boot:run`.
 - Dessa forma, as variáveis de e-mail e outras sensíveis são lidas corretamente tanto no build quanto na execução.
 
+#### 🔄 Recriar Banco de Dados H2 do Zero
+
+Se você precisa recriar o banco de dados H2 com dados iniciais frescos (útil para resolver problemas de schema ou resetar dados):
+
+**Windows:**
+```cmd
+recreate-h2-db.bat
+```
+
+**Linux/macOS/WSL:**
+```bash
+./recreate-h2-db.sh
+```
+
+Ver [documentação completa](docs/recreate-h2-database.md) para mais detalhes sobre o processo de recriação.
+
 - **Opção alternativa:**
 - **Opção alternativa:**
 - Se preferir, use `scripts/legacy/run-env-maven.bat` (archived) para garantir que as variáveis sejam carregadas antes do `mvn clean install`.
