@@ -7,6 +7,9 @@ data/
 # Ignorar arquivos de variáveis de ambiente
 .env
 
+# Temporary files created by recreate-h2-db scripts
+recreate-db-temp.properties
+
 # Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
