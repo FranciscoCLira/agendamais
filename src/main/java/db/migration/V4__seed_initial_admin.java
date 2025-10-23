@@ -53,15 +53,20 @@ public class V4__seed_initial_admin extends BaseJavaMigration {
             }
         }
 
-        // Hash the initial password with BCrypt. Change the raw password if desired.
-        String rawPassword = "admin1$";
-        String hashed = new BCryptPasswordEncoder().encode(rawPassword);
+    // Read admin credentials from environment variables, with safe defaults for testing.
+    String adminUsername = System.getenv().getOrDefault("ADMIN_USERNAME", "admin1");
+    String adminPassword = System.getenv().getOrDefault("ADMIN_PASSWORD", "admin1$");
+    String adminEmail = System.getenv().getOrDefault("ADMIN_EMAIL", "admin@example.com");
+    String institutionName = System.getenv().getOrDefault("INSTITUTION_NAME", "Instituto Inicial");
+
+    // Use BCrypt to hash the password before storing. Avoid printing the raw password.
+    String hashed = new BCryptPasswordEncoder().encode(adminPassword);
 
         long usuarioId;
         try (PreparedStatement ps = connection.prepareStatement(
                 "INSERT INTO usuario (username, password, situacao_usuario, pessoa_id, data_ultima_atualizacao) VALUES (?, ?, 'A', ?, CURRENT_DATE)",
                 Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "admin1");
+            ps.setString(1, adminUsername);
             ps.setString(2, hashed);
             ps.setLong(3, pessoaId);
             ps.executeUpdate();
@@ -82,7 +87,7 @@ public class V4__seed_initial_admin extends BaseJavaMigration {
             ps.executeUpdate();
         }
 
-        System.out.println("[V4__seed_initial_admin] Created initial institution=" + instituicaoId + " pessoa=" + pessoaId
-                + " usuario=" + usuarioId + " (username=admin1 password=admin1$)");
+    System.out.println("[V4__seed_initial_admin] Created initial institution=" + instituicaoId + " pessoa=" + pessoaId
+        + " usuario=" + usuarioId + " (username=" + adminUsername + ")");
     }
 }
