@@ -83,3 +83,32 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_REGISTRY }}
             /${{ github.repository }}:latest
+
+  flyway-validate:
+    name: Flyway validate (staging)
+    needs: build
+    runs-on: ubuntu-latest
+    # Only run when staging DB secrets are provided
+    if: ${{ secrets.STAGING_DB_URL != '' && secrets.STAGING_DB_USER != '' && secrets.STAGING_DB_PASSWORD != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Flyway validate against staging DB
+        env:
+          FLYWAY_URL: ${{ secrets.STAGING_DB_URL }}
+          FLYWAY_USER: ${{ secrets.STAGING_DB_USER }}
+          FLYWAY_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+        run: |
+          echo "Running Flyway validate against staging DB"
+          mvn -B -DskipTests org.flywaydb:flyway-maven-plugin:9.16.0:validate \
+            -Dflyway.url=${{ secrets.STAGING_DB_URL }} \
+            -Dflyway.user=${{ secrets.STAGING_DB_USER }} \
+            -Dflyway.password=${{ secrets.STAGING_DB_PASSWORD }} \
+            -Dflyway.locations=classpath:db/migration
