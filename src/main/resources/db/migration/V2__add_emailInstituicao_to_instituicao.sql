@@ -1,1 +1,1 @@
-ALTER TABLE instituicao ADD COLUMN email_instituicao VARCHAR(255);
+ALTER TABLE instituicao ADD COLUMN IF NOT EXISTS email_instituicao VARCHAR(255);

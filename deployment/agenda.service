@@ -1,0 +1,19 @@
+[Unit]
+Description=AgendaMais Spring Boot Application
+After=network.target
+
+[Service]
+User=app
+Group=app
+WorkingDirectory=/opt/agendamais
+Environment=SPRING_PROFILES_ACTIVE=prod
+Environment=SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:5432/agendadb
+Environment=SPRING_DATASOURCE_USERNAME=agendadb
+Environment=SPRING_DATASOURCE_PASSWORD=changeme
+ExecStart=/usr/bin/java -jar /opt/agendamais/app.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
