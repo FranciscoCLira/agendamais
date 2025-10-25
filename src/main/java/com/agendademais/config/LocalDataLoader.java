@@ -39,14 +39,25 @@ public class LocalDataLoader implements CommandLineRunner {
                                 "*** /config/LocalDataLoader.java: Carregando a Tabela Local (Paises, Estados, Cidades).");
                 System.out.println("*** ");
 
-                // Limpa a tabela se necessário (opcional)
-                localRepository.deleteAll();
+                // Se a flag reloadData estiver ativa, mantenha o comportamento antigo (apaga e recarrega).
+                if (reloadData) {
+                        System.out.println("*** LocalDataLoader: reloadData=true, limpando tabela Local e recarregando.");
+                        localRepository.deleteAll();
+                        // após deleteAll, recarregar conforme o comportamento anterior
+                        loadAllInitialData();
+                } else {
+                        // Modo idempotente: cria apenas os registros que não existirem
+                        System.out.println("*** LocalDataLoader: modo idempotente - criando apenas registros ausentes.");
+                        loadAllInitialDataIdempotent();
+                }
 
+        }
+
+        private void loadAllInitialData() {
                 // Carga de Países
                 Local brasil = localRepository.save(new Local(1, "Brasil", null));
                 Local portugal = localRepository.save(new Local(1, "Portugal", null));
                 Local franca = localRepository.save(new Local(1, "França", null));
-                // Local argentina = localRepository.save(new Local(1, "Argentina", null));
 
                 // Carga de Estados (Exemplo Brasil)
                 Local ac = localRepository.save(new Local(2, "Acre", brasil));
@@ -117,13 +128,13 @@ public class LocalDataLoader implements CommandLineRunner {
                                 new Local(3, "Santo André", sp),
                                 new Local(3, "Mauá", sp),
                                 new Local(3, "Osasco", sp),
-                                new Local(3, "Guarulhos", sp),
-                                new Local(3, "Santos", sp),
-                                new Local(3, "São Vicente", sp),
-                                new Local(3, "Mongaguá", sp),
-                                new Local(3, "Itanhahém", sp),
-                                new Local(3, "Campinas", sp),
-                                new Local(3, "Mogi das Cruzes", sp),
+                                new(Local(3, "Guarulhos", sp)),
+                                new(Local(3, "Santos", sp)),
+                                new(Local(3, "São Vicente", sp)),
+                                new(Local(3, "Mongaguá", sp)),
+                                new(Local(3, "Itanhahém", sp)),
+                                new(Local(3, "Campinas", sp)),
+                                new(Local(3, "Mogi das Cruzes", sp)),
 
                                 new Local(3, "Aracaju", se),
                                 new Local(3, "Palmas", to)));
@@ -184,7 +195,140 @@ public class LocalDataLoader implements CommandLineRunner {
                 System.out.println("*** ");
                 System.out.println("*** /config/LocalDataLoader.java: Dados iniciais da Tabela Local carregados.");
                 System.out.println("*** ");
+        }
 
+        private void loadAllInitialDataIdempotent() {
+                // Países
+                Local brasil = findOrCreate(1, "Brasil", null);
+                Local portugal = findOrCreate(1, "Portugal", null);
+                Local franca = findOrCreate(1, "França", null);
+
+                // Estados (Brasil)
+                Local ac = findOrCreate(2, "Acre", brasil);
+                Local al = findOrCreate(2, "Alagoas", brasil);
+                Local ap = findOrCreate(2, "Amapá", brasil);
+                Local am = findOrCreate(2, "Amazonas", brasil);
+                Local ba = findOrCreate(2, "Bahia", brasil);
+                Local ce = findOrCreate(2, "Ceará", brasil);
+                Local df = findOrCreate(2, "Distrito Federal", brasil);
+                Local es = findOrCreate(2, "Espírito Santo", brasil);
+                Local go = findOrCreate(2, "Goiás", brasil);
+                Local ma = findOrCreate(2, "Maranhão", brasil);
+                Local mt = findOrCreate(2, "Mato Grosso", brasil);
+                Local ms = findOrCreate(2, "Mato Grosso do Sul", brasil);
+                Local mg = findOrCreate(2, "Minas Gerais", brasil);
+                Local pa = findOrCreate(2, "Pará", brasil);
+                Local pb = findOrCreate(2, "Paraíba", brasil);
+                Local pr = findOrCreate(2, "Paraná", brasil);
+                Local pe = findOrCreate(2, "Pernambuco", brasil);
+                Local pi = findOrCreate(2, "Piauí", brasil);
+                Local rj = findOrCreate(2, "Rio de Janeiro", brasil);
+                Local rn = findOrCreate(2, "Rio Grande do Norte", brasil);
+                Local rs = findOrCreate(2, "Rio Grande do Sul", brasil);
+                Local ro = findOrCreate(2, "Rondônia", brasil);
+                Local rr = findOrCreate(2, "Roraima", brasil);
+                Local sc = findOrCreate(2, "Santa Catarina", brasil);
+                Local sp = findOrCreate(2, "São Paulo", brasil);
+                Local se = findOrCreate(2, "Sergipe", brasil);
+                Local to = findOrCreate(2, "Tocantins", brasil);
+
+                // Cidades (exemplos)
+                findOrCreate(3, "Rio Branco", ac);
+                findOrCreate(3, "Maceió", al);
+                findOrCreate(3, "Macapá", ap);
+                findOrCreate(3, "Manaus", am);
+                findOrCreate(3, "Salvador", ba);
+                findOrCreate(3, "Fortaleza", ce);
+                findOrCreate(3, "Brasília", df);
+                findOrCreate(3, "Vitória", es);
+                findOrCreate(3, "Goiânia", go);
+                findOrCreate(3, "São Luís", ma);
+                findOrCreate(3, "Belo Horizonte", mt);
+                findOrCreate(3, "Campo Grande", ms);
+                findOrCreate(3, "Cuiabá", mg);
+                findOrCreate(3, "Belém", pa);
+                findOrCreate(3, "João Pessoa", pb);
+                findOrCreate(3, "Curitiba", pr);
+                findOrCreate(3, "Cascavel", pr);
+                findOrCreate(3, "Recife", pe);
+                findOrCreate(3, "Teresina", pi);
+                findOrCreate(3, "Rio de Janeiro", rj);
+                findOrCreate(3, "Niterói", rj);
+                findOrCreate(3, "Campos", rj);
+                findOrCreate(3, "Volta Redonda", rj);
+                findOrCreate(3, "Natal", rn);
+                findOrCreate(3, "Porto Alegre", rs);
+                findOrCreate(3, "Porto Velho", ro);
+                findOrCreate(3, "Boa Vista", rr);
+                findOrCreate(3, "Florianópolis", sc);
+                findOrCreate(3, "São Paulo", sp);
+                findOrCreate(3, "São Caetano do Sul", sp);
+                findOrCreate(3, "São Bernardo do Campo", sp);
+                findOrCreate(3, "Santo André", sp);
+                findOrCreate(3, "Mauá", sp);
+                findOrCreate(3, "Osasco", sp);
+                findOrCreate(3, "Guarulhos", sp);
+                findOrCreate(3, "Santos", sp);
+                findOrCreate(3, "São Vicente", sp);
+                findOrCreate(3, "Mongaguá", sp);
+                findOrCreate(3, "Itanhahém", sp);
+                findOrCreate(3, "Campinas", sp);
+                findOrCreate(3, "Mogi das Cruzes", sp);
+                findOrCreate(3, "Aracaju", se);
+                findOrCreate(3, "Palmas", to);
+
+                // Portugal
+                Local li = findOrCreate(2, "Lisboa", portugal);
+                Local co = findOrCreate(2, "Coimbra", portugal);
+                Local po = findOrCreate(2, "Porto", portugal);
+
+                findOrCreate(3, "Lisboa", li);
+                findOrCreate(3, "Sintra", li);
+                findOrCreate(3, "Amadora", li);
+
+                findOrCreate(3, "Coimbra", co);
+                findOrCreate(3, "Figueira da Foz", co);
+                findOrCreate(3, "Cantanhede", co);
+
+                findOrCreate(3, "Porto", po);
+                findOrCreate(3, "Vila Nova de Gaia", po);
+                findOrCreate(3, "Matosinhos", po);
+
+                // França
+                Local idf = findOrCreate(2, "Île-de-France", franca);
+                Local paca = findOrCreate(2, "Provence-Alpes-Côte d'Azur", franca);
+                Local ara = findOrCreate(2, "Auvergne-Rhône-Alpes", franca);
+                Local occ = findOrCreate(2, "Occitanie", franca);
+
+                findOrCreate(3, "Paris", idf);
+                findOrCreate(3, "Versailles", idf);
+                findOrCreate(3, "Boulogne-Billancourt", idf);
+
+                findOrCreate(3, "Marseille", paca);
+                findOrCreate(3, "Nice", paca);
+                findOrCreate(3, "Cannes", paca);
+
+                findOrCreate(3, "Lyon", ara);
+                findOrCreate(3, "Grenoble", ara);
+                findOrCreate(3, "Saint-Étienne", ara);
+
+                findOrCreate(3, "Toulouse", occ);
+                findOrCreate(3, "Montpellier", occ);
+                findOrCreate(3, "Perpignan", occ);
+
+                System.out.println("*** ");
+                System.out.println("*** /config/LocalDataLoader.java: Dados iniciais da Tabela Local carregados (idempotente).");
+                System.out.println("*** ");
+        }
+
+        private Local findOrCreate(int tipoLocal, String nomeLocal, Local localPai) {
+                if (localPai == null) {
+                        return localRepository.findByTipoLocalAndNomeLocal(tipoLocal, nomeLocal)
+                                        .orElseGet(() -> localRepository.save(new Local(tipoLocal, nomeLocal, null)));
+                } else {
+                        return localRepository.findByTipoLocalAndNomeLocalAndLocalPai(tipoLocal, nomeLocal, localPai)
+                                        .orElseGet(() -> localRepository.save(new Local(tipoLocal, nomeLocal, localPai)));
+                }
         }
 
         private boolean shouldLoadData() {
@@ -193,4 +337,5 @@ public class LocalDataLoader implements CommandLineRunner {
                         return true;
                 return "create".equalsIgnoreCase(ddlAuto) || "create-drop".equalsIgnoreCase(ddlAuto);
         }
+
 }

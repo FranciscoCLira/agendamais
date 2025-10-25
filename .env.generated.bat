@@ -1,0 +1,10 @@
+set GESTOR_EMAIL=fclira.fcl@gmail.com
+set GESTOR_EMAIL=fclira.fcl@gmail.com
+set SPRING_MAIL_USERNAME=fclira.fcl@gmail.com
+set SPRING_MAIL_USERNAME=fclira.fcl@gmail.com
+set SPRING_MAIL_PASSWORD=saiuwglcfgorfkek
+set SPRING_MAIL_PASSWORD=saiuwglcfgorfkek
+set SPRING_MAIL_HOST=smtp.gmail.com
+set SPRING_MAIL_HOST=smtp.gmail.com
+set SPRING_MAIL_PORT=587
+set SPRING_MAIL_PORT=587

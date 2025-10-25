@@ -1,0 +1,165 @@
+name: CI – Build & Docker
+
+on:
+  push:
+    branches: [ main, 'tests/**', 'feature/**', 'release/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build JAR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build (skip tests)
+        run: mvn -B -DskipTests package
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agenda-jar
+          path: target/*.jar
+
+  docker:
+    name: Build Docker image
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (load)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: agendamais:latest
+
+      - name: Save Docker image to artifact
+        run: |
+          docker save agendamais:latest -o agendamais.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agenda-image
+          path: agendamais.tar
+
+      - name: Login to registry (optional)
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker image to registry (optional)
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_REGISTRY }}
+            /${{ github.repository }}:latest
+
+  flyway-validate:
+    name: Flyway validate (staging)
+    needs: build
+    runs-on: ubuntu-latest
+    # Only run when staging DB secrets are provided
+    if: ${{ secrets.STAGING_DB_URL != '' && secrets.STAGING_DB_USER != '' && secrets.STAGING_DB_PASSWORD != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Flyway validate against staging DB
+        env:
+          FLYWAY_URL: ${{ secrets.STAGING_DB_URL }}
+          FLYWAY_USER: ${{ secrets.STAGING_DB_USER }}
+          FLYWAY_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+        run: |
+          echo "Running Flyway validate against staging DB"
+          mvn -B -DskipTests org.flywaydb:flyway-maven-plugin:9.16.0:validate \
+            -Dflyway.url=${{ secrets.STAGING_DB_URL }} \
+            -Dflyway.user=${{ secrets.STAGING_DB_USER }} \
+            -Dflyway.password=${{ secrets.STAGING_DB_PASSWORD }} \
+            -Dflyway.locations=classpath:db/migration
+
+    flyway-validate-service:
+      name: Flyway validate (Postgres service)
+      needs: build
+      runs-on: ubuntu-latest
+      services:
+        postgres:
+          image: postgres:15
+          env:
+            POSTGRES_USER: flyway
+            POSTGRES_PASSWORD: flyway
+            POSTGRES_DB: agendadb
+          ports:
+            - 5432:5432
+          options: >-
+            --health-cmd pg_isready -U flyway -d agendadb
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Install Postgres client
+          run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+        - name: Wait for Postgres
+          run: |
+            echo "Waiting for Postgres to become healthy..."
+            for i in {1..30}; do
+              pg_isready -h localhost -p 5432 -U flyway -d agendadb && break
+              sleep 2
+            done
+
+        - name: Set up JDK 17
+          uses: actions/setup-java@v4
+          with:
+            java-version: '17'
+            distribution: 'temurin'
+
+        - name: Run Flyway validate against service DB
+          env:
+            FLYWAY_URL: jdbc:postgresql://localhost:5432/agendadb
+            FLYWAY_USER: flyway
+            FLYWAY_PASSWORD: flyway
+          run: |
+            mvn -B -DskipTests org.flywaydb:flyway-maven-plugin:9.16.0:validate \
+              -Dflyway.url=jdbc:postgresql://localhost:5432/agendadb \
+              -Dflyway.user=flyway \
+              -Dflyway.password=flyway \
+              -Dflyway.locations=classpath:db/migration

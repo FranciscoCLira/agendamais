@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Editar SMTP - Instituição</title>
+  </head>
+  <body>
+    <h1>Configurar SMTP da Instituição</h1>
+    <form
+      th:action="@{'/admin/instituicao/smtp/' + ${instituicao.id}}"
+      method="post"
+    >
+      <label>Nome: <span th:text="${instituicao.nomeInstituicao}"></span></label
+      ><br />
+      <label
+        >Email institucional:
+        <input
+          type="text"
+          name="emailInstituicao"
+          th:value="${instituicao.emailInstituicao}" /></label
+      ><br />
+      <label
+        >SMTP Host:
+        <input
+          type="text"
+          name="smtpHost"
+          th:value="${instituicao.smtpHost}" /></label
+      ><br />
+      <label
+        >SMTP Port:
+        <input
+          type="number"
+          name="smtpPort"
+          th:value="${instituicao.smtpPort}" /></label
+      ><br />
+      <label
+        >SMTP Username:
+        <input
+          type="text"
+          name="smtpUsername"
+          th:value="${instituicao.smtpUsername}" /></label
+      ><br />
+      <label
+        >SMTP Password:
+        <input
+          type="password"
+          name="smtpPassword"
+          th:value="${instituicao.smtpPassword}" /></label
+      ><br />
+      <label
+        >Use SSL:
+        <input
+          type="checkbox"
+          name="smtpSsl"
+          th:checked="${instituicao.smtpSsl}" /></label
+      ><br />
+      <button type="submit">Salvar</button>
+    </form>
+    <button id="testBtn">Testar Conexão SMTP</button>
+    <div id="testResult" style="margin-top: 8px; font-weight: bold"></div>
+
+    <script>
+      document.getElementById("testBtn").addEventListener("click", function () {
+        var form = document.querySelector("form");
+        var data = new FormData(form);
+        var id = /*[[${instituicao.id}]]*/ "0";
+        fetch("/admin/instituicao/smtp/" + id + "/test", {
+          method: "POST",
+          body: data,
+        })
+          .then((r) => r.text())
+          .then((txt) => {
+            document.getElementById("testResult").innerText = txt;
+          })
+          .catch((e) => {
+            document.getElementById("testResult").innerText = "ERROR: " + e;
+          });
+      });
+    </script>
+  </body>
+</html>
