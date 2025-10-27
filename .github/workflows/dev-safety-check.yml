@@ -1,0 +1,25 @@
+name: Dev safety check
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  check-dev-flags:
+    name: Check for dev-only flags in committed property files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fail if dev-only flags are present
+        run: |
+          set -euo pipefail
+          echo "Searching for dev-only flags (app.security.requireAdmin=false, app.reload-data=true, app.dev.failOnMisconfig=true)..."
+          matches=$(grep -RInE "app\.security\.requireAdmin\s*=\s*false|app\.reload-data\s*=\s*true|app\.dev.failOnMisconfig\s*=\s*true" || true)
+          if [ -n "$matches" ]; then
+            echo "ERROR: Found dev-only flags in the repository (fail the build)."
+            echo "$matches"
+            exit 1
+          fi
+          echo "No dev-only flags found."
