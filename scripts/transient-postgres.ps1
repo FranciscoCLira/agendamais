@@ -36,7 +36,8 @@ function Start-Container {
     }
 
         # Use a Postgres image version compatible with the Flyway version used by the project.
-        $postgresImage = "postgres:14"
+        # Try an older Postgres minor version if newer images cause Flyway 'Unsupported Database' errors.
+        $postgresImage = "postgres:11"
         $runArgs = @('run', '-d', '--name', $containerName, '-e', "POSTGRES_USER=$pgUser", '-e', "POSTGRES_PASSWORD=$pgPassword", '-e', "POSTGRES_DB=$pgDb", '-p', "$($pgPort):5432", $postgresImage)
     Write-Host "Running: docker.exe with arguments:" 
     $runArgs | ForEach-Object { Write-Host "  ARG: '$_'" }
