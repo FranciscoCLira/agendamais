@@ -72,8 +72,33 @@ function Run-Flyway-Migrate {
     # Use the plugin prefix (flyway:migrate) which will run the version/config declared in pom.xml.
     $args = @("-DskipTests", "flyway:migrate", "-Dflyway.url=$($env:SPRING_DATASOURCE_URL)", "-Dflyway.user=$($env:SPRING_DATASOURCE_USERNAME)", "-Dflyway.password=$($env:SPRING_DATASOURCE_PASSWORD)", "-Dflyway.locations=classpath:db/migration")
     Write-Host ("mvn " + ($args -join " "))
-    $proc = Start-Process -FilePath "mvn" -ArgumentList $args -NoNewWindow -Wait -PassThru
-    if ($proc.ExitCode -ne 0) { throw "Flyway migrate failed (exit $($proc.ExitCode))" }
+    try {
+        $proc = Start-Process -FilePath "mvn" -ArgumentList $args -NoNewWindow -Wait -PassThru
+        if ($proc.ExitCode -ne 0) { throw "Flyway migrate failed (exit $($proc.ExitCode))" }
+    } catch {
+        Write-Host "Flyway migrate via Maven failed: $_"
+        Write-Host "Falling back to running the packaged application JAR so Spring Boot can run Flyway at startup."
+
+        $jar = Join-Path (Get-Location).Path "target\agenda-mais-0.0.1-SNAPSHOT.jar"
+        if (-Not (Test-Path $jar)) {
+            throw "Packaged JAR not found at $jar; cannot fall back to jar-based migration."
+        }
+
+        $javaArgs = @(
+            "-Dspring.profiles.active=prod",
+            "-Dspring.datasource.url=$($env:SPRING_DATASOURCE_URL)",
+            "-Dspring.datasource.username=$($env:SPRING_DATASOURCE_USERNAME)",
+            "-Dspring.datasource.password=$($env:SPRING_DATASOURCE_PASSWORD)",
+            "-jar",
+            $jar
+        )
+
+        Write-Host ("java " + ($javaArgs -join " "))
+        # Start the app and leave it running in the foreground so the user can see logs
+        & java @javaArgs
+        # If the app exits, propagate its exit code
+        exit $LASTEXITCODE
+    }
 }
 
 function Run-App {
