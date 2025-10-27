@@ -35,7 +35,9 @@ function Start-Container {
         if ($LASTEXITCODE -ne 0) { Write-Warning "docker rm exited with $LASTEXITCODE" }
     }
 
-    $runArgs = @('run', '-d', '--name', $containerName, '-e', "POSTGRES_USER=$pgUser", '-e', "POSTGRES_PASSWORD=$pgPassword", '-e', "POSTGRES_DB=$pgDb", '-p', "$($pgPort):5432", 'postgres:13')
+        # Use a Postgres image version compatible with the Flyway version used by the project.
+        $postgresImage = "postgres:14"
+        $runArgs = @('run', '-d', '--name', $containerName, '-e', "POSTGRES_USER=$pgUser", '-e', "POSTGRES_PASSWORD=$pgPassword", '-e', "POSTGRES_DB=$pgDb", '-p', "$($pgPort):5432", $postgresImage)
     Write-Host "Running: docker.exe with arguments:" 
     $runArgs | ForEach-Object { Write-Host "  ARG: '$_'" }
     & docker.exe @runArgs
