@@ -39,15 +39,18 @@ public class LocalDataLoader implements CommandLineRunner {
                                 "*** /config/LocalDataLoader.java: Carregando a Tabela Local (Paises, Estados, Cidades).");
                 System.out.println("*** ");
 
-                // Se a flag reloadData estiver ativa, mantenha o comportamento antigo (apaga e recarrega).
+                // Se a flag reloadData estiver ativa, mantenha o comportamento antigo (apaga e
+                // recarrega).
                 if (reloadData) {
-                        System.out.println("*** LocalDataLoader: reloadData=true, limpando tabela Local e recarregando.");
+                        System.out.println(
+                                        "*** LocalDataLoader: reloadData=true, limpando tabela Local e recarregando.");
                         localRepository.deleteAll();
                         // após deleteAll, recarregar conforme o comportamento anterior
                         loadAllInitialData();
                 } else {
                         // Modo idempotente: cria apenas os registros que não existirem
-                        System.out.println("*** LocalDataLoader: modo idempotente - criando apenas registros ausentes.");
+                        System.out.println(
+                                        "*** LocalDataLoader: modo idempotente - criando apenas registros ausentes.");
                         loadAllInitialDataIdempotent();
                 }
 
@@ -128,13 +131,13 @@ public class LocalDataLoader implements CommandLineRunner {
                                 new Local(3, "Santo André", sp),
                                 new Local(3, "Mauá", sp),
                                 new Local(3, "Osasco", sp),
-                                new(Local(3, "Guarulhos", sp)),
-                                new(Local(3, "Santos", sp)),
-                                new(Local(3, "São Vicente", sp)),
-                                new(Local(3, "Mongaguá", sp)),
-                                new(Local(3, "Itanhahém", sp)),
-                                new(Local(3, "Campinas", sp)),
-                                new(Local(3, "Mogi das Cruzes", sp)),
+                                new Local(3, "Guarulhos", sp),
+                                new Local(3, "Santos", sp),
+                                new Local(3, "São Vicente", sp),
+                                new Local(3, "Mongaguá", sp),
+                                new Local(3, "Itanhahém", sp),
+                                new Local(3, "Campinas", sp),
+                                new Local(3, "Mogi das Cruzes", sp),
 
                                 new Local(3, "Aracaju", se),
                                 new Local(3, "Palmas", to)));
@@ -317,7 +320,8 @@ public class LocalDataLoader implements CommandLineRunner {
                 findOrCreate(3, "Perpignan", occ);
 
                 System.out.println("*** ");
-                System.out.println("*** /config/LocalDataLoader.java: Dados iniciais da Tabela Local carregados (idempotente).");
+                System.out.println(
+                                "*** /config/LocalDataLoader.java: Dados iniciais da Tabela Local carregados (idempotente).");
                 System.out.println("*** ");
         }
 
@@ -327,7 +331,8 @@ public class LocalDataLoader implements CommandLineRunner {
                                         .orElseGet(() -> localRepository.save(new Local(tipoLocal, nomeLocal, null)));
                 } else {
                         return localRepository.findByTipoLocalAndNomeLocalAndLocalPai(tipoLocal, nomeLocal, localPai)
-                                        .orElseGet(() -> localRepository.save(new Local(tipoLocal, nomeLocal, localPai)));
+                                        .orElseGet(() -> localRepository
+                                                        .save(new Local(tipoLocal, nomeLocal, localPai)));
                 }
         }
 

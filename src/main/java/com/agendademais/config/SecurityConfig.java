@@ -13,7 +13,19 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Configuration
 public class SecurityConfig {
 
+	/**
+	 * Development-only SecurityFilterChain for the H2 console.
+	 *
+	 * <p>This filter chain is intentionally permissive: it disables CSRF,
+	 * allows framing, and permits all requests under <code>/h2-console/**</code>.
+	 * It must only be active in the {@code dev} Spring profile. The bean is
+	 * protected with {@code @Profile("dev")} to avoid accidental exposure in
+	 * production or other environments where authentication and CSRF are
+	 * required.
+	 */
+
 	@Bean
+	@Profile("dev")
 	@Order(0)
 	public SecurityFilterChain h2ConsoleSecurity(HttpSecurity http) throws Exception {
 		// Dedicated chain for H2 console: allow everything and disable CSRF/frames.
@@ -25,6 +37,15 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	@Profile("dev")
+	/**
+	 * Development-only WebSecurityCustomizer to completely bypass Spring Security
+	 * for H2 console static resources. This prevents the main filter chain from
+	 * processing console requests when the {@code dev} profile is active.
+	 *
+	 * Note: keep this bean under {@code dev} profile only. Do not enable in
+	 * production.
+	 */
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		// Completely bypass Spring Security for H2 console resources
 		return (web) -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
@@ -45,15 +66,11 @@ public class SecurityConfig {
 					.requestMatchers(org.springframework.http.HttpMethod.GET,
 							"/administrador/atividades/deletar/**")
 					.permitAll()
-						// Allow H2 console UI and requests
-						.requestMatchers("/h2-console/**").permitAll()
 					.requestMatchers("/admin/**").hasRole("ADMIN")
 					.anyRequest().permitAll());
 			// In secure mode, enable form login and keep CSRF enabled (best practice)
 			http.formLogin();
-			// H2 console uses its own forms and won't include Spring CSRF tokens.
-			// Ignore CSRF for h2-console endpoints so the console can POST (test connection etc.).
-			http.csrf(csrf -> csrf.ignoringRequestMatchers(new AntPathRequestMatcher("/h2-console/**")));
+
 		} else {
 			http.authorizeHttpRequests(auth -> auth
 					.anyRequest().permitAll());

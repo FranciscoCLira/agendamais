@@ -3,26 +3,31 @@
 This short guide shows how to run the V4 bootstrap migration locally in a controlled way.
 
 Important safety notes
+
 - This migration can create privileged accounts. Always run on a disposable or staging database first.
 - The migration requires an explicit guard: set `RUN_BOOTSTRAP=true` before running.
 - Prefer using Flyway (mvn flyway:migrate) with a dedicated DB URL for staging or a local Postgres container.
 
 Environment variables used by the migration
-- RUN_BOOTSTRAP=true  (required to actually run)
+
+- RUN_BOOTSTRAP=true (required to actually run)
 - INSTITUTION_NAME (optional)
 - INSTITUTION_EMAIL (optional)
 
 Superuser (optional)
+
 - SUPER_USERNAME
 - SUPER_PASSWORD
 - SUPER_EMAIL
 
 Institution admin (optional)
+
 - ADMIN_USERNAME
 - ADMIN_PASSWORD
 - ADMIN_EMAIL
 
 How to run (PowerShell)
+
 1. Start a local test Postgres (or ensure you have a DB for testing).
 2. Export env vars and run the Flyway migrate goal from the repository root:
 
@@ -59,6 +64,7 @@ mvn -DskipTests org.flywaydb:flyway-maven-plugin:9.16.0:migrate -Dflyway.url=%FL
 ```
 
 What to expect
+
 - Flyway will run migrations (including the Java migration V4). The migration prints informational messages to stdout about skipped/created accounts.
 - If you need to re-run the bootstrap, delete the test DB or use a fresh database; the migration is idempotent (it checks for existing records before insert) but running in production requires caution.
 
