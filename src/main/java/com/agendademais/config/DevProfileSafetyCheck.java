@@ -59,11 +59,14 @@ public class DevProfileSafetyCheck {
         }
 
         if (!misconfigured) {
-            log.info("No dev flags detected, but application is running without the 'dev' profile (active profiles: {}).", (Object) active);
+            log.info(
+                    "No dev flags detected, but application is running without the 'dev' profile (active profiles: {}).",
+                    (Object) active);
         }
 
         if (misconfigured && failOnMisconfig) {
-            throw new IllegalStateException("Dev-only configuration flags are active while not running with the 'dev' profile. Aborting startup because app.dev.failOnMisconfig=true");
+            throw new IllegalStateException(
+                    "Dev-only configuration flags are active while not running with the 'dev' profile. Aborting startup because app.dev.failOnMisconfig=true");
         }
     }
 }

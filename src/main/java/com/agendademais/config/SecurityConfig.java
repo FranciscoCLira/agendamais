@@ -16,7 +16,8 @@ public class SecurityConfig {
 	/**
 	 * Development-only SecurityFilterChain for the H2 console.
 	 *
-	 * <p>This filter chain is intentionally permissive: it disables CSRF,
+	 * <p>
+	 * This filter chain is intentionally permissive: it disables CSRF,
 	 * allows framing, and permits all requests under <code>/h2-console/**</code>.
 	 * It must only be active in the {@code dev} Spring profile. The bean is
 	 * protected with {@code @Profile("dev")} to avoid accidental exposure in

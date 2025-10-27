@@ -35,7 +35,7 @@ function Start-Container {
         if ($LASTEXITCODE -ne 0) { Write-Warning "docker rm exited with $LASTEXITCODE" }
     }
 
-    $runArgs = @('run','-d','--name',$containerName,'-e',"POSTGRES_USER=$pgUser",'-e',"POSTGRES_PASSWORD=$pgPassword",'-e',"POSTGRES_DB=$pgDb",'-p',"$($pgPort):5432",'postgres:13')
+    $runArgs = @('run', '-d', '--name', $containerName, '-e', "POSTGRES_USER=$pgUser", '-e', "POSTGRES_PASSWORD=$pgPassword", '-e', "POSTGRES_DB=$pgDb", '-p', "$($pgPort):5432", 'postgres:13')
     Write-Host "Running: docker.exe with arguments:" 
     $runArgs | ForEach-Object { Write-Host "  ARG: '$_'" }
     & docker.exe @runArgs

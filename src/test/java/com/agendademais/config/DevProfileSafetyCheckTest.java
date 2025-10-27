@@ -18,7 +18,8 @@ public class DevProfileSafetyCheckTest {
     @Test
     public void whenProdProfile_thenSafetyWarningsAreLogged(CapturedOutput output) {
         String logs = output.getOut() + output.getErr();
-        // The DevProfileSafetyCheck should log warnings about permissive security and reload-data when not running with 'dev'
+        // The DevProfileSafetyCheck should log warnings about permissive security and
+        // reload-data when not running with 'dev'
         org.assertj.core.api.Assertions.assertThat(logs)
                 .contains("Security is configured permissively (app.security.requireAdmin=false)")
                 .contains("app.reload-data=true is active while not running with the 'dev' profile");
