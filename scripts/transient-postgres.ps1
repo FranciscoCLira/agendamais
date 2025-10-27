@@ -68,8 +68,9 @@ function Run-Flyway-Migrate {
         Write-Host "SUPER_USERNAME not set; skipping superuser creation unless you set SUPER_USERNAME/SUPER_PASSWORD/SUPER_EMAIL in the environment"
     }
 
-    # Invoke the flyway maven plugin. The plugin is configured in pom.xml and includes the PostgreSQL JDBC driver
-    $args = @("org.flywaydb:flyway-maven-plugin:10.10.0:migrate", "-DskipTests", "-Dflyway.url=$($env:SPRING_DATASOURCE_URL)", "-Dflyway.user=$($env:SPRING_DATASOURCE_USERNAME)", "-Dflyway.password=$($env:SPRING_DATASOURCE_PASSWORD)", "-Dflyway.locations=classpath:db/migration")
+    # Invoke the Flyway plugin configured in the project's POM so plugin-level dependencies (JDBC driver) are available.
+    # Use the plugin prefix (flyway:migrate) which will run the version/config declared in pom.xml.
+    $args = @("-DskipTests", "flyway:migrate", "-Dflyway.url=$($env:SPRING_DATASOURCE_URL)", "-Dflyway.user=$($env:SPRING_DATASOURCE_USERNAME)", "-Dflyway.password=$($env:SPRING_DATASOURCE_PASSWORD)", "-Dflyway.locations=classpath:db/migration")
     Write-Host ("mvn " + ($args -join " "))
     $proc = Start-Process -FilePath "mvn" -ArgumentList $args -NoNewWindow -Wait -PassThru
     if ($proc.ExitCode -ne 0) { throw "Flyway migrate failed (exit $($proc.ExitCode))" }
