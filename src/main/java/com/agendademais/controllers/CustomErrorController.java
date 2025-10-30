@@ -1,14 +1,23 @@
 package com.agendademais.controllers;
 
 import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class CustomErrorController implements ErrorController {
+
+    private final Environment env;
+
+    public CustomErrorController(Environment env) {
+        this.env = env;
+    }
 
     @RequestMapping("/error")
     public String handleError(HttpServletRequest request, Model model) {
@@ -103,7 +112,8 @@ public class CustomErrorController implements ErrorController {
                 errorDetails += "Tipo: " + exception.getClass().getSimpleName() + "\n";
             }
 
-            if (statusCode == 404) {
+            try {
+                if (statusCode == 404) {
                 errorTitle = "Página não encontrada (404)";
                 errorDescription = "A página que você está procurando não existe ou foi removida.";
                 model.addAttribute("homeLink", "/acesso");
@@ -112,8 +122,9 @@ public class CustomErrorController implements ErrorController {
                 model.addAttribute("errorTitle", errorTitle);
                 model.addAttribute("errorMessage", errorDescription);
                 model.addAttribute("errorDetails", errorDetails);
-                return "error/404";
-            } else if (statusCode == 500) {
+                model.addAttribute("showH2Console", env.acceptsProfiles(Profiles.of("dev")));
+                    return "error/404";
+                } else if (statusCode == 500) {
                 errorTitle = "Erro interno do servidor (500)";
                 errorDescription = "Ocorreu um erro interno no servidor. Tente novamente em alguns minutos.";
 
@@ -146,8 +157,9 @@ public class CustomErrorController implements ErrorController {
                 model.addAttribute("errorTitle", errorTitle);
                 model.addAttribute("errorMessage", errorDescription);
                 model.addAttribute("errorDetails", errorDetails);
-                return "error/500";
-            } else if (statusCode == 403) {
+                model.addAttribute("showH2Console", env.acceptsProfiles(Profiles.of("dev")));
+                    return "error/500";
+                } else if (statusCode == 403) {
                 // Se for tentativa de exclusão GET de atividade, redireciona para lista com
                 // mensagem amigável
                 if (requestUri != null && requestUri.toString().contains("/atividades/deletar/")) {
@@ -161,8 +173,9 @@ public class CustomErrorController implements ErrorController {
                 model.addAttribute("errorTitle", errorTitle);
                 model.addAttribute("errorMessage", errorDescription);
                 model.addAttribute("errorDetails", errorDetails);
-                return "acesso-negado";
-            } else {
+                model.addAttribute("showH2Console", env.acceptsProfiles(Profiles.of("dev")));
+                    return "acesso-negado";
+                } else {
                 // Outros códigos de erro
                 errorTitle = "Erro " + statusCode;
                 errorDescription = "Ocorreu um erro HTTP " + statusCode + ".";
@@ -182,15 +195,43 @@ public class CustomErrorController implements ErrorController {
                         errorDescription = "Tipo de mídia não suportado (415).";
                         break;
                 }
+                }
+                } catch (NoResourceFoundException nrfe) {
+                    // If rendering the error page tries to reference a missing static resource
+                    // (for example /h2-console when not present), swallow and return a safe
+                    // generic error page so /error won't itself throw. Also log the active
+                    // profiles for easier debugging.
+                    System.err.println("CustomErrorController: caught NoResourceFoundException while building error view: " + nrfe.getMessage());
+                    System.err.println("Active profiles: " + String.join(",", env.getActiveProfiles()));
+                    model.addAttribute("errorCode", errorCode);
+                    model.addAttribute("errorTitle", errorTitle);
+                    model.addAttribute("errorMessage", "Erro ao renderizar a página de erro. Consulte os logs.");
+                    model.addAttribute("homeLink", "/acesso");
+                    model.addAttribute("homeLinkText", "Voltar ao Login");
+                    model.addAttribute("showH2Console", false);
+                    return "error/generic";
+                } catch (Exception renderEx) {
+                // Last-resort protection: if anything unexpected happens while preparing
+                // the error view, return a minimal generic error page to avoid recursive failures.
+                System.err.println("CustomErrorController: unexpected exception while building error view: ");
+                renderEx.printStackTrace();
+                model.addAttribute("errorCode", errorCode);
+                model.addAttribute("errorTitle", "Erro interno do servidor (500)");
+                model.addAttribute("errorMessage", "Erro ao renderizar a página de erro. Consulte os logs.");
+                model.addAttribute("homeLink", "/acesso");
+                model.addAttribute("homeLinkText", "Voltar ao Login");
+                model.addAttribute("showH2Console", false);
+                return "error/generic";
             }
         }
 
-        model.addAttribute("errorCode", errorCode);
-        model.addAttribute("errorTitle", errorTitle);
-        model.addAttribute("errorMessage", errorDescription);
-        model.addAttribute("errorDetails", errorDetails);
-        model.addAttribute("homeLink", "/acesso");
-        model.addAttribute("homeLinkText", "Voltar ao Login");
+    model.addAttribute("errorCode", errorCode);
+    model.addAttribute("errorTitle", errorTitle);
+    model.addAttribute("errorMessage", errorDescription);
+    model.addAttribute("errorDetails", errorDetails);
+    model.addAttribute("homeLink", "/acesso");
+    model.addAttribute("homeLinkText", "Voltar ao Login");
+    model.addAttribute("showH2Console", env.acceptsProfiles(Profiles.of("dev")));
 
         // Debug - imprimir valores finais
         System.out.println("*** VALORES FINAIS ENVIADOS AO TEMPLATE ***");
