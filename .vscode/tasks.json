@@ -1,4 +1,33 @@
 {
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "maven:test-single",
+      "type": "shell",
+      "command": "mvn",
+      "args": [
+        "-Dtest=${input:testClass}",
+        "test"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testClass",
+      "type": "promptString",
+      "description": "Test class to run (SimpleStartupTest or com.agendademais.test.SimpleStartupTest)",
+      "default": "SimpleStartupTest"
+    }
+  ]
+}
+{
 	"version": "2.0.0",
 	"tasks": [
 		{

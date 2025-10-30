@@ -23,11 +23,25 @@ public class InstituicaoService {
     @Autowired
     private InstituicaoRepository instituicaoRepository;
 
+    @Autowired
+    private CryptoService cryptoService;
+
     public Optional<Instituicao> findById(Long id) {
         return instituicaoRepository.findById(id);
     }
 
     public Instituicao save(Instituicao instituicao) {
+        // Encrypt smtp password if present and not already encrypted
+        if (instituicao.getSmtpPassword() != null && !instituicao.getSmtpPassword().isBlank()) {
+            String pwd = instituicao.getSmtpPassword();
+            try {
+                String encrypted = cryptoService.encryptIfNeeded(pwd);
+                instituicao.setSmtpPassword(encrypted);
+            } catch (Exception e) {
+                // fallback: keep original
+                instituicao.setSmtpPassword(pwd);
+            }
+        }
         return instituicaoRepository.save(instituicao);
     }
 
