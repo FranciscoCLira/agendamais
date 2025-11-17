@@ -37,6 +37,9 @@ public class LocalAdminController {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Autowired
+    private com.agendademais.services.LocalService localService;
+
     /**
      * Interceptador para verificar nível de acesso
      * Apenas usuários SuperUsuário (nível 9) no contexto de Controle Total podem
@@ -682,6 +685,56 @@ public class LocalAdminController {
 
         return "admin/locais/relacao-pessoas";
     }
+
+    /**
+     * Excluir um local de forma segura (somente se não houver pessoas referenciando-o).
+     * Recebe POST para garantir intenção (não permite excluir via GET).
+     */
+    @PostMapping("/deletar/{id}")
+    public String deletarLocal(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAcessoControleTotal(session, redirectAttributes)) {
+            if (ehSuperUsuario(session)) {
+                return "redirect:/superusuario";
+            }
+            return "redirect:/acesso";
+        }
+
+        Optional<Local> localOpt = localRepository.findById(id);
+        if (localOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Local não encontrado.");
+            return "redirect:/gestao/locais";
+        }
+
+        Local local = localOpt.get();
+
+        boolean deleted = localService.safeDeleteById(id);
+        if (deleted) {
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Local '" + local.getNomeLocal() + "' removido com sucesso.");
+        } else {
+            // Calcular contagens para informar o motivo da recusa
+            long paisRefs = pessoaRepository.countByPais(local);
+            long estadoRefs = pessoaRepository.countByEstado(local);
+            long cidadeRefs = pessoaRepository.countByCidade(local);
+            long total = paisRefs + estadoRefs + cidadeRefs;
+
+            if (total > 0) {
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Não foi possível excluir o local porque existem " + total + " pessoa(s) referenciando-o (pais:" + paisRefs + ", estado:" + estadoRefs + ", cidade:" + cidadeRefs + ").");
+            } else {
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Não foi possível excluir o local. Contate o administrador.");
+            }
+        }
+
+        return "redirect:/gestao/locais";
+    }
+
+    
 
     // ...existing code...
 

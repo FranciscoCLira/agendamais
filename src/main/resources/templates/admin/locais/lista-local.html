@@ -385,6 +385,10 @@
                   th:text="${#temporals.format(local.dataUltimaAtualizacao, 'dd/MM/yyyy')}"
                 ></td>
                 <td class="action-buttons">
+                  <form th:action="@{/gestao/locais/deletar/{id}(id=${local.id})}" method="post" style="display:inline" onsubmit="return confirm('Confirma exclusão do local ' + /*[[${local.nomeLocal}]]*/ '')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" title="Excluir local" class="btn-delete">🗑️ Excluir</button>
+                  </form>
                   <a
                     th:href="@{/gestao/locais/editar/{id}(id=${local.id})}"
                     class="btn-edit"

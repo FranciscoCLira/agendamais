@@ -26,7 +26,7 @@ public class SecurityConfig {
 	 */
 
 	@Bean
-	@Profile("dev")
+	@Profile({"dev", "prod-local"})
 	@Order(0)
 	public SecurityFilterChain h2ConsoleSecurity(HttpSecurity http) throws Exception {
 		// Dedicated chain for H2 console: allow everything and disable CSRF/frames.
@@ -38,7 +38,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	@Profile("dev")
+	@Profile({"dev", "prod-local"})
 	/**
 	 * Development-only WebSecurityCustomizer to completely bypass Spring Security
 	 * for H2 console static resources. This prevents the main filter chain from
@@ -48,7 +48,8 @@ public class SecurityConfig {
 	 * production.
 	 */
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		// Completely bypass Spring Security for H2 console resources
+		// Completely bypass Spring Security for H2 console resources in local
+		// developer profiles (dev and prod-local only).
 		return (web) -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
 	}
 

@@ -35,10 +35,10 @@ function Start-Container {
         if ($LASTEXITCODE -ne 0) { Write-Warning "docker rm exited with $LASTEXITCODE" }
     }
 
-        # Use a Postgres image version compatible with the Flyway version used by the project.
-        # Try an older Postgres minor version if newer images cause Flyway 'Unsupported Database' errors.
-        $postgresImage = "postgres:11"
-        $runArgs = @('run', '-d', '--name', $containerName, '-e', "POSTGRES_USER=$pgUser", '-e', "POSTGRES_PASSWORD=$pgPassword", '-e', "POSTGRES_DB=$pgDb", '-p', "$($pgPort):5432", $postgresImage)
+    # Use a Postgres image version compatible with the Flyway version used by the project.
+    # Try an older Postgres minor version if newer images cause Flyway 'Unsupported Database' errors.
+    $postgresImage = "postgres:11"
+    $runArgs = @('run', '-d', '--name', $containerName, '-e', "POSTGRES_USER=$pgUser", '-e', "POSTGRES_PASSWORD=$pgPassword", '-e', "POSTGRES_DB=$pgDb", '-p', "$($pgPort):5432", $postgresImage)
     Write-Host "Running: docker.exe with arguments:" 
     $runArgs | ForEach-Object { Write-Host "  ARG: '$_'" }
     & docker.exe @runArgs
@@ -78,7 +78,8 @@ function Run-Flyway-Migrate {
     try {
         $proc = Start-Process -FilePath "mvn" -ArgumentList $args -NoNewWindow -Wait -PassThru
         if ($proc.ExitCode -ne 0) { throw "Flyway migrate failed (exit $($proc.ExitCode))" }
-    } catch {
+    }
+    catch {
         Write-Host "Flyway migrate via Maven failed: $_"
         Write-Host "Falling back to running the packaged application JAR so Spring Boot can run Flyway at startup."
 

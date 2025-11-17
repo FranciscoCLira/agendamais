@@ -24,4 +24,9 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
 	List<Pessoa> findByCidade(Local cidade);
 
+	// Counts to allow safe deletion checks without loading full lists
+	long countByPais(Local pais);
+	long countByEstado(Local estado);
+	long countByCidade(Local cidade);
+
 }

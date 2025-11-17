@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: agendamais-db
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer:latest
+    container_name: agendamais-adminer
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
+
+volumes:
+  db-data:

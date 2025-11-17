@@ -196,25 +196,20 @@ public class CustomErrorController implements ErrorController {
                         break;
                 }
                 }
-                } catch (NoResourceFoundException nrfe) {
+                } catch (Exception renderEx) {
+                // Last-resort protection: if anything unexpected happens while preparing
+                // the error view, return a minimal generic error page to avoid recursive failures.
+                if (renderEx instanceof NoResourceFoundException) {
                     // If rendering the error page tries to reference a missing static resource
                     // (for example /h2-console when not present), swallow and return a safe
                     // generic error page so /error won't itself throw. Also log the active
                     // profiles for easier debugging.
-                    System.err.println("CustomErrorController: caught NoResourceFoundException while building error view: " + nrfe.getMessage());
+                    System.err.println("CustomErrorController: caught NoResourceFoundException while building error view: " + renderEx.getMessage());
                     System.err.println("Active profiles: " + String.join(",", env.getActiveProfiles()));
-                    model.addAttribute("errorCode", errorCode);
-                    model.addAttribute("errorTitle", errorTitle);
-                    model.addAttribute("errorMessage", "Erro ao renderizar a página de erro. Consulte os logs.");
-                    model.addAttribute("homeLink", "/acesso");
-                    model.addAttribute("homeLinkText", "Voltar ao Login");
-                    model.addAttribute("showH2Console", false);
-                    return "error/generic";
-                } catch (Exception renderEx) {
-                // Last-resort protection: if anything unexpected happens while preparing
-                // the error view, return a minimal generic error page to avoid recursive failures.
-                System.err.println("CustomErrorController: unexpected exception while building error view: ");
-                renderEx.printStackTrace();
+                } else {
+                    System.err.println("CustomErrorController: unexpected exception while building error view: ");
+                    renderEx.printStackTrace();
+                }
                 model.addAttribute("errorCode", errorCode);
                 model.addAttribute("errorTitle", "Erro interno do servidor (500)");
                 model.addAttribute("errorMessage", "Erro ao renderizar a página de erro. Consulte os logs.");

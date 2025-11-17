@@ -116,6 +116,13 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>11.15.0</version>
+        </dependency>
+        <!-- Flyway PostgreSQL database support -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>11.15.0</version>
         </dependency>
         <!-- PostgreSQL JDBC driver for running against Postgres in dev/staging -->
         <dependency>
@@ -186,7 +193,7 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>10.10.0</version>
+                <version>11.15.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.postgresql</groupId>

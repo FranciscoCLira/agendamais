@@ -1,5 +1,5 @@
-# Run packaged jar in 'prod' profile using in-memory H2 (for local demo only)
-$env:SPRING_DATASOURCE_URL = 'jdbc:h2:mem:agendadb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL'
+$script:note = 'Run packaged jar in "prod" profile using file-backed H2 (for local demo with persistent DB files)'
+$env:SPRING_DATASOURCE_URL = 'jdbc:h2:file:./data/agendadb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL'
 $env:SPRING_DATASOURCE_USERNAME = 'sa'
 $env:SPRING_DATASOURCE_PASSWORD = ''
 $env:SPRING_DATASOURCE_DRIVER = 'org.h2.Driver'
@@ -13,4 +13,6 @@ if (-not (Test-Path $jar)) {
     exit 1
 }
 Write-Host "Running jar: $jar with SPRING_DATASOURCE_URL=$env:SPRING_DATASOURCE_URL"
-java -jar $jar --spring.profiles.active=prod
+# When running locally with H2 for a quick demo, disable Spring's SQL initialization
+# so embedded `schema.sql` (which may contain DDL assumes) doesn't run and fail.
+java -jar $jar --spring.profiles.active=prod --spring.sql.init.mode=never

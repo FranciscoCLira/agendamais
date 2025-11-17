@@ -1,3 +1,73 @@
+# Build output
+/target/
+
+# IDE and OS
+/.idea/
+.vscode/
+*.iml
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs and temp files
+*.log
+tmpjar/
+tmp.zip
+tmp_*.html
+
+# Local script libs (don't commit binary jars)
+/scripts/lib/*.jar
+
+# H2 DB files
+/data/*.mv.db
+/data/*.trace.db
+# Ignore build and runtime artifacts
+target/
+tmpjar/
+tmp*.zip
+tmp_*
+tmp_*.html
+app-*.log
+app-*.err
+logs/
+DB/
+*.mv.db
+*.trace.db
+scripts/lib/
+tmpzip/
+*.bak
+.idea/
+.classpath
+.project
+*.iml
+/.vscode/
+*.log
+# Maven/IDE
+/target/
+/.idea/
+.vscode/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary/extraction and logs created during debugging
+/tmpjar/
+/tmp.zip
+app-*.log
+app-*.err
+tmp_*
+
+# H2 DB files
+*.mv.db
+*.trace.db
+
+# scripts helper libraries
+/scripts/lib/
+
+# Backup and other local-only files
+/backup-tools/
 # Ignorar arquivos de banco H2 e diretório data
 data/
 *.mv.db

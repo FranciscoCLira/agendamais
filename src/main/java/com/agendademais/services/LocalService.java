@@ -2,6 +2,7 @@ package com.agendademais.services;
 
 import com.agendademais.entities.Local;
 import com.agendademais.repositories.LocalRepository;
+import com.agendademais.repositories.PessoaRepository;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -13,9 +14,54 @@ import java.util.Optional;
 @Service
 public class LocalService {
     private final LocalRepository localRepository;
+    private final PessoaRepository pessoaRepository;
     
-    public LocalService(LocalRepository localRepository) {
+    public LocalService(LocalRepository localRepository, PessoaRepository pessoaRepository) {
         this.localRepository = localRepository;
+        this.pessoaRepository = pessoaRepository;
+    }
+
+    /**
+     * Attempts to delete a Local by id only if there are no Pessoa referencing it
+     * (as pais, estado or cidade). Returns true when deleted, false when the
+     * Local doesn't exist or is referenced by Pessoa and therefore kept.
+     * This is a safe helper for admin/code paths that might otherwise remove
+     * locations and cause FK constraint violations.
+     */
+    public boolean safeDeleteById(Long id) {
+        if (id == null) return false;
+        Optional<com.agendademais.entities.Local> opt = localRepository.findById(id);
+        if (opt.isEmpty()) return false;
+        com.agendademais.entities.Local local = opt.get();
+
+        long refs = 0L;
+        refs += pessoaRepository.countByPais(local);
+        refs += pessoaRepository.countByEstado(local);
+        refs += pessoaRepository.countByCidade(local);
+
+        if (refs > 0) {
+            // referenced by Pessoa -> do not delete
+            return false;
+        }
+
+        localRepository.delete(local);
+        return true;
+    }
+
+    /**
+     * Returns the number of Pessoa references (pais+estado+cidade) for the Local with the given id.
+     * Returns -1 if the Local doesn't exist.
+     */
+    public long countReferencesById(Long id) {
+        if (id == null) return -1L;
+        Optional<com.agendademais.entities.Local> opt = localRepository.findById(id);
+        if (opt.isEmpty()) return -1L;
+        com.agendademais.entities.Local local = opt.get();
+        long refs = 0L;
+        refs += pessoaRepository.countByPais(local);
+        refs += pessoaRepository.countByEstado(local);
+        refs += pessoaRepository.countByCidade(local);
+        return refs;
     }
     
     public List<Local> listarPorTipoAndPai(int tipo, Long idPai) {

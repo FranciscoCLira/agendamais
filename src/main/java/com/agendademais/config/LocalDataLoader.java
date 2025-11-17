@@ -39,14 +39,16 @@ public class LocalDataLoader implements CommandLineRunner {
                                 "*** /config/LocalDataLoader.java: Carregando a Tabela Local (Paises, Estados, Cidades).");
                 System.out.println("*** ");
 
-                // Se a flag reloadData estiver ativa, mantenha o comportamento antigo (apaga e
-                // recarrega).
+                // If reloadData is requested, prefer a safe idempotent reload instead of
+                // deleting the entire Local table. Deleting all rows can fail when other
+                // entities (for example Pessoa) reference Local via foreign keys. To avoid
+                // Referential Integrity violations during startup, we perform the same
+                // idempotent creation logic but still log the intent to reload.
                 if (reloadData) {
                         System.out.println(
-                                        "*** LocalDataLoader: reloadData=true, limpando tabela Local e recarregando.");
-                        localRepository.deleteAll();
-                        // após deleteAll, recarregar conforme o comportamento anterior
-                        loadAllInitialData();
+                                        "*** LocalDataLoader: reloadData=true, performing idempotent reload (delete skipped to avoid FK violations).");
+                        // Perform idempotent create-or-update rather than destructive deleteAll
+                        loadAllInitialDataIdempotent();
                 } else {
                         // Modo idempotente: cria apenas os registros que não existirem
                         System.out.println(

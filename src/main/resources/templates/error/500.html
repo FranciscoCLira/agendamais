@@ -262,6 +262,9 @@
                     <a th:href="${homeLink ?: '/acesso'}" class="btn-home">
                         <i class="fas fa-home"></i> <span th:text="${homeLinkText ?: 'Página Inicial'}">Página Inicial</span>
                     </a>
+                    <a th:if="${showH2Console}" th:href="@{/h2-console}" class="btn-home" style="background: linear-gradient(45deg, #6f42c1, #6610f2);">
+                        <i class="fas fa-database"></i> H2 Console
+                    </a>
                 </div>
             </div>
         </div>
