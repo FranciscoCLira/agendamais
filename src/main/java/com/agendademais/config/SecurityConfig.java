@@ -26,7 +26,7 @@ public class SecurityConfig {
 	 */
 
 	@Bean
-	@Profile({"dev", "prod-local"})
+	@Profile({ "dev", "prod-local" })
 	@Order(0)
 	public SecurityFilterChain h2ConsoleSecurity(HttpSecurity http) throws Exception {
 		// Dedicated chain for H2 console: allow everything and disable CSRF/frames.
@@ -38,7 +38,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	@Profile({"dev", "prod-local"})
+	@Profile({ "dev", "prod-local" })
 	/**
 	 * Development-only WebSecurityCustomizer to completely bypass Spring Security
 	 * for H2 console static resources. This prevents the main filter chain from
@@ -70,8 +70,11 @@ public class SecurityConfig {
 					.permitAll()
 					.requestMatchers("/admin/**").hasRole("ADMIN")
 					.anyRequest().permitAll());
-			// In secure mode, enable form login and keep CSRF enabled (best practice)
+			// In secure mode, enable form login but disable CSRF for API endpoints
 			http.formLogin();
+			// Disable CSRF for API endpoints to allow JSON POST/PUT/DELETE from JavaScript
+			http.csrf(csrf -> csrf
+					.ignoringRequestMatchers("/api/**"));
 
 		} else {
 			http.authorizeHttpRequests(auth -> auth

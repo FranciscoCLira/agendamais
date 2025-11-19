@@ -10,7 +10,7 @@
 ## 🔑 Login Credentials
 
 | Username | Password   | Role          |
-|----------|------------|---------------|
+| -------- | ---------- | ------------- |
 | `superu` | `superu1$` | Super User    |
 | `admin1` | `admin1$`  | Administrator |
 | `autor1` | `autor1$`  | Author        |
@@ -22,13 +22,14 @@
 - **Port**: 5432
 - **Username**: agenda
 - **Password**: agenda
-- **Databases**: 
+- **Databases**:
   - `agendadb_dev` (Dev)
   - `agendadb_prod` (Prod)
 
 ## 💤 Windows Suspend Mode
 
 **✅ Recommended: Leave everything running**
+
 - Docker and Java apps will automatically resume when Windows wakes up
 - No action needed before suspending Windows
 
@@ -103,6 +104,7 @@ Get-Process java
 ## 📚 Full Documentation
 
 See `README-docker.md` for complete instructions including:
+
 - First-time setup
 - Troubleshooting
 - Clean restart procedures

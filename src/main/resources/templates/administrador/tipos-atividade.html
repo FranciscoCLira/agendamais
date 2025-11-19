@@ -177,15 +177,34 @@
           method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(tipo),
-        }).then((r) => {
-          if (r.ok) {
-            exibirMensagem("Tipo salvo com sucesso!");
-            formContainer.classList.add("hidden");
-            carregarTipos();
-          } else {
-            exibirMensagem("Erro ao salvar tipo.", false);
-          }
-        });
+        })
+          .then((r) => {
+            if (r.ok) {
+              return r.json().then(() => {
+                exibirMensagem("Tipo salvo com sucesso!");
+                formContainer.classList.add("hidden");
+                carregarTipos();
+              });
+            } else {
+              return r.text().then((errorText) => {
+                console.error("Erro HTTP " + r.status + ": " + errorText);
+                exibirMensagem(
+                  "Erro ao salvar tipo. Status: " +
+                    r.status +
+                    " - " +
+                    (errorText || r.statusText),
+                  false
+                );
+              });
+            }
+          })
+          .catch((err) => {
+            console.error("Erro de rede:", err);
+            exibirMensagem(
+              "Erro de rede ao salvar tipo: " + err.message,
+              false
+            );
+          });
       };
 
       // Carregar lista ao abrir

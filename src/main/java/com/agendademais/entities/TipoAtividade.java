@@ -3,6 +3,8 @@ package com.agendademais.entities;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -17,11 +19,12 @@ public class TipoAtividade {
 
     @ManyToOne
     @JoinColumn(name = "instituicao_id", nullable = false)
+    @JsonIgnoreProperties({ "tiposAtividade", "subInstituicoes", "pessoas", "hibernateLazyInitializer", "handler" })
     private Instituicao instituicao;
-    
-    @OneToMany(mappedBy = "tipoAtividade")
-    private Set<InscricaoTipoAtividade> inscricoes = new HashSet<>();
 
+    @OneToMany(mappedBy = "tipoAtividade")
+    @JsonIgnoreProperties({ "tipoAtividade", "atividade", "pessoa", "hibernateLazyInitializer", "handler" })
+    private Set<InscricaoTipoAtividade> inscricoes = new HashSet<>();
 
     // GETTERS AND SETTERS
 
