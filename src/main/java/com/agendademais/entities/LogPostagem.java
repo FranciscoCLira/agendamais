@@ -21,7 +21,7 @@ public class LogPostagem {
 	private String assuntoDivulgacao;
 
 	// Detalhe da divulgação (de OcorrenciaAtividade)
-	@Lob
+	@Column(columnDefinition = "TEXT")
 	private String textoDetalheDivulgacao;
 
 	// Autor (id)
@@ -34,7 +34,7 @@ public class LogPostagem {
 	private Integer qtFalhas;
 
 	// Mensagem de log (e-mails com falha, mensagens pertinentes)
-	@Lob
+	@Column(columnDefinition = "TEXT")
 	private String mensagemLogPostagem;
 
 	// GETTERS AND SETTERS
