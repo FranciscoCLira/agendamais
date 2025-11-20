@@ -38,6 +38,14 @@ public class ControleTotalInstituicaoController {
 
     @PostMapping("/salvar")
     public String salvarInstituicao(@ModelAttribute Instituicao instituicao, RedirectAttributes redirectAttributes) {
+        // If editing existing institution, preserve password if field is blank
+        if (instituicao.getId() != null) {
+            Instituicao existing = instituicaoService.findById(instituicao.getId()).orElse(null);
+            if (existing != null && (instituicao.getSmtpPassword() == null || instituicao.getSmtpPassword().trim().isEmpty())) {
+                // Keep existing password if field is blank
+                instituicao.setSmtpPassword(existing.getSmtpPassword());
+            }
+        }
         instituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
         instituicaoService.save(instituicao);
         redirectAttributes.addFlashAttribute("success", "Instituição salva com sucesso.");

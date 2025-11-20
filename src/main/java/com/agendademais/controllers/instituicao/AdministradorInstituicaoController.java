@@ -52,7 +52,10 @@ public class AdministradorInstituicaoController {
         inst.setSmtpHost(instituicao.getSmtpHost());
         inst.setSmtpPort(instituicao.getSmtpPort());
         inst.setSmtpUsername(instituicao.getSmtpUsername());
-        inst.setSmtpPassword(instituicao.getSmtpPassword());
+        // Only update password if not blank (empty means "keep existing")
+        if (instituicao.getSmtpPassword() != null && !instituicao.getSmtpPassword().trim().isEmpty()) {
+            inst.setSmtpPassword(instituicao.getSmtpPassword());
+        }
         inst.setSmtpSsl(instituicao.getSmtpSsl());
         inst.setDataUltimaAtualizacao(java.time.LocalDate.now());
         // Save using the service/repository

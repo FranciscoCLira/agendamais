@@ -27,6 +27,7 @@
         th:action="@{/administrador/instituicao/editar}"
         th:object="${instituicao}"
         method="post"
+        onsubmit="return confirmPasswordClear()"
       >
         <input type="hidden" th:field="*{id}" />
         <div class="mb-3" style="width: 60%">
@@ -144,7 +145,7 @@
                     class="form-control"
                     id="smtpPassword"
                     th:field="*{smtpPassword}"
-                    th:placeholder="${instituicao.smtpPassword != null and instituicao.smtpPassword != ''} ? '****** (Senha configurada)' : 'Senha ou App Password'"
+                    th:placeholder="${instituicao.smtpPassword != null ? '****** (Senha configurada)' : 'Senha ou App Password'}"
                     th:disabled="${instituicao.situacaoInstituicao == 'I'}"
                   />
                   <button
@@ -241,6 +242,22 @@
           smtpUsername.readOnly = false;
           smtpUsername.focus();
         }
+      }
+
+      function confirmPasswordClear() {
+        const passwordField = document.getElementById("smtpPassword");
+        const hasExistingPassword = passwordField.placeholder.includes("configurada");
+        const isPasswordEmpty = !passwordField.value || passwordField.value.trim() === "";
+
+        // If there's an existing password and user left field empty, confirm
+        if (hasExistingPassword && isPasswordEmpty) {
+          return confirm(
+            "Aten\u00e7\u00e3o: O campo 'Senha SMTP' est\u00e1 vazio.\n\n" +
+            "Deixar vazio = manter senha atual configurada\n" +
+            "Deseja continuar?"
+          );
+        }
+        return true;
       }
 
       // Sync email when institution email changes
