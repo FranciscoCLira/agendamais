@@ -315,12 +315,20 @@ public class DisparoEmailService {
 
     // Helper to build JavaMailSenderImpl for a given institution
     private JavaMailSender buildSenderForInstitution(com.agendademais.entities.Instituicao inst) {
+        System.err.println("[DisparoEmail] Building sender for institution: " + inst.getNomeInstituicao());
+        System.err.println("[DisparoEmail] SMTP Host: " + inst.getSmtpHost());
+        System.err.println("[DisparoEmail] SMTP Port: " + inst.getSmtpPort());
+        System.err.println("[DisparoEmail] SMTP Username: " + inst.getSmtpUsername());
+        System.err.println("[DisparoEmail] SMTP Password length: " + (inst.getSmtpPassword() != null ? inst.getSmtpPassword().length() : "NULL"));
+        System.err.println("[DisparoEmail] SMTP SSL: " + inst.getSmtpSsl());
+        
         JavaMailSenderImpl instSender = new JavaMailSenderImpl();
         instSender.setHost(inst.getSmtpHost());
         if (inst.getSmtpPort() != null)
             instSender.setPort(inst.getSmtpPort());
         instSender.setUsername(inst.getSmtpUsername());
         String decrypted = cryptoService.decryptIfNeeded(inst.getSmtpPassword());
+        System.err.println("[DisparoEmail] Decrypted password length: " + (decrypted != null ? decrypted.length() : "NULL"));
         instSender.setPassword(decrypted);
         Properties props = instSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
