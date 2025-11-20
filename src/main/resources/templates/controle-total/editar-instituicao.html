@@ -223,7 +223,7 @@
                     type="password"
                     id="smtpPassword"
                     th:field="*{smtpPassword}"
-                    placeholder="Senha ou App Password"
+                    th:placeholder="${instituicao.smtpPassword != null and instituicao.smtpPassword != ''} ? '****** (Senha configurada)' : 'Senha ou App Password'"
                     style="
                       flex: 1;
                       padding: 8px;
