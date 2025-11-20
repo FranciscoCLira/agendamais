@@ -48,6 +48,12 @@ public class AdministradorInstituicaoController {
         // Update only allowed fields
         inst.setEmailInstituicao(instituicao.getEmailInstituicao());
         inst.setSituacaoInstituicao(instituicao.getSituacaoInstituicao());
+        // Update SMTP configuration fields
+        inst.setSmtpHost(instituicao.getSmtpHost());
+        inst.setSmtpPort(instituicao.getSmtpPort());
+        inst.setSmtpUsername(instituicao.getSmtpUsername());
+        inst.setSmtpPassword(instituicao.getSmtpPassword());
+        inst.setSmtpSsl(instituicao.getSmtpSsl());
         inst.setDataUltimaAtualizacao(java.time.LocalDate.now());
         // Save using the service/repository
         instituicaoService.save(inst);

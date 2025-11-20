@@ -50,6 +50,152 @@
             <option value="B">Bloqueada</option>
           </select>
         </div>
+
+        <!-- SMTP Configuration Section -->
+        <div class="card mb-3">
+          <div
+            class="card-header bg-light"
+            style="cursor: pointer"
+            data-bs-toggle="collapse"
+            data-bs-target="#smtpConfig"
+          >
+            <i class="bi bi-envelope"></i> Configuração SMTP (Opcional - para
+            envio de e-mails)
+          </div>
+          <div id="smtpConfig" class="collapse">
+            <div class="card-body">
+              <div class="alert alert-info small">
+                <strong>Configuração de servidor de e-mail:</strong> Configure
+                estas opções para enviar e-mails usando o servidor SMTP desta
+                instituição. Deixe em branco para usar as configurações
+                padrão do sistema.
+                <br />
+                <strong>Dica:</strong> Porta 587 = STARTTLS (recomendado para
+                Gmail) | Porta 465 = SSL/TLS
+              </div>
+
+              <div class="row">
+                <div class="col-md-8 mb-3">
+                  <label for="smtpHost" class="form-label"
+                    >Servidor SMTP (Host)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="smtpHost"
+                    th:field="*{smtpHost}"
+                    placeholder="Ex: smtp.gmail.com"
+                    th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+                  />
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="smtpPort" class="form-label">Porta</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="smtpPort"
+                    th:field="*{smtpPort}"
+                    placeholder="587"
+                    min="1"
+                    max="65535"
+                    th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+                  />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="smtpUsername" class="form-label"
+                  >Usuário SMTP</label
+                >
+                <div class="form-check mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="useSameEmail"
+                    onchange="toggleSmtpUsername()"
+                    checked
+                  />
+                  <label class="form-check-label" for="useSameEmail">
+                    Usar o mesmo e-mail da instituição
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="smtpUsername"
+                  th:field="*{smtpUsername}"
+                  placeholder="Ex: seu-email@gmail.com"
+                  th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+                  readonly
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="smtpPassword" class="form-label"
+                  >Senha SMTP</label
+                >
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="smtpPassword"
+                    th:field="*{smtpPassword}"
+                    placeholder="Senha ou App Password"
+                    th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    onclick="togglePasswordVisibility('smtpPassword')"
+                  >
+                    <i class="bi bi-eye" id="smtpPassword-icon"></i>
+                  </button>
+                </div>
+                <div class="form-text">
+                  Para Gmail, use um
+                  <a
+                    href="https://myaccount.google.com/apppasswords"
+                    target="_blank"
+                    >App Password</a
+                  >
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Tipo de Conexão</label>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="smtpSsl"
+                    id="smtpSslFalse"
+                    th:field="*{smtpSsl}"
+                    value="false"
+                    th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+                  />
+                  <label class="form-check-label" for="smtpSslFalse">
+                    STARTTLS (Porta 587 - Recomendado)
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="smtpSsl"
+                    id="smtpSslTrue"
+                    th:field="*{smtpSsl}"
+                    value="true"
+                    th:disabled="${instituicao.situacaoInstituicao == 'I'}"
+                  />
+                  <label class="form-check-label" for="smtpSslTrue">
+                    SSL/TLS (Porta 465)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="d-flex gap-2">
           <button
             type="submit"
@@ -62,5 +208,57 @@
         </div>
       </form>
     </div>
+
+    <script>
+      function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + "-icon");
+        if (field.type === "password") {
+          field.type = "text";
+          icon.classList.remove("bi-eye");
+          icon.classList.add("bi-eye-slash");
+        } else {
+          field.type = "password";
+          icon.classList.remove("bi-eye-slash");
+          icon.classList.add("bi-eye");
+        }
+      }
+
+      function toggleSmtpUsername() {
+        const checkbox = document.getElementById("useSameEmail");
+        const smtpUsername = document.getElementById("smtpUsername");
+        const emailInstituicao = document.getElementById("emailInstituicao");
+
+        if (checkbox.checked) {
+          smtpUsername.value = emailInstituicao.value;
+          smtpUsername.readOnly = true;
+        } else {
+          smtpUsername.readOnly = false;
+          smtpUsername.focus();
+        }
+      }
+
+      // Sync email when institution email changes
+      document.addEventListener("DOMContentLoaded", function () {
+        const emailInstituicao = document.getElementById("emailInstituicao");
+        const smtpUsername = document.getElementById("smtpUsername");
+        const checkbox = document.getElementById("useSameEmail");
+
+        // Initialize: if both emails are the same, check the box
+        if (emailInstituicao.value && smtpUsername.value === emailInstituicao.value) {
+          checkbox.checked = true;
+          smtpUsername.readOnly = true;
+        } else if (smtpUsername.value) {
+          checkbox.checked = false;
+          smtpUsername.readOnly = false;
+        }
+
+        emailInstituicao.addEventListener("input", function () {
+          if (checkbox.checked) {
+            smtpUsername.value = emailInstituicao.value;
+          }
+        });
+      });
+    </script>
   </body>
 </html>
