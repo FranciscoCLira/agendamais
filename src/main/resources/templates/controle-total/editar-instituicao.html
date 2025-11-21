@@ -117,9 +117,7 @@
               onclick="document.getElementById('smtpConfig').classList.toggle('hidden')"
             >
               <i class="fas fa-envelope"></i>
-              <span
-                >Configuração SMTP (Opcional - para envio de e-mails)</span
-              >
+              <span>Configuração SMTP (Opcional - para envio de e-mails)</span>
             </div>
             <div id="smtpConfig" class="hidden" style="padding: 16px">
               <div
@@ -187,7 +185,14 @@
                   >Usuário SMTP:</label
                 >
                 <div style="margin-bottom: 8px">
-                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer">
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      cursor: pointer;
+                    "
+                  >
                     <input
                       type="checkbox"
                       id="useSameEmail"
@@ -257,7 +262,8 @@
               </div>
 
               <div style="margin-bottom: 16px">
-                <label style="display: block; font-weight: bold; margin-bottom: 8px"
+                <label
+                  style="display: block; font-weight: bold; margin-bottom: 8px"
                   >Tipo de Conexão:</label
                 >
                 <div style="display: flex; flex-direction: column; gap: 8px">
@@ -357,15 +363,17 @@
 
       function confirmPasswordClear() {
         const passwordField = document.getElementById("smtpPassword");
-        const hasExistingPassword = passwordField.placeholder.includes("configurada");
-        const isPasswordEmpty = !passwordField.value || passwordField.value.trim() === "";
+        const hasExistingPassword =
+          passwordField.placeholder.includes("configurada");
+        const isPasswordEmpty =
+          !passwordField.value || passwordField.value.trim() === "";
 
         // If there's an existing password and user left field empty, confirm
         if (hasExistingPassword && isPasswordEmpty) {
           return confirm(
             "Atenção: O campo 'Senha SMTP' está vazio.\n\n" +
-            "Deixar vazio = manter senha atual configurada\n" +
-            "Deseja continuar?"
+              "Deixar vazio = manter senha atual configurada\n" +
+              "Deseja continuar?"
           );
         }
         return true;
@@ -379,7 +387,10 @@
 
         // Initialize: if both emails are the same, check the box
         if (emailInstituicao && smtpUsername) {
-          if (emailInstituicao.value && smtpUsername.value === emailInstituicao.value) {
+          if (
+            emailInstituicao.value &&
+            smtpUsername.value === emailInstituicao.value
+          ) {
             checkbox.checked = true;
             smtpUsername.readOnly = true;
             smtpUsername.style.backgroundColor = "#f8f9fa";

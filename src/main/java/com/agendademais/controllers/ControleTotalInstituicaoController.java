@@ -41,7 +41,8 @@ public class ControleTotalInstituicaoController {
         // If editing existing institution, preserve password if field is blank
         if (instituicao.getId() != null) {
             Instituicao existing = instituicaoService.findById(instituicao.getId()).orElse(null);
-            if (existing != null && (instituicao.getSmtpPassword() == null || instituicao.getSmtpPassword().trim().isEmpty())) {
+            if (existing != null
+                    && (instituicao.getSmtpPassword() == null || instituicao.getSmtpPassword().trim().isEmpty())) {
                 // Keep existing password if field is blank
                 instituicao.setSmtpPassword(existing.getSmtpPassword());
             }

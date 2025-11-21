@@ -72,8 +72,8 @@
               <div class="alert alert-info small">
                 <strong>Configuração de servidor de e-mail:</strong> Configure
                 estas opções para enviar e-mails usando o servidor SMTP desta
-                instituição. Deixe em branco para usar as configurações
-                padrão do sistema.
+                instituição. Deixe em branco para usar as configurações padrão
+                do sistema.
                 <br />
                 <strong>Dica:</strong> Porta 587 = STARTTLS (recomendado para
                 Gmail) | Porta 465 = SSL/TLS
@@ -136,9 +136,7 @@
               </div>
 
               <div class="mb-3">
-                <label for="smtpPassword" class="form-label"
-                  >Senha SMTP</label
-                >
+                <label for="smtpPassword" class="form-label">Senha SMTP</label>
                 <div class="input-group">
                   <input
                     type="password"
@@ -246,15 +244,17 @@
 
       function confirmPasswordClear() {
         const passwordField = document.getElementById("smtpPassword");
-        const hasExistingPassword = passwordField.placeholder.includes("configurada");
-        const isPasswordEmpty = !passwordField.value || passwordField.value.trim() === "";
+        const hasExistingPassword =
+          passwordField.placeholder.includes("configurada");
+        const isPasswordEmpty =
+          !passwordField.value || passwordField.value.trim() === "";
 
         // If there's an existing password and user left field empty, confirm
         if (hasExistingPassword && isPasswordEmpty) {
           return confirm(
             "Aten\u00e7\u00e3o: O campo 'Senha SMTP' est\u00e1 vazio.\n\n" +
-            "Deixar vazio = manter senha atual configurada\n" +
-            "Deseja continuar?"
+              "Deixar vazio = manter senha atual configurada\n" +
+              "Deseja continuar?"
           );
         }
         return true;
@@ -267,7 +267,10 @@
         const checkbox = document.getElementById("useSameEmail");
 
         // Initialize: if both emails are the same, check the box
-        if (emailInstituicao.value && smtpUsername.value === emailInstituicao.value) {
+        if (
+          emailInstituicao.value &&
+          smtpUsername.value === emailInstituicao.value
+        ) {
           checkbox.checked = true;
           smtpUsername.readOnly = true;
         } else if (smtpUsername.value) {
