@@ -751,8 +751,11 @@ public class GestaoUsuariosController {
                             ui -> {
                                 try {
                                     // Encontrar a sub-instituição da instituição atual
+                                    if (instituicaoSelecionada == null) {
+                                        return "Nenhuma";
+                                    }
                                     return ui.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
-                                            .filter(psi -> psi.getInstituicao().getId()
+                                            .filter(psi -> psi.getInstituicao() != null && psi.getInstituicao().getId()
                                                     .equals(instituicaoSelecionada.getId()))
                                             .map(psi -> psi.getSubInstituicao() != null
                                                     ? psi.getSubInstituicao().getNomeSubInstituicao()
@@ -770,7 +773,8 @@ public class GestaoUsuariosController {
             for (UsuarioInstituicao usuarioInst : usuariosPaginados) {
                 String nomeSubInstituicao = null;
                 try {
-                    if (usuarioInst.getUsuario() != null && usuarioInst.getUsuario().getPessoa() != null
+                    if (instituicaoSelecionada != null && usuarioInst.getUsuario() != null 
+                            && usuarioInst.getUsuario().getPessoa() != null
                             && usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao() != null) {
                         nomeSubInstituicao = usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao().stream()
                                 .filter(psi -> psi.getInstituicao() != null
