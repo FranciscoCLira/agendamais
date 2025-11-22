@@ -375,20 +375,20 @@
           </div>
                   </td>
                   <td>
-                    <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais : ''}"></span>
-                    <span th:if="${usuarioInst.usuarioInstituicao != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null}">/</span>
-                    <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado : ''}"></span>
-                    <span th:if="${usuarioInst.usuarioInstituicao != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade != null}">/</span>
-                    <span th:if="${usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade : ''}"></span>
-                    <span class="text-muted" th:if="${usuarioInst.usuarioInstituicao == null}">---</span>
+                    <span th:if="${usuarioInst != null and usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais : ''}"></span>
+                    <span th:if="${usuarioInst != null and usuarioInst.usuarioInstituicao != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomePais != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null}">/</span>
+                    <span th:if="${usuarioInst != null and usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado : ''}"></span>
+                    <span th:if="${usuarioInst != null and usuarioInst.usuarioInstituicao != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeEstado != null and usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade != null}">/</span>
+                    <span th:if="${usuarioInst != null and usuarioInst.usuarioInstituicao != null}" th:text="${usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade != null ? usuarioInst.usuarioInstituicao.usuario.pessoa.nomeCidade : ''}"></span>
+                    <span class="text-muted" th:if="${usuarioInst == null or usuarioInst.usuarioInstituicao == null}">---</span>
                   </td>
                   <td>
-                    <span th:if="${usuarioInst.usuarioInstituicao != null}"
+                    <span th:if="${usuarioInst != null and usuarioInst.usuarioInstituicao != null}"
                       class="badge badge-nivel"
                       th:classappend="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao == 9} ? 'bg-danger' : 
                                                           (${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao >= 5} ? 'bg-warning' : 'bg-success')"
                       th:text="${usuarioInst.usuarioInstituicao.nivelAcessoUsuarioInstituicao}">Nível</span>
-                    <span class="badge badge-nivel bg-secondary" th:if="${usuarioInst.usuarioInstituicao == null}">---</span>
+                    <span class="badge badge-nivel bg-secondary" th:if="${usuarioInst == null or usuarioInst.usuarioInstituicao == null}">---</span>
                   </td>
                   <td>
                     <span th:if="${usuarioInst.situacao != null}" th:switch="${usuarioInst.situacao}">

@@ -559,9 +559,15 @@ public class GestaoUsuariosController {
             Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 
         try {
+            System.out.println("*** DEBUG listaUsuarios - INICIO ***");
             Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
             Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
             Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+            
+            System.out.println("usuarioLogado: " + (usuarioLogado != null ? usuarioLogado.getUsername() : "null"));
+            System.out.println("nivelAcesso: " + nivelAcesso);
+            System.out.println("instituicaoSelecionada: " + (instituicaoSelecionada != null ? instituicaoSelecionada.getNomeInstituicao() : "null"));
+            System.out.println("Filtros - pais: " + pais + ", estado: " + estado + ", cidade: " + cidade);
 
             // Verificar permissões
             if (usuarioLogado == null || nivelAcesso == null) {
@@ -585,12 +591,14 @@ public class GestaoUsuariosController {
 
             // Buscar usuários da instituição selecionada
             List<UsuarioInstituicao> usuarios;
+            System.out.println("Buscando usuarios...");
             if (nivelAcesso == 9) {
                 usuarios = usuarioInstituicaoRepository.findAll();
             } else {
                 usuarios = usuarioInstituicaoRepository
                         .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(instituicaoSelecionada);
             }
+            System.out.println("Total usuarios encontrados: " + usuarios.size());
 
             // NOTA: Incluindo o usuário logado na lista pois esta é uma view apenas de
             // consulta
@@ -600,6 +608,7 @@ public class GestaoUsuariosController {
                     ? subInstituicaoRepository.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A")
                     : new java.util.ArrayList<>();
             model.addAttribute("subInstituicoes", subInstituicoes);
+            System.out.println("Sub-instituicoes carregadas: " + subInstituicoes.size());
 
             // Aplicar filtros
             if (codigoUsuario != null && !codigoUsuario.trim().isEmpty()) {
@@ -631,12 +640,22 @@ public class GestaoUsuariosController {
             }
 
             if (estado != null && !estado.trim().isEmpty()) {
+                System.out.println("Aplicando filtro de estado: " + estado);
                 String estadoFiltro = removerAcentos(estado);
                 usuarios = new java.util.ArrayList<>(usuarios.stream()
-                        .filter(ui -> ui.getUsuario().getPessoa().getNomeEstado() != null &&
-                                removerAcentos(ui.getUsuario().getPessoa().getNomeEstado())
-                                        .contains(estadoFiltro))
+                        .filter(ui -> {
+                            try {
+                                return ui.getUsuario() != null 
+                                    && ui.getUsuario().getPessoa() != null
+                                    && ui.getUsuario().getPessoa().getNomeEstado() != null
+                                    && removerAcentos(ui.getUsuario().getPessoa().getNomeEstado()).contains(estadoFiltro);
+                            } catch (Exception e) {
+                                System.out.println("Erro ao filtrar estado para usuario: " + e.getMessage());
+                                return false;
+                            }
+                        })
                         .collect(java.util.stream.Collectors.toList()));
+                System.out.println("Usuarios apos filtro estado: " + usuarios.size());
             }
 
             if (cidade != null && !cidade.trim().isEmpty()) {
@@ -771,6 +790,12 @@ public class GestaoUsuariosController {
             // Corrigir: criar DTOs a partir da lista já paginada
             java.util.List<com.agendademais.dto.UsuarioInstituicaoDTO> usuariosDTO = new java.util.ArrayList<>();
             for (UsuarioInstituicao usuarioInst : usuariosPaginados) {
+                // Skip null entries
+                if (usuarioInst == null) {
+                    System.out.println("WARNING: Found null UsuarioInstituicao in paginados list");
+                    continue;
+                }
+                
                 String nomeSubInstituicao = null;
                 try {
                     if (instituicaoSelecionada != null && usuarioInst.getUsuario() != null 
@@ -786,6 +811,7 @@ public class GestaoUsuariosController {
                                 .findFirst().orElse(null);
                     }
                 } catch (Exception e) {
+                    System.out.println("ERROR creating DTO: " + e.getMessage());
                     nomeSubInstituicao = null;
                 }
                 usuariosDTO.add(new com.agendademais.dto.UsuarioInstituicaoDTO(usuarioInst, nomeSubInstituicao));
@@ -794,6 +820,7 @@ public class GestaoUsuariosController {
             usuariosDTO = usuariosDTO.stream()
                     .filter(dto -> dto != null && dto.getUsuarioInstituicao() != null)
                     .collect(java.util.stream.Collectors.toList());
+            System.out.println("DTOs criados: " + usuariosDTO.size());
             model.addAttribute("usuarios", usuariosDTO);
             model.addAttribute("totalUsuarios", totalUsuarios);
             model.addAttribute("page", page);
