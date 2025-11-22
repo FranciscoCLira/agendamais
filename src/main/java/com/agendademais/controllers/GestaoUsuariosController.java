@@ -576,6 +576,13 @@ public class GestaoUsuariosController {
                 return "redirect:/acesso";
             }
 
+            // Validar instituição selecionada para administradores
+            if (nivelAcesso != 9 && instituicaoSelecionada == null) {
+                redirectAttributes.addFlashAttribute("mensagemErro",
+                        "Nenhuma instituição selecionada. Por favor, faça login novamente.");
+                return "redirect:/acesso";
+            }
+
             // Buscar usuários da instituição selecionada
             List<UsuarioInstituicao> usuarios;
             if (nivelAcesso == 9) {
@@ -589,8 +596,9 @@ public class GestaoUsuariosController {
             // consulta
 
             // Carrega sub-instituições ativas da instituição
-            List<SubInstituicao> subInstituicoes = subInstituicaoRepository
-                    .findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A");
+            List<SubInstituicao> subInstituicoes = instituicaoSelecionada != null 
+                    ? subInstituicaoRepository.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A")
+                    : new java.util.ArrayList<>();
             model.addAttribute("subInstituicoes", subInstituicoes);
 
             // Aplicar filtros
