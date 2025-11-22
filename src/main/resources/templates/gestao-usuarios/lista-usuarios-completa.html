@@ -391,13 +391,13 @@
                     <span class="badge badge-nivel bg-secondary" th:if="${usuarioInst == null or usuarioInst.usuarioInstituicao == null}">---</span>
                   </td>
                   <td>
-                    <span th:if="${usuarioInst.situacao != null}" th:switch="${usuarioInst.situacao}">
+                    <span th:if="${usuarioInst != null and usuarioInst.situacao != null}" th:switch="${usuarioInst.situacao}">
                       <span th:case="'A'" class="badge bg-success">A</span>
                       <span th:case="'B'" class="badge bg-warning text-dark">B</span>
                       <span th:case="'C'" class="badge bg-danger">C</span>
                       <span th:case="*" class="badge bg-secondary" th:text="${usuarioInst.situacao}">?</span>
                     </span>
-                    <span th:if="${usuarioInst.situacao == null}" class="badge bg-secondary">---</span>
+                    <span th:if="${usuarioInst == null or usuarioInst.situacao == null}" class="badge bg-secondary">---</span>
                   </td>
                 </tr>
               </tbody>
