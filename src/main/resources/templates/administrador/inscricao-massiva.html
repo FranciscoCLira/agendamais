@@ -436,7 +436,7 @@
             
             // Reverter/Excluir Carga
             $('#btnReverter').on('click', function() {
-                const arquivo = document.getElementById('fileInput').files[0];
+                const arquivo = selectedFile;
                 const subInstituicaoId = $('#subInstituicao').val();
                 const tipoAtividadeId = $('#tipoAtividade').val();
                 
