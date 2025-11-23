@@ -434,37 +434,55 @@
             
             // Reverter/Excluir Carga
             $('#btnReverter').on('click', function() {
-                if (!ultimaCarga) {
-                    alert('Nenhuma carga para reverter. Execute uma carga primeiro.');
+                const arquivo = document.getElementById('arquivo').files[0];
+                const subInstituicaoId = $('#subInstituicaoId').val();
+                const tipoAtividadeId = $('#tipoAtividadeId').val();
+                
+                if (!arquivo) {
+                    alert('Selecione o arquivo com a lista de emails para reverter a carga.');
                     return;
                 }
                 
-                const totalRegistros = (ultimaCarga.pessoasIds?.length || 0) + 
-                                      (ultimaCarga.usuariosIds?.length || 0) + 
-                                      (ultimaCarga.inscricoesIds?.length || 0);
+                if (!subInstituicaoId || !tipoAtividadeId) {
+                    alert('Selecione a SubInstituição e o Tipo de Atividade.');
+                    return;
+                }
                 
-                if (confirm(`Deseja realmente reverter a última carga?\n\nIsto irá remover:\n- ${ultimaCarga.novasInscricoes || 0} novas inscrições\n- ${ultimaCarga.pessoasIds?.length || 0} novas pessoas\n- ${ultimaCarga.usuariosIds?.length || 0} novos usuários\n\nATENÇÃO: Esta ação não pode ser desfeita!\n\nOBS: Entidades Local (País/Estado/Cidade) NÃO serão excluídas.`)) {
-                    reverterCarga();
+                if (confirm(`Deseja realmente reverter a carga?\n\nO sistema irá:\n` +
+                           `- Ler os emails do arquivo: ${arquivo.name}\n` +
+                           `- Deletar relacionamentos da SubInstituição e TipoAtividade selecionados\n` +
+                           `- Deletar Pessoa/Usuario APENAS se não houver outros vínculos com outras instituições\n\n` +
+                           `ATENÇÃO: Esta ação não pode ser desfeita!\n\n` +
+                           `OBS: Entidades Local (País/Estado/Cidade) NÃO serão excluídas.`)) {
+                    reverterCarga(arquivo, subInstituicaoId, tipoAtividadeId);
                 }
             });
             
-            function reverterCarga() {
+            function reverterCarga(arquivo, subInstituicaoId, tipoAtividadeId) {
                 $('#progressContainer').show();
                 $('#progressBar').css('width', '50%').text('Revertendo...');
                 $('#btnReverter').prop('disabled', true);
                 
+                const formData = new FormData();
+                formData.append('arquivo', arquivo);
+                formData.append('subInstituicaoId', subInstituicaoId);
+                formData.append('tipoAtividadeId', tipoAtividadeId);
+                
                 $.ajax({
                     url: '/administrador/inscricao-massiva/reverter',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(ultimaCarga),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    },
                     success: function(response) {
                         $('#progressBar').css('width', '100%').text('Concluído');
                         setTimeout(() => {
                             $('#progressContainer').hide();
                             exibirResultadoReversao(response);
-                            ultimaCarga = null; // Limpa após reversão
-                            $('#btnReverter').prop('disabled', true);
+                            $('#btnReverter').prop('disabled', false);
                         }, 500);
                     },
                     error: function(xhr) {
@@ -654,12 +672,27 @@ OBSERVAÇÕES:
                     contentType: false,
                     success: function(response) {
                         $('#progressBar').css('width', '100%').text('100%');
+                        console.log('Response do processamento:', response);
+                        console.log('novasInscricoes:', response.novasInscricoes);
+                        console.log('pessoasIds:', response.pessoasIds);
+                        console.log('usuariosIds:', response.usuariosIds);
+                        console.log('inscricoesIds:', response.inscricoesIds);
+                        
                         setTimeout(() => {
                             $('#progressContainer').hide();
                             exibirResultado(response);
-                            if (response.novasInscricoes > 0) {
+                            
+                            // Habilita reverter se houver novas inscrições OU se houver IDs para reverter
+                            if (response.novasInscricoes > 0 || 
+                                (response.pessoasIds && response.pessoasIds.length > 0) ||
+                                (response.usuariosIds && response.usuariosIds.length > 0) ||
+                                (response.inscricoesIds && response.inscricoesIds.length > 0)) {
                                 ultimaCarga = response; // Armazena para reversão
+                                console.log('Habilitando botão Reverter...');
                                 habilitarReverter();
+                            } else {
+                                console.log('Condições não atendidas para habilitar Reverter');
+                                console.log('novasInscricoes:', response.novasInscricoes);
                             }
                         }, 500);
                     },
@@ -719,12 +752,12 @@ OBSERVAÇÕES:
                     $('#progressContainer').hide();
                     $('#subInstituicao').val(null).trigger('change');
                     $('#tipoAtividade').val(null).trigger('change');
-                    $('#btnReverter').prop('disabled', true);
+                    $('#btnReverter').prop('disabled', false); // Sempre habilitado
                     checkFormValid();
                 }
             });
             
-            // Habilita botão Reverter após processamento bem-sucedido
+            // Habilita botão Reverter sempre que formulário válido
             function habilitarReverter() {
                 $('#btnReverter').prop('disabled', false);
             }

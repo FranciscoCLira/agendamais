@@ -159,13 +159,17 @@ public class InscricaoMassivaController {
     }
 
     /**
-     * Reverte uma carga massiva de inscrições (exclui registros criados)
+     * Reverte uma carga massiva baseada em arquivo Excel com lista de emails
+     * Deleta relacionamentos específicos da SubInstituição/TipoAtividade
+     * Só deleta Pessoa/Usuario se não houver outros vínculos com outras instituições
      * EXCEÇÃO: NÃO exclui entidades Local
      */
     @PostMapping("/reverter")
     @ResponseBody
     public ResponseEntity<InscricaoMassivaResponse> reverterCarga(
-            @RequestBody InscricaoMassivaResponse dadosCarga,
+            @RequestParam("arquivo") MultipartFile arquivo,
+            @RequestParam("subInstituicaoId") Long subInstituicaoId,
+            @RequestParam("tipoAtividadeId") Long tipoAtividadeId,
             HttpSession session) {
 
         // Verifica se usuário está logado e é administrador
@@ -184,18 +188,19 @@ public class InscricaoMassivaController {
         }
 
         try {
-            // Valida dados
-            if (dadosCarga.getInscricoesIds() == null || dadosCarga.getInscricoesIds().isEmpty()) {
+            // Valida arquivo
+            if (arquivo == null || arquivo.isEmpty()) {
                 InscricaoMassivaResponse errorResponse = new InscricaoMassivaResponse();
-                errorResponse.addError("Nenhuma inscrição para reverter");
+                errorResponse.addError("Arquivo não informado");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
-            // Chama service para reverter
-            InscricaoMassivaResponse response = inscricaoMassivaService.reverterCarga(
-                dadosCarga.getInscricoesIds(),
-                dadosCarga.getUsuariosIds(),
-                dadosCarga.getPessoasIds()
+            // Chama service para reverter por arquivo
+            InscricaoMassivaResponse response = inscricaoMassivaService.reverterCargaPorArquivo(
+                arquivo,
+                subInstituicaoId,
+                tipoAtividadeId,
+                instituicaoSelecionada.getId()
             );
 
             return ResponseEntity.ok(response);

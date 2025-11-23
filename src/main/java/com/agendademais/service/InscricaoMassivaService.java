@@ -787,112 +787,173 @@ public class InscricaoMassivaService {
     }
 
     /**
-     * Reverte uma carga massiva (exclui registros criados)
-     * EXCEÇÃO: NÃO exclui entidades Local
+     * Reverte uma carga massiva baseada em arquivo Excel
+     * Lê os emails da planilha e deleta relacionamentos específicos da SubInstituição/TipoAtividade
      * 
-     * @param inscricoesIds Lista de IDs de Inscricao criadas nesta carga
-     * @param usuariosIds Lista de IDs de Usuario criados nesta carga
-     * @param pessoasIds Lista de IDs de Pessoa criadas nesta carga
+     * REGRAS:
+     * - Deleta InscricaoTipoAtividade apenas para o TipoAtividade especificado
+     * - Deleta PessoaSubInstituicao apenas da SubInstituição especificada
+     * - Deleta Pessoa/Usuario APENAS se não houver outros relacionamentos com outras instituições
+     * - NÃO exclui entidades Local
+     * 
+     * @param arquivo Planilha Excel com coluna de emails (mesma estrutura da carga)
+     * @param subInstituicaoId SubInstituição para filtrar exclusões
+     * @param tipoAtividadeId TipoAtividade para filtrar exclusões
+     * @param instituicaoId Instituição atual
      * @return Response com resultado da reversão
      */
     @Transactional
-    public InscricaoMassivaResponse reverterCarga(List<Long> inscricoesIds, 
-                                                  List<Long> usuariosIds, 
-                                                  List<Long> pessoasIds) {
+    public InscricaoMassivaResponse reverterCargaPorArquivo(MultipartFile arquivo,
+                                                            Long subInstituicaoId,
+                                                            Long tipoAtividadeId,
+                                                            Long instituicaoId) {
         InscricaoMassivaResponse response = new InscricaoMassivaResponse();
         response.setInicioProcessamento(LocalDateTime.now());
         
-        final int[] totalDeletados = {0}; // Array para uso em lambdas
+        final int[] totalDeletados = {0};
+        final int[] emailsProcessados = {0};
+        final int[] emailsNaoEncontrados = {0};
+        final int[] pessoasNaoDeletadas = {0}; // Quando tem outros relacionamentos
         
         try {
-            System.out.println("=== INICIANDO REVERSÃO DE CARGA ===");
-            System.out.println("Inscrições a processar: " + inscricoesIds.size());
-            System.out.println("Usuários a processar: " + usuariosIds.size());
-            System.out.println("Pessoas a processar: " + pessoasIds.size());
+            System.out.println("=== INICIANDO REVERSÃO DE CARGA POR ARQUIVO ===");
             
-            // Ordem de exclusão (respeitando dependências):
-            // 7. InscricaoTipoAtividade (depende de Inscricao)
-            // 6. Inscricao (depende de Pessoa)
-            // 5. UsuarioInstituicao (depende de Usuario)
-            // 4. PessoaSubInstituicao (depende de Pessoa)
-            // 3. PessoaInstituicao (depende de Pessoa)
-            // 2. Usuario (depende de Pessoa)
-            // 1. Pessoa (última a ser excluída)
-            // 0. Local - NÃO EXCLUIR (exceção conforme solicitado)
+            // Valida entidades
+            SubInstituicao subInstituicao = subInstituicaoRepository.findById(subInstituicaoId)
+                    .orElseThrow(() -> new RuntimeException("SubInstituição não encontrada"));
             
-            // 1. Deletar InscricaoTipoAtividade para cada Inscricao
-            for (Long inscricaoId : inscricoesIds) {
-                List<InscricaoTipoAtividade> itas = inscricaoTipoAtividadeRepository.findByInscricaoId(inscricaoId);
-                for (InscricaoTipoAtividade ita : itas) {
-                    inscricaoTipoAtividadeRepository.delete(ita);
-                    totalDeletados[0]++;
-                    System.out.println("✓ InscricaoTipoAtividade deletada: ID=" + ita.getId());
+            TipoAtividade tipoAtividade = tipoAtividadeRepository.findById(tipoAtividadeId)
+                    .orElseThrow(() -> new RuntimeException("Tipo de Atividade não encontrado"));
+            
+            Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
+                    .orElseThrow(() -> new RuntimeException("Instituição não encontrada"));
+            
+            // Lê emails do arquivo Excel (mesma estrutura da carga)
+            List<InscricaoFormsRecord> registros = lerRegistrosExcel(arquivo, response);
+            if (registros.isEmpty()) {
+                response.addError("Nenhum email encontrado no arquivo");
+                return response;
+            }
+            
+            System.out.println("Total de emails no arquivo: " + registros.size());
+            
+            // Processa cada email
+            for (InscricaoFormsRecord registro : registros) {
+                String email = registro.getEmail().toLowerCase().trim();
+                emailsProcessados[0]++;
+                
+                System.out.println("\n--- Processando email " + emailsProcessados[0] + "/" + registros.size() + ": " + email + " ---");
+                
+                // Busca Pessoa pelo email
+                Optional<Pessoa> pessoaOpt = pessoaRepository.findByEmailPessoa(email);
+                if (pessoaOpt.isEmpty()) {
+                    System.out.println("⚠ Email não encontrado na base: " + email);
+                    response.addWarning("Linha " + registro.getLinha() + ": Email não encontrado - " + email);
+                    emailsNaoEncontrados[0]++;
+                    continue;
                 }
-            }
-            
-            // 2. Deletar Inscricoes
-            for (Long inscricaoId : inscricoesIds) {
-                inscricaoRepository.findById(inscricaoId).ifPresent(inscricao -> {
-                    inscricaoRepository.delete(inscricao);
-                    totalDeletados[0]++;
-                    System.out.println("✓ Inscricao deletada: ID=" + inscricaoId);
-                });
-            }
-            
-            // 3. Deletar UsuarioInstituicao para cada Usuario criado
-            for (Long usuarioId : usuariosIds) {
-                List<UsuarioInstituicao> uis = usuarioInstituicaoRepository.findByUsuarioId(usuarioId);
-                for (UsuarioInstituicao ui : uis) {
-                    usuarioInstituicaoRepository.delete(ui);
-                    totalDeletados[0]++;
-                    System.out.println("✓ UsuarioInstituicao deletada: ID=" + ui.getId());
+                
+                Pessoa pessoa = pessoaOpt.get();
+                System.out.println("✓ Pessoa encontrada: ID=" + pessoa.getId());
+                
+                // Busca Usuario relacionado
+                Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
+                
+                // 1. Deleta InscricaoTipoAtividade específica
+                if (usuarioOpt.isPresent()) {
+                    Usuario usuario = usuarioOpt.get();
+                    Optional<Inscricao> inscricaoOpt = inscricaoRepository
+                            .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId());
+                    
+                    if (inscricaoOpt.isPresent()) {
+                        Inscricao inscricao = inscricaoOpt.get();
+                        Optional<InscricaoTipoAtividade> itaOpt = inscricaoTipoAtividadeRepository
+                                .findByInscricaoIdAndTipoAtividadeId(inscricao.getId(), tipoAtividade.getId());
+                        
+                        if (itaOpt.isPresent()) {
+                            inscricaoTipoAtividadeRepository.delete(itaOpt.get());
+                            totalDeletados[0]++;
+                            System.out.println("✓ InscricaoTipoAtividade deletada");
+                        }
+                        
+                        // Verifica se Inscricao não tem mais InscricaoTipoAtividade
+                        List<InscricaoTipoAtividade> outrasItas = inscricaoTipoAtividadeRepository
+                                .findByInscricaoId(inscricao.getId());
+                        if (outrasItas.isEmpty()) {
+                            inscricaoRepository.delete(inscricao);
+                            totalDeletados[0]++;
+                            System.out.println("✓ Inscricao deletada (sem mais tipos de atividade)");
+                        }
+                    }
                 }
-            }
-            
-            // 4. Deletar PessoaSubInstituicao para cada Pessoa criada
-            for (Long pessoaId : pessoasIds) {
-                List<PessoaSubInstituicao> psis = pessoaSubInstituicaoRepository.findByPessoaId(pessoaId);
-                for (PessoaSubInstituicao psi : psis) {
-                    pessoaSubInstituicaoRepository.delete(psi);
+                
+                // 2. Deleta PessoaSubInstituicao específica
+                Optional<PessoaSubInstituicao> psiOpt = pessoaSubInstituicaoRepository
+                        .findByPessoaIdAndSubInstituicaoId(pessoa.getId(), subInstituicao.getId());
+                if (psiOpt.isPresent()) {
+                    pessoaSubInstituicaoRepository.delete(psiOpt.get());
                     totalDeletados[0]++;
-                    System.out.println("✓ PessoaSubInstituicao deletada: ID=" + psi.getId());
+                    System.out.println("✓ PessoaSubInstituicao deletada");
                 }
-            }
-            
-            // 5. Deletar PessoaInstituicao para cada Pessoa criada
-            for (Long pessoaId : pessoasIds) {
-                List<PessoaInstituicao> pis = pessoaInstituicaoRepository.findByPessoaId(pessoaId);
-                for (PessoaInstituicao pi : pis) {
-                    pessoaInstituicaoRepository.delete(pi);
-                    totalDeletados[0]++;
-                    System.out.println("✓ PessoaInstituicao deletada: ID=" + pi.getId());
-                }
-            }
-            
-            // 6. Deletar Usuarios criados
-            for (Long usuarioId : usuariosIds) {
-                usuarioRepository.findById(usuarioId).ifPresent(usuario -> {
-                    usuarioRepository.delete(usuario);
-                    totalDeletados[0]++;
-                    System.out.println("✓ Usuario deletado: ID=" + usuarioId + ", username=" + usuario.getUsername());
-                });
-            }
-            
-            // 7. Deletar Pessoas criadas
-            for (Long pessoaId : pessoasIds) {
-                pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
+                
+                // 3. Verifica se Pessoa tem outros relacionamentos antes de deletar
+                List<PessoaSubInstituicao> outrasPsis = pessoaSubInstituicaoRepository.findByPessoaId(pessoa.getId());
+                List<PessoaInstituicao> outrasPis = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
+                
+                if (outrasPsis.isEmpty() && outrasPis.size() <= 1) {
+                    // Não tem outros relacionamentos, pode deletar tudo
+                    
+                    // Deleta PessoaInstituicao
+                    Optional<PessoaInstituicao> piOpt = pessoaInstituicaoRepository
+                            .findByPessoaIdAndInstituicaoId(pessoa.getId(), instituicao.getId());
+                    if (piOpt.isPresent()) {
+                        pessoaInstituicaoRepository.delete(piOpt.get());
+                        totalDeletados[0]++;
+                        System.out.println("✓ PessoaInstituicao deletada");
+                    }
+                    
+                    // Deleta UsuarioInstituicao e Usuario
+                    if (usuarioOpt.isPresent()) {
+                        Usuario usuario = usuarioOpt.get();
+                        List<UsuarioInstituicao> uis = usuarioInstituicaoRepository.findByUsuarioId(usuario.getId());
+                        for (UsuarioInstituicao ui : uis) {
+                            usuarioInstituicaoRepository.delete(ui);
+                            totalDeletados[0]++;
+                            System.out.println("✓ UsuarioInstituicao deletada");
+                        }
+                        
+                        usuarioRepository.delete(usuario);
+                        totalDeletados[0]++;
+                        System.out.println("✓ Usuario deletado: " + usuario.getUsername());
+                    }
+                    
+                    // Deleta Pessoa
                     pessoaRepository.delete(pessoa);
                     totalDeletados[0]++;
-                    System.out.println("✓ Pessoa deletada: ID=" + pessoaId + ", email=" + pessoa.getEmailPessoa());
-                });
+                    System.out.println("✓ Pessoa deletada: " + email);
+                    
+                    response.addWarning("Linha " + registro.getLinha() + ": Email " + email + " - Pessoa/Usuario deletados completamente");
+                    
+                } else {
+                    // Tem outros relacionamentos, não deleta Pessoa/Usuario
+                    pessoasNaoDeletadas[0]++;
+                    System.out.println("⚠ Pessoa mantida (tem relacionamentos com outras instituições)");
+                    response.addWarning("Linha " + registro.getLinha() + ": Email " + email + 
+                            " - Relacionamentos deletados, mas Pessoa/Usuario mantidos (existem vínculos com outras instituições)");
+                }
             }
             
-            System.out.println("=== REVERSÃO CONCLUÍDA ===");
+            System.out.println("\n=== REVERSÃO CONCLUÍDA ===");
+            System.out.println("Emails processados: " + emailsProcessados[0]);
+            System.out.println("Emails não encontrados: " + emailsNaoEncontrados[0]);
+            System.out.println("Pessoas não deletadas (com outros vínculos): " + pessoasNaoDeletadas[0]);
             System.out.println("Total de registros deletados: " + totalDeletados[0]);
             
-            response.addWarning("Reversão concluída com sucesso. Total de registros deletados: " + totalDeletados[0]);
-            response.setTotalRegistros(totalDeletados[0]);
-            response.setRegistrosProcessados(totalDeletados[0]);
+            response.addWarning(String.format("Reversão concluída. Emails: %d processados, %d não encontrados. " +
+                    "Registros deletados: %d. Pessoas mantidas (outros vínculos): %d",
+                    emailsProcessados[0], emailsNaoEncontrados[0], totalDeletados[0], pessoasNaoDeletadas[0]));
+            response.setTotalRegistros(emailsProcessados[0]);
+            response.setRegistrosProcessados(emailsProcessados[0] - emailsNaoEncontrados[0]);
             
         } catch (Exception e) {
             System.err.println("✗ ERRO na reversão: " + e.getMessage());
