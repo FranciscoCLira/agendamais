@@ -399,9 +399,11 @@
                 if (subInstituicaoId && tipoAtividadeId && selectedFile) {
                     $('#btnValidar').prop('disabled', false);
                     $('#btnProcessar').prop('disabled', false);
+                    $('#btnReverter').prop('disabled', false); // Habilita Reverter quando formulário válido
                 } else {
                     $('#btnValidar').prop('disabled', true);
                     $('#btnProcessar').prop('disabled', true);
+                    $('#btnReverter').prop('disabled', true);
                 }
             }
             

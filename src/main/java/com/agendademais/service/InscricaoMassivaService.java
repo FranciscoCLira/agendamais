@@ -228,6 +228,47 @@ public class InscricaoMassivaService {
     }
 
     /**
+     * Lê apenas emails da coluna G para reversão
+     */
+    private List<String> lerEmailsParaReversao(MultipartFile arquivo, InscricaoMassivaResponse response) {
+        List<String> emails = new ArrayList<>();
+
+        try (InputStream is = arquivo.getInputStream();
+             Workbook workbook = new XSSFWorkbook(is)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            int linhaAtual = 0;
+
+            for (Row row : sheet) {
+                linhaAtual++;
+
+                // Pula linha 1 (cabeçalho)
+                if (linhaAtual == 1) {
+                    continue;
+                }
+
+                // Pula linhas vazias
+                Cell emailCell = row.getCell(6); // Coluna G
+                if (emailCell == null) {
+                    continue;
+                }
+
+                String email = getCellValue(emailCell);
+                if (email != null && !email.trim().isEmpty()) {
+                    emails.add(email.toLowerCase().trim());
+                    System.out.println("Email lido linha " + linhaAtual + ": " + email);
+                }
+            }
+
+        } catch (Exception e) {
+            response.addError("Erro ao ler arquivo Excel: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return emails;
+    }
+
+    /**
      * Lê registros do arquivo Excel (colunas G a O)
      */
     private List<InscricaoFormsRecord> lerRegistrosExcel(MultipartFile arquivo, InscricaoMassivaResponse response) {
@@ -828,27 +869,26 @@ public class InscricaoMassivaService {
             Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
                     .orElseThrow(() -> new RuntimeException("Instituição não encontrada"));
             
-            // Lê emails do arquivo Excel (mesma estrutura da carga)
-            List<InscricaoFormsRecord> registros = lerRegistrosExcel(arquivo, response);
-            if (registros.isEmpty()) {
-                response.addError("Nenhum email encontrado no arquivo");
+            // Lê apenas emails da coluna G do arquivo Excel
+            List<String> emails = lerEmailsParaReversao(arquivo, response);
+            if (emails.isEmpty()) {
+                response.addError("Nenhum email encontrado no arquivo (coluna G - Email)");
                 return response;
             }
             
-            System.out.println("Total de emails no arquivo: " + registros.size());
+            System.out.println("Total de emails no arquivo: " + emails.size());
             
             // Processa cada email
-            for (InscricaoFormsRecord registro : registros) {
-                String email = registro.getEmail().toLowerCase().trim();
+            for (String email : emails) {
                 emailsProcessados[0]++;
                 
-                System.out.println("\n--- Processando email " + emailsProcessados[0] + "/" + registros.size() + ": " + email + " ---");
+                System.out.println("\n--- Processando email " + emailsProcessados[0] + "/" + emails.size() + ": " + email + " ---");
                 
                 // Busca Pessoa pelo email
                 Optional<Pessoa> pessoaOpt = pessoaRepository.findByEmailPessoa(email);
                 if (pessoaOpt.isEmpty()) {
                     System.out.println("⚠ Email não encontrado na base: " + email);
-                    response.addWarning("Linha " + registro.getLinha() + ": Email não encontrado - " + email);
+                    response.addWarning("Email não encontrado - " + email);
                     emailsNaoEncontrados[0]++;
                     continue;
                 }
@@ -932,13 +972,13 @@ public class InscricaoMassivaService {
                     totalDeletados[0]++;
                     System.out.println("✓ Pessoa deletada: " + email);
                     
-                    response.addWarning("Linha " + registro.getLinha() + ": Email " + email + " - Pessoa/Usuario deletados completamente");
+                    response.addWarning("Email " + email + " - Pessoa/Usuario deletados completamente");
                     
                 } else {
                     // Tem outros relacionamentos, não deleta Pessoa/Usuario
                     pessoasNaoDeletadas[0]++;
                     System.out.println("⚠ Pessoa mantida (tem relacionamentos com outras instituições)");
-                    response.addWarning("Linha " + registro.getLinha() + ": Email " + email + 
+                    response.addWarning("Email " + email + 
                             " - Relacionamentos deletados, mas Pessoa/Usuario mantidos (existem vínculos com outras instituições)");
                 }
             }
