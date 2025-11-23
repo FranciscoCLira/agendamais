@@ -437,8 +437,8 @@
             // Reverter/Excluir Carga
             $('#btnReverter').on('click', function() {
                 const arquivo = document.getElementById('fileInput').files[0];
-                const subInstituicaoId = $('#subInstituicaoId').val();
-                const tipoAtividadeId = $('#tipoAtividadeId').val();
+                const subInstituicaoId = $('#subInstituicao').val();
+                const tipoAtividadeId = $('#tipoAtividade').val();
                 
                 if (!arquivo) {
                     alert('Selecione o arquivo com a lista de emails para reverter a carga.');
