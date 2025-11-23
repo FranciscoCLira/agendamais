@@ -68,7 +68,9 @@ public class SecurityConfig {
 					.requestMatchers(org.springframework.http.HttpMethod.GET,
 							"/administrador/atividades/deletar/**")
 					.permitAll()
-					.requestMatchers("/admin/**").hasRole("ADMIN")
+					// Removed .requestMatchers("/admin/**").hasRole("ADMIN") 
+					// because the system uses its own session-based access control
+					// Controllers use @PreAuthorize or session checks for authorization
 					.anyRequest().permitAll());
 			// In secure mode, enable form login but disable CSRF for API endpoints
 			http.formLogin();

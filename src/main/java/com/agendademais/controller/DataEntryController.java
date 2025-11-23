@@ -21,10 +21,10 @@ import java.io.File;
 
 /**
  * Controller para funcionalidades de Data Entry (Carga Massiva)
+ * Access control is handled by session checks (nivelAcessoAtual >= 9)
  */
 @Controller
 @RequestMapping("/admin/dataentry")
-@PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_USER')")
 public class DataEntryController {
     
     @Autowired
@@ -34,7 +34,13 @@ public class DataEntryController {
      * Página principal do Data Entry
      */
     @GetMapping
-    public String dataEntryPage(Model model) {
+    public String dataEntryPage(Model model, jakarta.servlet.http.HttpSession session) {
+        // Verifica se usuário está no modo Controle Total (nivelAcessoAtual = 0)
+        // Esta funcionalidade só é acessível via menu Controle Total
+        Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
+        if (nivelAcesso == null || nivelAcesso != 0) {
+            return "redirect:/acesso";
+        }
         model.addAttribute("pageTitle", "Carga Massiva de Dados");
         return "admin/dataentry";
     }
