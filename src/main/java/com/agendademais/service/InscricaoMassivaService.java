@@ -329,6 +329,7 @@ public class InscricaoMassivaService {
     private void validarRegistros(List<InscricaoFormsRecord> registros, InscricaoMassivaResponse response) {
         for (InscricaoFormsRecord registro : registros) {
             StringBuilder erros = new StringBuilder();
+            StringBuilder avisos = new StringBuilder();
 
             // Email obrigatório e válido
             if (registro.getEmail() == null || registro.getEmail().trim().isEmpty()) {
@@ -337,14 +338,40 @@ public class InscricaoMassivaService {
                 erros.append("Email inválido. ");
             }
 
-            // Nome obrigatório
+            // Nome obrigatório (máx 255)
             if (registro.getNome() == null || registro.getNome().trim().isEmpty()) {
                 erros.append("Nome obrigatório. ");
+            } else if (registro.getNome().length() > 255) {
+                avisos.append("Nome será truncado (máx 255 caracteres). ");
+                registro.setNome(registro.getNome().substring(0, 255));
             }
 
-            // Celular obrigatório
+            // Celular obrigatório (máx 20)
             if (registro.getCelular() == null || registro.getCelular().trim().isEmpty()) {
                 erros.append("Celular obrigatório. ");
+            } else if (registro.getCelular().length() > 20) {
+                avisos.append("Celular será truncado (máx 20 caracteres). ");
+                registro.setCelular(registro.getCelular().substring(0, 20));
+            }
+
+            // Comentários (máx 255)
+            if (registro.getComentarios() != null && registro.getComentarios().length() > 255) {
+                avisos.append("Comentários serão truncados (máx 255 caracteres). ");
+                registro.setComentarios(registro.getComentarios().substring(0, 255));
+            }
+
+            // Valida tamanho dos campos de Local
+            if (registro.getCidade() != null && registro.getCidade().length() > 100) {
+                avisos.append("Cidade será truncada (máx 100 caracteres). ");
+                registro.setCidade(registro.getCidade().substring(0, 100));
+            }
+            if (registro.getEstado() != null && registro.getEstado().length() > 100) {
+                avisos.append("Estado será truncado (máx 100 caracteres). ");
+                registro.setEstado(registro.getEstado().substring(0, 100));
+            }
+            if (registro.getPais() != null && registro.getPais().length() > 100) {
+                avisos.append("País será truncado (máx 100 caracteres). ");
+                registro.setPais(registro.getPais().substring(0, 100));
             }
 
             // Valida Estado se País for Brasil
@@ -364,6 +391,8 @@ public class InscricaoMassivaService {
             if (erros.length() > 0) {
                 registro.setMensagemErro("Linha " + registro.getLinha() + ": " + erros.toString());
                 response.addWarning(registro.getMensagemErro());
+            } else if (avisos.length() > 0) {
+                response.addWarning("Linha " + registro.getLinha() + ": " + avisos.toString());
             }
         }
     }

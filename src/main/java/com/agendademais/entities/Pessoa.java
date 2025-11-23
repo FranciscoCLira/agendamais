@@ -32,9 +32,11 @@ public class Pessoa {
 	@JoinColumn(name = "id_cidade")
 	private Local cidade;
 
+	@Column(length = 255)
 	private String comentarios;
 	private LocalDate dataInclusao;
 	private LocalDate dataUltimaAtualizacao;
+	@Column(length = 1000)
 	private String curriculoPessoal;
 
 	// Relacionamento com Sub-Instituições
