@@ -31,14 +31,14 @@ public class Usuario implements Serializable {
 
     // REMOVIDO: nivelAcessoUsuario - agora está em UsuarioInstituicao
 
-    // // nullable = false exige obrigatoriedade
+    // // nullable = false exige obrigatoriedade typeof XLSX
 
     // @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "pessoa_id", referencedColumnName = "id", nullable = false)
     private Pessoa pessoa;
 
-    private String situacaoUsuario; // A=Ativo, B=Bloqueado
+    private String situacaoUsuario; // A=Ativo, B=Bloqueado, P=Pendente de Ativação de alteração senha
 
     private LocalDate dataUltimaAtualizacao;
 
