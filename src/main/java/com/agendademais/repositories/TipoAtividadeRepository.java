@@ -13,4 +13,7 @@ public interface TipoAtividadeRepository extends JpaRepository<TipoAtividade, Lo
 	List<TipoAtividade> findByInstituicao(Instituicao instituicao);
 
 	List<TipoAtividade> findByInstituicaoId(Long instituicao);
+	
+	// Busca tipos de atividade por instituição e título contendo termo (case insensitive)
+	List<TipoAtividade> findByInstituicaoIdAndTituloTipoAtividadeContainingIgnoreCase(Long instituicaoId, String titulo);
 }

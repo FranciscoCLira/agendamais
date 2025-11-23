@@ -5,6 +5,7 @@ import com.agendademais.entities.Pessoa;
 import com.agendademais.entities.PessoaInstituicao;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,5 +19,8 @@ public interface PessoaInstituicaoRepository extends JpaRepository<PessoaInstitu
     void deleteByPessoaAndInstituicao(Pessoa pessoa, Instituicao instituicao);
 
     List<PessoaInstituicao> findByPessoa(Pessoa pessoa);
+    
+    // Busca PessoaInstituicao por IDs
+    Optional<PessoaInstituicao> findByPessoaIdAndInstituicaoId(Long pessoaId, Long instituicaoId);
 
 }

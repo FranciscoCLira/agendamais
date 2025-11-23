@@ -36,4 +36,7 @@ public interface PessoaSubInstituicaoRepository extends JpaRepository<PessoaSubI
 
 	// Método para buscar vínculo de uma pessoa em uma instituição específica
 	Optional<PessoaSubInstituicao> findByPessoaAndInstituicao(Pessoa pessoa, Instituicao instituicao);
+	
+	// Busca por pessoa e sub-instituição específica
+	Optional<PessoaSubInstituicao> findByPessoaIdAndSubInstituicaoId(Long pessoaId, Long subInstituicaoId);
 }

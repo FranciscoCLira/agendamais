@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Carga Massiva de Inscrições</title>
+    
+    <!-- CSS Padrão -->
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    
+    <style>
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .upload-area:hover {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        
+        .config-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .result-container {
+            display: none;
+        }
+        
+        .log-entry {
+            padding: 8px 12px;
+            margin: 3px 0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            border-left: 4px solid;
+        }
+        
+        .log-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+        
+        .log-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+        
+        .log-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .column-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .column-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .column-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .column-letter {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- CABEÇALHO PADRÃO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+    
+    <main class="main-content">
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h2><i class="fas fa-users-cog me-2"></i><span th:text="${pageTitle}">Carga Massiva de Inscrições</span></h2>
+                        <p class="text-muted mb-0">Importação em massa de inscrições em tipos de atividade</p>
+                    </div>
+                    <a href="/administrador" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+                <hr>
+            </div>
+        </div>
+        
+        <!-- Formulário -->
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Seleção de SubInstituição e Tipo de Atividade -->
+                <div class="config-section">
+                    <h4><i class="fas fa-filter me-2"></i>Dados da Inscrição</h4>
+                    
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="subInstituicao" class="form-label">SubInstituição *</label>
+                                <select id="subInstituicao" name="subInstituicaoId" class="form-select" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <small class="form-text text-muted">Escolha a sub-instituição para as inscrições</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="tipoAtividade" class="form-label">Tipo de Atividade *</label>
+                                <select id="tipoAtividade" name="tipoAtividadeId" class="form-select" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <small class="form-text text-muted">Escolha o tipo de atividade</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Upload Area -->
+                <div class="config-section">
+                    <h4><i class="fas fa-file-upload me-2"></i>Arquivo Excel (Microsoft Forms)</h4>
+                    
+                    <div class="upload-area mb-3" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <h5>Arraste o arquivo aqui ou clique para selecionar</h5>
+                        <p class="text-muted mb-0">Apenas arquivos .xlsx (máx. 10MB)</p>
+                        <input type="file" id="fileInput" name="arquivo" accept=".xlsx" style="display: none;">
+                    </div>
+                    
+                    <!-- Informações do Arquivo -->
+                    <div id="fileInfo" class="alert alert-info" style="display: none;">
+                        <h6><i class="fas fa-info-circle me-2"></i>Arquivo Selecionado:</h6>
+                        <div id="fileDetails"></div>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="d-flex gap-2 mb-4 flex-wrap">
+                    <button type="button" id="btnValidar" class="btn btn-warning" disabled>
+                        <i class="fas fa-check-circle me-2"></i>Validar Arquivo
+                    </button>
+                    <button type="button" id="btnProcessar" class="btn btn-primary" disabled>
+                        <i class="fas fa-play me-2"></i>Processar Carga
+                    </button>
+                    <button type="button" id="btnLimpar" class="btn btn-secondary">
+                        <i class="fas fa-broom me-2"></i>Limpar
+                    </button>
+                    <button type="button" id="btnReverter" class="btn btn-danger" disabled>
+                        <i class="fas fa-undo me-2"></i>Excluir/Reverter Carga
+                    </button>
+                    <button type="button" id="btnAjuda" class="btn btn-info">
+                        <i class="fas fa-question-circle me-2"></i>Ajuda
+                    </button>
+                </div>
+                
+                <!-- Progress -->
+                <div id="progressContainer" class="card mb-4" style="display: none;">
+                    <div class="card-body">
+                        <h5><i class="fas fa-spinner fa-spin me-2"></i>Processando...</h5>
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resultado -->
+                <div id="resultContainer" class="result-container">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Resultado do Processamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultSummary" class="mb-3"></div>
+                            <div id="resultLog"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações e Instruções -->
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Formato do Arquivo:</strong></p>
+                        <p class="text-muted">Planilha Excel do Microsoft Forms com as seguintes colunas:</p>
+                        
+                        <ul class="column-list">
+                            <li><span class="column-letter">G</span> Email *</li>
+                            <li><span class="column-letter">H</span> Nome *</li>
+                            <li><span class="column-letter">I</span> Celular *</li>
+                            <li><span class="column-letter">J</span> ID Pessoa Instituição</li>
+                            <li><span class="column-letter">K</span> ID Pessoa SubInstituição</li>
+                            <li><span class="column-letter">L</span> Cidade</li>
+                            <li><span class="column-letter">M</span> Estado</li>
+                            <li><span class="column-letter">N</span> País</li>
+                            <li><span class="column-letter">O</span> Comentários</li>
+                        </ul>
+                        
+                        <p class="text-muted mt-3"><small>* Campos obrigatórios</small></p>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Dicas</h6>
+                    <ul class="mb-0">
+                        <li>A primeira linha deve conter o cabeçalho</li>
+                        <li>Emails duplicados serão identificados</li>
+                        <li>Usuários novos terão credenciais geradas automaticamente</li>
+                        <li>O sistema cria todos os relacionamentos necessários</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            
+            let selectedFile = null;
+            const instituicaoId = [[${instituicao.id}]];
+            const csrfToken = [[${_csrf.token}]];
+            const csrfHeader = [[${_csrf.headerName}]];
+            
+            // Configura CSRF para todas as requisições AJAX
+            $.ajaxSetup({
+                beforeSend: function(xhr) {
+                    if (csrfHeader && csrfToken) {
+                        xhr.setRequestHeader(csrfHeader, csrfToken);
+                    }
+                }
+            });
+            
+            // Inicializa Select2 - Carrega dados inicialmente
+            console.log('🔵 Carregando SubInstituições para instituicaoId:', instituicaoId);
+            $.ajax({
+                url: '/api/subinstituicoes/buscar',
+                data: { instituicaoId: instituicaoId },
+                success: function(data) {
+                    console.log('✅ SubInstituições carregadas:', data.length, 'itens');
+                    const options = data.map(item => new Option(item.nomeSubInstituicao, item.id, false, false));
+                    $('#subInstituicao').append(options).trigger('change');
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Erro ao carregar SubInstituições:', status, error);
+                    console.error('Response:', xhr.responseText);
+                }
+            });
+            
+            console.log('🔵 Carregando Tipos de Atividade para instituicaoId:', instituicaoId);
+            $.ajax({
+                url: '/api/tipos-atividade/buscar',
+                data: { instituicaoId: instituicaoId },
+                success: function(data) {
+                    console.log('✅ Tipos de Atividade carregados:', data.length, 'itens');
+                    const options = data.map(item => new Option(item.tituloTipoAtividade, item.id, false, false));
+                    $('#tipoAtividade').append(options).trigger('change');
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Erro ao carregar Tipos de Atividade:', status, error);
+                    console.error('Response:', xhr.responseText);
+                }
+            });
+            
+            // Inicializa Select2 com busca local
+            $('#subInstituicao').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Digite para pesquisar...',
+                allowClear: true,
+                width: '100%'
+            });
+            
+            $('#tipoAtividade').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Digite para pesquisar...',
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Upload Area
+            const uploadArea = $('#uploadArea');
+            const fileInput = $('#fileInput');
+            
+            uploadArea.on('click', function() {
+                fileInput.click();
+            });
+            
+            fileInput.on('change', function(e) {
+                handleFileSelect(e.target.files[0]);
+            });
+            
+            // Drag and Drop
+            uploadArea.on('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).addClass('drag-over');
+            });
+            
+            uploadArea.on('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('drag-over');
+            });
+            
+            uploadArea.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('drag-over');
+                
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            });
+            
+            function handleFileSelect(file) {
+                if (!file) return;
+                
+                // Valida tipo de arquivo
+                if (!file.name.endsWith('.xlsx')) {
+                    alert('Por favor, selecione um arquivo .xlsx');
+                    return;
+                }
+                
+                // Valida tamanho (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Arquivo muito grande. Tamanho máximo: 10MB');
+                    return;
+                }
+                
+                selectedFile = file;
+                
+                // Exibe informações do arquivo
+                $('#fileDetails').html(`
+                    <strong>Nome:</strong> ${file.name}<br>
+                    <strong>Tamanho:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                    <strong>Tipo:</strong> ${file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+                `);
+                $('#fileInfo').show();
+                
+                checkFormValid();
+            }
+            
+            function checkFormValid() {
+                const subInstituicaoId = $('#subInstituicao').val();
+                const tipoAtividadeId = $('#tipoAtividade').val();
+                
+                if (subInstituicaoId && tipoAtividadeId && selectedFile) {
+                    $('#btnValidar').prop('disabled', false);
+                    $('#btnProcessar').prop('disabled', false);
+                } else {
+                    $('#btnValidar').prop('disabled', true);
+                    $('#btnProcessar').prop('disabled', true);
+                }
+            }
+            
+            $('#subInstituicao, #tipoAtividade').on('change', checkFormValid);
+            
+            // Validar Arquivo
+            $('#btnValidar').on('click', function() {
+                console.log('=== Botão Validar clicado ===');
+                console.log('Arquivo selecionado:', selectedFile ? selectedFile.name : 'nenhum');
+                
+                if (!selectedFile) {
+                    alert('Por favor, selecione um arquivo');
+                    return;
+                }
+                
+                const subInstituicaoId = $('#subInstituicao').val();
+                const tipoAtividadeId = $('#tipoAtividade').val();
+                
+                console.log('SubInstituicaoId:', subInstituicaoId);
+                console.log('TipoAtividadeId:', tipoAtividadeId);
+                
+                if (!subInstituicaoId || !tipoAtividadeId) {
+                    alert('Por favor, selecione SubInstituição e Tipo de Atividade');
+                    return;
+                }
+                
+                console.log('Chamando validarArquivo()...');
+                validarArquivo();
+            });
+            
+            // Reverter/Excluir Carga
+            $('#btnReverter').on('click', function() {
+                if (confirm('Deseja realmente reverter a última carga?\n\nIsto irá remover:\n- Novas inscrições criadas\n- Novos usuários (se não tiverem outros vínculos)\n\nATENÇÃO: Esta ação não pode ser desfeita!')) {
+                    alert('Funcionalidade de reversão em desenvolvimento.\n\nPor enquanto, use o painel de administração para remover registros individualmente.');
+                }
+            });
+            
+            // Ajuda
+            $('#btnAjuda').on('click', function() {
+                const helpText = `
+CARGA MASSIVA DE INSCRIÇÕES - AJUDA
+
+FORMATO DO ARQUIVO:
+- Arquivo: Excel (.xlsx) do Microsoft Forms
+- Colunas: G a O (Email, Nome, Celular, IDs, Localização, Comentários)
+
+CAMPOS OBRIGATÓRIOS:
+- G: Email (único)
+- H: Nome completo
+- I: Celular
+
+CAMPOS OPCIONAIS:
+- J: ID Pessoa Instituição
+- K: ID Pessoa SubInstituição
+- L: Cidade
+- M: Estado
+- N: País
+- O: Comentários
+
+PROCESSO:
+1. Selecione SubInstituição e Tipo de Atividade
+2. Faça upload do arquivo Excel
+3. Clique em "Validar Arquivo" (opcional)
+4. Clique em "Processar Carga"
+
+CREDENCIAIS GERADAS:
+- Usuário: parte antes do @ do email
+- Senha inicial: Agenda@2025
+- Primeira troca: Obrigatória no primeiro login
+
+OBSERVAÇÕES:
+- Emails duplicados serão identificados
+- Usuários existentes não terão senha alterada
+- Sistema cria automaticamente todos os relacionamentos necessários
+                `;
+                alert(helpText);
+            });
+            
+            // Processar
+            $('#btnProcessar').on('click', function() {
+                if (!selectedFile) {
+                    alert('Por favor, selecione um arquivo');
+                    return;
+                }
+                
+                const subInstituicaoId = $('#subInstituicao').val();
+                const tipoAtividadeId = $('#tipoAtividade').val();
+                
+                if (!subInstituicaoId || !tipoAtividadeId) {
+                    alert('Por favor, selecione SubInstituição e Tipo de Atividade');
+                    return;
+                }
+                
+                processarCarga();
+            });
+            
+            function validarArquivo() {
+                $('#progressContainer').show();
+                $('#progressBar').css('width', '50%').text('Validando...');
+                $('#resultContainer').hide();
+                $('#btnValidar').prop('disabled', true);
+                
+                const formData = new FormData();
+                formData.append('arquivo', selectedFile);
+                formData.append('subInstituicaoId', $('#subInstituicao').val());
+                formData.append('tipoAtividadeId', $('#tipoAtividade').val());
+                
+                fetch('/administrador/inscricao-massiva/validate', {
+                    method: 'POST',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    $('#progressBar').css('width', '100%').text('100%');
+                    setTimeout(() => {
+                        $('#progressContainer').hide();
+                        exibirResultadoValidacao(data);
+                        $('#btnValidar').prop('disabled', false);
+                    }, 500);
+                })
+                .catch(error => {
+                    console.error('Erro ao validar:', error);
+                    $('#progressContainer').hide();
+                    alert('Erro ao validar arquivo: ' + error.message);
+                    $('#btnValidar').prop('disabled', false);
+                });
+            }
+            
+            function exibirResultadoValidacao(data) {
+                let erros = data.errors || [];
+                let avisos = data.warnings || [];
+                let totalRegistros = data.totalRegistros || 0;
+                let registrosValidos = data.registrosProcessados || 0;
+                
+                // Monta resultado
+                let resultHtml = '<div class="row mb-3">';
+                resultHtml += '<div class="col-md-4"><div class="text-center"><h3>' + totalRegistros + '</h3><small>Total de Linhas</small></div></div>';
+                resultHtml += '<div class="col-md-4"><div class="text-center"><h3 class="text-success">' + registrosValidos + '</h3><small>Registros Válidos</small></div></div>';
+                resultHtml += '<div class="col-md-4"><div class="text-center"><h3 class="text-danger">' + erros.length + '</h3><small>Erros</small></div></div>';
+                resultHtml += '</div>';
+                
+                $('#resultSummary').html(resultHtml);
+                
+                let logHtml = '';
+                
+                if (erros.length > 0) {
+                    logHtml += '<div class="alert alert-danger"><strong>Erros Encontrados:</strong></div>';
+                    erros.forEach(erro => {
+                        logHtml += '<div class="log-entry log-error"><i class="fas fa-times-circle me-2"></i>' + erro + '</div>';
+                    });
+                }
+                
+                if (avisos.length > 0) {
+                    avisos.forEach(aviso => {
+                        logHtml += '<div class="log-entry log-warning"><i class="fas fa-exclamation-triangle me-2"></i>' + aviso + '</div>';
+                    });
+                }
+                
+                if (erros.length === 0) {
+                    logHtml += '<div class="log-entry log-success"><i class="fas fa-check-circle me-2"></i>Arquivo validado com sucesso! Pronto para processar.</div>';
+                }
+                
+                $('#resultLog').html(logHtml);
+                $('#resultContainer').show();
+            }
+            
+            function processarCarga() {
+                const formData = new FormData();
+                formData.append('arquivo', selectedFile);
+                formData.append('subInstituicaoId', $('#subInstituicao').val());
+                formData.append('tipoAtividadeId', $('#tipoAtividade').val());
+                formData.append('tipoCarga', 'producao');
+                formData.append('gerarArquivoResultado', 'false');
+                
+                $('#progressContainer').show();
+                $('#progressBar').css('width', '30%').text('30%');
+                $('#btnProcessar').prop('disabled', true);
+                $('#resultContainer').hide();
+                
+                $.ajax({
+                    url: '/administrador/inscricao-massiva/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $('#progressBar').css('width', '100%').text('100%');
+                        setTimeout(() => {
+                            $('#progressContainer').hide();
+                            exibirResultado(response);
+                            if (response.novasInscricoes > 0) {
+                                habilitarReverter();
+                            }
+                        }, 500);
+                    },
+                    error: function(xhr) {
+                        $('#progressContainer').hide();
+                        const response = xhr.responseJSON || { errors: ['Erro ao processar arquivo'] };
+                        exibirResultado(response);
+                    }
+                });
+            }
+            
+            function exibirResultado(response) {
+                let summaryHtml = '<div class="row">';
+                summaryHtml += `<div class="col-md-3"><div class="text-center"><h3>${response.totalRegistros || 0}</h3><small>Total</small></div></div>`;
+                summaryHtml += `<div class="col-md-3"><div class="text-center"><h3 class="text-success">${response.novasInscricoes || 0}</h3><small>Novas</small></div></div>`;
+                summaryHtml += `<div class="col-md-3"><div class="text-center"><h3 class="text-warning">${response.inscricoesExistentes || 0}</h3><small>Existentes</small></div></div>`;
+                summaryHtml += `<div class="col-md-3"><div class="text-center"><h3 class="text-danger">${response.registrosComErro || 0}</h3><small>Erros</small></div></div>`;
+                summaryHtml += '</div>';
+                
+                $('#resultSummary').html(summaryHtml);
+                
+                let logHtml = '';
+                
+                if (response.errors && response.errors.length > 0) {
+                    response.errors.forEach(error => {
+                        logHtml += `<div class="log-entry log-error"><i class="fas fa-times-circle me-2"></i>${error}</div>`;
+                    });
+                }
+                
+                if (response.warnings && response.warnings.length > 0) {
+                    response.warnings.forEach(warning => {
+                        logHtml += `<div class="log-entry log-warning"><i class="fas fa-exclamation-triangle me-2"></i>${warning}</div>`;
+                    });
+                }
+                
+                if (response.novasInscricoes > 0) {
+                    logHtml += `<div class="log-entry log-success"><i class="fas fa-check-circle me-2"></i>${response.novasInscricoes} nova(s) inscrição(ões) criada(s) com sucesso!</div>`;
+                }
+                
+                if (response.inscricoesExistentes > 0) {
+                    logHtml += `<div class="log-entry log-warning"><i class="fas fa-info-circle me-2"></i>${response.inscricoesExistentes} inscrição(ões) já existente(s)</div>`;
+                }
+                
+                $('#resultLog').html(logHtml || '<div class="text-muted">Nenhuma mensagem de log</div>');
+                $('#resultContainer').show();
+                $('#btnProcessar').prop('disabled', false);
+            }
+            
+            // Limpar
+            $('#btnLimpar').on('click', function() {
+                if (confirm('Limpar todos os dados do formulário?')) {
+                    selectedFile = null;
+                    fileInput.val('');
+                    $('#fileInfo').hide();
+                    $('#resultContainer').hide();
+                    $('#progressContainer').hide();
+                    $('#subInstituicao').val(null).trigger('change');
+                    $('#tipoAtividade').val(null).trigger('change');
+                    $('#btnReverter').prop('disabled', true);
+                    checkFormValid();
+                }
+            });
+            
+            // Habilita botão Reverter após processamento bem-sucedido
+            function habilitarReverter() {
+                $('#btnReverter').prop('disabled', false);
+            }
+        }); // Fecha $(document).ready
+    </script>
+</body>
+</html>
