@@ -78,6 +78,12 @@ public class AlterarSenhaController {
         }
 
         usuario.setPassword(passwordEncoder.encode(newPassword));
+        
+        // Se situação era 'P' (Provisória), muda para 'A' (Ativa) após alteração de senha
+        if ("P".equals(usuario.getSituacaoUsuario())) {
+            usuario.setSituacaoUsuario("A");
+        }
+        
         usuarioRepository.save(usuario);
         model.addAttribute("mensagemSucesso", "Senha alterada com sucesso! Usuário: " + username);
 

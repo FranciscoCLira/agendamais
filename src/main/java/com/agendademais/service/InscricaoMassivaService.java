@@ -125,6 +125,10 @@ public class InscricaoMassivaService {
     public InscricaoMassivaResponse processarCargaInscricoes(InscricaoMassivaRequest request, Long instituicaoId) {
         InscricaoMassivaResponse response = new InscricaoMassivaResponse();
         response.setInicioProcessamento(LocalDateTime.now());
+        
+        // Gera ID único para este batch (para rastreamento de reversão)
+        String batchId = UUID.randomUUID().toString();
+        response.setBatchId(batchId);
 
         try {
             // Validações iniciais
@@ -429,6 +433,7 @@ public class InscricaoMassivaService {
                         System.out.println("→ Criando nova Pessoa...");
                         Pessoa p = criarPessoa(registro);
                         System.out.println("✓ Pessoa criada: ID=" + p.getId());
+                        response.addPessoaId(p.getId());
                         return p;
                     });
 
@@ -438,11 +443,12 @@ public class InscricaoMassivaService {
                         System.out.println("→ Criando novo Usuario...");
                         Usuario u = criarUsuario(pessoa, registro);
                         System.out.println("✓ Usuario criado: ID=" + u.getId() + ", username=" + u.getUsername());
+                        response.addUsuarioId(u.getId());
                         return u;
                     });
 
             // 3. Busca ou cria PessoaInstituicao
-            PessoaInstituicao pessoaInstituicao = pessoaInstituicaoRepository
+            pessoaInstituicaoRepository
                     .findByPessoaIdAndInstituicaoId(pessoa.getId(), instituicao.getId())
                     .orElseGet(() -> {
                         System.out.println("→ Criando PessoaInstituicao...");
@@ -450,7 +456,7 @@ public class InscricaoMassivaService {
                     });
 
             // 4. Busca ou cria PessoaSubInstituicao
-            PessoaSubInstituicao pessoaSubInstituicao = pessoaSubInstituicaoRepository
+            pessoaSubInstituicaoRepository
                     .findByPessoaIdAndSubInstituicaoId(pessoa.getId(), subInstituicao.getId())
                     .orElseGet(() -> {
                         System.out.println("→ Criando PessoaSubInstituicao...");
@@ -460,7 +466,7 @@ public class InscricaoMassivaService {
                     });
 
             // 5. Busca ou cria UsuarioInstituicao
-            UsuarioInstituicao usuarioInstituicao = usuarioInstituicaoRepository
+            usuarioInstituicaoRepository
                     .findByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao.getId())
                     .orElseGet(() -> {
                         System.out.println("→ Criando UsuarioInstituicao...");
@@ -476,6 +482,7 @@ public class InscricaoMassivaService {
                         System.out.println("→ Criando Inscricao...");
                         Inscricao i = criarInscricao(pessoa, instituicao);
                         System.out.println("✓ Inscricao criada: ID=" + i.getId());
+                        response.addInscricaoId(i.getId());
                         return i;
                     });
 
@@ -594,7 +601,7 @@ public class InscricaoMassivaService {
             pessoaInstituicao.setIdentificacaoPessoaInstituicao(identificacao.trim());
         }
         
-        pessoaInstituicao.setDataAfiliacao(LocalDate.now());
+        pessoaInstituicao.setDataAfiliacao(null); // Não vem do Forms
         pessoaInstituicao.setDataUltimaAtualizacao(LocalDate.now());
         
         PessoaInstituicao saved = pessoaInstituicaoRepository.save(pessoaInstituicao);
@@ -613,7 +620,7 @@ public class InscricaoMassivaService {
         pessoaSubInstituicao.setInstituicao(instituicao);
         pessoaSubInstituicao.setSubInstituicao(subInstituicao);
         pessoaSubInstituicao.setIdentificacaoPessoaSubInstituicao(registro.getIdentificacaoPessoaSubInstituicao());
-        pessoaSubInstituicao.setDataAfiliacao(LocalDate.now());
+        pessoaSubInstituicao.setDataAfiliacao(null); // Não vem do Forms
         pessoaSubInstituicao.setDataUltimaAtualizacao(LocalDate.now());
         
         return pessoaSubInstituicaoRepository.save(pessoaSubInstituicao);
@@ -777,5 +784,123 @@ public class InscricaoMassivaService {
         }
         
         return senha.toString();
+    }
+
+    /**
+     * Reverte uma carga massiva (exclui registros criados)
+     * EXCEÇÃO: NÃO exclui entidades Local
+     * 
+     * @param inscricoesIds Lista de IDs de Inscricao criadas nesta carga
+     * @param usuariosIds Lista de IDs de Usuario criados nesta carga
+     * @param pessoasIds Lista de IDs de Pessoa criadas nesta carga
+     * @return Response com resultado da reversão
+     */
+    @Transactional
+    public InscricaoMassivaResponse reverterCarga(List<Long> inscricoesIds, 
+                                                  List<Long> usuariosIds, 
+                                                  List<Long> pessoasIds) {
+        InscricaoMassivaResponse response = new InscricaoMassivaResponse();
+        response.setInicioProcessamento(LocalDateTime.now());
+        
+        final int[] totalDeletados = {0}; // Array para uso em lambdas
+        
+        try {
+            System.out.println("=== INICIANDO REVERSÃO DE CARGA ===");
+            System.out.println("Inscrições a processar: " + inscricoesIds.size());
+            System.out.println("Usuários a processar: " + usuariosIds.size());
+            System.out.println("Pessoas a processar: " + pessoasIds.size());
+            
+            // Ordem de exclusão (respeitando dependências):
+            // 7. InscricaoTipoAtividade (depende de Inscricao)
+            // 6. Inscricao (depende de Pessoa)
+            // 5. UsuarioInstituicao (depende de Usuario)
+            // 4. PessoaSubInstituicao (depende de Pessoa)
+            // 3. PessoaInstituicao (depende de Pessoa)
+            // 2. Usuario (depende de Pessoa)
+            // 1. Pessoa (última a ser excluída)
+            // 0. Local - NÃO EXCLUIR (exceção conforme solicitado)
+            
+            // 1. Deletar InscricaoTipoAtividade para cada Inscricao
+            for (Long inscricaoId : inscricoesIds) {
+                List<InscricaoTipoAtividade> itas = inscricaoTipoAtividadeRepository.findByInscricaoId(inscricaoId);
+                for (InscricaoTipoAtividade ita : itas) {
+                    inscricaoTipoAtividadeRepository.delete(ita);
+                    totalDeletados[0]++;
+                    System.out.println("✓ InscricaoTipoAtividade deletada: ID=" + ita.getId());
+                }
+            }
+            
+            // 2. Deletar Inscricoes
+            for (Long inscricaoId : inscricoesIds) {
+                inscricaoRepository.findById(inscricaoId).ifPresent(inscricao -> {
+                    inscricaoRepository.delete(inscricao);
+                    totalDeletados[0]++;
+                    System.out.println("✓ Inscricao deletada: ID=" + inscricaoId);
+                });
+            }
+            
+            // 3. Deletar UsuarioInstituicao para cada Usuario criado
+            for (Long usuarioId : usuariosIds) {
+                List<UsuarioInstituicao> uis = usuarioInstituicaoRepository.findByUsuarioId(usuarioId);
+                for (UsuarioInstituicao ui : uis) {
+                    usuarioInstituicaoRepository.delete(ui);
+                    totalDeletados[0]++;
+                    System.out.println("✓ UsuarioInstituicao deletada: ID=" + ui.getId());
+                }
+            }
+            
+            // 4. Deletar PessoaSubInstituicao para cada Pessoa criada
+            for (Long pessoaId : pessoasIds) {
+                List<PessoaSubInstituicao> psis = pessoaSubInstituicaoRepository.findByPessoaId(pessoaId);
+                for (PessoaSubInstituicao psi : psis) {
+                    pessoaSubInstituicaoRepository.delete(psi);
+                    totalDeletados[0]++;
+                    System.out.println("✓ PessoaSubInstituicao deletada: ID=" + psi.getId());
+                }
+            }
+            
+            // 5. Deletar PessoaInstituicao para cada Pessoa criada
+            for (Long pessoaId : pessoasIds) {
+                List<PessoaInstituicao> pis = pessoaInstituicaoRepository.findByPessoaId(pessoaId);
+                for (PessoaInstituicao pi : pis) {
+                    pessoaInstituicaoRepository.delete(pi);
+                    totalDeletados[0]++;
+                    System.out.println("✓ PessoaInstituicao deletada: ID=" + pi.getId());
+                }
+            }
+            
+            // 6. Deletar Usuarios criados
+            for (Long usuarioId : usuariosIds) {
+                usuarioRepository.findById(usuarioId).ifPresent(usuario -> {
+                    usuarioRepository.delete(usuario);
+                    totalDeletados[0]++;
+                    System.out.println("✓ Usuario deletado: ID=" + usuarioId + ", username=" + usuario.getUsername());
+                });
+            }
+            
+            // 7. Deletar Pessoas criadas
+            for (Long pessoaId : pessoasIds) {
+                pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
+                    pessoaRepository.delete(pessoa);
+                    totalDeletados[0]++;
+                    System.out.println("✓ Pessoa deletada: ID=" + pessoaId + ", email=" + pessoa.getEmailPessoa());
+                });
+            }
+            
+            System.out.println("=== REVERSÃO CONCLUÍDA ===");
+            System.out.println("Total de registros deletados: " + totalDeletados[0]);
+            
+            response.addWarning("Reversão concluída com sucesso. Total de registros deletados: " + totalDeletados[0]);
+            response.setTotalRegistros(totalDeletados[0]);
+            response.setRegistrosProcessados(totalDeletados[0]);
+            
+        } catch (Exception e) {
+            System.err.println("✗ ERRO na reversão: " + e.getMessage());
+            e.printStackTrace();
+            response.addError("Erro durante reversão: " + e.getMessage());
+        }
+        
+        response.setFimProcessamento(LocalDateTime.now());
+        return response;
     }
 }

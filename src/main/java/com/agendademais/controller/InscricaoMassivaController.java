@@ -157,4 +157,54 @@ public class InscricaoMassivaController {
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
+
+    /**
+     * Reverte uma carga massiva de inscrições (exclui registros criados)
+     * EXCEÇÃO: NÃO exclui entidades Local
+     */
+    @PostMapping("/reverter")
+    @ResponseBody
+    public ResponseEntity<InscricaoMassivaResponse> reverterCarga(
+            @RequestBody InscricaoMassivaResponse dadosCarga,
+            HttpSession session) {
+
+        // Verifica se usuário está logado e é administrador
+        Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
+        if (nivelAcesso == null || nivelAcesso < 5) {
+            InscricaoMassivaResponse errorResponse = new InscricaoMassivaResponse();
+            errorResponse.addError("Acesso negado. Apenas administradores podem realizar esta operação.");
+            return ResponseEntity.status(403).body(errorResponse);
+        }
+
+        Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
+        if (instituicaoSelecionada == null) {
+            InscricaoMassivaResponse errorResponse = new InscricaoMassivaResponse();
+            errorResponse.addError("Instituição não selecionada");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        try {
+            // Valida dados
+            if (dadosCarga.getInscricoesIds() == null || dadosCarga.getInscricoesIds().isEmpty()) {
+                InscricaoMassivaResponse errorResponse = new InscricaoMassivaResponse();
+                errorResponse.addError("Nenhuma inscrição para reverter");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            // Chama service para reverter
+            InscricaoMassivaResponse response = inscricaoMassivaService.reverterCarga(
+                dadosCarga.getInscricoesIds(),
+                dadosCarga.getUsuariosIds(),
+                dadosCarga.getPessoasIds()
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            InscricaoMassivaResponse errorResponse = new InscricaoMassivaResponse();
+            errorResponse.addError("Erro durante reversão: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
 }

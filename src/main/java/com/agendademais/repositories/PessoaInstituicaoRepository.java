@@ -20,6 +20,8 @@ public interface PessoaInstituicaoRepository extends JpaRepository<PessoaInstitu
 
     List<PessoaInstituicao> findByPessoa(Pessoa pessoa);
     
+    List<PessoaInstituicao> findByPessoaId(Long pessoaId);
+    
     // Busca PessoaInstituicao por IDs
     Optional<PessoaInstituicao> findByPessoaIdAndInstituicaoId(Long pessoaId, Long instituicaoId);
 

@@ -24,6 +24,12 @@ public class InscricaoMassivaResponse {
     
     private String arquivoResultado;
     
+    // Para controle de reversão
+    private String batchId;
+    private List<Long> pessoasIds = new ArrayList<>();
+    private List<Long> usuariosIds = new ArrayList<>();
+    private List<Long> inscricoesIds = new ArrayList<>();
+    
     // Getters e Setters
     
     public boolean isSuccess() {
@@ -129,5 +135,37 @@ public class InscricaoMassivaResponse {
     
     public void setArquivoResultado(String arquivoResultado) {
         this.arquivoResultado = arquivoResultado;
+    }
+    
+    public String getBatchId() {
+        return batchId;
+    }
+    
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
+    
+    public List<Long> getPessoasIds() {
+        return pessoasIds;
+    }
+    
+    public void addPessoaId(Long id) {
+        this.pessoasIds.add(id);
+    }
+    
+    public List<Long> getUsuariosIds() {
+        return usuariosIds;
+    }
+    
+    public void addUsuarioId(Long id) {
+        this.usuariosIds.add(id);
+    }
+    
+    public List<Long> getInscricoesIds() {
+        return inscricoesIds;
+    }
+    
+    public void addInscricaoId(Long id) {
+        this.inscricoesIds.add(id);
     }
 }

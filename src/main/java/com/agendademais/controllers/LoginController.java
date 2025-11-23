@@ -105,6 +105,13 @@ public class LoginController {
             return "redirect:/alterar-senha";
         }
 
+        // Se situacaoUsuario='P' (Provisória), forçar alteração de senha
+        if (usuario.getSituacaoUsuario() != null && usuario.getSituacaoUsuario().equals("P")) {
+            redirectAttributes.addFlashAttribute("username", user);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Senha provisória. Por favor, altere sua senha.");
+            return "redirect:/alterar-senha";
+        }
+
         if (usuario.getSituacaoUsuario() != null && usuario.getSituacaoUsuario().equals("B")) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Usuário bloqueado. Consulte o administrador.");
             return "redirect:/acesso";

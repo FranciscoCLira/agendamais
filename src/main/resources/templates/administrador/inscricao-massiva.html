@@ -268,6 +268,7 @@
         $(document).ready(function() {
             
             let selectedFile = null;
+            let ultimaCarga = null; // Armazena dados da última carga para reversão
             const instituicaoId = [[${instituicao.id}]];
             const csrfToken = [[${_csrf.token}]];
             const csrfHeader = [[${_csrf.headerName}]];
@@ -433,10 +434,72 @@
             
             // Reverter/Excluir Carga
             $('#btnReverter').on('click', function() {
-                if (confirm('Deseja realmente reverter a última carga?\n\nIsto irá remover:\n- Novas inscrições criadas\n- Novos usuários (se não tiverem outros vínculos)\n\nATENÇÃO: Esta ação não pode ser desfeita!')) {
-                    alert('Funcionalidade de reversão em desenvolvimento.\n\nPor enquanto, use o painel de administração para remover registros individualmente.');
+                if (!ultimaCarga) {
+                    alert('Nenhuma carga para reverter. Execute uma carga primeiro.');
+                    return;
+                }
+                
+                const totalRegistros = (ultimaCarga.pessoasIds?.length || 0) + 
+                                      (ultimaCarga.usuariosIds?.length || 0) + 
+                                      (ultimaCarga.inscricoesIds?.length || 0);
+                
+                if (confirm(`Deseja realmente reverter a última carga?\n\nIsto irá remover:\n- ${ultimaCarga.novasInscricoes || 0} novas inscrições\n- ${ultimaCarga.pessoasIds?.length || 0} novas pessoas\n- ${ultimaCarga.usuariosIds?.length || 0} novos usuários\n\nATENÇÃO: Esta ação não pode ser desfeita!\n\nOBS: Entidades Local (País/Estado/Cidade) NÃO serão excluídas.`)) {
+                    reverterCarga();
                 }
             });
+            
+            function reverterCarga() {
+                $('#progressContainer').show();
+                $('#progressBar').css('width', '50%').text('Revertendo...');
+                $('#btnReverter').prop('disabled', true);
+                
+                $.ajax({
+                    url: '/administrador/inscricao-massiva/reverter',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(ultimaCarga),
+                    success: function(response) {
+                        $('#progressBar').css('width', '100%').text('Concluído');
+                        setTimeout(() => {
+                            $('#progressContainer').hide();
+                            exibirResultadoReversao(response);
+                            ultimaCarga = null; // Limpa após reversão
+                            $('#btnReverter').prop('disabled', true);
+                        }, 500);
+                    },
+                    error: function(xhr) {
+                        $('#progressContainer').hide();
+                        const response = xhr.responseJSON || { errors: ['Erro ao reverter carga'] };
+                        alert('Erro na reversão: ' + (response.errors?.[0] || 'Erro desconhecido'));
+                        $('#btnReverter').prop('disabled', false);
+                    }
+                });
+            }
+            
+            function exibirResultadoReversao(response) {
+                let summaryHtml = '<div class="row">';
+                summaryHtml += `<div class="col-md-12"><div class="text-center"><h3 class="text-danger">${response.totalRegistros || 0}</h3><small>Registros Removidos</small></div></div>`;
+                summaryHtml += '</div>';
+                
+                $('#resultSummary').html(summaryHtml);
+                
+                let logHtml = '<div class="log-entry log-warning"><i class="fas fa-check-circle me-2"></i>Reversão concluída com sucesso!</div>';
+                
+                if (response.warnings && response.warnings.length > 0) {
+                    response.warnings.forEach(warning => {
+                        logHtml += `<div class="log-entry log-warning"><i class="fas fa-info-circle me-2"></i>${warning}</div>`;
+                    });
+                }
+                
+                if (response.errors && response.errors.length > 0) {
+                    response.errors.forEach(error => {
+                        logHtml += `<div class="log-entry log-error"><i class="fas fa-times-circle me-2"></i>${error}</div>`;
+                    });
+                }
+                
+                $('#resultLog').html(logHtml);
+                $('#resultContainer').show();
+            }
             
             // Ajuda
             $('#btnAjuda').on('click', function() {
@@ -595,6 +658,7 @@ OBSERVAÇÕES:
                             $('#progressContainer').hide();
                             exibirResultado(response);
                             if (response.novasInscricoes > 0) {
+                                ultimaCarga = response; // Armazena para reversão
                                 habilitarReverter();
                             }
                         }, 500);
@@ -648,6 +712,7 @@ OBSERVAÇÕES:
             $('#btnLimpar').on('click', function() {
                 if (confirm('Limpar todos os dados do formulário?')) {
                     selectedFile = null;
+                    ultimaCarga = null; // Limpa dados de reversão
                     fileInput.val('');
                     $('#fileInfo').hide();
                     $('#resultContainer').hide();
