@@ -347,11 +347,40 @@ public class InscricaoMassivaService {
                 erros.append("Celular obrigatório. ");
             }
 
+            // Valida Estado se País for Brasil
+            if (registro.getPais() != null && !registro.getPais().trim().isEmpty()) {
+                String pais = registro.getPais().trim();
+                if (pais.equalsIgnoreCase("Brasil") || pais.equalsIgnoreCase("Brazil")) {
+                    if (registro.getEstado() != null && !registro.getEstado().trim().isEmpty()) {
+                        String estado = registro.getEstado().trim();
+                        // Valida se estado brasileiro existe
+                        if (!validarEstadoBrasileiro(estado)) {
+                            erros.append("Estado brasileiro inválido ou com sigla (use nome completo, ex: 'São Paulo' em vez de 'SP'). ");
+                        }
+                    }
+                }
+            }
+
             if (erros.length() > 0) {
                 registro.setMensagemErro("Linha " + registro.getLinha() + ": " + erros.toString());
                 response.addWarning(registro.getMensagemErro());
             }
         }
+    }
+
+    /**
+     * Valida se Estado brasileiro existe na base (todos os 27 estados devem estar cadastrados)
+     */
+    private boolean validarEstadoBrasileiro(String nomeEstado) {
+        // Busca país Brasil
+        Optional<Local> brasilOpt = localRepository.findByTipoLocalAndNomeLocal(1, "Brasil");
+        if (brasilOpt.isEmpty()) {
+            return false; // Brasil não cadastrado
+        }
+
+        // Busca estado dentro do Brasil
+        Optional<Local> estadoOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(2, nomeEstado, brasilOpt.get());
+        return estadoOpt.isPresent();
     }
 
     /**
@@ -452,7 +481,7 @@ public class InscricaoMassivaService {
     }
 
     /**
-     * Cria nova Pessoa
+     * Cria nova Pessoa (com Locais hierárquicos)
      */
     private Pessoa criarPessoa(InscricaoFormsRecord registro) {
         Pessoa pessoa = new Pessoa();
@@ -463,6 +492,38 @@ public class InscricaoMassivaService {
         pessoa.setComentarios(registro.getComentarios());
         pessoa.setDataInclusao(LocalDate.now());
         pessoa.setDataUltimaAtualizacao(LocalDate.now());
+
+        // Busca ou cria Locais hierárquicos (Pais -> Estado -> Cidade)
+        String nomePais = registro.getPais();
+        String nomeEstado = registro.getEstado();
+        String nomeCidade = registro.getCidade();
+
+        if (nomePais != null || nomeEstado != null || nomeCidade != null) {
+            Local cidade = buscarOuCriarLocalHierarquico(nomePais, nomeEstado, nomeCidade);
+            
+            // Define Pais, Estado e Cidade na Pessoa
+            if (cidade != null) {
+                if (cidade.getTipoLocal() == 3) { // Cidade
+                    pessoa.setCidade(cidade);
+                    if (cidade.getLocalPai() != null && cidade.getLocalPai().getTipoLocal() == 2) { // Estado
+                        pessoa.setEstado(cidade.getLocalPai());
+                        if (cidade.getLocalPai().getLocalPai() != null) { // País
+                            pessoa.setPais(cidade.getLocalPai().getLocalPai());
+                        }
+                    } else if (cidade.getLocalPai() != null && cidade.getLocalPai().getTipoLocal() == 1) { // País direto
+                        pessoa.setPais(cidade.getLocalPai());
+                    }
+                } else if (cidade.getTipoLocal() == 2) { // Estado
+                    pessoa.setEstado(cidade);
+                    if (cidade.getLocalPai() != null) {
+                        pessoa.setPais(cidade.getLocalPai());
+                    }
+                } else if (cidade.getTipoLocal() == 1) { // País
+                    pessoa.setPais(cidade);
+                }
+            }
+        }
+
         return pessoaRepository.save(pessoa);
     }
 
@@ -567,14 +628,111 @@ public class InscricaoMassivaService {
     }
 
     /**
-     * Busca ou cria Local (método removido - Local usa estrutura hierárquica)
-     * PessoaInstituicao não tem relacionamento direto com Local
+     * Busca ou cria Local hierárquico (País -> Estado -> Cidade)
+     * Normaliza nomes removendo espaços iniciais/finais
+     * 
+     * @param nomePais Nome do país
+     * @param nomeEstado Nome do estado
+     * @param nomeCidade Nome da cidade
+     * @return Local da cidade (tipo 3) ou null se nenhum local informado
      */
-    @SuppressWarnings("unused")
-    private Local buscarOuCriarLocal(String cidade, String estado, String pais) {
-        // Método mantido para compatibilidade futura
-        // Atualmente PessoaInstituicao não armazena Local diretamente
-        return null;
+    private Local buscarOuCriarLocalHierarquico(String nomePais, String nomeEstado, String nomeCidade) {
+        // Normaliza nomes (trim)
+        nomePais = normalizarNome(nomePais);
+        nomeEstado = normalizarNome(nomeEstado);
+        nomeCidade = normalizarNome(nomeCidade);
+
+        // Se nenhum local informado, retorna null
+        if (nomePais == null && nomeEstado == null && nomeCidade == null) {
+            return null;
+        }
+
+        Local pais = null;
+        Local estado = null;
+        Local cidade = null;
+
+        // 1. Busca ou cria País (tipo 1)
+        if (nomePais != null) {
+            Optional<Local> paisOpt = localRepository.findByTipoLocalAndNomeLocal(1, nomePais);
+            if (paisOpt.isPresent()) {
+                pais = paisOpt.get();
+                System.out.println("✓ País encontrado: " + nomePais + " (ID=" + pais.getId() + ")");
+            } else {
+                pais = new Local(1, nomePais, null);
+                pais = localRepository.save(pais);
+                System.out.println("→ País criado: " + nomePais + " (ID=" + pais.getId() + ")");
+            }
+        }
+
+        // 2. Busca ou cria Estado (tipo 2)
+        if (nomeEstado != null) {
+            if (pais != null) {
+                // Busca estado dentro do país
+                Optional<Local> estadoOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(2, nomeEstado, pais);
+                if (estadoOpt.isPresent()) {
+                    estado = estadoOpt.get();
+                    System.out.println("✓ Estado encontrado: " + nomeEstado + " (ID=" + estado.getId() + ")");
+                } else {
+                    // Cria novo estado
+                    estado = new Local(2, nomeEstado, pais);
+                    estado = localRepository.save(estado);
+                    System.out.println("→ Estado criado: " + nomeEstado + " em " + nomePais + " (ID=" + estado.getId() + ")");
+                }
+            } else {
+                // Estado sem país definido - busca ou cria sem pai
+                Optional<Local> estadoOpt = localRepository.findByTipoLocalAndNomeLocal(2, nomeEstado);
+                if (estadoOpt.isPresent()) {
+                    estado = estadoOpt.get();
+                    System.out.println("✓ Estado encontrado (sem país): " + nomeEstado + " (ID=" + estado.getId() + ")");
+                } else {
+                    estado = new Local(2, nomeEstado, null);
+                    estado = localRepository.save(estado);
+                    System.out.println("→ Estado criado (sem país): " + nomeEstado + " (ID=" + estado.getId() + ")");
+                }
+            }
+        }
+
+        // 3. Busca ou cria Cidade (tipo 3)
+        if (nomeCidade != null) {
+            Local cidadePai = estado != null ? estado : pais;
+            
+            if (cidadePai != null) {
+                // Busca cidade dentro do estado/país
+                Optional<Local> cidadeOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(3, nomeCidade, cidadePai);
+                if (cidadeOpt.isPresent()) {
+                    cidade = cidadeOpt.get();
+                    System.out.println("✓ Cidade encontrada: " + nomeCidade + " (ID=" + cidade.getId() + ")");
+                } else {
+                    // Cria nova cidade
+                    cidade = new Local(3, nomeCidade, cidadePai);
+                    cidade = localRepository.save(cidade);
+                    System.out.println("→ Cidade criada: " + nomeCidade + " em " + (estado != null ? estado.getNomeLocal() : pais.getNomeLocal()) + " (ID=" + cidade.getId() + ")");
+                }
+            } else {
+                // Cidade sem estado/país - busca ou cria sem pai
+                Optional<Local> cidadeOpt = localRepository.findByTipoLocalAndNomeLocal(3, nomeCidade);
+                if (cidadeOpt.isPresent()) {
+                    cidade = cidadeOpt.get();
+                    System.out.println("✓ Cidade encontrada (sem estado/país): " + nomeCidade + " (ID=" + cidade.getId() + ")");
+                } else {
+                    cidade = new Local(3, nomeCidade, null);
+                    cidade = localRepository.save(cidade);
+                    System.out.println("→ Cidade criada (sem estado/país): " + nomeCidade + " (ID=" + cidade.getId() + ")");
+                }
+            }
+        }
+
+        // Retorna a cidade (nível mais específico) ou estado ou país
+        return cidade != null ? cidade : (estado != null ? estado : pais);
+    }
+
+    /**
+     * Normaliza nome de local (trim e retorna null se vazio)
+     */
+    private String normalizarNome(String nome) {
+        if (nome == null) return null;
+        nome = nome.trim();
+        return nome.isEmpty() ? null : nome;
     }
 
     /**
