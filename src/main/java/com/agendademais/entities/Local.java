@@ -10,7 +10,7 @@ public class Local {
     private Long id;
     private Integer tipoLocal; // 1=País, 2=Estado, 3=Cidade
     private String nomeLocal;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pai")
     private Local localPai;
 

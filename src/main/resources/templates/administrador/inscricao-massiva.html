@@ -498,7 +498,7 @@
             
             function exibirResultadoReversao(response) {
                 let summaryHtml = '<div class="row">';
-                summaryHtml += `<div class="col-md-12"><div class="text-center"><h3 class="text-danger">${response.totalRegistros || 0}</h3><small>Registros Removidos</small></div></div>`;
+                summaryHtml += `<div class="col-md-12"><div class="text-center"><h3 class="text-danger">${response.totalRegistros || 0}</h3><small>Registros Processados</small></div></div>`;
                 summaryHtml += '</div>';
                 
                 $('#resultSummary').html(summaryHtml);
@@ -620,12 +620,13 @@ OBSERVAÇÕES:
                 let avisos = data.warnings || [];
                 let totalRegistros = data.totalRegistros || 0;
                 let registrosValidos = data.registrosProcessados || 0;
+                let registrosInvalidos = totalRegistros - registrosValidos;
                 
                 // Monta resultado
                 let resultHtml = '<div class="row mb-3">';
                 resultHtml += '<div class="col-md-4"><div class="text-center"><h3>' + totalRegistros + '</h3><small>Total de Linhas</small></div></div>';
                 resultHtml += '<div class="col-md-4"><div class="text-center"><h3 class="text-success">' + registrosValidos + '</h3><small>Registros Válidos</small></div></div>';
-                resultHtml += '<div class="col-md-4"><div class="text-center"><h3 class="text-danger">' + erros.length + '</h3><small>Erros</small></div></div>';
+                resultHtml += '<div class="col-md-4"><div class="text-center"><h3 class="text-danger">' + registrosInvalidos + '</h3><small>Erros</small></div></div>';
                 resultHtml += '</div>';
                 
                 $('#resultSummary').html(resultHtml);
