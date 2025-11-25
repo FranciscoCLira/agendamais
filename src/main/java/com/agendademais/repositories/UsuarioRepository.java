@@ -17,6 +17,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     String findMaxUsernameStartingWith(@Param("prefixo") String prefixo);
     
     Optional<Usuario> findByUsername(String username);
+    
+    boolean existsByUsername(String username);
 
     Optional<Usuario> findByUsernameAndPassword(String username, String password);
 

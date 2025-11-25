@@ -619,8 +619,8 @@ public class InscricaoMassivaService {
         Usuario usuario = new Usuario();
         usuario.setPessoa(pessoa);
 
-        // Gera username a partir do email (parte antes do @)
-        String username = pessoa.getEmailPessoa().split("@")[0];
+        // Gera username único a partir do email
+        String username = gerarUsernameUnico(pessoa.getEmailPessoa());
         usuario.setUsername(username);
 
         // Senha padrão inicial: Agenda@2025 (obriga troca no primeiro acesso)
@@ -634,6 +634,60 @@ public class InscricaoMassivaService {
         registro.setSenhaGerada(senhaInicial);
 
         return usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Gera username único a partir do email, evitando duplicidades
+     * 
+     * Estratégia:
+     * 1. Tenta: parte_antes_do_@ (ex: "testando" de testando@gmail.com)
+     * 2. Se duplicado: parte_antes_do_@.provedor (ex: "testando.gmail")
+     * 3. Se ainda duplicado: parte_antes_do_@.provedor.numero (ex: "testando.gmail.2")
+     * 
+     * @param email Email completo
+     * @return Username único
+     */
+    private String gerarUsernameUnico(String email) {
+        String[] partes = email.split("@");
+        String localPart = partes[0];
+        String domain = partes.length > 1 ? partes[1] : "";
+        
+        // Extrai provedor (primeira parte do domínio)
+        String provedor = domain.contains(".") ? domain.split("\\.")[0] : domain;
+        
+        // Tentativa 1: apenas local part
+        String username = localPart;
+        if (!usuarioRepository.existsByUsername(username)) {
+            System.out.println("→ Username gerado: " + username);
+            return username;
+        }
+        
+        System.out.println("⚠ Username '" + username + "' já existe, tentando com provedor...");
+        
+        // Tentativa 2: local part + provedor
+        username = localPart + "." + provedor;
+        if (!usuarioRepository.existsByUsername(username)) {
+            System.out.println("→ Username gerado: " + username);
+            return username;
+        }
+        
+        System.out.println("⚠ Username '" + username + "' já existe, adicionando número...");
+        
+        // Tentativa 3: local part + provedor + número sequencial
+        int contador = 2;
+        while (contador < 1000) { // Limite de segurança
+            username = localPart + "." + provedor + "." + contador;
+            if (!usuarioRepository.existsByUsername(username)) {
+                System.out.println("→ Username gerado: " + username);
+                return username;
+            }
+            contador++;
+        }
+        
+        // Fallback final (improvável): usa email completo com timestamp
+        username = email.replace("@", ".").replace(".", "_") + "_" + System.currentTimeMillis();
+        System.out.println("⚠ Fallback: Username gerado: " + username);
+        return username;
     }
 
     /**
