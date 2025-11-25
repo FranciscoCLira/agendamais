@@ -68,7 +68,8 @@ public class DisparoEmailService {
             public void run() {
                 // Mensagem de rodapé para descadastro
                 String removerEmailMensagem = "<br><br><hr style='margin:16px 0'>" +
-                        "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>" +
+                        "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>"
+                        +
                         "Acesse: <a href='" + appUrl + "' style='color:#0066cc;'>" + appUrl + "</a></span>";
                 OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
                 String assunto = "";

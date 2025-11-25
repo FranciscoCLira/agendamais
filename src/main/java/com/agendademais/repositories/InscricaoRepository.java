@@ -18,7 +18,7 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     List<Inscricao> findByPessoa(Pessoa pessoa);
 
     Optional<Inscricao> findByPessoaAndIdInstituicao(Pessoa pessoa, Instituicao instituicao);
-    
+
     Optional<Inscricao> findByPessoaIdAndIdInstituicaoId(Long pessoaId, Long instituicaoId);
 
     // VERIFICA INSCRICAO COM DUPLICIDADE DE ATIVIDADE PARA A MESMA PESSOA E

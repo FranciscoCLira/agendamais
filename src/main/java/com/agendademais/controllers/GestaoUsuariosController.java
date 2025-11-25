@@ -563,10 +563,11 @@ public class GestaoUsuariosController {
             Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
             Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
             Instituicao instituicaoSelecionada = (Instituicao) session.getAttribute("instituicaoSelecionada");
-            
+
             System.out.println("usuarioLogado: " + (usuarioLogado != null ? usuarioLogado.getUsername() : "null"));
             System.out.println("nivelAcesso: " + nivelAcesso);
-            System.out.println("instituicaoSelecionada: " + (instituicaoSelecionada != null ? instituicaoSelecionada.getNomeInstituicao() : "null"));
+            System.out.println("instituicaoSelecionada: "
+                    + (instituicaoSelecionada != null ? instituicaoSelecionada.getNomeInstituicao() : "null"));
             System.out.println("Filtros - pais: " + pais + ", estado: " + estado + ", cidade: " + cidade);
 
             // Verificar permissões
@@ -604,7 +605,7 @@ public class GestaoUsuariosController {
             // consulta
 
             // Carrega sub-instituições ativas da instituição
-            List<SubInstituicao> subInstituicoes = instituicaoSelecionada != null 
+            List<SubInstituicao> subInstituicoes = instituicaoSelecionada != null
                     ? subInstituicaoRepository.findByInstituicaoAndSituacaoSubInstituicao(instituicaoSelecionada, "A")
                     : new java.util.ArrayList<>();
             model.addAttribute("subInstituicoes", subInstituicoes);
@@ -645,10 +646,11 @@ public class GestaoUsuariosController {
                 usuarios = new java.util.ArrayList<>(usuarios.stream()
                         .filter(ui -> {
                             try {
-                                return ui.getUsuario() != null 
-                                    && ui.getUsuario().getPessoa() != null
-                                    && ui.getUsuario().getPessoa().getNomeEstado() != null
-                                    && removerAcentos(ui.getUsuario().getPessoa().getNomeEstado()).contains(estadoFiltro);
+                                return ui.getUsuario() != null
+                                        && ui.getUsuario().getPessoa() != null
+                                        && ui.getUsuario().getPessoa().getNomeEstado() != null
+                                        && removerAcentos(ui.getUsuario().getPessoa().getNomeEstado())
+                                                .contains(estadoFiltro);
                             } catch (Exception e) {
                                 System.out.println("Erro ao filtrar estado para usuario: " + e.getMessage());
                                 return false;
@@ -795,10 +797,10 @@ public class GestaoUsuariosController {
                     System.out.println("WARNING: Found null UsuarioInstituicao in paginados list");
                     continue;
                 }
-                
+
                 String nomeSubInstituicao = null;
                 try {
-                    if (instituicaoSelecionada != null && usuarioInst.getUsuario() != null 
+                    if (instituicaoSelecionada != null && usuarioInst.getUsuario() != null
                             && usuarioInst.getUsuario().getPessoa() != null
                             && usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao() != null) {
                         nomeSubInstituicao = usuarioInst.getUsuario().getPessoa().getPessoaSubInstituicao().stream()

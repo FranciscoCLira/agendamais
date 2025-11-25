@@ -42,7 +42,7 @@ public class InscricaoMassivaController {
 
         model.addAttribute("pageTitle", "Carga Massiva de Inscrições");
         model.addAttribute("instituicao", instituicaoSelecionada);
-        
+
         return "administrador/inscricao-massiva";
     }
 
@@ -56,7 +56,7 @@ public class InscricaoMassivaController {
             @RequestParam("subInstituicaoId") Long subInstituicaoId,
             @RequestParam("tipoAtividadeId") Long tipoAtividadeId,
             HttpSession session) {
-        
+
         try {
             // Verifica acesso
             Integer nivelAcesso = (Integer) session.getAttribute("nivelAcessoAtual");
@@ -83,9 +83,8 @@ public class InscricaoMassivaController {
 
             // Chama service apenas para validar
             InscricaoMassivaResponse response = inscricaoMassivaService.validarArquivo(
-                request, 
-                instituicaoSelecionada.getId()
-            );
+                    request,
+                    instituicaoSelecionada.getId());
 
             return ResponseEntity.ok(response);
 
@@ -161,7 +160,8 @@ public class InscricaoMassivaController {
     /**
      * Reverte uma carga massiva baseada em arquivo Excel com lista de emails
      * Deleta relacionamentos específicos da SubInstituição/TipoAtividade
-     * Só deleta Pessoa/Usuario se não houver outros vínculos com outras instituições
+     * Só deleta Pessoa/Usuario se não houver outros vínculos com outras
+     * instituições
      * EXCEÇÃO: NÃO exclui entidades Local
      */
     @PostMapping("/reverter")
@@ -197,11 +197,10 @@ public class InscricaoMassivaController {
 
             // Chama service para reverter por arquivo
             InscricaoMassivaResponse response = inscricaoMassivaService.reverterCargaPorArquivo(
-                arquivo,
-                subInstituicaoId,
-                tipoAtividadeId,
-                instituicaoSelecionada.getId()
-            );
+                    arquivo,
+                    subInstituicaoId,
+                    tipoAtividadeId,
+                    instituicaoSelecionada.getId());
 
             return ResponseEntity.ok(response);
 

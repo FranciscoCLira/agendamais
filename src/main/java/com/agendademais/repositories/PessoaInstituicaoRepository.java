@@ -19,9 +19,9 @@ public interface PessoaInstituicaoRepository extends JpaRepository<PessoaInstitu
     void deleteByPessoaAndInstituicao(Pessoa pessoa, Instituicao instituicao);
 
     List<PessoaInstituicao> findByPessoa(Pessoa pessoa);
-    
+
     List<PessoaInstituicao> findByPessoaId(Long pessoaId);
-    
+
     // Busca PessoaInstituicao por IDs
     Optional<PessoaInstituicao> findByPessoaIdAndInstituicaoId(Long pessoaId, Long instituicaoId);
 

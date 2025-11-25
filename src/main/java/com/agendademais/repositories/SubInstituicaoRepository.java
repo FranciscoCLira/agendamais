@@ -25,10 +25,11 @@ public interface SubInstituicaoRepository extends JpaRepository<SubInstituicao, 
 	// Novo método para buscar todas as sub-instituições de uma instituição,
 	// independentemente da situação
 	List<SubInstituicao> findByInstituicao(Instituicao instituicao);
-	
+
 	// Busca sub-instituições por instituição (ID)
 	List<SubInstituicao> findByInstituicaoId(Long instituicaoId);
-	
-	// Busca sub-instituições por instituição e nome contendo termo (case insensitive)
+
+	// Busca sub-instituições por instituição e nome contendo termo (case
+	// insensitive)
 	List<SubInstituicao> findByInstituicaoIdAndNomeSubInstituicaoContainingIgnoreCase(Long instituicaoId, String nome);
 }

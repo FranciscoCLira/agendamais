@@ -20,7 +20,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Serviço para processamento de carga massiva de inscrições em tipos de atividade
+ * Serviço para processamento de carga massiva de inscrições em tipos de
+ * atividade
  * Lê planilha Excel do Microsoft Forms (colunas G-O)
  */
 @Service
@@ -80,7 +81,7 @@ public class InscricaoMassivaService {
                 response.addError("SubInstituição não encontrada");
                 return response;
             }
-            
+
             if (!tipoAtividadeRepository.existsById(request.getTipoAtividadeId())) {
                 response.addError("Tipo de Atividade não encontrado");
                 return response;
@@ -101,9 +102,9 @@ public class InscricaoMassivaService {
             // Conta registros válidos
             long registrosValidos = registros.stream().filter(InscricaoFormsRecord::isValido).count();
             response.setRegistrosProcessados((int) registrosValidos);
-            
+
             response.setFimProcessamento(LocalDateTime.now());
-            
+
             System.out.println("=== VALIDAÇÃO CONCLUÍDA ===");
             System.out.println("Total de registros: " + response.getTotalRegistros());
             System.out.println("Registros válidos: " + registrosValidos);
@@ -125,7 +126,7 @@ public class InscricaoMassivaService {
     public InscricaoMassivaResponse processarCargaInscricoes(InscricaoMassivaRequest request, Long instituicaoId) {
         InscricaoMassivaResponse response = new InscricaoMassivaResponse();
         response.setInicioProcessamento(LocalDateTime.now());
-        
+
         // Gera ID único para este batch (para rastreamento de reversão)
         String batchId = UUID.randomUUID().toString();
         response.setBatchId(batchId);
@@ -139,10 +140,10 @@ public class InscricaoMassivaService {
             // Carrega entidades
             SubInstituicao subInstituicao = subInstituicaoRepository.findById(request.getSubInstituicaoId())
                     .orElseThrow(() -> new RuntimeException("SubInstituição não encontrada"));
-            
+
             TipoAtividade tipoAtividade = tipoAtividadeRepository.findById(request.getTipoAtividadeId())
                     .orElseThrow(() -> new RuntimeException("Tipo de Atividade não encontrado"));
-            
+
             Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
                     .orElseThrow(() -> new RuntimeException("Instituição não encontrada"));
 
@@ -180,8 +181,8 @@ public class InscricaoMassivaService {
     /**
      * Valida o request inicial
      */
-    private boolean validarRequest(InscricaoMassivaRequest request, Long instituicaoId, 
-                                   InscricaoMassivaResponse response) {
+    private boolean validarRequest(InscricaoMassivaRequest request, Long instituicaoId,
+            InscricaoMassivaResponse response) {
         if (request.getArquivo() == null || request.getArquivo().isEmpty()) {
             response.addError("Arquivo não informado");
             return false;
@@ -234,7 +235,7 @@ public class InscricaoMassivaService {
         List<String> emails = new ArrayList<>();
 
         try (InputStream is = arquivo.getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+                Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
             int linhaAtual = 0;
@@ -275,7 +276,7 @@ public class InscricaoMassivaService {
         List<InscricaoFormsRecord> registros = new ArrayList<>();
 
         try (InputStream is = arquivo.getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+                Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
             int linhaAtual = 0;
@@ -297,15 +298,15 @@ public class InscricaoMassivaService {
                 registro.setLinha(linhaAtual);
 
                 // Lê colunas G a O (índices 6 a 14)
-                registro.setEmail(getCellValue(row.getCell(6)));              // G
-                registro.setNome(getCellValue(row.getCell(7)));               // H
-                registro.setCelular(getCellValue(row.getCell(8)));            // I
-                registro.setIdentificacaoPessoaInstituicao(getCellValue(row.getCell(9)));  // J
+                registro.setEmail(getCellValue(row.getCell(6))); // G
+                registro.setNome(getCellValue(row.getCell(7))); // H
+                registro.setCelular(getCellValue(row.getCell(8))); // I
+                registro.setIdentificacaoPessoaInstituicao(getCellValue(row.getCell(9))); // J
                 registro.setIdentificacaoPessoaSubInstituicao(getCellValue(row.getCell(10))); // K
-                registro.setCidade(getCellValue(row.getCell(11)));            // L
-                registro.setEstado(getCellValue(row.getCell(12)));            // M
-                registro.setPais(getCellValue(row.getCell(13)));              // N
-                registro.setComentarios(getCellValue(row.getCell(14)));       // O
+                registro.setCidade(getCellValue(row.getCell(11))); // L
+                registro.setEstado(getCellValue(row.getCell(12))); // M
+                registro.setPais(getCellValue(row.getCell(13))); // N
+                registro.setComentarios(getCellValue(row.getCell(14))); // O
 
                 registros.add(registro);
             }
@@ -322,16 +323,17 @@ public class InscricaoMassivaService {
      * Verifica se linha está vazia
      */
     private boolean isLinhaVazia(Row row) {
-        if (row == null) return true;
-        
+        if (row == null)
+            return true;
+
         // Verifica colunas G, H, I (email, nome, celular)
         Cell cellG = row.getCell(6);
         Cell cellH = row.getCell(7);
         Cell cellI = row.getCell(8);
-        
+
         return (cellG == null || cellG.getCellType() == CellType.BLANK || getCellValue(cellG).trim().isEmpty()) &&
-               (cellH == null || cellH.getCellType() == CellType.BLANK || getCellValue(cellH).trim().isEmpty()) &&
-               (cellI == null || cellI.getCellType() == CellType.BLANK || getCellValue(cellI).trim().isEmpty());
+                (cellH == null || cellH.getCellType() == CellType.BLANK || getCellValue(cellH).trim().isEmpty()) &&
+                (cellI == null || cellI.getCellType() == CellType.BLANK || getCellValue(cellI).trim().isEmpty());
     }
 
     /**
@@ -427,7 +429,8 @@ public class InscricaoMassivaService {
                         String estado = registro.getEstado().trim();
                         // Valida se estado brasileiro existe
                         if (!validarEstadoBrasileiro(estado)) {
-                            erros.append("Estado brasileiro inválido ou com sigla (use nome completo, ex: 'São Paulo' em vez de 'SP'). ");
+                            erros.append(
+                                    "Estado brasileiro inválido ou com sigla (use nome completo, ex: 'São Paulo' em vez de 'SP'). ");
                         }
                     }
                 }
@@ -443,7 +446,8 @@ public class InscricaoMassivaService {
     }
 
     /**
-     * Valida se Estado brasileiro existe na base (todos os 27 estados devem estar cadastrados)
+     * Valida se Estado brasileiro existe na base (todos os 27 estados devem estar
+     * cadastrados)
      */
     private boolean validarEstadoBrasileiro(String nomeEstado) {
         // Busca país Brasil
@@ -453,7 +457,8 @@ public class InscricaoMassivaService {
         }
 
         // Busca estado dentro do Brasil
-        Optional<Local> estadoOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(2, nomeEstado, brasilOpt.get());
+        Optional<Local> estadoOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(2, nomeEstado,
+                brasilOpt.get());
         return estadoOpt.isPresent();
     }
 
@@ -461,9 +466,9 @@ public class InscricaoMassivaService {
      * Processa uma inscrição individual
      */
     @Transactional
-    private void processarInscricao(InscricaoFormsRecord registro, Instituicao instituicao, 
-                                   SubInstituicao subInstituicao, TipoAtividade tipoAtividade,
-                                   InscricaoMassivaRequest request, InscricaoMassivaResponse response) {
+    private void processarInscricao(InscricaoFormsRecord registro, Instituicao instituicao,
+            SubInstituicao subInstituicao, TipoAtividade tipoAtividade,
+            InscricaoMassivaRequest request, InscricaoMassivaResponse response) {
         try {
             String email = registro.getEmail().toLowerCase().trim();
             System.out.println("\n=== Processando inscrição: " + email + " ===");
@@ -501,7 +506,8 @@ public class InscricaoMassivaService {
                     .findByPessoaIdAndSubInstituicaoId(pessoa.getId(), subInstituicao.getId())
                     .orElseGet(() -> {
                         System.out.println("→ Criando PessoaSubInstituicao...");
-                        PessoaSubInstituicao psi = criarPessoaSubInstituicao(pessoa, instituicao, subInstituicao, registro);
+                        PessoaSubInstituicao psi = criarPessoaSubInstituicao(pessoa, instituicao, subInstituicao,
+                                registro);
                         System.out.println("✓ PessoaSubInstituicao criada: ID=" + psi.getId());
                         return psi;
                     });
@@ -528,20 +534,21 @@ public class InscricaoMassivaService {
                     });
 
             // 7. Verifica se já existe InscricaoTipoAtividade
-            Optional<InscricaoTipoAtividade> inscricaoTipoAtividadeExistente = 
-                    inscricaoTipoAtividadeRepository.findByInscricaoIdAndTipoAtividadeId(
+            Optional<InscricaoTipoAtividade> inscricaoTipoAtividadeExistente = inscricaoTipoAtividadeRepository
+                    .findByInscricaoIdAndTipoAtividadeId(
                             inscricao.getId(), tipoAtividade.getId());
 
             if (inscricaoTipoAtividadeExistente.isPresent()) {
                 System.out.println("⚠ InscricaoTipoAtividade já existe");
-                registro.setMensagemSucesso("Linha " + registro.getLinha() + ": Email " + email + 
+                registro.setMensagemSucesso("Linha " + registro.getLinha() + ": Email " + email +
                         " já está inscrito neste tipo de atividade.");
                 response.incrementarExistentes();
             } else {
                 System.out.println("→ Criando InscricaoTipoAtividade...");
                 InscricaoTipoAtividade ita = criarInscricaoTipoAtividade(inscricao, tipoAtividade);
                 System.out.println("✓ InscricaoTipoAtividade criada: ID=" + ita.getId());
-                registro.setMensagemSucesso("Linha " + registro.getLinha() + ": Inscrição criada com sucesso para " + email);
+                registro.setMensagemSucesso(
+                        "Linha " + registro.getLinha() + ": Inscrição criada com sucesso para " + email);
                 response.incrementarNovas();
             }
 
@@ -577,7 +584,7 @@ public class InscricaoMassivaService {
 
         if (nomePais != null || nomeEstado != null || nomeCidade != null) {
             Local cidade = buscarOuCriarLocalHierarquico(nomePais, nomeEstado, nomeCidade);
-            
+
             // Define Pais, Estado e Cidade na Pessoa
             if (cidade != null) {
                 if (cidade.getTipoLocal() == 3) { // Cidade
@@ -587,7 +594,8 @@ public class InscricaoMassivaService {
                         if (cidade.getLocalPai().getLocalPai() != null) { // País
                             pessoa.setPais(cidade.getLocalPai().getLocalPai());
                         }
-                    } else if (cidade.getLocalPai() != null && cidade.getLocalPai().getTipoLocal() == 1) { // País direto
+                    } else if (cidade.getLocalPai() != null && cidade.getLocalPai().getTipoLocal() == 1) { // País
+                                                                                                           // direto
                         pessoa.setPais(cidade.getLocalPai());
                     }
                 } else if (cidade.getTipoLocal() == 2) { // Estado
@@ -610,52 +618,53 @@ public class InscricaoMassivaService {
     private Usuario criarUsuario(Pessoa pessoa, InscricaoFormsRecord registro) {
         Usuario usuario = new Usuario();
         usuario.setPessoa(pessoa);
-        
+
         // Gera username a partir do email (parte antes do @)
         String username = pessoa.getEmailPessoa().split("@")[0];
         usuario.setUsername(username);
-        
+
         // Senha padrão inicial: Agenda@2025 (obriga troca no primeiro acesso)
         String senhaInicial = "Agenda@2025";
         usuario.setPassword(passwordEncoder.encode(senhaInicial));
-        
+
         usuario.setSituacaoUsuario("P"); // P=Pendente (obriga troca de senha)
         usuario.setDataUltimaAtualizacao(LocalDate.now());
-        
+
         registro.setUsuarioGerado(username);
         registro.setSenhaGerada(senhaInicial);
-        
+
         return usuarioRepository.save(usuario);
     }
 
     /**
      * Cria PessoaInstituicao
      */
-    private PessoaInstituicao criarPessoaInstituicao(Pessoa pessoa, Instituicao instituicao, 
-                                                     InscricaoFormsRecord registro) {
+    private PessoaInstituicao criarPessoaInstituicao(Pessoa pessoa, Instituicao instituicao,
+            InscricaoFormsRecord registro) {
         PessoaInstituicao pessoaInstituicao = new PessoaInstituicao();
         pessoaInstituicao.setPessoa(pessoa);
         pessoaInstituicao.setInstituicao(instituicao);
-        
+
         String identificacao = registro.getIdentificacaoPessoaInstituicao();
         if (identificacao != null && !identificacao.trim().isEmpty()) {
             pessoaInstituicao.setIdentificacaoPessoaInstituicao(identificacao.trim());
         }
-        
+
         pessoaInstituicao.setDataAfiliacao(null); // Não vem do Forms
         pessoaInstituicao.setDataUltimaAtualizacao(LocalDate.now());
-        
+
         PessoaInstituicao saved = pessoaInstituicaoRepository.save(pessoaInstituicao);
-        System.out.println("✓ PessoaInstituicao criada: ID=" + saved.getId() + ", Pessoa=" + pessoa.getId() + ", Instituicao=" + instituicao.getId());
+        System.out.println("✓ PessoaInstituicao criada: ID=" + saved.getId() + ", Pessoa=" + pessoa.getId()
+                + ", Instituicao=" + instituicao.getId());
         return saved;
     }
 
     /**
      * Cria PessoaSubInstituicao
      */
-    private PessoaSubInstituicao criarPessoaSubInstituicao(Pessoa pessoa, Instituicao instituicao, 
-                                                           SubInstituicao subInstituicao, 
-                                                           InscricaoFormsRecord registro) {
+    private PessoaSubInstituicao criarPessoaSubInstituicao(Pessoa pessoa, Instituicao instituicao,
+            SubInstituicao subInstituicao,
+            InscricaoFormsRecord registro) {
         PessoaSubInstituicao pessoaSubInstituicao = new PessoaSubInstituicao();
         pessoaSubInstituicao.setPessoa(pessoa);
         pessoaSubInstituicao.setInstituicao(instituicao);
@@ -663,7 +672,7 @@ public class InscricaoMassivaService {
         pessoaSubInstituicao.setIdentificacaoPessoaSubInstituicao(registro.getIdentificacaoPessoaSubInstituicao());
         pessoaSubInstituicao.setDataAfiliacao(null); // Não vem do Forms
         pessoaSubInstituicao.setDataUltimaAtualizacao(LocalDate.now());
-        
+
         return pessoaSubInstituicaoRepository.save(pessoaSubInstituicao);
     }
 
@@ -676,7 +685,7 @@ public class InscricaoMassivaService {
         usuarioInstituicao.setInstituicao(instituicao);
         usuarioInstituicao.setNivelAcessoUsuarioInstituicao(1); // Participante
         usuarioInstituicao.setSitAcessoUsuarioInstituicao("A"); // Ativo
-        
+
         return usuarioInstituicaoRepository.save(usuarioInstituicao);
     }
 
@@ -689,7 +698,7 @@ public class InscricaoMassivaService {
         inscricao.setIdInstituicao(instituicao);
         inscricao.setDataInclusao(LocalDate.now());
         inscricao.setDataUltimaAtualizacao(LocalDate.now());
-        
+
         return inscricaoRepository.save(inscricao);
     }
 
@@ -700,7 +709,7 @@ public class InscricaoMassivaService {
         InscricaoTipoAtividade inscricaoTipoAtividade = new InscricaoTipoAtividade();
         inscricaoTipoAtividade.setInscricao(inscricao);
         inscricaoTipoAtividade.setTipoAtividade(tipoAtividade);
-        
+
         return inscricaoTipoAtividadeRepository.save(inscricaoTipoAtividade);
     }
 
@@ -708,7 +717,7 @@ public class InscricaoMassivaService {
      * Busca ou cria Local hierárquico (País -> Estado -> Cidade)
      * Normaliza nomes removendo espaços iniciais/finais
      * 
-     * @param nomePais Nome do país
+     * @param nomePais   Nome do país
      * @param nomeEstado Nome do estado
      * @param nomeCidade Nome da cidade
      * @return Local da cidade (tipo 3) ou null se nenhum local informado
@@ -753,14 +762,16 @@ public class InscricaoMassivaService {
                     // Cria novo estado
                     estado = new Local(2, nomeEstado, pais);
                     estado = localRepository.save(estado);
-                    System.out.println("→ Estado criado: " + nomeEstado + " em " + nomePais + " (ID=" + estado.getId() + ")");
+                    System.out.println(
+                            "→ Estado criado: " + nomeEstado + " em " + nomePais + " (ID=" + estado.getId() + ")");
                 }
             } else {
                 // Estado sem país definido - busca ou cria sem pai
                 Optional<Local> estadoOpt = localRepository.findByTipoLocalAndNomeLocal(2, nomeEstado);
                 if (estadoOpt.isPresent()) {
                     estado = estadoOpt.get();
-                    System.out.println("✓ Estado encontrado (sem país): " + nomeEstado + " (ID=" + estado.getId() + ")");
+                    System.out
+                            .println("✓ Estado encontrado (sem país): " + nomeEstado + " (ID=" + estado.getId() + ")");
                 } else {
                     estado = new Local(2, nomeEstado, null);
                     estado = localRepository.save(estado);
@@ -772,10 +783,11 @@ public class InscricaoMassivaService {
         // 3. Busca ou cria Cidade (tipo 3)
         if (nomeCidade != null) {
             Local cidadePai = estado != null ? estado : pais;
-            
+
             if (cidadePai != null) {
                 // Busca cidade dentro do estado/país
-                Optional<Local> cidadeOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(3, nomeCidade, cidadePai);
+                Optional<Local> cidadeOpt = localRepository.findByTipoLocalAndNomeLocalAndLocalPai(3, nomeCidade,
+                        cidadePai);
                 if (cidadeOpt.isPresent()) {
                     cidade = cidadeOpt.get();
                     System.out.println("✓ Cidade encontrada: " + nomeCidade + " (ID=" + cidade.getId() + ")");
@@ -783,18 +795,22 @@ public class InscricaoMassivaService {
                     // Cria nova cidade
                     cidade = new Local(3, nomeCidade, cidadePai);
                     cidade = localRepository.save(cidade);
-                    System.out.println("→ Cidade criada: " + nomeCidade + " em " + (estado != null ? estado.getNomeLocal() : pais.getNomeLocal()) + " (ID=" + cidade.getId() + ")");
+                    System.out.println("→ Cidade criada: " + nomeCidade + " em "
+                            + (estado != null ? estado.getNomeLocal() : pais.getNomeLocal()) + " (ID=" + cidade.getId()
+                            + ")");
                 }
             } else {
                 // Cidade sem estado/país - busca ou cria sem pai
                 Optional<Local> cidadeOpt = localRepository.findByTipoLocalAndNomeLocal(3, nomeCidade);
                 if (cidadeOpt.isPresent()) {
                     cidade = cidadeOpt.get();
-                    System.out.println("✓ Cidade encontrada (sem estado/país): " + nomeCidade + " (ID=" + cidade.getId() + ")");
+                    System.out.println(
+                            "✓ Cidade encontrada (sem estado/país): " + nomeCidade + " (ID=" + cidade.getId() + ")");
                 } else {
                     cidade = new Local(3, nomeCidade, null);
                     cidade = localRepository.save(cidade);
-                    System.out.println("→ Cidade criada (sem estado/país): " + nomeCidade + " (ID=" + cidade.getId() + ")");
+                    System.out.println(
+                            "→ Cidade criada (sem estado/país): " + nomeCidade + " (ID=" + cidade.getId() + ")");
                 }
             }
         }
@@ -807,7 +823,8 @@ public class InscricaoMassivaService {
      * Normaliza nome de local (trim e retorna null se vazio)
      */
     private String normalizarNome(String nome) {
-        if (nome == null) return null;
+        if (nome == null)
+            return null;
         nome = nome.trim();
         return nome.isEmpty() ? null : nome;
     }
@@ -819,71 +836,75 @@ public class InscricaoMassivaService {
         String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
         Random random = new Random();
         StringBuilder senha = new StringBuilder();
-        
+
         for (int i = 0; i < 10; i++) {
             senha.append(caracteres.charAt(random.nextInt(caracteres.length())));
         }
-        
+
         return senha.toString();
     }
 
     /**
      * Reverte uma carga massiva baseada em arquivo Excel
-     * Lê os emails da planilha e deleta relacionamentos específicos da SubInstituição/TipoAtividade
+     * Lê os emails da planilha e deleta relacionamentos específicos da
+     * SubInstituição/TipoAtividade
      * 
      * REGRAS:
      * - Deleta InscricaoTipoAtividade apenas para o TipoAtividade especificado
      * - Deleta PessoaSubInstituicao apenas da SubInstituição especificada
-     * - Deleta Pessoa/Usuario APENAS se não houver outros relacionamentos com outras instituições
+     * - Deleta Pessoa/Usuario APENAS se não houver outros relacionamentos com
+     * outras instituições
      * - NÃO exclui entidades Local
      * 
-     * @param arquivo Planilha Excel com coluna de emails (mesma estrutura da carga)
+     * @param arquivo          Planilha Excel com coluna de emails (mesma estrutura
+     *                         da carga)
      * @param subInstituicaoId SubInstituição para filtrar exclusões
-     * @param tipoAtividadeId TipoAtividade para filtrar exclusões
-     * @param instituicaoId Instituição atual
+     * @param tipoAtividadeId  TipoAtividade para filtrar exclusões
+     * @param instituicaoId    Instituição atual
      * @return Response com resultado da reversão
      */
     @Transactional
     public InscricaoMassivaResponse reverterCargaPorArquivo(MultipartFile arquivo,
-                                                            Long subInstituicaoId,
-                                                            Long tipoAtividadeId,
-                                                            Long instituicaoId) {
+            Long subInstituicaoId,
+            Long tipoAtividadeId,
+            Long instituicaoId) {
         InscricaoMassivaResponse response = new InscricaoMassivaResponse();
         response.setInicioProcessamento(LocalDateTime.now());
-        
-        final int[] totalDeletados = {0};
-        final int[] emailsProcessados = {0};
-        final int[] emailsNaoEncontrados = {0};
-        final int[] pessoasNaoDeletadas = {0}; // Quando tem outros relacionamentos
-        
+
+        final int[] totalDeletados = { 0 };
+        final int[] emailsProcessados = { 0 };
+        final int[] emailsNaoEncontrados = { 0 };
+        final int[] pessoasNaoDeletadas = { 0 }; // Quando tem outros relacionamentos
+
         try {
             System.out.println("=== INICIANDO REVERSÃO DE CARGA POR ARQUIVO ===");
-            
+
             // Valida entidades
             SubInstituicao subInstituicao = subInstituicaoRepository.findById(subInstituicaoId)
                     .orElseThrow(() -> new RuntimeException("SubInstituição não encontrada"));
-            
+
             TipoAtividade tipoAtividade = tipoAtividadeRepository.findById(tipoAtividadeId)
                     .orElseThrow(() -> new RuntimeException("Tipo de Atividade não encontrado"));
-            
+
             Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
                     .orElseThrow(() -> new RuntimeException("Instituição não encontrada"));
-            
+
             // Lê apenas emails da coluna G do arquivo Excel
             List<String> emails = lerEmailsParaReversao(arquivo, response);
             if (emails.isEmpty()) {
                 response.addError("Nenhum email encontrado no arquivo (coluna G - Email)");
                 return response;
             }
-            
+
             System.out.println("Total de emails no arquivo: " + emails.size());
-            
+
             // Processa cada email
             for (String email : emails) {
                 emailsProcessados[0]++;
-                
-                System.out.println("\n--- Processando email " + emailsProcessados[0] + "/" + emails.size() + ": " + email + " ---");
-                
+
+                System.out.println("\n--- Processando email " + emailsProcessados[0] + "/" + emails.size() + ": "
+                        + email + " ---");
+
                 // Busca Pessoa pelo email
                 Optional<Pessoa> pessoaOpt = pessoaRepository.findByEmailPessoa(email);
                 if (pessoaOpt.isEmpty()) {
@@ -892,30 +913,30 @@ public class InscricaoMassivaService {
                     emailsNaoEncontrados[0]++;
                     continue;
                 }
-                
+
                 Pessoa pessoa = pessoaOpt.get();
                 System.out.println("✓ Pessoa encontrada: ID=" + pessoa.getId());
-                
+
                 // Busca Usuario relacionado
                 Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
-                
+
                 // 1. Deleta InscricaoTipoAtividade específica
                 if (usuarioOpt.isPresent()) {
                     Usuario usuario = usuarioOpt.get();
                     Optional<Inscricao> inscricaoOpt = inscricaoRepository
                             .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId());
-                    
+
                     if (inscricaoOpt.isPresent()) {
                         Inscricao inscricao = inscricaoOpt.get();
                         Optional<InscricaoTipoAtividade> itaOpt = inscricaoTipoAtividadeRepository
                                 .findByInscricaoIdAndTipoAtividadeId(inscricao.getId(), tipoAtividade.getId());
-                        
+
                         if (itaOpt.isPresent()) {
                             inscricaoTipoAtividadeRepository.delete(itaOpt.get());
                             totalDeletados[0]++;
                             System.out.println("✓ InscricaoTipoAtividade deletada");
                         }
-                        
+
                         // Verifica se Inscricao não tem mais InscricaoTipoAtividade
                         List<InscricaoTipoAtividade> outrasItas = inscricaoTipoAtividadeRepository
                                 .findByInscricaoId(inscricao.getId());
@@ -926,7 +947,7 @@ public class InscricaoMassivaService {
                         }
                     }
                 }
-                
+
                 // 2. Deleta PessoaSubInstituicao específica
                 Optional<PessoaSubInstituicao> psiOpt = pessoaSubInstituicaoRepository
                         .findByPessoaIdAndSubInstituicaoId(pessoa.getId(), subInstituicao.getId());
@@ -935,14 +956,14 @@ public class InscricaoMassivaService {
                     totalDeletados[0]++;
                     System.out.println("✓ PessoaSubInstituicao deletada");
                 }
-                
+
                 // 3. Verifica se Pessoa tem outros relacionamentos antes de deletar
                 List<PessoaSubInstituicao> outrasPsis = pessoaSubInstituicaoRepository.findByPessoaId(pessoa.getId());
                 List<PessoaInstituicao> outrasPis = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
-                
+
                 if (outrasPsis.isEmpty() && outrasPis.size() <= 1) {
                     // Não tem outros relacionamentos, pode deletar tudo
-                    
+
                     // Deleta PessoaInstituicao
                     Optional<PessoaInstituicao> piOpt = pessoaInstituicaoRepository
                             .findByPessoaIdAndInstituicaoId(pessoa.getId(), instituicao.getId());
@@ -951,7 +972,7 @@ public class InscricaoMassivaService {
                         totalDeletados[0]++;
                         System.out.println("✓ PessoaInstituicao deletada");
                     }
-                    
+
                     // Deleta UsuarioInstituicao e Usuario
                     if (usuarioOpt.isPresent()) {
                         Usuario usuario = usuarioOpt.get();
@@ -961,46 +982,46 @@ public class InscricaoMassivaService {
                             totalDeletados[0]++;
                             System.out.println("✓ UsuarioInstituicao deletada");
                         }
-                        
+
                         usuarioRepository.delete(usuario);
                         totalDeletados[0]++;
                         System.out.println("✓ Usuario deletado: " + usuario.getUsername());
                     }
-                    
+
                     // Deleta Pessoa
                     pessoaRepository.delete(pessoa);
                     totalDeletados[0]++;
                     System.out.println("✓ Pessoa deletada: " + email);
-                    
+
                     response.addWarning("Email " + email + " - Pessoa/Usuario deletados completamente");
-                    
+
                 } else {
                     // Tem outros relacionamentos, não deleta Pessoa/Usuario
                     pessoasNaoDeletadas[0]++;
                     System.out.println("⚠ Pessoa mantida (tem relacionamentos com outras instituições)");
-                    response.addWarning("Email " + email + 
+                    response.addWarning("Email " + email +
                             " - Relacionamentos deletados, mas Pessoa/Usuario mantidos (existem vínculos com outras instituições)");
                 }
             }
-            
+
             System.out.println("\n=== REVERSÃO CONCLUÍDA ===");
             System.out.println("Emails processados: " + emailsProcessados[0]);
             System.out.println("Emails não encontrados: " + emailsNaoEncontrados[0]);
             System.out.println("Pessoas não deletadas (com outros vínculos): " + pessoasNaoDeletadas[0]);
             System.out.println("Total de registros deletados: " + totalDeletados[0]);
-            
+
             response.addWarning(String.format("Reversão concluída. Emails: %d processados, %d não encontrados. " +
                     "Registros deletados: %d. Pessoas mantidas (outros vínculos): %d",
                     emailsProcessados[0], emailsNaoEncontrados[0], totalDeletados[0], pessoasNaoDeletadas[0]));
             response.setTotalRegistros(emailsProcessados[0]);
             response.setRegistrosProcessados(emailsProcessados[0] - emailsNaoEncontrados[0]);
-            
+
         } catch (Exception e) {
             System.err.println("✗ ERRO na reversão: " + e.getMessage());
             e.printStackTrace();
             response.addError("Erro durante reversão: " + e.getMessage());
         }
-        
+
         response.setFimProcessamento(LocalDateTime.now());
         return response;
     }

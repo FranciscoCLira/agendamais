@@ -28,10 +28,10 @@ public class AlterarSenhaController {
 
     @PostMapping("/alterar-senha")
     public String processarAlteracao(@RequestParam String username,
-                                     @RequestParam String currentPassword,
-                                     @RequestParam String newPassword,
-                                     @RequestParam String confirmPassword,
-                                     Model model) {
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            Model model) {
 
         if (!newPassword.equals(confirmPassword)) {
             model.addAttribute("mensagemErro", "As senhas não coincidem: " + username);
@@ -52,13 +52,14 @@ public class AlterarSenhaController {
         }
 
         if (!isPasswordSegura(newPassword)) {
-            model.addAttribute("mensagemErro", "A nova senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
+            model.addAttribute("mensagemErro",
+                    "A nova senha deve ter no mínimo 6 caracteres e conter letras, números ou símbolos.");
             model.addAttribute("username", username);
             model.addAttribute("newPassword", newPassword);
             model.addAttribute("confirmPassword", confirmPassword);
             return "alterar-senha";
         }
-        
+
         Usuario usuario = usuarioOpt.get();
 
         if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
@@ -78,12 +79,13 @@ public class AlterarSenhaController {
         }
 
         usuario.setPassword(passwordEncoder.encode(newPassword));
-        
-        // Se situação era 'P' (Provisória), muda para 'A' (Ativa) após alteração de senha
+
+        // Se situação era 'P' (Provisória), muda para 'A' (Ativa) após alteração de
+        // senha
         if ("P".equals(usuario.getSituacaoUsuario())) {
             usuario.setSituacaoUsuario("A");
         }
-        
+
         usuarioRepository.save(usuario);
         model.addAttribute("mensagemSucesso", "Senha alterada com sucesso! Usuário: " + username);
 
@@ -94,11 +96,11 @@ public class AlterarSenhaController {
 
         return "alterar-senha";
     }
-    
+
     private boolean isPasswordSegura(String password) {
-        if (password == null || password.length() < 6) return false;
+        if (password == null || password.length() < 6)
+            return false;
         return password.matches(".*[a-zA-Z].*") && (password.matches(".*\\d.*") || password.matches(".*\\W.*"));
     }
-
 
 }
