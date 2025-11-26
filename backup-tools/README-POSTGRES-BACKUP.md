@@ -10,11 +10,13 @@
 ## 📋 Scripts Disponíveis
 
 ### Para PostgreSQL (PRODUÇÃO)
+
 - ✅ `backup-postgres-prod.bat` - Backup automático com timestamp
 - ✅ `restore-postgres-prod.bat` - Restore interativo
 - 📁 Backups salvos em: `db-backups/postgres/`
 
 ### Para H2 (Desenvolvimento - Legacy)
+
 - `backup-completo.bat` - Backup H2
 - `restore-completo.bat` - Restore H2
 - 📁 Backups salvos em: `db-backups/`
@@ -31,6 +33,7 @@ cd C:\DEV-IA2\agendamais\backup-tools
 ```
 
 **O que faz:**
+
 - Cria backup completo do `agendadb_prod`
 - Salva com timestamp: `backup-prod-2025-11-24-22-30.sql`
 - Local: `backup-tools\db-backups\postgres\`
@@ -72,6 +75,7 @@ cd C:\DEV-IA2\agendamais\backup-tools
 ```
 
 **O script vai:**
+
 1. Listar backups disponíveis
 2. Pedir o nome do arquivo
 3. Pedir confirmação
@@ -170,17 +174,20 @@ psql -U agenda -h localhost -p 5432 -d agendadb_prod -c "SELECT version();"
 ### Se algo der errado após deploy:
 
 1. **Parar servidor**:
+
    ```cmd
    taskkill /F /IM java.exe
    ```
 
 2. **Restaurar último backup**:
+
    ```cmd
    cd backup-tools
    .\restore-postgres-prod.bat
    ```
 
 3. **Voltar código para versão anterior**:
+
    ```cmd
    git checkout <commit-anterior>
    mvn clean package -DskipTests
@@ -196,16 +203,19 @@ psql -U agenda -h localhost -p 5432 -d agendadb_prod -c "SELECT version();"
 ## 💡 Boas Práticas
 
 ### Frequência de Backup
+
 - **Antes de cada deploy**: Sempre!
 - **Backup diário**: Automatizar com Task Scheduler
 - **Backup semanal**: Copiar para local externo
 
 ### Retenção
+
 - Manter últimos 7 backups diários
 - Manter últimos 4 backups semanais
 - Manter último backup mensal por 1 ano
 
 ### Segurança
+
 - Backups devem ser guardados fora do servidor
 - Considerar criptografia para dados sensíveis
 - Testar restore periodicamente
@@ -215,15 +225,19 @@ psql -U agenda -h localhost -p 5432 -d agendadb_prod -c "SELECT version();"
 ## 📞 Troubleshooting
 
 ### Erro: "pg_dump: command not found"
+
 **Solução**: Ajustar path do PostgreSQL no script
 
 ### Erro: "password authentication failed"
+
 **Solução**: Verificar senha no script (padrão: `agenda/agenda`)
 
 ### Erro: "FATAL: database does not exist"
+
 **Solução**: Verificar nome do banco (padrão: `agendadb_prod`)
 
 ### Backup muito lento
+
 **Solução**: PostgreSQL pode estar com muitos dados. Considerar backup em horário de baixo uso.
 
 ---
