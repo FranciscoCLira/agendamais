@@ -47,6 +47,15 @@ public class ControleTotalInstituicaoController {
                 instituicao.setSmtpPassword(existing.getSmtpPassword());
             }
         }
+        
+        // Converte string vazia em NULL para campos SMTP
+        if (instituicao.getSmtpHost() != null && instituicao.getSmtpHost().trim().isEmpty()) {
+            instituicao.setSmtpHost(null);
+        }
+        if (instituicao.getSmtpUsername() != null && instituicao.getSmtpUsername().trim().isEmpty()) {
+            instituicao.setSmtpUsername(null);
+        }
+        
         instituicao.setDataUltimaAtualizacao(java.time.LocalDate.now());
         instituicaoService.save(instituicao);
         redirectAttributes.addFlashAttribute("success", "Instituição salva com sucesso.");
@@ -60,6 +69,7 @@ public class ControleTotalInstituicaoController {
             redirectAttributes.addFlashAttribute("error", "Instituição não encontrada.");
             return "redirect:/gerenciar-instituicoes";
         }
+        
         model.addAttribute("instituicao", inst);
         return "controle-total/editar-instituicao";
     }

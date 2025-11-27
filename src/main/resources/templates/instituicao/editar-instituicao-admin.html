@@ -129,6 +129,7 @@
                   class="form-control"
                   id="smtpUsername"
                   th:field="*{smtpUsername}"
+                  th:value="${instituicao.smtpUsername != null and !#strings.isEmpty(instituicao.smtpUsername) ? instituicao.smtpUsername : instituicao.emailInstituicao}"
                   placeholder="Ex: seu-email@gmail.com"
                   th:disabled="${instituicao.situacaoInstituicao == 'I'}"
                   readonly
@@ -266,18 +267,21 @@
         const smtpUsername = document.getElementById("smtpUsername");
         const checkbox = document.getElementById("useSameEmail");
 
-        // Initialize: if both emails are the same, check the box
+        // Initialize: only check the box if smtpUsername already has the same value as emailInstituicao
         if (
           emailInstituicao.value &&
+          smtpUsername.value &&
           smtpUsername.value === emailInstituicao.value
         ) {
           checkbox.checked = true;
           smtpUsername.readOnly = true;
-        } else if (smtpUsername.value) {
+        } else {
+          // If different or empty, leave unchecked and editable
           checkbox.checked = false;
           smtpUsername.readOnly = false;
         }
 
+        // Quando alterar o email da instituição, atualiza o SMTP username se checkbox marcado
         emailInstituicao.addEventListener("input", function () {
           if (checkbox.checked) {
             smtpUsername.value = emailInstituicao.value;

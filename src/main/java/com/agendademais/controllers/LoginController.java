@@ -392,9 +392,16 @@ public class LoginController {
 
         // Chamar o serviço de envio de email como já feito no
         // RecuperacaoLoginController
-        recuperacaoLoginService.enviarLinkRecuperacao(email);
-        redirectAttributes.addFlashAttribute("mensagemSucesso",
-                "Enviamos uma mensagem com as instruções para recuperar sua Senha, para o e-mail: " + email + ".");
+        try {
+            recuperacaoLoginService.enviarLinkRecuperacao(email);
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Enviamos uma mensagem com as instruções para recuperar sua Senha, para o e-mail: " + email + ".");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao enviar email de recuperação. Tente novamente mais tarde.");
+            redirectAttributes.addFlashAttribute("email", email);
+            e.printStackTrace();
+        }
         return "redirect:/acesso/recuperar-login-email";
     }
 
@@ -416,10 +423,16 @@ public class LoginController {
         }
 
         // Envia o email com link e username
-        recuperacaoLoginService.enviarLinkRecuperacao(email);
-
-        redirectAttributes.addFlashAttribute("mensagemSucesso",
-                "Enviamos uma mensagem com as instruções para recuperar sua Senha, para o e-mail: " + email + ".");
+        try {
+            recuperacaoLoginService.enviarLinkRecuperacao(email);
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Enviamos uma mensagem com as instruções para recuperar sua Senha, para o e-mail: " + email + ".");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao enviar email de recuperação. Tente novamente mais tarde.");
+            redirectAttributes.addFlashAttribute("email", email);
+            e.printStackTrace();
+        }
 
         return "redirect:/acesso";
     }

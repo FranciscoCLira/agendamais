@@ -206,6 +206,7 @@
                   type="text"
                   id="smtpUsername"
                   th:field="*{smtpUsername}"
+                  th:value="${instituicao.smtpUsername != null and !#strings.isEmpty(instituicao.smtpUsername) ? instituicao.smtpUsername : instituicao.emailInstituicao}"
                   placeholder="Ex: seu-email@gmail.com"
                   readonly
                   style="
@@ -385,16 +386,18 @@
         const smtpUsername = document.getElementById("smtpUsername");
         const checkbox = document.getElementById("useSameEmail");
 
-        // Initialize: if both emails are the same, check the box
+        // Initialize: only check the box if smtpUsername already has the same value as emailInstituicao
         if (emailInstituicao && smtpUsername) {
           if (
             emailInstituicao.value &&
+            smtpUsername.value &&
             smtpUsername.value === emailInstituicao.value
           ) {
             checkbox.checked = true;
             smtpUsername.readOnly = true;
             smtpUsername.style.backgroundColor = "#f8f9fa";
-          } else if (smtpUsername.value) {
+          } else {
+            // If different or empty, leave unchecked and editable
             checkbox.checked = false;
             smtpUsername.readOnly = false;
             smtpUsername.style.backgroundColor = "#fff";

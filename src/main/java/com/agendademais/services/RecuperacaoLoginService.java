@@ -1,15 +1,26 @@
 package com.agendademais.services;
 
+import com.agendademais.entities.Instituicao;
+import com.agendademais.entities.Pessoa;
+import com.agendademais.entities.PessoaInstituicao;
 import com.agendademais.entities.Usuario;
+import com.agendademais.repositories.PessoaRepository;
+import com.agendademais.repositories.PessoaInstituicaoRepository;
 import com.agendademais.repositories.UsuarioRepository;
+import com.agendademais.services.CryptoService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import jakarta.mail.internet.MimeMessage;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
 
 @Service
@@ -21,33 +32,136 @@ public class RecuperacaoLoginService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Async
-    public void enviarLinkRecuperacao(String email) {
+    @Autowired
+    private PessoaRepository pessoaRepository;
+
+    @Autowired
+    private PessoaInstituicaoRepository pessoaInstituicaoRepository;
+
+    @Autowired
+    private CryptoService cryptoService;
+
+    @Value("${app.url:http://localhost:8080}")
+    private String appUrl;
+
+    @Transactional
+    public void enviarLinkRecuperacao(String email) throws Exception {
+        // 1. Buscar usuário pelo email
         Usuario usuario = usuarioRepository.findAllByPessoaEmailPessoa(email)
                 .stream().findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
+        // 2. Gerar e salvar token ANTES de enviar email
         String token = UUID.randomUUID().toString();
         usuario.setTokenRecuperacao(token);
         usuario.setDataExpiracaoToken(LocalDateTime.now().plusHours(2));
         usuario.setDataUltimaAtualizacao(LocalDate.now());
         usuarioRepository.save(usuario);
+        usuarioRepository.flush(); // Força persistência imediata
 
-        String link = "http://localhost:8080/recuperar-senha-por-token?token=" + token;
+        // 3. Buscar instituição da pessoa (se existir)
+        Instituicao instituicao = buscarInstituicaoPorEmail(email);
 
-        String mensagem = "Olá!\n\n"
-                + "Recebemos uma solicitação para redefinir sua senha.\n\n"
-                + "Seu código de usuário é: " + usuario.getUsername() + "\n\n"
-                + "Acesse o link abaixo para continuar:\n" + link + "\n\n"
-                + "Esse link expira em 2 horas.\n\n"
-                + "Se você não solicitou, ignore esta mensagem.";
+        // 4. Preparar remetente do email
+        JavaMailSender senderToUse = mailSender;
+        String emailRemetente = "fclira.fcl@gmail.com"; // Padrão
+
+        if (instituicao != null && instituicao.getSmtpHost() != null) {
+            // Usar SMTP da instituição
+            senderToUse = criarMailSenderInstituicao(instituicao);
+            emailRemetente = instituicao.getEmailInstituicao();
+        }
+
+        // 5. Montar link e mensagem
+        String link = appUrl + "/recuperar-senha-por-token?token=" + token;
+
+        String mensagemHtml = "<html><body style='font-family:Segoe UI, sans-serif; color:#333;'>"
+                + "<div style='border:1px solid #ddd; padding:20px; border-radius:6px;'>"
+                + "<h2 style='color:#4A148C;'>Recuperação de Senha - AgendaMais</h2>"
+                + "<p>Olá!</p>"
+                + "<p>Recebemos uma solicitação para redefinir sua senha.</p>"
+                + "<p>Seu código de usuário é: <strong>" + usuario.getUsername() + "</strong></p>"
+                + "<p>Acesse o link abaixo para continuar:</p>"
+                + "<p><a href='" + link + "' style='color:#4A148C; text-decoration:none; font-weight:bold;'>" 
+                + link + "</a></p>"
+                + "<p style='color:#999; font-size:12px;'>Esse link expira em 2 horas.</p>"
+                + "<p>Se você não solicitou, ignore esta mensagem.</p>"
+                + "<br>"
+                + "<p>Atenciosamente,<br>Equipe Agenda Mais</p>"
+                + "</div>"
+                + "</body></html>";
+
+        // 6. Enviar email
+        MimeMessage mimeMessage = senderToUse.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
         
-        SimpleMailMessage emailMsg = new SimpleMailMessage();
-        emailMsg.setTo(email);
-        emailMsg.setSubject("Recuperação de Senha - AgendaMais");
-        emailMsg.setText(mensagem);
+        helper.setFrom(emailRemetente);
+        helper.setTo(email);
+        helper.setSubject("Recuperação de Senha - AgendaMais");
+        helper.setText(mensagemHtml, true);
 
-        mailSender.send(emailMsg);
+        senderToUse.send(mimeMessage);
+    }
+
+    /**
+     * Busca a instituição associada à pessoa pelo email
+     * Retorna a primeira instituição COM SMTP CONFIGURADO encontrada via PessoaInstituicao
+     * Se não encontrar instituição com SMTP, retorna null para usar SMTP padrão
+     */
+    private Instituicao buscarInstituicaoPorEmail(String email) {
+        Optional<Pessoa> pessoaOpt = pessoaRepository.findByEmailPessoa(email);
+        
+        if (pessoaOpt.isPresent()) {
+            Pessoa pessoa = pessoaOpt.get();
+            
+            // Buscar instituições da pessoa via PessoaInstituicao
+            // Filtra APENAS aquelas que têm SMTP COMPLETAMENTE configurado
+            Optional<Instituicao> instituicaoComSmtp = pessoaInstituicaoRepository
+                    .findByPessoaId(pessoa.getId())
+                    .stream()
+                    .map(PessoaInstituicao::getInstituicao)
+                    .filter(inst -> inst != null 
+                            && inst.getSmtpHost() != null && !inst.getSmtpHost().isBlank()
+                            && inst.getSmtpUsername() != null && !inst.getSmtpUsername().isBlank()
+                            && inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank())
+                    .findFirst();
+            
+            if (instituicaoComSmtp.isPresent()) {
+                return instituicaoComSmtp.get();
+            }
+        }
+        
+        return null; // Usa SMTP padrão se não encontrar instituição com SMTP configurado
+    }
+
+    /**
+     * Cria um JavaMailSender customizado com configurações SMTP da instituição
+     */
+    private JavaMailSender criarMailSenderInstituicao(Instituicao instituicao) {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        
+        mailSender.setHost(instituicao.getSmtpHost());
+        mailSender.setPort(instituicao.getSmtpPort() != null ? instituicao.getSmtpPort() : 587);
+        mailSender.setUsername(instituicao.getSmtpUsername());
+        
+        // Descriptografa senha se necessário (remove ENC(...))
+        String senhaDescriptografada = cryptoService.decryptIfNeeded(instituicao.getSmtpPassword());
+        mailSender.setPassword(senhaDescriptografada);
+        
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        
+        // SSL (465) ou STARTTLS (587)
+        if (instituicao.getSmtpSsl() != null && instituicao.getSmtpSsl()) {
+            props.put("mail.smtp.ssl.enable", "true");
+        } else {
+            props.put("mail.smtp.starttls.enable", "true");
+        }
+        
+        props.put("mail.debug", "false");
+        
+        return mailSender;
     }
 
 }

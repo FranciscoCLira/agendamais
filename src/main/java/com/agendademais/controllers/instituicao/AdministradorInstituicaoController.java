@@ -27,7 +27,10 @@ public class AdministradorInstituicaoController {
         if (instituicaoSelecionada == null) {
             return "redirect:/acesso?mensagem=Session expired. Please log in again.";
         }
-        model.addAttribute("instituicao", instituicaoSelecionada);
+        
+        Instituicao inst = (Instituicao) instituicaoSelecionada;
+        
+        model.addAttribute("instituicao", inst);
         return "instituicao/editar-instituicao-admin";
     }
 
@@ -48,10 +51,15 @@ public class AdministradorInstituicaoController {
         // Update only allowed fields
         inst.setEmailInstituicao(instituicao.getEmailInstituicao());
         inst.setSituacaoInstituicao(instituicao.getSituacaoInstituicao());
+        
         // Update SMTP configuration fields
-        inst.setSmtpHost(instituicao.getSmtpHost());
+        // Converte string vazia em NULL para campos SMTP
+        inst.setSmtpHost(instituicao.getSmtpHost() != null && !instituicao.getSmtpHost().trim().isEmpty() 
+                ? instituicao.getSmtpHost() : null);
         inst.setSmtpPort(instituicao.getSmtpPort());
-        inst.setSmtpUsername(instituicao.getSmtpUsername());
+        inst.setSmtpUsername(instituicao.getSmtpUsername() != null && !instituicao.getSmtpUsername().trim().isEmpty() 
+                ? instituicao.getSmtpUsername() : null);
+        
         // Only update password if not blank (empty means "keep existing")
         if (instituicao.getSmtpPassword() != null && !instituicao.getSmtpPassword().trim().isEmpty()) {
             inst.setSmtpPassword(instituicao.getSmtpPassword());
