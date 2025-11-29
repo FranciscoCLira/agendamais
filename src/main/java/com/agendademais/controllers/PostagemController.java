@@ -132,6 +132,14 @@ public class PostagemController {
     private com.agendademais.repositories.InscricaoTipoAtividadeRepository inscricaoTipoAtividadeRepository;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private com.agendademais.repositories.InstituicaoRepository instituicaoRepository;
+    
+    @org.springframework.beans.factory.annotation.Value("${app.mail.useInstitutionSmtp:false}")
+    private boolean useInstitutionSmtp;
+    
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username:}")
+    private String defaultMailUsername;
 
     @GetMapping("/nova")
     public String previewPostagem(
@@ -159,14 +167,44 @@ public class PostagemController {
             origem = origemPadrao.toString();
         }
 
-        Instituicao instituicaoLogada = (Instituicao) session.getAttribute("instituicaoSelecionada");
-        String emailInstituicaoLogada = instituicaoLogada != null ? instituicaoLogada.getEmailInstituicao() : "";
+        // Determina qual email será usado como remetente (mesma lógica do DisparoEmailService)
+        Instituicao instituicaoDaOcorrencia = null;
+        String emailRemetente = null;
+        String nomeRemetente = "Sistema";
+        
+        if (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getInstituicao() != null) {
+            Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
+            instituicaoDaOcorrencia = instituicaoRepository.findById(instituicaoId).orElse(null);
+            
+            if (instituicaoDaOcorrencia != null) {
+                nomeRemetente = instituicaoDaOcorrencia.getNomeInstituicao();
+                
+                // Verifica se SMTP da instituição está completamente configurado
+                if (useInstitutionSmtp 
+                        && instituicaoDaOcorrencia.getSmtpHost() != null && !instituicaoDaOcorrencia.getSmtpHost().isBlank()
+                        && instituicaoDaOcorrencia.getSmtpUsername() != null && !instituicaoDaOcorrencia.getSmtpUsername().isBlank()
+                        && instituicaoDaOcorrencia.getSmtpPassword() != null && !instituicaoDaOcorrencia.getSmtpPassword().isBlank()) {
+                    // Usa SMTP configurado da instituição
+                    emailRemetente = instituicaoDaOcorrencia.getSmtpUsername();
+                } else {
+                    // Usa SMTP padrão
+                    emailRemetente = defaultMailUsername != null && !defaultMailUsername.isBlank() 
+                            ? defaultMailUsername 
+                            : instituicaoDaOcorrencia.getEmailInstituicao();
+                }
+            }
+        }
+        
+        if (emailRemetente == null || emailRemetente.isBlank()) {
+            emailRemetente = defaultMailUsername != null && !defaultMailUsername.isBlank() 
+                    ? defaultMailUsername 
+                    : "fclira.fcl@gmail.com";
+        }
 
-        System.out.println("DEBUG: Instituição logada: " + instituicaoLogada);
-        System.out.println("DEBUG: Email da instituição: " + emailInstituicaoLogada);
-
-        model.addAttribute("instituicaoLogada", instituicaoLogada);
-        model.addAttribute("emailInstituicaoLogada", emailInstituicaoLogada);
+        model.addAttribute("instituicaoLogada", instituicaoDaOcorrencia);
+        model.addAttribute("emailInstituicaoLogada", instituicaoDaOcorrencia != null ? instituicaoDaOcorrencia.getEmailInstituicao() : "");
+        model.addAttribute("emailRemetente", emailRemetente);
+        model.addAttribute("nomeRemetente", nomeRemetente);
 
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("origem", origem);

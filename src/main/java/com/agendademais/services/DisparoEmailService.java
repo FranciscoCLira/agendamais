@@ -29,6 +29,9 @@ public class DisparoEmailService {
     private OcorrenciaAtividadeRepository ocorrenciaAtividadeRepository;
 
     @Autowired
+    private com.agendademais.repositories.InstituicaoRepository instituicaoRepository;
+
+    @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
@@ -146,16 +149,30 @@ public class DisparoEmailService {
                                 com.agendademais.entities.Instituicao inst = null;
                                 if (ocorrencia != null && ocorrencia.getIdAtividade() != null
                                         && ocorrencia.getIdAtividade().getInstituicao() != null) {
-                                    inst = ocorrencia.getIdAtividade().getInstituicao();
+                                // Recarrega instituição do banco para garantir campos SMTP atualizados
+                                Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
+                                inst = instituicaoRepository.findById(instituicaoId).orElse(null);
+                                
+                                // DEBUG: Log configuração SMTP
+                                if (inst != null) {
+                                    System.out.println("[DisparoEmail] Instituição ID=" + inst.getId() + " - " + inst.getNomeInstituicao());
+                                    System.out.println("[DisparoEmail] SMTP Host: " + inst.getSmtpHost());
+                                    System.out.println("[DisparoEmail] SMTP Username: " + inst.getSmtpUsername());
+                                    System.out.println("[DisparoEmail] SMTP Password exists: " + (inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank()));
+                                    System.out.println("[DisparoEmail] useInstitutionSmtp: " + useInstitutionSmtp);
                                 }
-                                if (useInstitutionSmtp && inst != null && inst.getSmtpHost() != null
-                                        && inst.getSmtpUsername() != null && inst.getSmtpPassword() != null) {
-                                    senderToUse = buildSenderForInstitution(inst);
-                                } else {
-                                    senderToUse = mailSender;
-                                }
-
-                                MimeMessage message = senderToUse.createMimeMessage();
+                            }
+                            // Valida se SMTP está completamente configurado (não-null e não-blank)
+                            if (useInstitutionSmtp && inst != null 
+                                    && inst.getSmtpHost() != null && !inst.getSmtpHost().isBlank()
+                                    && inst.getSmtpUsername() != null && !inst.getSmtpUsername().isBlank()
+                                    && inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank()) {
+                                System.out.println("[DisparoEmail] ✓ Usando SMTP da instituição: " + inst.getSmtpUsername());
+                                senderToUse = buildSenderForInstitution(inst);
+                            } else {
+                                System.out.println("[DisparoEmail] ✗ Usando SMTP padrão (validação falhou)");
+                                senderToUse = mailSender;
+                            }                                MimeMessage message = senderToUse.createMimeMessage();
                                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                                 helper.setTo(destinatario);
                                 helper.setSubject(assunto);
@@ -217,31 +234,55 @@ public class DisparoEmailService {
                                 }
                                 try {
                                     senderToUse.send(message);
+                                    System.out.println("[DisparoEmail] ✓ Email enviado com sucesso para: " + destinatario);
                                 } catch (Exception sendEx) {
-                                    // If we attempted to use institution sender and it failed, fall back to default
-                                    if (senderToUse != mailSender && mailSender != null) {
-                                        try {
-                                            System.err.println(
-                                                    "[DisparoEmail] Institution SMTP failed, falling back to default sender: "
-                                                            + sendEx.toString());
-                                            mailSender.send(message);
-                                        } catch (Exception fallbackEx) {
-                                            throw fallbackEx; // handled by outer catch
-                                        }
+                                    // NOVA REGRA: Para postagens, NÃO usar fallback - interromper com erro
+                                    // Se SMTP institucional foi configurado e falhou, mostrar erro ao usuário
+                                    System.err.println(
+                                            "[DisparoEmail] ✗ SMTP institucional FALHOU! Erro: " + sendEx.getMessage());
+                                    System.err.println("[DisparoEmail] Causa raiz: " + (sendEx.getCause() != null ? sendEx.getCause().getMessage() : "N/A"));
+                                    
+                                    // Verifica se é erro de autenticação
+                                    String errorMsg = sendEx.getMessage() != null ? sendEx.getMessage().toLowerCase() : "";
+                                    String causeMsg = sendEx.getCause() != null && sendEx.getCause().getMessage() != null 
+                                            ? sendEx.getCause().getMessage().toLowerCase() : "";
+                                    
+                                    String diagnostico = "";
+                                    if (errorMsg.contains("authentication") && 
+                                            (causeMsg.contains("535 5.7.139") || causeMsg.contains("basic authentication is disabled"))) {
+                                        diagnostico = "Autenticação básica desabilitada. Contas Outlook.com/Hotmail.com pessoais não permitem mais SMTP com senha. " +
+                                                     "Soluções: 1) Usar domínio corporativo M365, 2) Habilitar OAuth2, 3) Usar Gmail com App Password";
+                                    } else if (errorMsg.contains("authentication")) {
+                                        diagnostico = "Falha de autenticação. Verifique usuário e senha SMTP.";
+                                    } else if (errorMsg.contains("connect") || errorMsg.contains("timeout")) {
+                                        diagnostico = "Falha de conexão. Verifique host, porta e firewall.";
                                     } else {
-                                        throw sendEx;
+                                        diagnostico = sendEx.getMessage();
                                     }
+                                    
+                                    sendEx.printStackTrace();
+                                    
+                                    // NÃO usar fallback - lançar exceção para interromper disparo
+                                    throw new RuntimeException("SMTP configurado falhou: " + diagnostico, sendEx);
                                 }
                             } catch (Exception ex) {
+                                // Verifica se é erro fatal de SMTP configurado
+                                if (ex.getMessage() != null && ex.getMessage().contains("SMTP configurado falhou")) {
+                                    // Erro fatal - interrompe disparo completamente
+                                    progresso.fatalError = ex.getMessage();
+                                    progresso.concluido = true;
+                                    System.err.println("[DisparoEmail] ✗✗✗ ERRO FATAL - Disparo interrompido: " + ex.getMessage());
+                                    break; // Sai do loop de destinatários
+                                }
+                                
+                                // Outros erros (por destinatário) - continua tentando
                                 progresso.falhas++;
-                                // Capture full stack trace for diagnostics
                                 java.io.StringWriter sw = new java.io.StringWriter();
                                 java.io.PrintWriter pw = new java.io.PrintWriter(sw);
                                 ex.printStackTrace(pw);
                                 String stack = sw.toString();
                                 String errMsg = destinatario + " falhou: " + ex.toString() + "\n" + stack;
                                 progresso.erros.add(errMsg);
-                                // Also print to stderr so it's available in console logs
                                 System.err.println(
                                         "[DisparoEmail] Erro ao enviar para " + destinatario + ": " + ex.toString());
                                 ex.printStackTrace();
