@@ -1,9 +1,11 @@
 package com.agendademais.services;
 
+import com.agendademais.entities.ConfiguracaoSmtpGlobal;
 import com.agendademais.entities.Instituicao;
 import com.agendademais.entities.Pessoa;
 import com.agendademais.entities.PessoaInstituicao;
 import com.agendademais.entities.Usuario;
+import com.agendademais.repositories.ConfiguracaoSmtpGlobalRepository;
 import com.agendademais.repositories.PessoaRepository;
 import com.agendademais.repositories.PessoaInstituicaoRepository;
 import com.agendademais.repositories.UsuarioRepository;
@@ -39,10 +41,16 @@ public class RecuperacaoLoginService {
     private PessoaInstituicaoRepository pessoaInstituicaoRepository;
 
     @Autowired
+    private ConfiguracaoSmtpGlobalRepository configuracaoSmtpGlobalRepository;
+
+    @Autowired
     private CryptoService cryptoService;
 
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
+
+    @Value("${spring.mail.username:noreply@agendamais.com}")
+    private String configuredMailUsername;
 
     @Transactional
     public void enviarLinkRecuperacao(String email) throws Exception {
@@ -62,14 +70,47 @@ public class RecuperacaoLoginService {
         // 3. Buscar instituição da pessoa (se existir)
         Instituicao instituicao = buscarInstituicaoPorEmail(email);
 
-        // 4. Preparar remetente do email
+        // 4. Preparar remetente do email com prioridade: Institucional → Global (Banco) → Padrão (Properties)
         JavaMailSender senderToUse = mailSender;
-        String emailRemetente = "fclira.fcl@gmail.com"; // Padrão
 
         if (instituicao != null && instituicao.getSmtpHost() != null) {
-            // Usar SMTP da instituição
-            senderToUse = criarMailSenderInstituicao(instituicao);
-            emailRemetente = instituicao.getEmailInstituicao();
+            // 1ª Prioridade: SMTP da instituição
+            try {
+                senderToUse = criarMailSenderInstituicao(instituicao);
+            } catch (Exception e) {
+                // Fallback silencioso para SMTP Global se falhar
+                System.err.println("Erro ao criar SMTP institucional, usando global: " + e.getMessage());
+            }
+        }
+        
+        // 2ª Prioridade: SMTP Global do banco (se SMTP institucional não existir ou falhar)
+        if (senderToUse == mailSender) {
+            Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository
+                    .findFirstByAtivoTrueOrderByDataCriacaoDesc();
+            
+            if (configGlobalOpt.isPresent()) {
+                ConfiguracaoSmtpGlobal configGlobal = configGlobalOpt.get();
+                try {
+                    senderToUse = criarMailSenderGlobal(configGlobal);
+                } catch (Exception e) {
+                    // Fallback silencioso para properties se falhar
+                    System.err.println("Erro ao criar SMTP global, usando properties: " + e.getMessage());
+                }
+            }
+        }
+        // 3ª Prioridade: SMTP das properties (mailSender injetado) - já está em senderToUse se nenhum anterior funcionou
+        
+        // Determinar email remetente: usar username do SMTP autenticado
+        String emailRemetente = null;
+        if (senderToUse instanceof JavaMailSenderImpl) {
+            JavaMailSenderImpl jm = (JavaMailSenderImpl) senderToUse;
+            emailRemetente = jm.getUsername();
+        }
+        if (emailRemetente == null || emailRemetente.isBlank()) {
+            // Fallback: email da instituição ou properties
+            emailRemetente = (instituicao != null && instituicao.getEmailInstituicao() != null)
+                    ? instituicao.getEmailInstituicao()
+                    : configuredMailUsername;
         }
 
         // 5. Montar link e mensagem
@@ -159,6 +200,29 @@ public class RecuperacaoLoginService {
             props.put("mail.smtp.starttls.enable", "true");
         }
         
+        props.put("mail.debug", "false");
+        
+        return mailSender;
+    }
+
+    /**
+     * Cria um JavaMailSender com configurações SMTP globais do banco
+     */
+    private JavaMailSender criarMailSenderGlobal(ConfiguracaoSmtpGlobal config) {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        
+        mailSender.setHost(config.getSmtpHost());
+        mailSender.setPort(config.getSmtpPort() != null ? config.getSmtpPort() : 587);
+        mailSender.setUsername(config.getSmtpUsername());
+        
+        // Descriptografa senha se necessário
+        String senhaDescriptografada = cryptoService.decryptIfNeeded(config.getSmtpPassword());
+        mailSender.setPassword(senhaDescriptografada);
+        
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.debug", "false");
         
         return mailSender;
