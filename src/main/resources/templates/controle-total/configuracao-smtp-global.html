@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Configuração SMTP Global</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .test-result {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        display: none;
+      }
+      .test-result.success {
+        background: #d4edda;
+        color: #155724;
+        display: block;
+      }
+      .test-result.error {
+        background: #f8d7da;
+        color: #721c24;
+        display: block;
+      }
+      .btn-test {
+        background: #17a2b8;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .btn-test:hover {
+        background: #138496;
+      }
+      .btn-test:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+    <main class="main-content">
+      <div
+        style="
+          max-width: 700px;
+          margin: 40px auto;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 2px 12px #0001;
+          padding: 32px;
+        "
+      >
+        <!-- Alertas -->
+        <div th:if="${success}" class="alert alert-success">
+          <i class="fas fa-check-circle"></i>
+          <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span th:text="${error}"></span>
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 10px">
+          <i class="fas fa-server"></i> Configuração SMTP Global
+        </h2>
+        <p
+          style="
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+          "
+        >
+          Email padrão do sistema para envio de notificações<br />
+          <strong>Acesso restrito:</strong> Controle Total (Nível 0)
+        </p>
+
+        <form
+          th:action="@{/controle-total/configuracao-smtp-global/salvar}"
+          th:object="${configuracao}"
+          method="post"
+          id="formSmtp"
+        >
+          <input type="hidden" th:field="*{id}" />
+          <input type="hidden" th:field="*{ativo}" value="true" />
+
+          <!-- SMTP Host -->
+          <div style="margin-bottom: 18px">
+            <label for="smtpHost" style="display: block; font-weight: bold">
+              <i class="fas fa-server"></i> Servidor SMTP:
+            </label>
+            <input
+              type="text"
+              id="smtpHost"
+              th:field="*{smtpHost}"
+              required
+              placeholder="smtp.gmail.com"
+              style="
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <small style="color: #666"
+              >Ex: smtp.gmail.com, smtp-mail.outlook.com</small
+            >
+          </div>
+
+          <!-- SMTP Port -->
+          <div style="margin-bottom: 18px">
+            <label for="smtpPort" style="display: block; font-weight: bold">
+              <i class="fas fa-plug"></i> Porta SMTP:
+            </label>
+            <input
+              type="number"
+              id="smtpPort"
+              th:field="*{smtpPort}"
+              required
+              value="587"
+              style="
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <small style="color: #666"
+              >Geralmente 587 (STARTTLS) ou 465 (SSL)</small
+            >
+          </div>
+
+          <!-- SMTP Username -->
+          <div style="margin-bottom: 18px">
+            <label for="smtpUsername" style="display: block; font-weight: bold">
+              <i class="fas fa-user"></i> Usuário SMTP:
+            </label>
+            <input
+              type="text"
+              id="smtpUsername"
+              th:field="*{smtpUsername}"
+              required
+              placeholder="email@exemplo.com"
+              style="
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <small style="color: #666"
+              >Normalmente é o endereço de email completo</small
+            >
+          </div>
+
+          <!-- SMTP Password -->
+          <div style="margin-bottom: 18px">
+            <label for="smtpPassword" style="display: block; font-weight: bold">
+              <i class="fas fa-key"></i> Senha SMTP:
+            </label>
+            <input
+              type="password"
+              id="smtpPassword"
+              th:field="*{smtpPassword}"
+              th:placeholder="${configuracao.id != null ? '(Deixe em branco para manter atual)' : 'Digite a senha'}"
+              style="
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <small style="color: #666">
+              ⚠️ Use <strong>App Password</strong> para Gmail. Outlook pessoal
+              não suporta autenticação básica.
+            </small>
+          </div>
+
+          <!-- Nome Remetente -->
+          <div style="margin-bottom: 18px">
+            <label
+              for="smtpNomeRemetente"
+              style="display: block; font-weight: bold"
+            >
+              <i class="fas fa-signature"></i> Nome do Remetente:
+            </label>
+            <input
+              type="text"
+              id="smtpNomeRemetente"
+              th:field="*{smtpNomeRemetente}"
+              placeholder="Agenda Mais - Sistema"
+              style="
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <small style="color: #666"
+              >Nome que aparecerá como remetente dos emails</small
+            >
+          </div>
+
+          <!-- Email Remetente -->
+          <div style="margin-bottom: 24px">
+            <label
+              for="smtpEmailRemetente"
+              style="display: block; font-weight: bold"
+            >
+              <i class="fas fa-envelope"></i> Email Remetente:
+            </label>
+            <input
+              type="email"
+              id="smtpEmailRemetente"
+              th:field="*{smtpEmailRemetente}"
+              placeholder="noreply@exemplo.com"
+              style="
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <small style="color: #666"
+              >Email que aparecerá como remetente (geralmente o mesmo do usuário
+              SMTP)</small
+            >
+          </div>
+
+          <!-- Botão Testar Conexão -->
+          <div style="margin-bottom: 20px">
+            <button
+              type="button"
+              class="btn-test"
+              onclick="testarConexao()"
+              id="btnTestar"
+            >
+              <i class="fas fa-vial"></i> Testar Conexão SMTP
+            </button>
+            <div id="testResult" class="test-result"></div>
+          </div>
+
+          <!-- Botões de Ação -->
+          <div style="display: flex; gap: 12px; justify-content: center">
+            <a
+              th:href="@{/controle-total}"
+              style="
+                background: #6c757d;
+                color: white;
+                text-decoration: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+              "
+            >
+              <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+            <button
+              type="submit"
+              style="
+                background: #6f42c1;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+              "
+            >
+              <i class="fas fa-save"></i> Salvar Configuração
+            </button>
+          </div>
+        </form>
+
+        <!-- Informações Adicionais -->
+        <div
+          style="
+            margin-top: 30px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #6f42c1;
+          "
+        >
+          <h4 style="margin-top: 0">
+            <i class="fas fa-info-circle"></i> Prioridade de SMTP
+          </h4>
+          <ol style="margin: 0; padding-left: 20px; color: #666">
+            <li>
+              <strong>SMTP Institucional</strong>: Usado quando configurado na
+              instituição
+            </li>
+            <li>
+              <strong>SMTP Global (Banco)</strong>: Usado como fallback (esta
+              configuração)
+            </li>
+            <li>
+              <strong>SMTP Properties</strong>: Usado apenas se não houver
+              configuração no banco
+            </li>
+          </ol>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      function testarConexao() {
+        const btnTestar = document.getElementById("btnTestar");
+        const testResult = document.getElementById("testResult");
+
+        // Desabilita botão durante teste
+        btnTestar.disabled = true;
+        btnTestar.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Testando...';
+
+        const smtpHost = document.getElementById("smtpHost").value;
+        const smtpPort = document.getElementById("smtpPort").value;
+        const smtpUsername = document.getElementById("smtpUsername").value;
+        let smtpPassword = document.getElementById("smtpPassword").value;
+
+        // Se senha estiver vazia, buscar do banco
+        if (!smtpPassword || smtpPassword.trim() === "") {
+          // Fazer requisição para buscar senha do banco
+          fetch("/controle-total/configuracao-smtp-global/senha-atual", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.senha) {
+                smtpPassword = data.senha;
+                proceedWithTest(
+                  smtpHost,
+                  smtpPort,
+                  smtpUsername,
+                  smtpPassword,
+                  btnTestar,
+                  testResult
+                );
+              } else {
+                testResult.className = "test-result error";
+                testResult.innerHTML =
+                  '<i class="fas fa-exclamation-triangle"></i> Senha não configurada';
+                btnTestar.disabled = false;
+                btnTestar.innerHTML =
+                  '<i class="fas fa-vial"></i> Testar Conexão SMTP';
+              }
+            })
+            .catch((error) => {
+              testResult.className = "test-result error";
+              testResult.innerHTML =
+                '<i class="fas fa-exclamation-triangle"></i> Erro ao buscar senha';
+              btnTestar.disabled = false;
+              btnTestar.innerHTML =
+                '<i class="fas fa-vial"></i> Testar Conexão SMTP';
+            });
+          return;
+        }
+
+        proceedWithTest(
+          smtpHost,
+          smtpPort,
+          smtpUsername,
+          smtpPassword,
+          btnTestar,
+          testResult
+        );
+      }
+
+      function proceedWithTest(
+        smtpHost,
+        smtpPort,
+        smtpUsername,
+        smtpPassword,
+        btnTestar,
+        testResult
+      ) {
+        if (!smtpHost || !smtpPort || !smtpUsername || !smtpPassword) {
+          testResult.className = "test-result error";
+          testResult.innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i> Preencha todos os campos obrigatórios';
+          btnTestar.disabled = false;
+          btnTestar.innerHTML =
+            '<i class="fas fa-vial"></i> Testar Conexão SMTP';
+          return;
+        }
+
+        // Faz requisição AJAX
+        fetch("/controle-total/configuracao-smtp-global/testar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            smtpHost: smtpHost,
+            smtpPort: smtpPort,
+            smtpUsername: smtpUsername,
+            smtpPassword: smtpPassword,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              testResult.className = "test-result success";
+              testResult.innerHTML =
+                '<i class="fas fa-check-circle"></i> ' + data.message;
+            } else {
+              testResult.className = "test-result error";
+              testResult.innerHTML =
+                '<i class="fas fa-times-circle"></i> ' + data.message;
+            }
+          })
+          .catch((error) => {
+            testResult.className = "test-result error";
+            testResult.innerHTML =
+              '<i class="fas fa-times-circle"></i> Erro na requisição: ' +
+              error;
+          })
+          .finally(() => {
+            btnTestar.disabled = false;
+            btnTestar.innerHTML =
+              '<i class="fas fa-vial"></i> Testar Conexão SMTP';
+          });
+      }
+    </script>
+  </body>
+</html>
