@@ -68,6 +68,9 @@ public class SecurityConfig {
 					.requestMatchers(org.springframework.http.HttpMethod.GET,
 							"/administrador/atividades/deletar/**")
 					.permitAll()
+					// Rotas de disparo de emails (controle de acesso via session no controller)
+					.requestMatchers("/disparo-emails/**", "/controle-total/**")
+					.permitAll()
 					// Removed .requestMatchers("/admin/**").hasRole("ADMIN")
 					// because the system uses its own session-based access control
 					// Controllers use @PreAuthorize or session checks for authorization
@@ -76,7 +79,7 @@ public class SecurityConfig {
 			http.formLogin();
 			// Disable CSRF for API endpoints to allow JSON POST/PUT/DELETE from JavaScript
 			http.csrf(csrf -> csrf
-					.ignoringRequestMatchers("/api/**"));
+					.ignoringRequestMatchers("/api/**", "/controle-total/**", "/disparo-emails/**"));
 
 		} else {
 			http.authorizeHttpRequests(auth -> auth
