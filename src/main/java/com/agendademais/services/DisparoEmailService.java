@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import com.agendademais.entities.ConfiguracaoSmtpGlobal;
 import com.agendademais.entities.LogPostagem;
 import com.agendademais.entities.OcorrenciaAtividade;
+import com.agendademais.repositories.ConfiguracaoSmtpGlobalRepository;
 import com.agendademais.repositories.LogPostagemRepository;
 import com.agendademais.repositories.OcorrenciaAtividadeRepository;
 import java.time.LocalDateTime;
@@ -30,6 +32,9 @@ public class DisparoEmailService {
 
     @Autowired
     private com.agendademais.repositories.InstituicaoRepository instituicaoRepository;
+
+    @Autowired
+    private ConfiguracaoSmtpGlobalRepository configuracaoSmtpGlobalRepository;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -167,11 +172,38 @@ public class DisparoEmailService {
                                     && inst.getSmtpHost() != null && !inst.getSmtpHost().isBlank()
                                     && inst.getSmtpUsername() != null && !inst.getSmtpUsername().isBlank()
                                     && inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank()) {
+                                // 1ª Prioridade: SMTP Institucional
                                 System.out.println("[DisparoEmail] ✓ Usando SMTP da instituição: " + inst.getSmtpUsername());
-                                senderToUse = buildSenderForInstitution(inst);
+                                try {
+                                    senderToUse = buildSenderForInstitution(inst);
+                                } catch (Exception e) {
+                                    System.err.println("[DisparoEmail] ERRO ao construir SMTP institucional: " + e.getMessage());
+                                    String diagnostico = "Erro ao construir SMTP institucional: " + e.getMessage();
+                                    progresso.fatalError = diagnostico;
+                                    throw new RuntimeException("SMTP configurado falhou: " + diagnostico);
+                                }
                             } else {
-                                System.out.println("[DisparoEmail] ✗ Usando SMTP padrão (validação falhou)");
-                                senderToUse = mailSender;
+                                // 2ª Prioridade: SMTP Global do banco
+                                System.out.println("[DisparoEmail] ✗ SMTP institucional não configurado, tentando SMTP global...");
+                                Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository
+                                        .findFirstByAtivoTrueOrderByDataCriacaoDesc();
+                                
+                                if (configGlobalOpt.isPresent()) {
+                                    ConfiguracaoSmtpGlobal configGlobal = configGlobalOpt.get();
+                                    System.out.println("[DisparoEmail] ✓ Usando SMTP global (banco): " + configGlobal.getSmtpUsername());
+                                    try {
+                                        senderToUse = buildSenderForGlobal(configGlobal);
+                                    } catch (Exception e) {
+                                        System.err.println("[DisparoEmail] ERRO ao construir SMTP global: " + e.getMessage());
+                                        String diagnostico = "Erro ao construir SMTP global: " + e.getMessage();
+                                        progresso.fatalError = diagnostico;
+                                        throw new RuntimeException("SMTP configurado falhou: " + diagnostico);
+                                    }
+                                } else {
+                                    // 3ª Prioridade: SMTP das properties (padrão)
+                                    System.out.println("[DisparoEmail] ⚠ Usando SMTP padrão (properties)");
+                                    senderToUse = mailSender;
+                                }
                             }                                MimeMessage message = senderToUse.createMimeMessage();
                                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                                 helper.setTo(destinatario);
@@ -389,5 +421,29 @@ public class DisparoEmailService {
         props.put("mail.smtp.connectiontimeout", "10000");
         props.put("mail.smtp.timeout", "10000");
         return instSender;
+    }
+
+    private JavaMailSender buildSenderForGlobal(ConfiguracaoSmtpGlobal config) {
+        System.err.println("[DisparoEmail] Building sender for SMTP Global (banco)");
+        System.err.println("[DisparoEmail] SMTP Host: " + config.getSmtpHost());
+        System.err.println("[DisparoEmail] SMTP Port: " + config.getSmtpPort());
+        System.err.println("[DisparoEmail] SMTP Username: " + config.getSmtpUsername());
+
+        JavaMailSenderImpl globalSender = new JavaMailSenderImpl();
+        globalSender.setHost(config.getSmtpHost());
+        globalSender.setPort(config.getSmtpPort() != null ? config.getSmtpPort() : 587);
+        globalSender.setUsername(config.getSmtpUsername());
+        
+        String decrypted = cryptoService.decryptIfNeeded(config.getSmtpPassword());
+        globalSender.setPassword(decrypted);
+        
+        Properties props = globalSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
+        
+        return globalSender;
     }
 }
