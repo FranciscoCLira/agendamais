@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bem-vindo ao Agenda Mais</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4caf50;
+      }
+      .header h1 {
+        color: #4caf50;
+        margin: 0;
+      }
+      .content {
+        padding: 20px 0;
+      }
+      .credentials {
+        background-color: #f9f9f9;
+        border-left: 4px solid #4caf50;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .credentials strong {
+        color: #4caf50;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        background-color: #4caf50;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .button:hover {
+        background-color: #45a049;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        color: #666;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎉 Bem-vindo ao Agenda Mais!</h1>
+      </div>
+
+      <div class="content">
+        <p>Olá <strong>{{nome}}</strong>,</p>
+
+        <p>
+          É com grande satisfação que damos as boas-vindas à plataforma
+          <strong>Agenda Mais</strong> da instituição
+          <strong>{{nomeInstituicao}}</strong>!
+        </p>
+
+        <p>
+          Sua conta foi criada com sucesso e você já pode começar a utilizar
+          todos os recursos do sistema.
+        </p>
+
+        <div class="credentials">
+          <p><strong>Seus dados de acesso:</strong></p>
+          <p>
+            <strong>Usuário:</strong> {{username}}<br />
+            <strong>Email:</strong> {{email}}
+          </p>
+          <p style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin-top: 10px;">
+            <strong>⚠️ Primeiro Acesso:</strong><br />
+            Se este é o seu primeiro acesso ao sistema, utilize a senha padrão: <strong style="color: #856404;">Agenda@2025</strong><br />
+            <em>Após o login, você será solicitado a criar uma nova senha segura.</em>
+          </p>
+        </div>
+
+        <p>Para acessar a plataforma, clique no botão abaixo:</p>
+
+        <p style="text-align: center">
+          <a href="{{appUrl}}/login" class="button">Acessar Plataforma</a>
+        </p>
+
+        <p><strong>Recursos disponíveis:</strong></p>
+        <ul>
+          <li>Gerenciamento de atividades e eventos</li>
+          <li>Inscrições online simplificadas</li>
+          <li>Acompanhamento de ocorrências</li>
+          <li>Comunicação integrada via email</li>
+          <li>Relatórios e estatísticas em tempo real</li>
+        </ul>
+
+        <p>
+          Se você tiver alguma dúvida ou precisar de ajuda, entre em contato
+          conosco através do email: <strong>{{emailInstituicao}}</strong>
+        </p>
+
+        <p>
+          Estamos à disposição para ajudá-lo a aproveitar ao máximo nossa
+          plataforma!
+        </p>
+
+        <p>
+          Atenciosamente,<br />
+          <strong>Equipe {{nomeInstituicao}}</strong>
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>
+          Esta é uma mensagem automática. Por favor, não responda este email.
+        </p>
+        <p>&copy; 2025 Agenda Mais - Todos os direitos reservados.</p>
+        
+        <!-- Link para descadastro -->
+        {{removerEmailMensagem}}
+      </div>
+    </div>
+  </body>
+</html>

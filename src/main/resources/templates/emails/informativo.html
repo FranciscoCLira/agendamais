@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comunicado Importante</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      style="background-color: #f4f4f4; padding: 20px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+                  padding: 40px 30px;
+                  text-align: center;
+                "
+              >
+                <h1
+                  style="
+                    margin: 0;
+                    color: #ffffff;
+                    font-size: 28px;
+                    font-weight: bold;
+                  "
+                >
+                  {{nomeInstituicao}}
+                </h1>
+                <p style="margin: 10px 0 0 0; color: #e3f2fd; font-size: 14px">
+                  Comunicado Importante
+                </p>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding: 40px 30px">
+                <p
+                  style="
+                    margin: 0 0 20px 0;
+                    color: #333333;
+                    font-size: 16px;
+                    line-height: 1.6;
+                  "
+                >
+                  Olá <strong>{{nome}}</strong>,
+                </p>
+
+                <p
+                  style="
+                    margin: 0 0 20px 0;
+                    color: #555555;
+                    font-size: 15px;
+                    line-height: 1.6;
+                  "
+                >
+                  Gostaríamos de informar sobre uma importante atualização em
+                  nosso sistema.
+                </p>
+
+                <!-- Info Box -->
+                <div
+                  style="
+                    background-color: #e3f2fd;
+                    border-left: 4px solid #2196f3;
+                    padding: 20px;
+                    margin: 30px 0;
+                    border-radius: 4px;
+                  "
+                >
+                  <h2
+                    style="margin: 0 0 10px 0; color: #1976d2; font-size: 18px"
+                  >
+                    📢 O que mudou?
+                  </h2>
+                  <p
+                    style="
+                      margin: 0;
+                      color: #555555;
+                      font-size: 14px;
+                      line-height: 1.6;
+                    "
+                  >
+                    [Descreva aqui as mudanças, novidades ou informações
+                    importantes que deseja comunicar aos usuários]
+                  </p>
+                </div>
+
+                <p
+                  style="
+                    margin: 0 0 20px 0;
+                    color: #555555;
+                    font-size: 15px;
+                    line-height: 1.6;
+                  "
+                >
+                  Essa atualização visa melhorar sua experiência e facilitar o
+                  uso de nossos serviços.
+                </p>
+
+                <!-- Action Button -->
+                <div style="text-align: center; margin: 30px 0">
+                  <a
+                    href="{{appUrl}}"
+                    style="
+                      display: inline-block;
+                      background: linear-gradient(
+                        135deg,
+                        #2196f3 0%,
+                        #1976d2 100%
+                      );
+                      color: #ffffff;
+                      text-decoration: none;
+                      padding: 14px 40px;
+                      border-radius: 25px;
+                      font-size: 16px;
+                      font-weight: bold;
+                      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+                    "
+                  >
+                    Acessar o Sistema
+                  </a>
+                </div>
+
+                <p
+                  style="
+                    margin: 30px 0 0 0;
+                    color: #777777;
+                    font-size: 14px;
+                    line-height: 1.6;
+                  "
+                >
+                  Se tiver alguma dúvida, não hesite em entrar em contato
+                  conosco.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #f9f9f9;
+                  padding: 30px;
+                  text-align: center;
+                  border-top: 1px solid #eeeeee;
+                "
+              >
+                <p style="margin: 0 0 10px 0; color: #999999; font-size: 13px">
+                  {{nomeInstituicao}}
+                </p>
+                <p style="margin: 0 0 10px 0; color: #999999; font-size: 13px">
+                  Email:
+                  <a
+                    href="mailto:{{emailInstituicao}}"
+                    style="color: #2196f3; text-decoration: none"
+                    >{{emailInstituicao}}</a
+                  >
+                </p>
+                <p style="margin: 0; color: #cccccc; font-size: 12px">
+                  © 2024 Todos os direitos reservados
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Disclaimer -->
+          <table
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="margin-top: 20px"
+          >
+            <tr>
+              <td style="padding: 0 30px; text-align: center">
+                <p
+                  style="
+                    margin: 0;
+                    color: #999999;
+                    font-size: 12px;
+                    line-height: 1.5;
+                  "
+                >
+                  Este é um email automático, por favor não responda. <br />
+                  Você está recebendo este email porque está cadastrado em
+                  {{nomeInstituicao}}.
+                </p>
+                
+                <!-- Link para descadastro -->
+                <div style="margin-top: 20px;">
+                  {{removerEmailMensagem}}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
