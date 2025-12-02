@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Novo Disparo de Email</title>
+    
+    <!-- BLOQUEAR TINYMCE COMPLETAMENTE - ANTES DE TUDO -->
+    <script>
+      // Interceptar qualquer tentativa de carregar TinyMCE
+      Object.defineProperty(window, 'tinymce', {
+        get: function() { return undefined; },
+        set: function() { },
+        configurable: false
+      });
+    </script>
+    
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <!-- Summernote WYSIWYG Editor (mesma versão de ocorrencia-form.html) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: cabecalho"></div>
+
+    <main class="container py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Novo Disparo de Email</h1>
+        <a th:href="@{/disparo-emails}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+      </div>
+
+      <!-- Mensagens -->
+      <div
+        th:if="${mensagemErro}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${mensagemErro}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <!-- Formulário -->
+      <form th:action="@{/disparo-emails/criar}" method="post" id="formDisparo">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Informações do Disparo</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="tipoDisparo" class="form-label"
+                  >Tipo de Disparo *</label
+                >
+                <select
+                  id="tipoDisparo"
+                  name="tipoDisparo"
+                  class="form-select"
+                  required
+                >
+                  <option value="">Selecione...</option>
+                  <option
+                    th:each="tipo : ${tiposDisparo}"
+                    th:value="${tipo}"
+                    th:text="${tipo}"
+                  ></option>
+                </select>
+                <small class="form-text text-muted">
+                  Escolha o tipo de email: BOAS_VINDAS, INFORMATIVO ou CAMPANHA
+                </small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Total de Destinatários</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    id="totalDestinatarios"
+                    class="form-control"
+                    readonly
+                    placeholder="Clique para contar"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="contarDestinatarios()"
+                  >
+                    <i class="bi bi-calculator"></i> Contar
+                  </button>
+                </div>
+                <small class="form-text text-muted">
+                  Conta quantas pessoas receberão o email com os filtros
+                  aplicados
+                </small>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="assunto" class="form-label">Assunto do Email *</label>
+              <input
+                type="text"
+                id="assunto"
+                name="assunto"
+                class="form-control"
+                required
+                maxlength="255"
+                placeholder="Ex: Bem-vindo ao Sistema AgendaMais!"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="corpoHtml" class="form-label"
+                >Corpo do Email (HTML) *</label
+              >
+              <textarea
+                id="corpoHtml"
+                name="corpoHtml"
+                class="form-control"
+                rows="15"
+              ></textarea>
+              <small class="form-text text-muted">
+                Variáveis disponíveis: {{nome}}, {{username}}, {{email}},
+                {{nomeInstituicao}}, {{emailInstituicao}}, {{appUrl}}
+              </small>
+            </div>
+
+            <div class="mb-3">
+              <button
+                type="button"
+                class="btn btn-info"
+                data-bs-toggle="modal"
+                data-bs-target="#modalTemplates"
+              >
+                <i class="bi bi-file-earmark-text"></i> Usar Template
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="visualizarPreview()"
+              >
+                <i class="bi bi-eye"></i> Visualizar Preview
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Filtros de Destinatários</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">
+              Aplique filtros para selecionar quem receberá o email. Se nenhum
+              filtro for aplicado, todos receberão.
+            </p>
+
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="filtroSituacao" class="form-label"
+                  >Situação do Usuário
+                  <span id="situacaoObrig" style="display: none; color: red"
+                    >*</span
+                  ></label
+                >
+                <select
+                  id="filtroSituacao"
+                  name="filtroSituacao"
+                  class="form-select"
+                >
+                  <option value="">Todas</option>
+                  <option value="A" selected>Ativo</option>
+                  <option value="I">Inativo</option>
+                  <option value="P">Pendente</option>
+                </select>
+                <small id="situacaoHelp" class="form-text text-muted">
+                  Por padrão, apenas usuários ATIVOS recebem emails
+                </small>
+              </div>
+              <div class="col-md-4">
+                <label for="filtroDataInicio" class="form-label"
+                  >Data Cadastro - Início</label
+                >
+                <input
+                  type="date"
+                  id="filtroDataInicio"
+                  name="filtroDataInicio"
+                  class="form-control"
+                />
+                <small class="form-text text-muted">
+                  Opcional: usuários cadastrados a partir desta data
+                </small>
+              </div>
+              <div class="col-md-4">
+                <label for="filtroDataFim" class="form-label"
+                  >Data Cadastro - Fim</label
+                >
+                <input
+                  type="date"
+                  id="filtroDataFim"
+                  name="filtroDataFim"
+                  class="form-control"
+                />
+                <small class="form-text text-muted">
+                  Opcional: usuários cadastrados até esta data
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <a th:href="@{/disparo-emails}" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Criar Disparo
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Modal: Templates -->
+    <div class="modal fade" id="modalTemplates" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Selecionar Template</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="list-group">
+              <a
+                href="#"
+                class="list-group-item list-group-item-action"
+                onclick="carregarTemplate('boas-vindas')"
+              >
+                <h6 class="mb-1">Boas-Vindas</h6>
+                <p class="mb-0 text-muted small">
+                  Email de boas-vindas para novos usuários com credenciais
+                </p>
+              </a>
+              <a
+                href="#"
+                class="list-group-item list-group-item-action"
+                onclick="carregarTemplate('informativo')"
+              >
+                <h6 class="mb-1">Informativo Geral</h6>
+                <p class="mb-0 text-muted small">
+                  Template simples para comunicados e informativos
+                </p>
+              </a>
+              <a
+                href="#"
+                class="list-group-item list-group-item-action"
+                onclick="carregarTemplate('campanha')"
+              >
+                <h6 class="mb-1">Campanha/Promoção</h6>
+                <p class="mb-0 text-muted small">
+                  Template chamativo para campanhas e eventos
+                </p>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Preview -->
+    <div class="modal fade" id="modalPreview" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Preview do Email</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <iframe
+              id="previewFrame"
+              style="width: 100%; height: 600px; border: 1px solid #ddd"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        // Initialize Summernote PRIMEIRO
+        $("#corpoHtml").summernote({
+          placeholder: "Digite o corpo do email em HTML...",
+          tabsize: 2,
+          height: 400,
+          lang: "pt-BR",
+          toolbar: [
+            ["style", ["bold", "italic", "underline", "clear"]],
+            ["font", ["strikethrough", "superscript", "subscript"]],
+            ["para", ["ul", "ol", "paragraph"]],
+            ["insert", ["link", "table"]],
+            ["view", ["undo", "redo", "codeview"]],
+          ],
+        });
+
+        // Controlar filtro de situação baseado no tipo de disparo
+        document
+          .getElementById("tipoDisparo")
+          .addEventListener("change", function () {
+            var tipo = this.value;
+            var filtroSituacao = document.getElementById("filtroSituacao");
+            var situacaoObrig = document.getElementById("situacaoObrig");
+            var situacaoHelp = document.getElementById("situacaoHelp");
+
+            if (tipo === "BOAS_VINDAS") {
+              // Forçar Pendente e desabilitar
+              filtroSituacao.value = "P";
+              filtroSituacao.disabled = true;
+              situacaoObrig.style.display = "inline";
+              situacaoHelp.textContent =
+                "BOAS_VINDAS: obrigatoriamente envia para usuários PENDENTES (senha padrão Agenda@2025)";
+              situacaoHelp.style.color = "#856404";
+              situacaoHelp.style.fontWeight = "bold";
+            } else if (tipo === "INFORMATIVO" || tipo === "CAMPANHA") {
+              // Liberar escolha
+              filtroSituacao.disabled = false;
+              situacaoObrig.style.display = "none";
+              situacaoHelp.textContent =
+                "Escolha a situação dos usuários que receberão o email";
+              situacaoHelp.style.color = "#6c757d";
+              situacaoHelp.style.fontWeight = "normal";
+            } else {
+              // Reset
+              filtroSituacao.value = "A";
+              filtroSituacao.disabled = false;
+              situacaoObrig.style.display = "none";
+              situacaoHelp.textContent =
+                "Por padrão, apenas usuários ATIVOS recebem emails";
+              situacaoHelp.style.color = "#6c757d";
+              situacaoHelp.style.fontWeight = "normal";
+            }
+          });
+      });
+
+      // Contar destinatários via AJAX
+      function contarDestinatarios() {
+        const filtroSituacao = document.getElementById("filtroSituacao").value;
+        const filtroDataInicio =
+          document.getElementById("filtroDataInicio").value;
+        const filtroDataFim = document.getElementById("filtroDataFim").value;
+
+        console.log("Filtros:", {
+          filtroSituacao,
+          filtroDataInicio,
+          filtroDataFim,
+        });
+
+        const params = new URLSearchParams();
+        if (filtroSituacao) params.append("filtroSituacao", filtroSituacao);
+        if (filtroDataInicio)
+          params.append("filtroDataInicio", filtroDataInicio);
+        if (filtroDataFim) params.append("filtroDataFim", filtroDataFim);
+
+        document.getElementById("totalDestinatarios").value = "Contando...";
+
+        fetch("/disparo-emails/contar-destinatarios?" + params.toString(), {
+          method: "POST",
+        })
+          .then((response) => response.json())
+          .then((total) => {
+            console.log("Total recebido:", total);
+            document.getElementById("totalDestinatarios").value =
+              total + " pessoas";
+          })
+          .catch((error) => {
+            console.error("Erro:", error);
+            alert("Erro ao contar destinatários: " + error);
+            document.getElementById("totalDestinatarios").value = "Erro";
+          });
+      }
+
+      // Carregar template
+      function carregarTemplate(tipo) {
+        fetch("/disparo-emails/templates/" + tipo)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Template não encontrado");
+            }
+            return response.text();
+          })
+          .then((html) => {
+            $("#corpoHtml").summernote("code", html);
+            bootstrap.Modal.getInstance(
+              document.getElementById("modalTemplates")
+            ).hide();
+          })
+          .catch((error) => {
+            alert("Erro ao carregar template: " + error);
+          });
+      }
+
+      // Visualizar preview
+      function visualizarPreview() {
+        const corpo = $("#corpoHtml").summernote("code");
+
+        // Substituir variáveis com dados de exemplo
+        const preview = corpo
+          .replace(/\{\{nome\}\}/g, "João da Silva")
+          .replace(/\{\{username\}\}/g, "joao.silva@email.com")
+          .replace(/\{\{email\}\}/g, "joao.silva@email.com")
+          .replace(/\{\{nomeInstituicao\}\}/g, "Instituição Exemplo")
+          .replace(/\{\{emailInstituicao\}\}/g, "contato@instituicao.com.br")
+          .replace(/\{\{appUrl\}\}/g, window.location.origin);
+
+        const iframe = document.getElementById("previewFrame");
+        iframe.srcdoc = preview;
+
+        new bootstrap.Modal(document.getElementById("modalPreview")).show();
+      }
+    </script>
+  </body>
+</html>
