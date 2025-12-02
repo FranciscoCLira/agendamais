@@ -26,4 +26,7 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     boolean existsByPessoaAndIdInstituicaoAndTiposAtividade_Id(Pessoa pessoa, Instituicao idInstituicao,
             Long tipoAtividadeId);
 
+    // Buscar todas inscrições de uma instituição
+    List<Inscricao> findByIdInstituicao(Instituicao idInstituicao);
+
 }
