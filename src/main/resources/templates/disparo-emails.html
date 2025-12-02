@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Disparo de Emails em Lote</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <style>
+      .badge-pendente {
+        background-color: #6c757d;
+      }
+      .badge-processando {
+        background-color: #ffc107;
+        color: #000;
+      }
+      .badge-concluido {
+        background-color: #28a745;
+      }
+      .badge-erro {
+        background-color: #dc3545;
+      }
+      .badge-cancelado {
+        background-color: #6c757d;
+      }
+      .progress-stats {
+        font-size: 0.9em;
+        color: #6c757d;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="fragments/layout_cabecalho :: header"></div>
+
+    <main class="container py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Disparo de Emails em Lote</h1>
+        <div class="d-flex gap-2">
+          <a th:href="@{/administrador}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+          </a>
+          <a th:href="@{/disparo-emails/novo}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Novo Disparo
+          </a>
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      <div
+        th:if="${mensagemSucesso}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${mensagemSucesso}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      <div
+        th:if="${mensagemErro}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${mensagemErro}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <!-- Card Informativo -->
+      <div class="card mb-4 border-info">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="bi bi-info-circle"></i> Como funciona
+          </h5>
+          <p class="mb-0">
+            Crie disparos de emails genéricos para enviar comunicados,
+            boas-vindas ou campanhas para grupos de pessoas inscritas na sua
+            instituição. Você pode aplicar filtros avançados e usar templates
+            HTML personalizados.
+          </p>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Filtrar Disparos</h5>
+        </div>
+        <div class="card-body">
+          <form method="get" th:action="@{/disparo-emails}" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="">Todos</option>
+                <option
+                  th:each="status : ${statusDisparo}"
+                  th:value="${status}"
+                  th:text="${status}"
+                  th:selected="${param.status != null && param.status[0] == status.name()}"
+                ></option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tipo</label>
+              <select name="tipo" class="form-select">
+                <option value="">Todos</option>
+                <option
+                  th:each="tipo : ${tiposDisparo}"
+                  th:value="${tipo}"
+                  th:text="${tipo}"
+                  th:selected="${param.tipo != null && param.tipo[0] == tipo.name()}"
+                ></option>
+              </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button type="submit" class="btn btn-secondary me-2">
+                Filtrar
+              </button>
+              <a th:href="@{/disparo-emails}" class="btn btn-outline-secondary"
+                >Limpar</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Lista de Disparos -->
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Disparos Recentes</h5>
+        </div>
+        <div class="card-body p-0">
+          <div
+            th:if="${disparos == null || disparos.isEmpty()}"
+            class="p-4 text-center text-muted"
+          >
+            <i class="bi bi-inbox" style="font-size: 3rem"></i>
+            <p class="mt-2 mb-0">
+              Nenhum disparo encontrado. Crie seu primeiro disparo!
+            </p>
+          </div>
+
+          <div
+            th:if="${disparos != null && !disparos.isEmpty()}"
+            class="table-responsive"
+          >
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Tipo</th>
+                  <th>Assunto</th>
+                  <th>Status</th>
+                  <th>Destinatários</th>
+                  <th>Progresso</th>
+                  <th>Data Criação</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="disparo : ${disparos}">
+                  <td th:text="${disparo.id}"></td>
+                  <td>
+                    <span
+                      class="badge bg-secondary"
+                      th:text="${disparo.tipoDisparo}"
+                    ></span>
+                  </td>
+                  <td th:text="${disparo.assunto}"></td>
+                  <td>
+                    <span
+                      th:class="'badge badge-' + ${#strings.toLowerCase(disparo.status)}"
+                      th:text="${disparo.status}"
+                    >
+                    </span>
+                  </td>
+                  <td th:text="${disparo.totalDestinatarios}"></td>
+                  <td>
+                    <div
+                      th:if="${disparo.status.name() == 'PROCESSANDO' || disparo.status.name() == 'CONCLUIDO'}"
+                    >
+                      <div class="progress" style="height: 20px">
+                        <div
+                          class="progress-bar"
+                          th:style="'width: ' + ${disparo.totalDestinatarios > 0 ? (disparo.emailsEnviados + disparo.emailsFalhados) * 100.0 / disparo.totalDestinatarios : 0} + '%'"
+                          th:text="${disparo.emailsEnviados + disparo.emailsFalhados} + '/' + ${disparo.totalDestinatarios}"
+                        ></div>
+                      </div>
+                      <small class="progress-stats">
+                        ✓
+                        <span th:text="${disparo.emailsEnviados}">0</span>
+                        enviados · ✗
+                        <span th:text="${disparo.emailsFalhados}">0</span>
+                        falhas
+                      </small>
+                    </div>
+                    <span
+                      th:if="${disparo.status.name() == 'PENDENTE'}"
+                      class="text-muted"
+                      >-</span
+                    >
+                    <span
+                      th:if="${disparo.status.name() == 'CANCELADO'}"
+                      class="text-muted"
+                      >Cancelado</span
+                    >
+                    <span
+                      th:if="${disparo.status.name() == 'ERRO'}"
+                      class="text-danger"
+                      >Erro</span
+                    >
+                  </td>
+                  <td>
+                    <small
+                      th:text="${#temporals.format(disparo.dataCriacao, 'dd/MM/yyyy HH:mm')}"
+                    ></small>
+                  </td>
+                  <td>
+                    <a
+                      th:href="@{/disparo-emails/{id}(id=${disparo.id})}"
+                      class="btn btn-sm btn-outline-primary"
+                      title="Ver Detalhes"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <form
+                      th:if="${disparo.status.name() == 'PENDENTE'}"
+                      th:action="@{/disparo-emails/{id}/processar(id=${disparo.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Deseja iniciar o envio deste disparo?');"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-success"
+                        title="Processar"
+                      >
+                        <i class="bi bi-play-fill"></i>
+                      </button>
+                    </form>
+                    <form
+                      th:if="${disparo.status.name() == 'PENDENTE' || disparo.status.name() == 'PROCESSANDO'}"
+                      th:action="@{/disparo-emails/{id}/cancelar(id=${disparo.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Deseja cancelar este disparo?');"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-danger"
+                        title="Cancelar"
+                      >
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </form>
+                    <form
+                      th:action="@{/disparo-emails/{id}/excluir(id=${disparo.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Tem certeza que deseja excluir este disparo? Esta ação não pode ser desfeita.');"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                        title="Excluir"
+                      >
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Auto-atualizar disparos em processamento a cada 5 segundos
+      setInterval(function () {
+        const processando = document.querySelectorAll(".badge-processando");
+        if (processando.length > 0) {
+          location.reload();
+        }
+      }, 5000);
+    </script>
+  </body>
+</html>

@@ -449,6 +449,17 @@ public class DisparoEmailGenericoService {
     }
 
     /**
+     * Exclui um disparo de email do banco de dados.
+     */
+    @Transactional
+    public void excluirDisparo(Long disparoId) {
+        DisparoEmailBatch disparo = disparoBatchRepository.findById(disparoId)
+            .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
+        
+        disparoBatchRepository.delete(disparo);
+    }
+
+    /**
      * Conta destinatários baseado nos filtros.
      */
     public Integer contarDestinatarios(DisparoEmailBatch disparo) {
