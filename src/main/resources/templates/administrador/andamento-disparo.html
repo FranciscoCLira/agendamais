@@ -87,7 +87,9 @@
               ) {
                 fatalErrorBox.innerHTML =
                   "<strong>❌ Email não disparado.</strong><br>Nenhuma Pessoa ativa inscrita neste Tipo de Atividade";
-              } else if (data.fatalError.indexOf("SMTP configurado falhou") !== -1) {
+              } else if (
+                data.fatalError.indexOf("SMTP configurado falhou") !== -1
+              ) {
                 // Erro de SMTP configurado
                 fatalErrorBox.innerHTML =
                   "<strong>❌ Falha no envio de emails.</strong><br>" +
@@ -95,7 +97,8 @@
                   data.fatalError.replace("SMTP configurado falhou: ", "") +
                   "<br><br><small>Acesse 'Editar Instituição' para corrigir as configurações SMTP ou deixe em branco para usar email padrão do sistema.</small>";
               } else {
-                fatalErrorBox.innerHTML = "<strong>❌ Erro Fatal:</strong><br>" + data.fatalError;
+                fatalErrorBox.innerHTML =
+                  "<strong>❌ Erro Fatal:</strong><br>" + data.fatalError;
               }
               fatalErrorBox.classList.remove("d-none");
             } else {
