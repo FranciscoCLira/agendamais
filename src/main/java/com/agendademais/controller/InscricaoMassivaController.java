@@ -53,7 +53,6 @@ public class InscricaoMassivaController {
     @ResponseBody
     public ResponseEntity<InscricaoMassivaResponse> validarArquivo(
             @RequestParam("arquivo") MultipartFile arquivo,
-            @RequestParam("subInstituicaoId") Long subInstituicaoId,
             @RequestParam("tipoAtividadeId") Long tipoAtividadeId,
             HttpSession session) {
 
@@ -76,7 +75,6 @@ public class InscricaoMassivaController {
             // Cria request apenas para validação (não processa)
             InscricaoMassivaRequest request = new InscricaoMassivaRequest();
             request.setArquivo(arquivo);
-            request.setSubInstituicaoId(subInstituicaoId);
             request.setTipoAtividadeId(tipoAtividadeId);
             request.setTipoCarga("validacao"); // Modo validação apenas
             request.setGerarArquivoResultado(false);
@@ -102,7 +100,6 @@ public class InscricaoMassivaController {
     @ResponseBody
     public ResponseEntity<InscricaoMassivaResponse> uploadFile(
             @RequestParam("arquivo") MultipartFile arquivo,
-            @RequestParam("subInstituicaoId") Long subInstituicaoId,
             @RequestParam("tipoAtividadeId") Long tipoAtividadeId,
             @RequestParam(value = "tipoCarga", defaultValue = "producao") String tipoCarga,
             @RequestParam(value = "gerarArquivoResultado", defaultValue = "true") boolean gerarArquivoResultado,
@@ -134,7 +131,6 @@ public class InscricaoMassivaController {
             // Cria request
             InscricaoMassivaRequest request = new InscricaoMassivaRequest();
             request.setArquivo(arquivo);
-            request.setSubInstituicaoId(subInstituicaoId);
             request.setTipoAtividadeId(tipoAtividadeId);
             request.setTipoCarga(tipoCarga);
             request.setGerarArquivoResultado(gerarArquivoResultado);
@@ -168,7 +164,6 @@ public class InscricaoMassivaController {
     @ResponseBody
     public ResponseEntity<InscricaoMassivaResponse> reverterCarga(
             @RequestParam("arquivo") MultipartFile arquivo,
-            @RequestParam("subInstituicaoId") Long subInstituicaoId,
             @RequestParam("tipoAtividadeId") Long tipoAtividadeId,
             HttpSession session) {
 
@@ -198,7 +193,6 @@ public class InscricaoMassivaController {
             // Chama service para reverter por arquivo
             InscricaoMassivaResponse response = inscricaoMassivaService.reverterCargaPorArquivo(
                     arquivo,
-                    subInstituicaoId,
                     tipoAtividadeId,
                     instituicaoSelecionada.getId());
 

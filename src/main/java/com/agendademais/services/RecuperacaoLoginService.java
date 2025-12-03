@@ -70,7 +70,8 @@ public class RecuperacaoLoginService {
         // 3. Buscar instituição da pessoa (se existir)
         Instituicao instituicao = buscarInstituicaoPorEmail(email);
 
-        // 4. Preparar remetente do email com prioridade: Institucional → Global (Banco) → Padrão (Properties)
+        // 4. Preparar remetente do email com prioridade: Institucional → Global (Banco)
+        // → Padrão (Properties)
         JavaMailSender senderToUse = mailSender;
 
         if (instituicao != null && instituicao.getSmtpHost() != null) {
@@ -82,12 +83,13 @@ public class RecuperacaoLoginService {
                 System.err.println("Erro ao criar SMTP institucional, usando global: " + e.getMessage());
             }
         }
-        
-        // 2ª Prioridade: SMTP Global do banco (se SMTP institucional não existir ou falhar)
+
+        // 2ª Prioridade: SMTP Global do banco (se SMTP institucional não existir ou
+        // falhar)
         if (senderToUse == mailSender) {
             Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository
                     .findFirstByAtivoTrueOrderByDataCriacaoDesc();
-            
+
             if (configGlobalOpt.isPresent()) {
                 ConfiguracaoSmtpGlobal configGlobal = configGlobalOpt.get();
                 try {
@@ -98,8 +100,9 @@ public class RecuperacaoLoginService {
                 }
             }
         }
-        // 3ª Prioridade: SMTP das properties (mailSender injetado) - já está em senderToUse se nenhum anterior funcionou
-        
+        // 3ª Prioridade: SMTP das properties (mailSender injetado) - já está em
+        // senderToUse se nenhum anterior funcionou
+
         // Determinar email remetente: usar username do SMTP autenticado
         String emailRemetente = null;
         if (senderToUse instanceof JavaMailSenderImpl) {
@@ -123,7 +126,7 @@ public class RecuperacaoLoginService {
                 + "<p>Recebemos uma solicitação para redefinir sua senha.</p>"
                 + "<p>Seu código de usuário é: <strong>" + usuario.getUsername() + "</strong></p>"
                 + "<p>Acesse o link abaixo para continuar:</p>"
-                + "<p><a href='" + link + "' style='color:#4A148C; text-decoration:none; font-weight:bold;'>" 
+                + "<p><a href='" + link + "' style='color:#4A148C; text-decoration:none; font-weight:bold;'>"
                 + link + "</a></p>"
                 + "<p style='color:#999; font-size:12px;'>Esse link expira em 2 horas.</p>"
                 + "<p>Se você não solicitou, ignore esta mensagem.</p>"
@@ -135,7 +138,7 @@ public class RecuperacaoLoginService {
         // 6. Enviar email
         MimeMessage mimeMessage = senderToUse.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        
+
         helper.setFrom(emailRemetente);
         helper.setTo(email);
         helper.setSubject("Recuperação de Senha - AgendaMais");
@@ -146,32 +149,33 @@ public class RecuperacaoLoginService {
 
     /**
      * Busca a instituição associada à pessoa pelo email
-     * Retorna a primeira instituição COM SMTP CONFIGURADO encontrada via PessoaInstituicao
+     * Retorna a primeira instituição COM SMTP CONFIGURADO encontrada via
+     * PessoaInstituicao
      * Se não encontrar instituição com SMTP, retorna null para usar SMTP padrão
      */
     private Instituicao buscarInstituicaoPorEmail(String email) {
         Optional<Pessoa> pessoaOpt = pessoaRepository.findByEmailPessoa(email);
-        
+
         if (pessoaOpt.isPresent()) {
             Pessoa pessoa = pessoaOpt.get();
-            
+
             // Buscar instituições da pessoa via PessoaInstituicao
             // Filtra APENAS aquelas que têm SMTP COMPLETAMENTE configurado
             Optional<Instituicao> instituicaoComSmtp = pessoaInstituicaoRepository
                     .findByPessoaId(pessoa.getId())
                     .stream()
                     .map(PessoaInstituicao::getInstituicao)
-                    .filter(inst -> inst != null 
+                    .filter(inst -> inst != null
                             && inst.getSmtpHost() != null && !inst.getSmtpHost().isBlank()
                             && inst.getSmtpUsername() != null && !inst.getSmtpUsername().isBlank()
                             && inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank())
                     .findFirst();
-            
+
             if (instituicaoComSmtp.isPresent()) {
                 return instituicaoComSmtp.get();
             }
         }
-        
+
         return null; // Usa SMTP padrão se não encontrar instituição com SMTP configurado
     }
 
@@ -180,28 +184,28 @@ public class RecuperacaoLoginService {
      */
     private JavaMailSender criarMailSenderInstituicao(Instituicao instituicao) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        
+
         mailSender.setHost(instituicao.getSmtpHost());
         mailSender.setPort(instituicao.getSmtpPort() != null ? instituicao.getSmtpPort() : 587);
         mailSender.setUsername(instituicao.getSmtpUsername());
-        
+
         // Descriptografa senha se necessário (remove ENC(...))
         String senhaDescriptografada = cryptoService.decryptIfNeeded(instituicao.getSmtpPassword());
         mailSender.setPassword(senhaDescriptografada);
-        
+
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        
+
         // SSL (465) ou STARTTLS (587)
         if (instituicao.getSmtpSsl() != null && instituicao.getSmtpSsl()) {
             props.put("mail.smtp.ssl.enable", "true");
         } else {
             props.put("mail.smtp.starttls.enable", "true");
         }
-        
+
         props.put("mail.debug", "false");
-        
+
         return mailSender;
     }
 
@@ -210,21 +214,21 @@ public class RecuperacaoLoginService {
      */
     private JavaMailSender criarMailSenderGlobal(ConfiguracaoSmtpGlobal config) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        
+
         mailSender.setHost(config.getSmtpHost());
         mailSender.setPort(config.getSmtpPort() != null ? config.getSmtpPort() : 587);
         mailSender.setUsername(config.getSmtpUsername());
-        
+
         // Descriptografa senha se necessário
         String senhaDescriptografada = cryptoService.decryptIfNeeded(config.getSmtpPassword());
         mailSender.setPassword(senhaDescriptografada);
-        
+
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.debug", "false");
-        
+
         return mailSender;
     }
 

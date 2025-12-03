@@ -7,21 +7,12 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public class InscricaoMassivaRequest {
 
-    private Long subInstituicaoId;
     private Long tipoAtividadeId;
     private MultipartFile arquivo;
     private String tipoCarga = "producao"; // teste ou producao
     private boolean gerarArquivoResultado = true;
 
     // Getters e Setters
-
-    public Long getSubInstituicaoId() {
-        return subInstituicaoId;
-    }
-
-    public void setSubInstituicaoId(Long subInstituicaoId) {
-        this.subInstituicaoId = subInstituicaoId;
-    }
 
     public Long getTipoAtividadeId() {
         return tipoAtividadeId;

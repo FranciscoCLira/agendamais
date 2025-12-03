@@ -109,6 +109,11 @@ public class MenuController {
         return "info/em-construcao";
     }
 
+    @GetMapping("/administrador/historico-postagens")
+    public String historicoPostagens() {
+        return "redirect:/administrador/postagens/lista";
+    }
+
     // === ENDPOINTS EM CONSTRUÇÃO PARA SUPERUSUARIO ===
 
     @GetMapping("/superusuario/backup")

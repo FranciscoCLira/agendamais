@@ -154,24 +154,7 @@
 
             <form id="uploadForm" enctype="multipart/form-data">
               <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="subInstituicao" class="form-label"
-                    >SubInstituição *</label
-                  >
-                  <select
-                    id="subInstituicao"
-                    name="subInstituicaoId"
-                    class="form-select"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                  </select>
-                  <small class="form-text text-muted"
-                    >Escolha a sub-instituição para as inscrições</small
-                  >
-                </div>
-
-                <div class="col-md-6 mb-3">
+                <div class="col-md-12 mb-3">
                   <label for="tipoAtividade" class="form-label"
                     >Tipo de Atividade *</label
                   >
@@ -310,7 +293,8 @@
                   <span class="column-letter">J</span> ID Pessoa Instituição
                 </li>
                 <li>
-                  <span class="column-letter">K</span> ID Pessoa SubInstituição
+                  <span class="column-letter">K</span> Indica Pessoa Afiliada a
+                  Instituição
                 </li>
                 <li><span class="column-letter">L</span> Cidade</li>
                 <li><span class="column-letter">M</span> Estado</li>
@@ -329,6 +313,10 @@
             <ul class="mb-0">
               <li>A primeira linha deve conter o cabeçalho</li>
               <li>Emails duplicados serão identificados</li>
+              <li>
+                <strong>Emails já existentes:</strong> o cadastro é atualizado
+                com os dados da planilha
+              </li>
               <li>Usuários novos terão credenciais geradas automaticamente</li>
               <li>O sistema cria todos os relacionamentos necessários</li>
             </ul>
@@ -363,21 +351,6 @@
                   });
 
                   // Inicializa Select2 - Carrega dados inicialmente
-                  console.log('🔵 Carregando SubInstituições para instituicaoId:', instituicaoId);
-                  $.ajax({
-                      url: '/api/subinstituicoes/buscar',
-                      data: { instituicaoId: instituicaoId },
-                      success: function(data) {
-                          console.log('✅ SubInstituições carregadas:', data.length, 'itens');
-                          const options = data.map(item => new Option(item.nomeSubInstituicao, item.id, false, false));
-                          $('#subInstituicao').append(options).trigger('change');
-                      },
-                      error: function(xhr, status, error) {
-                          console.error('❌ Erro ao carregar SubInstituições:', status, error);
-                          console.error('Response:', xhr.responseText);
-                      }
-                  });
-
                   console.log('🔵 Carregando Tipos de Atividade para instituicaoId:', instituicaoId);
                   $.ajax({
                       url: '/api/tipos-atividade/buscar',
@@ -394,13 +367,6 @@
                   });
 
                   // Inicializa Select2 com busca local
-                  $('#subInstituicao').select2({
-                      theme: 'bootstrap-5',
-                      placeholder: 'Digite para pesquisar...',
-                      allowClear: true,
-                      width: '100%'
-                  });
-
                   $('#tipoAtividade').select2({
                       theme: 'bootstrap-5',
                       placeholder: 'Digite para pesquisar...',
@@ -473,10 +439,9 @@
                   }
 
                   function checkFormValid() {
-                      const subInstituicaoId = $('#subInstituicao').val();
                       const tipoAtividadeId = $('#tipoAtividade').val();
 
-                      if (subInstituicaoId && tipoAtividadeId && selectedFile) {
+                      if (tipoAtividadeId && selectedFile) {
                           $('#btnValidar').prop('disabled', false);
                           $('#btnProcessar').prop('disabled', false);
                           $('#btnReverter').prop('disabled', false); // Habilita Reverter quando formulário válido
@@ -487,7 +452,7 @@
                       }
                   }
 
-                  $('#subInstituicao, #tipoAtividade').on('change', checkFormValid);
+                  $('#tipoAtividade').on('change', checkFormValid);
 
                   // Validar Arquivo
                   $('#btnValidar').on('click', function() {
@@ -499,14 +464,12 @@
                           return;
                       }
 
-                      const subInstituicaoId = $('#subInstituicao').val();
                       const tipoAtividadeId = $('#tipoAtividade').val();
 
-                      console.log('SubInstituicaoId:', subInstituicaoId);
                       console.log('TipoAtividadeId:', tipoAtividadeId);
 
-                      if (!subInstituicaoId || !tipoAtividadeId) {
-                          alert('Por favor, selecione SubInstituição e Tipo de Atividade');
+                      if (!tipoAtividadeId) {
+                          alert('Por favor, selecione o Tipo de Atividade');
                           return;
                       }
 
@@ -517,7 +480,6 @@
                   // Reverter/Excluir Carga
                   $('#btnReverter').on('click', function() {
                       const arquivo = selectedFile;
-                      const subInstituicaoId = $('#subInstituicao').val();
                       const tipoAtividadeId = $('#tipoAtividade').val();
 
                       if (!arquivo) {
@@ -525,29 +487,28 @@
                           return;
                       }
 
-                      if (!subInstituicaoId || !tipoAtividadeId) {
-                          alert('Selecione a SubInstituição e o Tipo de Atividade.');
+                      if (!tipoAtividadeId) {
+                          alert('Selecione o Tipo de Atividade.');
                           return;
                       }
 
                       if (confirm(`Deseja realmente reverter a carga?\n\nO sistema irá:\n` +
                                  `- Ler os emails do arquivo: ${arquivo.name}\n` +
-                                 `- Deletar relacionamentos da SubInstituição e TipoAtividade selecionados\n` +
+                                 `- Deletar relacionamentos do TipoAtividade selecionado\n` +
                                  `- Deletar Pessoa/Usuario APENAS se não houver outros vínculos com outras instituições\n\n` +
                                  `ATENÇÃO: Esta ação não pode ser desfeita!\n\n` +
                                  `OBS: Entidades Local (País/Estado/Cidade) NÃO serão excluídas.`)) {
-                          reverterCarga(arquivo, subInstituicaoId, tipoAtividadeId);
+                          reverterCarga(arquivo, tipoAtividadeId);
                       }
                   });
 
-                  function reverterCarga(arquivo, subInstituicaoId, tipoAtividadeId) {
+                  function reverterCarga(arquivo, tipoAtividadeId) {
                       $('#progressContainer').show();
                       $('#progressBar').css('width', '50%').text('Revertendo...');
                       $('#btnReverter').prop('disabled', true);
 
                       const formData = new FormData();
                       formData.append('arquivo', arquivo);
-                      formData.append('subInstituicaoId', subInstituicaoId);
                       formData.append('tipoAtividadeId', tipoAtividadeId);
 
                       $.ajax({
@@ -617,7 +578,7 @@
 
       CAMPOS OPCIONAIS:
       - J: ID Pessoa Instituição
-      - K: ID Pessoa SubInstituição
+      - K: Indica Pessoa Afiliada a Instituição
       - L: Cidade
       - M: Estado
       - N: País
@@ -649,11 +610,10 @@
                           return;
                       }
 
-                      const subInstituicaoId = $('#subInstituicao').val();
                       const tipoAtividadeId = $('#tipoAtividade').val();
 
-                      if (!subInstituicaoId || !tipoAtividadeId) {
-                          alert('Por favor, selecione SubInstituição e Tipo de Atividade');
+                      if (!tipoAtividadeId) {
+                          alert('Por favor, selecione o Tipo de Atividade');
                           return;
                       }
 
@@ -668,7 +628,6 @@
 
                       const formData = new FormData();
                       formData.append('arquivo', selectedFile);
-                      formData.append('subInstituicaoId', $('#subInstituicao').val());
                       formData.append('tipoAtividadeId', $('#tipoAtividade').val());
 
                       fetch('/administrador/inscricao-massiva/validate', {
@@ -737,7 +696,6 @@
                   function processarCarga() {
                       const formData = new FormData();
                       formData.append('arquivo', selectedFile);
-                      formData.append('subInstituicaoId', $('#subInstituicao').val());
                       formData.append('tipoAtividadeId', $('#tipoAtividade').val());
                       formData.append('tipoCarga', 'producao');
                       formData.append('gerarArquivoResultado', 'false');

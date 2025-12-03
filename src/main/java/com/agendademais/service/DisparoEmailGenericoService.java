@@ -62,14 +62,16 @@ public class DisparoEmailGenericoService {
      * 
      * REGRAS:
      * - BOAS_VINDAS: Obrigatoriamente situacaoUsuario = 'P' (Pendente)
-     * - INFORMATIVO/CAMPANHA: Filtra por situacaoUsuario conforme selecionado no dropdown
-     * - Data Cadastro: Compara com pessoa.dataInclusao dentro do intervalo especificado
+     * - INFORMATIVO/CAMPANHA: Filtra por situacaoUsuario conforme selecionado no
+     * dropdown
+     * - Data Cadastro: Compara com pessoa.dataInclusao dentro do intervalo
+     * especificado
      */
     public List<Pessoa> listarDestinatarios(DisparoEmailBatch disparo) {
         // Buscar todos os vínculos usuário-instituição da instituição logada
         List<UsuarioInstituicao> vinculos = usuarioInstituicaoRepository
-            .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(disparo.getInstituicao());
-        
+                .findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(disparo.getInstituicao());
+
         System.out.println("=== DEBUG DISPARO EMAILS (Nova Lógica) ===");
         System.out.println("Instituição: " + disparo.getInstituicao().getNomeInstituicao());
         System.out.println("Tipo Disparo: " + disparo.getTipoDisparo());
@@ -79,74 +81,79 @@ public class DisparoEmailGenericoService {
         System.out.println("Filtro data fim: " + disparo.getFiltroDataInscricaoFim());
 
         List<Pessoa> resultado = vinculos.stream()
-            .map(UsuarioInstituicao::getUsuario)
-            .filter(usuario -> {
-                if (usuario == null) {
-                    System.out.println("  - Usuário NULL ignorado");
-                    return false;
-                }
-                
-                Pessoa pessoa = usuario.getPessoa();
-                if (pessoa == null) {
-                    System.out.println("  - Usuário " + usuario.getId() + " sem Pessoa vinculada");
-                    return false;
-                }
-                
-                // Filtro 1: Email válido (obrigatório)
-                if (pessoa.getEmailPessoa() == null || pessoa.getEmailPessoa().isBlank()) {
-                    System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: sem email");
-                    return false;
-                }
-                
-                // Filtro 2: Situação do usuário (baseado no tipo de disparo)
-                String situacaoUsuario = usuario.getSituacaoUsuario();
-                String filtroSituacao = disparo.getFiltroSituacaoUsuario();
-                
-                // REGRA ESPECIAL: BOAS_VINDAS obriga situacao = 'P'
-                if (disparo.getTipoDisparo() == TipoDisparo.BOAS_VINDAS) {
-                    if (!"P".equalsIgnoreCase(situacaoUsuario)) {
-                        System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: BOAS_VINDAS requer situacao=P, encontrado=" + situacaoUsuario);
+                .map(UsuarioInstituicao::getUsuario)
+                .filter(usuario -> {
+                    if (usuario == null) {
+                        System.out.println("  - Usuário NULL ignorado");
                         return false;
                     }
-                } else {
-                    // INFORMATIVO ou CAMPANHA: respeita filtro selecionado no dropdown
-                    if (filtroSituacao != null && !filtroSituacao.isBlank()) {
-                        if (!filtroSituacao.equalsIgnoreCase(situacaoUsuario)) {
-                            System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: situacao=" + situacaoUsuario + ", filtro=" + filtroSituacao);
+
+                    Pessoa pessoa = usuario.getPessoa();
+                    if (pessoa == null) {
+                        System.out.println("  - Usuário " + usuario.getId() + " sem Pessoa vinculada");
+                        return false;
+                    }
+
+                    // Filtro 1: Email válido (obrigatório)
+                    if (pessoa.getEmailPessoa() == null || pessoa.getEmailPessoa().isBlank()) {
+                        System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: sem email");
+                        return false;
+                    }
+
+                    // Filtro 2: Situação do usuário (baseado no tipo de disparo)
+                    String situacaoUsuario = usuario.getSituacaoUsuario();
+                    String filtroSituacao = disparo.getFiltroSituacaoUsuario();
+
+                    // REGRA ESPECIAL: BOAS_VINDAS obriga situacao = 'P'
+                    if (disparo.getTipoDisparo() == TipoDisparo.BOAS_VINDAS) {
+                        if (!"P".equalsIgnoreCase(situacaoUsuario)) {
+                            System.out.println("  - Usuário " + usuario.getUsername()
+                                    + " ignorado: BOAS_VINDAS requer situacao=P, encontrado=" + situacaoUsuario);
+                            return false;
+                        }
+                    } else {
+                        // INFORMATIVO ou CAMPANHA: respeita filtro selecionado no dropdown
+                        if (filtroSituacao != null && !filtroSituacao.isBlank()) {
+                            if (!filtroSituacao.equalsIgnoreCase(situacaoUsuario)) {
+                                System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: situacao="
+                                        + situacaoUsuario + ", filtro=" + filtroSituacao);
+                                return false;
+                            }
+                        }
+                        // Se filtroSituacao estiver vazio/null, aceita TODOS (Todas as situações)
+                    }
+
+                    // Filtro 3: Data de inclusão da Pessoa dentro do intervalo (se informado)
+                    LocalDate dataInclusao = pessoa.getDataInclusao();
+                    if (dataInclusao != null) {
+                        // Filtro de data início
+                        if (disparo.getFiltroDataInscricaoInicio() != null
+                                && dataInclusao.isBefore(disparo.getFiltroDataInscricaoInicio())) {
+                            System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: data "
+                                    + dataInclusao + " anterior a " + disparo.getFiltroDataInscricaoInicio());
+                            return false;
+                        }
+
+                        // Filtro de data fim
+                        if (disparo.getFiltroDataInscricaoFim() != null
+                                && dataInclusao.isAfter(disparo.getFiltroDataInscricaoFim())) {
+                            System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: data "
+                                    + dataInclusao + " posterior a " + disparo.getFiltroDataInscricaoFim());
                             return false;
                         }
                     }
-                    // Se filtroSituacao estiver vazio/null, aceita TODOS (Todas as situações)
-                }
-                
-                // Filtro 3: Data de inclusão da Pessoa dentro do intervalo (se informado)
-                LocalDate dataInclusao = pessoa.getDataInclusao();
-                if (dataInclusao != null) {
-                    // Filtro de data início
-                    if (disparo.getFiltroDataInscricaoInicio() != null 
-                        && dataInclusao.isBefore(disparo.getFiltroDataInscricaoInicio())) {
-                        System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: data " + dataInclusao + " anterior a " + disparo.getFiltroDataInscricaoInicio());
-                        return false;
-                    }
-                    
-                    // Filtro de data fim
-                    if (disparo.getFiltroDataInscricaoFim() != null 
-                        && dataInclusao.isAfter(disparo.getFiltroDataInscricaoFim())) {
-                        System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: data " + dataInclusao + " posterior a " + disparo.getFiltroDataInscricaoFim());
-                        return false;
-                    }
-                }
-                
-                System.out.println("  + Usuário " + usuario.getUsername() + " (" + pessoa.getNomePessoa() + ") INCLUÍDO: situacao=" + situacaoUsuario + ", dataInclusao=" + dataInclusao);
-                return true;
-            })
-            .map(Usuario::getPessoa)
-            .distinct()
-            .collect(Collectors.toList());
-            
+
+                    System.out.println("  + Usuário " + usuario.getUsername() + " (" + pessoa.getNomePessoa()
+                            + ") INCLUÍDO: situacao=" + situacaoUsuario + ", dataInclusao=" + dataInclusao);
+                    return true;
+                })
+                .map(Usuario::getPessoa)
+                .distinct()
+                .collect(Collectors.toList());
+
         System.out.println("Total de destinatários após filtros: " + resultado.size());
         System.out.println("==========================================");
-        
+
         return resultado;
     }
 
@@ -157,11 +164,11 @@ public class DisparoEmailGenericoService {
     public DisparoEmailBatch criarDisparo(DisparoEmailBatch disparo) {
         disparo.setDataCriacao(LocalDateTime.now());
         disparo.setStatus(StatusDisparo.PENDENTE);
-        
+
         // Calcular total de destinatários
         List<Pessoa> destinatarios = listarDestinatarios(disparo);
         disparo.setTotalDestinatarios(destinatarios.size());
-        
+
         return disparoBatchRepository.save(disparo);
     }
 
@@ -172,7 +179,7 @@ public class DisparoEmailGenericoService {
     @Transactional
     public void processarDisparoAsync(Long disparoId) {
         DisparoEmailBatch disparo = disparoBatchRepository.findById(disparoId)
-            .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
+                .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
 
         try {
             disparo.setStatus(StatusDisparo.PROCESSANDO);
@@ -187,13 +194,15 @@ public class DisparoEmailGenericoService {
 
             for (Pessoa pessoa : destinatarios) {
                 try {
-                    String corpoProcessado = processarTemplate(disparo.getCorpoHtml(), pessoa, disparo.getInstituicao());
-                    enviarEmail(mailSender, pessoa.getEmailPessoa(), disparo.getAssunto(), corpoProcessado, disparo.getInstituicao());
-                    
+                    String corpoProcessado = processarTemplate(disparo.getCorpoHtml(), pessoa,
+                            disparo.getInstituicao());
+                    enviarEmail(mailSender, pessoa.getEmailPessoa(), disparo.getAssunto(), corpoProcessado,
+                            disparo.getInstituicao());
+
                     // Registrar no log_postagem
                     registrarLogPostagem(disparo, pessoa, true, null);
                     enviados++;
-                    
+
                 } catch (Exception e) {
                     System.err.println("Erro ao enviar email para " + pessoa.getEmailPessoa() + ": " + e.getMessage());
                     registrarLogPostagem(disparo, pessoa, false, e.getMessage());
@@ -229,40 +238,47 @@ public class DisparoEmailGenericoService {
      */
     public String processarTemplate(String template, Pessoa pessoa, Instituicao instituicao) {
         String resultado = template;
-        
+
         // Variáveis da pessoa
         resultado = resultado.replace("{{nome}}", pessoa.getNomePessoa() != null ? pessoa.getNomePessoa() : "");
-        resultado = resultado.replace("{{username}}", pessoa.getEmailPessoa() != null ? pessoa.getEmailPessoa() : ""); // Usando email como username
+        resultado = resultado.replace("{{username}}", pessoa.getEmailPessoa() != null ? pessoa.getEmailPessoa() : ""); // Usando
+                                                                                                                       // email
+                                                                                                                       // como
+                                                                                                                       // username
         resultado = resultado.replace("{{email}}", pessoa.getEmailPessoa() != null ? pessoa.getEmailPessoa() : "");
-        
+
         // Variáveis da instituição
         if (instituicao != null) {
-            resultado = resultado.replace("{{nomeInstituicao}}", instituicao.getNomeInstituicao() != null ? instituicao.getNomeInstituicao() : "");
-            resultado = resultado.replace("{{emailInstituicao}}", instituicao.getEmailInstituicao() != null ? instituicao.getEmailInstituicao() : "");
+            resultado = resultado.replace("{{nomeInstituicao}}",
+                    instituicao.getNomeInstituicao() != null ? instituicao.getNomeInstituicao() : "");
+            resultado = resultado.replace("{{emailInstituicao}}",
+                    instituicao.getEmailInstituicao() != null ? instituicao.getEmailInstituicao() : "");
         }
-        
+
         // Variáveis de sistema
         resultado = resultado.replace("{{appUrl}}", "http://localhost:8081"); // Porta correta dev-docker
         resultado = resultado.replace("{{dataAtual}}", LocalDateTime.now().toString());
-        
+
         // Mensagem de rodapé para descadastro
         String removerEmailMensagem = "<br><br><hr style='margin:16px 0'>" +
-                "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>" +
+                "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>"
+                +
                 "Acesse: <a href='http://localhost:8081' style='color:#0066cc;'>http://localhost:8081</a></span>";
         resultado = resultado.replace("{{removerEmailMensagem}}", removerEmailMensagem);
-        
+
         return resultado;
     }
 
     /**
-     * Obtém JavaMailSender com prioridade: Institucional → Global (DB) → Properties.
+     * Obtém JavaMailSender com prioridade: Institucional → Global (DB) →
+     * Properties.
      */
     private JavaMailSender obterMailSender(Instituicao instituicao) {
         // 1º Tentar SMTP institucional
-        if (instituicao != null && 
-            instituicao.getSmtpHost() != null && !instituicao.getSmtpHost().isBlank() &&
-            instituicao.getSmtpUsername() != null && !instituicao.getSmtpUsername().isBlank()) {
-            
+        if (instituicao != null &&
+                instituicao.getSmtpHost() != null && !instituicao.getSmtpHost().isBlank() &&
+                instituicao.getSmtpUsername() != null && !instituicao.getSmtpUsername().isBlank()) {
+
             try {
                 return buildSenderForInstitution(instituicao);
             } catch (Exception e) {
@@ -271,7 +287,8 @@ public class DisparoEmailGenericoService {
         }
 
         // 2º Tentar SMTP global do banco
-        Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository.findFirstByAtivoTrueOrderByDataCriacaoDesc();
+        Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository
+                .findFirstByAtivoTrueOrderByDataCriacaoDesc();
         if (configGlobalOpt.isPresent()) {
             try {
                 return buildSenderForGlobal(configGlobalOpt.get());
@@ -292,7 +309,7 @@ public class DisparoEmailGenericoService {
         sender.setHost(inst.getSmtpHost());
         sender.setPort(inst.getSmtpPort() != null ? inst.getSmtpPort() : 587);
         sender.setUsername(inst.getSmtpUsername());
-        
+
         String decryptedPassword = cryptoService.decryptIfNeeded(inst.getSmtpPassword());
         sender.setPassword(decryptedPassword);
 
@@ -314,7 +331,7 @@ public class DisparoEmailGenericoService {
         sender.setHost(config.getSmtpHost());
         sender.setPort(config.getSmtpPort() != null ? config.getSmtpPort() : 587);
         sender.setUsername(config.getSmtpUsername());
-        
+
         String decryptedPassword = cryptoService.decryptIfNeeded(config.getSmtpPassword());
         sender.setPassword(decryptedPassword);
 
@@ -332,30 +349,31 @@ public class DisparoEmailGenericoService {
      * Envia email usando o username do SMTP autenticado como remetente.
      * Mesma lógica do DisparoEmailService para garantir compatibilidade.
      */
-    private void enviarEmail(JavaMailSender mailSender, String destinatario, String assunto, String corpo, Instituicao instituicao) throws Exception {
+    private void enviarEmail(JavaMailSender mailSender, String destinatario, String assunto, String corpo,
+            Instituicao instituicao) throws Exception {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        
+
         helper.setTo(destinatario);
         helper.setSubject(assunto);
         helper.setText(corpo, true); // HTML
-        
+
         // Usar o username do SMTP autenticado como envelope-from (remetente)
         String envelopeFrom = null;
         if (mailSender instanceof JavaMailSenderImpl) {
             JavaMailSenderImpl jm = (JavaMailSenderImpl) mailSender;
             envelopeFrom = jm.getUsername();
         }
-        
+
         // Fallback: email da instituição ou properties
         if (envelopeFrom == null || envelopeFrom.isBlank()) {
             envelopeFrom = (instituicao.getEmailInstituicao() != null && !instituicao.getEmailInstituicao().isBlank())
                     ? instituicao.getEmailInstituicao()
                     : defaultEmailFrom;
         }
-        
+
         helper.setFrom(envelopeFrom, instituicao.getNomeInstituicao());
-        
+
         // Se o envelope-from for diferente do email da instituição, definir Reply-To
         if (instituicao.getEmailInstituicao() != null && !instituicao.getEmailInstituicao().isBlank()
                 && !instituicao.getEmailInstituicao().equalsIgnoreCase(envelopeFrom)) {
@@ -365,7 +383,7 @@ public class DisparoEmailGenericoService {
                 // Ignorar falhas no Reply-To, não é crítico
             }
         }
-        
+
         mailSender.send(message);
     }
 
@@ -382,22 +400,22 @@ public class DisparoEmailGenericoService {
             log.setAutorId(disparo.getUsuarioCriador() != null ? disparo.getUsuarioCriador().getId() : null);
             log.setQtEnviados(sucesso ? 1 : 0);
             log.setQtFalhas(sucesso ? 0 : 1);
-            
+
             // Mensagem do log
             String mensagem = String.format("Tipo: %s, ID Disparo: %d, Destinatário: %s (%s), Status: %s",
-                disparo.getTipoDisparo(), 
-                disparo.getId(),
-                pessoa.getNomePessoa(),
-                pessoa.getEmailPessoa(),
-                sucesso ? "ENVIADO" : "FALHA");
-            
+                    disparo.getTipoDisparo(),
+                    disparo.getId(),
+                    pessoa.getNomePessoa(),
+                    pessoa.getEmailPessoa(),
+                    sucesso ? "ENVIADO" : "FALHA");
+
             if (!sucesso && erro != null) {
                 mensagem += " - Erro: " + (erro.length() > 300 ? erro.substring(0, 300) + "..." : erro);
             }
-            
+
             log.setMensagemLogPostagem(mensagem);
             logPostagemRepository.save(log);
-            
+
         } catch (Exception e) {
             System.err.println("Erro ao registrar log de postagem: " + e.getMessage());
         }
@@ -437,8 +455,8 @@ public class DisparoEmailGenericoService {
     @Transactional
     public void cancelarDisparo(Long disparoId) {
         DisparoEmailBatch disparo = disparoBatchRepository.findById(disparoId)
-            .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
-        
+                .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
+
         if (disparo.getStatus() == StatusDisparo.PENDENTE || disparo.getStatus() == StatusDisparo.PROCESSANDO) {
             disparo.setStatus(StatusDisparo.CANCELADO);
             disparo.setDataFimProcessamento(LocalDateTime.now());
@@ -454,8 +472,8 @@ public class DisparoEmailGenericoService {
     @Transactional
     public void excluirDisparo(Long disparoId) {
         DisparoEmailBatch disparo = disparoBatchRepository.findById(disparoId)
-            .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
-        
+                .orElseThrow(() -> new RuntimeException("Disparo não encontrado: " + disparoId));
+
         disparoBatchRepository.delete(disparo);
     }
 
@@ -471,23 +489,23 @@ public class DisparoEmailGenericoService {
      */
     public String carregarTemplateHtml(String tipo) throws Exception {
         String templatePath = "/templates/emails/" + tipo + ".html";
-        
+
         try (var inputStream = getClass().getResourceAsStream(templatePath)) {
             if (inputStream == null) {
                 throw new Exception("Template não encontrado: " + templatePath);
             }
-            
+
             String htmlCompleto = new String(inputStream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-            
+
             // Extrair apenas o conteúdo do <body> para não afetar o CSS da página
             int bodyStart = htmlCompleto.indexOf("<body>");
             int bodyEnd = htmlCompleto.indexOf("</body>");
-            
+
             if (bodyStart != -1 && bodyEnd != -1) {
                 // Retorna apenas o conteúdo interno do body (sem as tags <body></body>)
                 return htmlCompleto.substring(bodyStart + 6, bodyEnd).trim();
             }
-            
+
             // Se não encontrar body tags, retorna o HTML completo (fallback)
             return htmlCompleto;
         }

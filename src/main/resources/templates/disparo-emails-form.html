@@ -3,17 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <title>Novo Disparo de Email</title>
-    
+
     <!-- BLOQUEAR TINYMCE COMPLETAMENTE - ANTES DE TUDO -->
     <script>
       // Interceptar qualquer tentativa de carregar TinyMCE
-      Object.defineProperty(window, 'tinymce', {
-        get: function() { return undefined; },
-        set: function() { },
-        configurable: false
+      Object.defineProperty(window, "tinymce", {
+        get: function () {
+          return undefined;
+        },
+        set: function () {},
+        configurable: false,
       });
     </script>
-    
+
     <link rel="stylesheet" th:href="@{/css/estilo.css}" />
     <link
       rel="stylesheet"
