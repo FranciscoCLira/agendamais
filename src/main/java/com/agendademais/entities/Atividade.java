@@ -36,7 +36,9 @@ public class Atividade {
     private String situacaoAtividade; // P=Proposta, A=Aprovada, R=Rejeitada, C=Cancelada, F=Finalizada
     private Integer formaApresentacao; // 1=Presencial, 2=Online, 3=Híbrido, 4=outro
     private Integer publicoAlvo; // 1-Publico, 2=Restrito, 3=Academico, 4=outro
+    @Column(columnDefinition = "TEXT")
     private String descricaoAtividade;
+    @Column(columnDefinition = "TEXT")
     private String comentariosAtividade;
     private String linkMaterialAtividade;
     private String linkAtividadeOnLine;
