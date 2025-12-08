@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Vincular Instituições - SuperUsuário</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      .hidden {
+        display: none;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 6px;
+        text-align: left;
+      }
+      th {
+        background: #eee;
+      }
+      .form-container {
+        max-width: 1000px;
+        margin: auto;
+      }
+      .vinculado {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .info-box {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- CABECALHO PADRAO -->
+    <div th:replace="~{fragments/layout_cabecalho :: cabecalho}"></div>
+
+    <div class="form-container">
+      <h2>Vincular-se a Instituições</h2>
+
+      <div class="info-box">
+        <p>
+          <strong
+            ><i class="fas fa-info-circle"></i> Informação:</strong
+          >
+        </p>
+        <p>
+          Use este formulário para se vincular a instituições que você criou.
+          Após criar o vínculo, essas instituições aparecerão na lista de
+          seleção no seu próximo login.
+        </p>
+        <p>
+          <strong>Usuário:</strong>
+          <span th:text="${username}"></span> -
+          <span th:text="${nomeUsuario}"></span>
+        </p>
+      </div>
+
+      <p
+        th:if="${mensagemErro}"
+        th:text="${mensagemErro}"
+        class="mensagem-erro"
+      ></p>
+      <p
+        th:if="${mensagemSucesso}"
+        th:text="${mensagemSucesso}"
+        class="mensagem-sucesso"
+      ></p>
+
+      <form th:action="@{/superusuario/vincular-instituicoes}" method="post">
+        <input type="hidden" name="username" th:value="${username}" />
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px">Vincular</th>
+              <th>Instituição</th>
+              <th style="width: 130px">Dt.Afiliação</th>
+              <th style="width: 120px">Id.Instituição</th>
+              <th style="width: 180px">SubInstituição</th>
+              <th style="width: 130px">Dt.Afiliação</th>
+              <th style="width: 120px">Id.SubInstituição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              th:each="inst : ${instituicoes}"
+              th:classappend="${instituicoesVinculadas.contains(inst.id)} ? 'vinculado' : ''"
+            >
+              <td>
+                <input
+                  type="checkbox"
+                  th:name="|instituicoesSelecionadas|"
+                  th:value="${inst.id}"
+                  th:disabled="${instituicoesVinculadas.contains(inst.id)}"
+                  th:title="${instituicoesVinculadas.contains(inst.id)} ? 'Já vinculado' : 'Selecionar para vincular'"
+                />
+                <span
+                  th:if="${instituicoesVinculadas.contains(inst.id)}"
+                  style="font-size: 0.8em"
+                  >(vinculado)</span
+                >
+              </td>
+              <td th:text="${inst.nomeInstituicao}"></td>
+              <td>
+                <input
+                  type="date"
+                  th:name="'dataAfiliacao_' + ${inst.id}"
+                  th:disabled="${instituicoesVinculadas.contains(inst.id)}"
+                  th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  maxlength="20"
+                  th:name="'identificacao_' + ${inst.id}"
+                  th:disabled="${instituicoesVinculadas.contains(inst.id)}"
+                  placeholder="ID (opcional)"
+                />
+              </td>
+              <td>
+                <select
+                  th:name="'subInstituicao_' + ${inst.id}"
+                  th:disabled="${instituicoesVinculadas.contains(inst.id)}"
+                >
+                  <option value="">Nenhuma</option>
+                  <option
+                    th:each="sub : ${subInstituicoes}"
+                    th:if="${sub.instituicao?.id == inst.id}"
+                    th:value="${sub.id}"
+                    th:text="${sub.nomeSubInstituicao}"
+                  ></option>
+                </select>
+              </td>
+              <td>
+                <input
+                  type="date"
+                  th:name="'dataAfiliacaoSub_' + ${inst.id}"
+                  th:disabled="${instituicoesVinculadas.contains(inst.id)}"
+                  th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  maxlength="20"
+                  th:name="'identificacaoSub_' + ${inst.id}"
+                  th:disabled="${instituicoesVinculadas.contains(inst.id)}"
+                  placeholder="ID (opcional)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 20px">
+          <button type="submit" style="background: #5a287e; color: #fff">
+            <i class="fas fa-check"></i> Criar Vínculos
+          </button>
+          <a
+            href="/controle-total"
+            class="btn"
+            style="background: #6c757d; color: #fff; text-decoration: none; padding: 10px 20px; display: inline-block; border-radius: 5px; margin-left: 10px"
+          >
+            <i class="fas fa-arrow-left"></i> Voltar ao Menu
+          </a>
+        </div>
+      </form>
+
+      <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px">
+        <h4><i class="fas fa-question-circle"></i> Como usar:</h4>
+        <ul>
+          <li>
+            <strong>Instituições vinculadas</strong> aparecem com fundo verde e
+            checkbox desabilitado
+          </li>
+          <li>
+            Marque as instituições que deseja vincular e clique em "Criar
+            Vínculos"
+          </li>
+          <li>
+            Você pode definir uma data de afiliação e uma identificação
+            específica (opcional)
+          </li>
+          <li>
+            Após criar os vínculos, faça logout e login novamente para ver as
+            novas instituições
+          </li>
+          <li>
+            Opcionalmente, você pode se vincular também a uma sub-instituição
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

@@ -56,6 +56,9 @@ public class DisparoEmailGenericoService {
     @Value("${spring.mail.username:noreply@agendamais.com}")
     private String defaultEmailFrom;
 
+    @Value("${app.url:http://localhost:8080}")
+    private String appUrl;
+
     /**
      * Lista destinatários (Pessoas) baseado nos filtros do disparo.
      * Nova lógica: usa UsuarioInstituicao em vez de Inscricao.
@@ -256,14 +259,14 @@ public class DisparoEmailGenericoService {
         }
 
         // Variáveis de sistema
-        resultado = resultado.replace("{{appUrl}}", "http://localhost:8081"); // Porta correta dev-docker
+        resultado = resultado.replace("{{appUrl}}", appUrl);
         resultado = resultado.replace("{{dataAtual}}", LocalDateTime.now().toString());
 
         // Mensagem de rodapé para descadastro
         String removerEmailMensagem = "<br><br><hr style='margin:16px 0'>" +
                 "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>"
                 +
-                "Acesse: <a href='http://localhost:8081' style='color:#0066cc;'>http://localhost:8081</a></span>";
+                "Acesse: <a href='" + appUrl + "' style='color:#0066cc;'>" + appUrl + "</a></span>";
         resultado = resultado.replace("{{removerEmailMensagem}}", removerEmailMensagem);
 
         return resultado;
