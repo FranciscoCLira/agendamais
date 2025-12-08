@@ -58,15 +58,15 @@ public class VinculoSuperusuarioController {
 
         // Verificar se é superusuário (nível 9) ou controle total (nível 0)
         if (usuario == null || nivelAcesso == null || (nivelAcesso != 9 && nivelAcesso != 0)) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Acesso negado. Funcionalidade disponível apenas para SuperUsuários.");
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Acesso negado. Funcionalidade disponível apenas para SuperUsuários.");
             return "redirect:/acesso";
         }
 
         Pessoa pessoa = usuario.getPessoa();
         if (pessoa == null) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Usuário não possui cadastro de pessoa.");
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Usuário não possui cadastro de pessoa.");
             return "redirect:/acesso";
         }
 
@@ -76,8 +76,8 @@ public class VinculoSuperusuarioController {
         // Buscar instituições já vinculadas ao usuário
         List<UsuarioInstituicao> vinculosExistentes = usuarioInstituicaoRepository.findByUsuario(usuario);
         List<Long> instituicoesVinculadas = vinculosExistentes.stream()
-            .map(v -> v.getInstituicao().getId())
-            .toList();
+                .map(v -> v.getInstituicao().getId())
+                .toList();
 
         // Buscar vínculos PessoaInstituicao existentes para popular campos
         List<PessoaInstituicao> vinculosPessoa = pessoaInstituicaoRepository.findByPessoa(pessoa);
@@ -108,21 +108,21 @@ public class VinculoSuperusuarioController {
 
         // Verificar se é superusuário (nível 9) ou controle total (nível 0)
         if (usuario == null || nivelAcesso == null || (nivelAcesso != 9 && nivelAcesso != 0)) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Acesso negado. Funcionalidade disponível apenas para SuperUsuários.");
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Acesso negado. Funcionalidade disponível apenas para SuperUsuários.");
             return "redirect:/acesso";
         }
 
         Pessoa pessoa = usuario.getPessoa();
         if (pessoa == null) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Usuário não possui cadastro de pessoa.");
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Usuário não possui cadastro de pessoa.");
             return "redirect:/acesso";
         }
 
         if (instituicoesSelecionadas == null || instituicoesSelecionadas.length == 0) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Selecione ao menos uma instituição para vincular.");
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Selecione ao menos uma instituição para vincular.");
             return "redirect:/superusuario/vincular-instituicoes";
         }
 
@@ -133,8 +133,8 @@ public class VinculoSuperusuarioController {
                 Long instId = Long.parseLong(instIdStr);
 
                 // Verificar se já existe vínculo UsuarioInstituicao
-                Optional<UsuarioInstituicao> vinculoExistente = 
-                    usuarioInstituicaoRepository.findByUsuarioIdAndInstituicaoId(usuario.getId(), instId);
+                Optional<UsuarioInstituicao> vinculoExistente = usuarioInstituicaoRepository
+                        .findByUsuarioIdAndInstituicaoId(usuario.getId(), instId);
 
                 if (vinculoExistente.isPresent()) {
                     continue; // Já existe vínculo, pula para próxima
@@ -154,14 +154,14 @@ public class VinculoSuperusuarioController {
                         : LocalDate.now();
 
                 if (dataAfiliacao.isAfter(LocalDate.now())) {
-                    redirectAttributes.addFlashAttribute("mensagemErro", 
-                        "A data de afiliação não pode ser no futuro.");
+                    redirectAttributes.addFlashAttribute("mensagemErro",
+                            "A data de afiliação não pode ser no futuro.");
                     return "redirect:/superusuario/vincular-instituicoes";
                 }
 
                 // Criar ou atualizar PessoaInstituicao
-                Optional<PessoaInstituicao> pessoaInstOpt = 
-                    pessoaInstituicaoRepository.findByPessoaIdAndInstituicaoId(pessoa.getId(), instId);
+                Optional<PessoaInstituicao> pessoaInstOpt = pessoaInstituicaoRepository
+                        .findByPessoaIdAndInstituicaoId(pessoa.getId(), instId);
 
                 PessoaInstituicao psi;
                 if (pessoaInstOpt.isPresent()) {
@@ -201,8 +201,8 @@ public class VinculoSuperusuarioController {
                                 : LocalDate.now();
 
                         if (dataAfiliacaoSub.isAfter(LocalDate.now())) {
-                            redirectAttributes.addFlashAttribute("mensagemErro", 
-                                "A data de afiliação da subinstituição não pode ser no futuro.");
+                            redirectAttributes.addFlashAttribute("mensagemErro",
+                                    "A data de afiliação da subinstituição não pode ser no futuro.");
                             return "redirect:/superusuario/vincular-instituicoes";
                         }
 
@@ -221,8 +221,8 @@ public class VinculoSuperusuarioController {
 
             if (vinculosCriados > 0) {
                 redirectAttributes.addFlashAttribute("mensagemSucesso",
-                        "Vínculo(s) criado(s) com sucesso! Total: " + vinculosCriados + 
-                        ". As novas instituições aparecerão no seu próximo login.");
+                        "Vínculo(s) criado(s) com sucesso! Total: " + vinculosCriados +
+                                ". As novas instituições aparecerão no seu próximo login.");
             } else {
                 redirectAttributes.addFlashAttribute("mensagemErro",
                         "Nenhum vínculo novo foi criado. Você já está vinculado às instituições selecionadas.");
@@ -231,8 +231,8 @@ public class VinculoSuperusuarioController {
             return "redirect:/controle-total";
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", 
-                "Erro ao criar vínculos: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao criar vínculos: " + e.getMessage());
             return "redirect:/superusuario/vincular-instituicoes";
         }
     }

@@ -504,13 +504,20 @@ public class DisparoEmailGenericoService {
             int bodyStart = htmlCompleto.indexOf("<body>");
             int bodyEnd = htmlCompleto.indexOf("</body>");
 
+            String resultado;
             if (bodyStart != -1 && bodyEnd != -1) {
                 // Retorna apenas o conteúdo interno do body (sem as tags <body></body>)
-                return htmlCompleto.substring(bodyStart + 6, bodyEnd).trim();
+                resultado = htmlCompleto.substring(bodyStart + 6, bodyEnd).trim();
+            } else {
+                // Se não encontrar body tags, retorna o HTML completo (fallback)
+                resultado = htmlCompleto;
             }
 
-            // Se não encontrar body tags, retorna o HTML completo (fallback)
-            return htmlCompleto;
+            // Substitui variáveis de sistema para preview funcionar corretamente
+            resultado = resultado.replace("{{appUrl}}", appUrl);
+            resultado = resultado.replace("{{dataAtual}}", LocalDateTime.now().toString());
+
+            return resultado;
         }
     }
 }

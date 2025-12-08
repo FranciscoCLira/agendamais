@@ -18,6 +18,7 @@ public class OcorrenciaAtividade {
 
 	private String temaOcorrencia;
 	private String situacaoOcorrencia; // P=Programada, R=Realizada, C=Cancelada
+	@Column(columnDefinition = "TEXT")
 	private String bibliografia;
 	private LocalDate dataOcorrencia;
 	private LocalTime horaInicioOcorrencia;
@@ -28,6 +29,7 @@ public class OcorrenciaAtividade {
 	private String detalheDivulgacao;
 	private String linkImgDivulgacao;
 	private Integer qtdeParticipantes;
+	@Column(columnDefinition = "TEXT")
 	private String obsEncerramento;
 	private LocalDate dataAtualizacao;
 

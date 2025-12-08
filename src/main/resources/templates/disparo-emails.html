@@ -247,6 +247,28 @@
                       </button>
                     </form>
                     <form
+                      th:if="${disparo.status.name() == 'CONCLUIDO' || disparo.status.name() == 'ERRO' || disparo.status.name() == 'CANCELADO'}"
+                      th:action="@{/disparo-emails/{id}/repetir(id=${disparo.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Deseja repetir este disparo? Um novo disparo será criado e processado imediatamente.');"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-info"
+                        title="Repetir Disparo"
+                      >
+                        <i class="bi bi-arrow-repeat"></i>
+                      </button>
+                    </form>
+                    <a
+                      th:href="@{/disparo-emails/{id}/copiar(id=${disparo.id})}"
+                      class="btn btn-sm btn-outline-info"
+                      title="Copiar para Novo Disparo"
+                    >
+                      <i class="bi bi-files"></i>
+                    </a>
+                    <form
                       th:if="${disparo.status.name() == 'PENDENTE' || disparo.status.name() == 'PROCESSANDO'}"
                       th:action="@{/disparo-emails/{id}/cancelar(id=${disparo.id})}"
                       method="post"
@@ -272,7 +294,7 @@
                         class="btn btn-sm btn-outline-danger"
                         title="Excluir"
                       >
-                        <i class="bi bi-x"></i>
+                        <i class="bi bi-trash"></i>
                       </button>
                     </form>
                   </td>

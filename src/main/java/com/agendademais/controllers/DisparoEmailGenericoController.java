@@ -338,4 +338,103 @@ public class DisparoEmailGenericoController {
             return 0;
         }
     }
+
+    /**
+     * Repetir disparo - Cria um novo disparo com os mesmos parâmetros e processa
+     * imediatamente.
+     */
+    @PostMapping("/{id}/repetir")
+    public String repetirDisparo(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        Object usuarioLogado = session.getAttribute("usuarioLogado");
+        Instituicao instituicao = (Instituicao) session.getAttribute("instituicaoSelecionada");
+
+        if (usuarioLogado == null || instituicao == null) {
+            return "redirect:/acesso";
+        }
+
+        try {
+            DisparoEmailBatch disparoOriginal = disparoService.obterDisparo(id);
+
+            if (disparoOriginal == null || !disparoOriginal.getInstituicao().getId().equals(instituicao.getId())) {
+                redirectAttributes.addFlashAttribute("mensagemErro", "Disparo não encontrado");
+                return "redirect:/disparo-emails";
+            }
+
+            // Criar novo disparo com os mesmos dados
+            DisparoEmailBatch novoDisparo = new DisparoEmailBatch();
+            novoDisparo.setInstituicao(instituicao);
+            novoDisparo.setUsuarioCriador((Usuario) usuarioLogado);
+            novoDisparo.setTipoDisparo(disparoOriginal.getTipoDisparo());
+            novoDisparo.setAssunto(disparoOriginal.getAssunto());
+            novoDisparo.setCorpoHtml(disparoOriginal.getCorpoHtml());
+            novoDisparo.setFiltroSituacaoUsuario(disparoOriginal.getFiltroSituacaoUsuario());
+            novoDisparo.setFiltroDataInscricaoInicio(disparoOriginal.getFiltroDataInscricaoInicio());
+            novoDisparo.setFiltroDataInscricaoFim(disparoOriginal.getFiltroDataInscricaoFim());
+            novoDisparo.setFiltroNivelAcesso(disparoOriginal.getFiltroNivelAcesso());
+            novoDisparo.setFiltroTipoAtividadeIds(disparoOriginal.getFiltroTipoAtividadeIds());
+            novoDisparo.setSubInstituicao(disparoOriginal.getSubInstituicao());
+
+            // Criar disparo (já define status PENDENTE e data criação)
+            DisparoEmailBatch disparoSalvo = disparoService.criarDisparo(novoDisparo);
+
+            // Processar imediatamente
+            disparoService.processarDisparoAsync(disparoSalvo.getId());
+
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Disparo repetido com sucesso! ID: " + disparoSalvo.getId());
+            return "redirect:/disparo-emails/" + disparoSalvo.getId();
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao repetir disparo: " + e.getMessage());
+            return "redirect:/disparo-emails";
+        }
+    }
+
+    /**
+     * Copiar disparo - Redireciona para o formulário de novo disparo preenchido com
+     * os dados do disparo original.
+     */
+    @GetMapping("/{id}/copiar")
+    public String copiarDisparo(@PathVariable Long id, HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+        Object usuarioLogado = session.getAttribute("usuarioLogado");
+        Instituicao instituicao = (Instituicao) session.getAttribute("instituicaoSelecionada");
+
+        if (usuarioLogado == null || instituicao == null) {
+            return "redirect:/acesso";
+        }
+
+        try {
+            DisparoEmailBatch disparoOriginal = disparoService.obterDisparo(id);
+
+            if (disparoOriginal == null || !disparoOriginal.getInstituicao().getId().equals(instituicao.getId())) {
+                redirectAttributes.addFlashAttribute("mensagemErro", "Disparo não encontrado");
+                return "redirect:/disparo-emails";
+            }
+
+            // Criar objeto de disparo para o formulário
+            DisparoEmailBatch disparoCopia = new DisparoEmailBatch();
+            disparoCopia.setTipoDisparo(disparoOriginal.getTipoDisparo());
+            disparoCopia.setAssunto(disparoOriginal.getAssunto() + " (Cópia)");
+            disparoCopia.setCorpoHtml(disparoOriginal.getCorpoHtml());
+            disparoCopia.setFiltroSituacaoUsuario(disparoOriginal.getFiltroSituacaoUsuario());
+            disparoCopia.setFiltroDataInscricaoInicio(disparoOriginal.getFiltroDataInscricaoInicio());
+            disparoCopia.setFiltroDataInscricaoFim(disparoOriginal.getFiltroDataInscricaoFim());
+            disparoCopia.setFiltroNivelAcesso(disparoOriginal.getFiltroNivelAcesso());
+            disparoCopia.setFiltroTipoAtividadeIds(disparoOriginal.getFiltroTipoAtividadeIds());
+            disparoCopia.setSubInstituicao(disparoOriginal.getSubInstituicao());
+
+            model.addAttribute("tiposDisparo", TipoDisparo.values());
+            model.addAttribute("disparo", disparoCopia);
+            model.addAttribute("mensagemInfo", "Editando cópia do disparo ID: " + id);
+
+            return "disparo-emails-form";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao copiar disparo: " + e.getMessage());
+            return "redirect:/disparo-emails";
+        }
+    }
 }
