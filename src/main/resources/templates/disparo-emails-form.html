@@ -76,6 +76,7 @@
                     th:each="tipo : ${tiposDisparo}"
                     th:value="${tipo}"
                     th:text="${tipo}"
+                    th:selected="${disparo != null and disparo.tipoDisparo == tipo}"
                   ></option>
                 </select>
                 <small class="form-text text-muted">
@@ -117,9 +118,9 @@
                 required
                 maxlength="255"
                 placeholder="Ex: Bem-vindo ao Sistema AgendaMais!"
+                th:value="${disparo != null ? disparo.assunto : ''}"
               />
             </div>
-
             <div class="mb-3">
               <label for="corpoHtml" class="form-label"
                 >Corpo do Email (HTML) *</label
@@ -129,11 +130,13 @@
                 name="corpoHtml"
                 class="form-control"
                 rows="15"
+                th:text="${disparo != null ? disparo.corpoHtml : ''}"
               ></textarea>
               <small class="form-text text-muted">
                 Variáveis disponíveis: {{nome}}, {{username}}, {{email}},
                 {{nomeInstituicao}}, {{emailInstituicao}}, {{appUrl}}
               </small>
+            </div>all>
             </div>
 
             <div class="mb-3">
@@ -179,10 +182,10 @@
                   name="filtroSituacao"
                   class="form-select"
                 >
-                  <option value="">Todas</option>
-                  <option value="A" selected>Ativo</option>
-                  <option value="I">Inativo</option>
-                  <option value="P">Pendente</option>
+                  <option value="" th:selected="${disparo == null or disparo.filtroSituacaoUsuario == null}">Todas</option>
+                  <option value="A" th:selected="${disparo != null and disparo.filtroSituacaoUsuario == 'A'}" selected>Ativo</option>
+                  <option value="I" th:selected="${disparo != null and disparo.filtroSituacaoUsuario == 'I'}">Inativo</option>
+                  <option value="P" th:selected="${disparo != null and disparo.filtroSituacaoUsuario == 'P'}">Pendente</option>
                 </select>
                 <small id="situacaoHelp" class="form-text text-muted">
                   Por padrão, apenas usuários ATIVOS recebem emails
@@ -197,6 +200,7 @@
                   id="filtroDataInicio"
                   name="filtroDataInicio"
                   class="form-control"
+                  th:value="${disparo != null and disparo.filtroDataInscricaoInicio != null ? #temporals.format(disparo.filtroDataInscricaoInicio, 'yyyy-MM-dd') : ''}"
                 />
                 <small class="form-text text-muted">
                   Opcional: usuários cadastrados a partir desta data
@@ -211,6 +215,7 @@
                   id="filtroDataFim"
                   name="filtroDataFim"
                   class="form-control"
+                  th:value="${disparo != null and disparo.filtroDataInscricaoFim != null ? #temporals.format(disparo.filtroDataInscricaoFim, 'yyyy-MM-dd') : ''}"
                 />
                 <small class="form-text text-muted">
                   Opcional: usuários cadastrados até esta data
@@ -358,6 +363,12 @@
               situacaoHelp.style.fontWeight = "normal";
             }
           });
+
+        // Trigger change event if tipoDisparo already has a value (for copied disparo)
+        var tipoDisparoSelect = document.getElementById("tipoDisparo");
+        if (tipoDisparoSelect.value) {
+          tipoDisparoSelect.dispatchEvent(new Event("change"));
+        }
       });
 
       // Contar destinatários via AJAX
