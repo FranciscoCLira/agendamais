@@ -26,6 +26,8 @@ import com.agendademais.entities.SubInstituicao;
 import com.agendademais.entities.PessoaSubInstituicao;
 import com.agendademais.repositories.SubInstituicaoRepository;
 import com.agendademais.repositories.UsuarioInstituicaoRepository;
+import com.agendademais.entities.Autor;
+import com.agendademais.repositories.AutorRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -41,6 +43,9 @@ public class GestaoUsuariosController {
 
     @Autowired
     private SubInstituicaoRepository subInstituicaoRepository;
+
+    @Autowired
+    private AutorRepository autorRepository;
 
     @GetMapping("/usuarios")
     public String listarUsuarios(
@@ -455,7 +460,7 @@ public class GestaoUsuariosController {
             if (usuarioInstOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("mensagemErro", "Usuário não encontrado.");
                 if (origem != null && origem.equals("lista-usuarios")) {
-                    return "redirect:/usuarios";
+                    return "redirect:/administrador/usuarios";
                 } else {
                     return "redirect:/administrador/editar-usuarios";
                 }
@@ -476,6 +481,9 @@ public class GestaoUsuariosController {
                 return "redirect:/administrador/usuarios";
             }
 
+            // Capturar o nível anterior antes de atualizar
+            Integer nivelAnterior = usuarioInst.getNivelAcessoUsuarioInstituicao();
+            
             // Atualizar os dados
             usuarioInst.setNivelAcessoUsuarioInstituicao(nivelAcessoUsuarioInstituicao);
             usuarioInst.setSitAcessoUsuarioInstituicao(sitAcessoUsuarioInstituicao);
@@ -527,6 +535,30 @@ public class GestaoUsuariosController {
             }
             pessoaRepository.save(pessoa);
 
+            // Gerenciar entidade Autor
+            // Regra básica: nível 1 não pode ser Autor. Níveis 2/5/9 podem ter Autor, mas só criamos
+            // automaticamente quando sai do nível 1 para o nível 2.
+            if (nivelAcessoUsuarioInstituicao != null && nivelAcessoUsuarioInstituicao == 1) {
+                // Qualquer mudança que volte para nível 1 remove Autor, se existir
+                Optional<Autor> autorExistente = autorRepository.findByPessoa(pessoa);
+                if (autorExistente.isPresent()) {
+                    autorRepository.delete(autorExistente.get());
+                    System.out.println("✓ Autor removido para pessoa ID " + pessoa.getId() + " ao mudar nível para 1");
+                }
+            } else if (nivelAnterior != null && nivelAnterior == 1 && nivelAcessoUsuarioInstituicao == 2) {
+                // Mudou de 1 para 2: cria Autor se não existir
+                Optional<Autor> autorExistente = autorRepository.findByPessoa(pessoa);
+                if (autorExistente.isEmpty()) {
+                    Autor novoAutor = new Autor();
+                    novoAutor.setPessoa(pessoa);
+                    novoAutor.setSituacaoAutor("A");
+                    novoAutor.setDataUltimaAtualizacao(LocalDate.now());
+                    autorRepository.save(novoAutor);
+                    System.out.println("✓ Autor criado para pessoa ID " + pessoa.getId() + " ao mudar nível 1 → 2");
+                }
+            }
+            // Mudanças entre 2, 5 e 9 não criam nem removem Autor automaticamente.
+
             usuarioInstituicaoRepository.save(usuarioInst);
 
             redirectAttributes.addFlashAttribute("mensagemSucesso",
@@ -538,7 +570,7 @@ public class GestaoUsuariosController {
         }
 
         if (origem != null && origem.equals("lista-usuarios")) {
-            return "redirect:/usuarios";
+            return "redirect:/administrador/usuarios";
         }
         return "redirect:/administrador/editar-usuarios";
     }

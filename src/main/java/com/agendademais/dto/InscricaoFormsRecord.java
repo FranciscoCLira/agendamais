@@ -1,12 +1,17 @@
 package com.agendademais.dto;
 
+import java.time.LocalDateTime;
+
 /**
  * DTO para representar um registro de inscrição da planilha Excel do Microsoft
  * Forms
- * Colunas: G-O (email, nome, celular, identificacaoPessoaInstituicao,
+ * Colunas: B (data), G-O (email, nome, celular, identificacaoPessoaInstituicao,
  * identificacaoPessoaSubInstituicao, cidade, estado, pais, comentarios)
  */
 public class InscricaoFormsRecord {
+
+    // Coluna B - Data de preenchimento do formulário
+    private LocalDateTime dataInclusaoForms; // Coluna B (formato: 25/05/2025 06:10:41)
 
     // Colunas da planilha (G a O)
     private String email; // Coluna G
@@ -150,5 +155,13 @@ public class InscricaoFormsRecord {
 
     public void setSenhaGerada(String senhaGerada) {
         this.senhaGerada = senhaGerada;
+    }
+
+    public LocalDateTime getDataInclusaoForms() {
+        return dataInclusaoForms;
+    }
+
+    public void setDataInclusaoForms(LocalDateTime dataInclusaoForms) {
+        this.dataInclusaoForms = dataInclusaoForms;
     }
 }

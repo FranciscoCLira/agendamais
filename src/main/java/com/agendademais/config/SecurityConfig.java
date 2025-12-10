@@ -79,7 +79,8 @@ public class SecurityConfig {
 			http.formLogin();
 			// Disable CSRF for API endpoints to allow JSON POST/PUT/DELETE from JavaScript
 			http.csrf(csrf -> csrf
-					.ignoringRequestMatchers("/api/**", "/controle-total/**", "/disparo-emails/**"));
+					.ignoringRequestMatchers("/api/**", "/controle-total/**", "/disparo-emails/**", 
+							"/administrador/atualizar-usuario"));
 
 		} else {
 			http.authorizeHttpRequests(auth -> auth

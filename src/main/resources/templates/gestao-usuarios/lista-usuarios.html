@@ -381,12 +381,17 @@
               data-bs-dismiss="modal"
             ></button>
           </div>
-          <form action="/administrador/atualizar-usuario" method="post">
+          <form id="formEditarUsuario" action="/administrador/atualizar-usuario" method="post">
             <div class="modal-body">
               <input
                 type="hidden"
                 id="usuarioInstituicaoId"
                 name="usuarioInstituicaoId"
+              />
+              <input
+                type="hidden"
+                name="origem"
+                value="lista-usuarios"
               />
               <div class="mb-3">
                 <label for="nomeUsuarioModal" class="form-label">Nome do Usuário:</label>
@@ -482,23 +487,8 @@
   document.getElementById("nivelAcessoUsuarioInstituicao").value = nivel;
   document.getElementById("sitAcessoUsuarioInstituicao").value = situacao;
       }
-      // Redirecionar para /usuarios após salvar no modal
-      document.addEventListener('DOMContentLoaded', function() {
-        const modalForm = document.querySelector('#modalEditarUsuario form');
-        if (modalForm) {
-          modalForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = new FormData(form);
-            fetch(form.action, {
-              method: 'POST',
-              body: data
-            }).then(() => {
-              window.location.href = '/administrador/usuarios';
-            });
-          });
-        }
-      });
+      // Form agora usa POST padrão do HTML, sem fetch
+      // O redirect é tratado pelo controller com base no campo "origem"
     </script>
   </body>
     <script>

@@ -61,6 +61,15 @@ public class InscricaoMassivaService {
     private LocalRepository localRepository;
 
     @Autowired
+    private AutorRepository autorRepository;
+
+    @Autowired
+    private AtividadeRepository atividadeRepository;
+
+    @Autowired
+    private OcorrenciaAtividadeRepository ocorrenciaAtividadeRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     /**
@@ -71,6 +80,12 @@ public class InscricaoMassivaService {
         response.setInicioProcessamento(LocalDateTime.now());
 
         try {
+            // Valida se não é a opção "TODOS OS TIPOS" (-1) que só funciona para reversão
+            if (request.getTipoAtividadeId() != null && request.getTipoAtividadeId() == -1) {
+                response.addError("A opção 'TODOS OS TIPOS' só funciona para 'Excluir/Reverter Carga', não para validação ou processamento");
+                return response;
+            }
+
             // Validações iniciais
             if (!validarRequest(request, instituicaoId, response)) {
                 return response;
@@ -127,6 +142,12 @@ public class InscricaoMassivaService {
         response.setBatchId(batchId);
 
         try {
+            // Valida se não é a opção "TODOS OS TIPOS" (-1) que só funciona para reversão
+            if (request.getTipoAtividadeId() != null && request.getTipoAtividadeId() == -1) {
+                response.addError("A opção 'TODOS OS TIPOS' só funciona para 'Excluir/Reverter Carga', não para processamento de carga");
+                return response;
+            }
+
             // Validações iniciais
             if (!validarRequest(request, instituicaoId, response)) {
                 return response;
@@ -188,6 +209,11 @@ public class InscricaoMassivaService {
         if (instituicaoId == null) {
             response.addError("Instituição não informada");
             return false;
+        }
+
+        // Pula validação se for -1 (será validado no método reverterCargaPorArquivo)
+        if (request.getTipoAtividadeId() == -1) {
+            return true;
         }
 
         // Valida se TipoAtividade pertence à Instituição
@@ -273,6 +299,35 @@ public class InscricaoMassivaService {
                 InscricaoFormsRecord registro = new InscricaoFormsRecord();
                 registro.setLinha(linhaAtual);
 
+                // Lê coluna B - Data de inclusão (índice 1)
+                Cell dataCell = row.getCell(1); // Coluna B
+                if (dataCell != null) {
+                    LocalDateTime dataInclusao = null;
+                    
+                    // Tenta ler como data formatada primeiro
+                    if (dataCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dataCell)) {
+                        dataInclusao = dataCell.getLocalDateTimeCellValue();
+                        System.out.println("📅 Data lida como NUMERIC/DATE: " + dataInclusao);
+                    } else {
+                        // Tenta como string (formato texto)
+                        String dataStr = getCellValue(dataCell);
+                        dataInclusao = parseDateTimeFromForms(dataStr);
+                        System.out.println("📅 Data lida como STRING: " + dataStr + " -> " + dataInclusao);
+                    }
+                    
+                    if (dataInclusao != null) {
+                        registro.setDataInclusaoForms(dataInclusao);
+                    } else {
+                        // Se não conseguir ler, usa data atual
+                        System.out.println("⚠️ Não conseguiu ler data da coluna B, usando data atual");
+                        registro.setDataInclusaoForms(LocalDateTime.now());
+                    }
+                } else {
+                    // Se coluna B vazia, usa data atual
+                    System.out.println("⚠️ Coluna B vazia, usando data atual");
+                    registro.setDataInclusaoForms(LocalDateTime.now());
+                }
+
                 // Lê colunas G a O (índices 6 a 14)
                 registro.setEmail(getCellValue(row.getCell(6))); // G
                 registro.setNome(getCellValue(row.getCell(7))); // H
@@ -343,6 +398,45 @@ public class InscricaoMassivaService {
                 return "";
             default:
                 return "";
+        }
+    }
+
+    /**
+     * Converte string de data do Microsoft Forms para LocalDateTime
+     * Formato esperado: "25/05/2025 06:10:41" ou "5/25/2025 6:10:41 AM"
+     */
+    private LocalDateTime parseDateTimeFromForms(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            // Remove espaços extras
+            dateStr = dateStr.trim();
+
+            // Formato brasileiro: dd/MM/yyyy HH:mm:ss
+            java.time.format.DateTimeFormatter formatterBR = 
+                java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
+            
+            // Tenta com formato brasileiro
+            try {
+                return LocalDateTime.parse(dateStr, formatterBR);
+            } catch (Exception e1) {
+                // Tenta formato com zero à esquerda
+                java.time.format.DateTimeFormatter formatterBR2 = 
+                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                try {
+                    return LocalDateTime.parse(dateStr, formatterBR2);
+                } catch (Exception e2) {
+                    // Tenta formato americano com AM/PM
+                    java.time.format.DateTimeFormatter formatterUS = 
+                        java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a", java.util.Locale.US);
+                    return LocalDateTime.parse(dateStr, formatterUS);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠ Erro ao converter data do Forms: " + dateStr + " - " + e.getMessage());
+            return null;
         }
     }
 
@@ -506,7 +600,7 @@ public class InscricaoMassivaService {
                     .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId())
                     .orElseGet(() -> {
                         System.out.println("→ Criando Inscricao...");
-                        Inscricao i = criarInscricao(pessoa, instituicao);
+                        Inscricao i = criarInscricao(pessoa, instituicao, registro);
                         System.out.println("✓ Inscricao criada: ID=" + i.getId());
                         response.addInscricaoId(i.getId());
                         return i;
@@ -563,8 +657,13 @@ public class InscricaoMassivaService {
         pessoa.setCelularPessoa(registro.getCelular());
         pessoa.setSituacaoPessoa("A"); // Ativa
         pessoa.setComentarios(registro.getComentarios());
-        pessoa.setDataInclusao(LocalDate.now());
-        pessoa.setDataUltimaAtualizacao(LocalDate.now());
+        
+        // Usa data do Forms (coluna B) se disponível, senão usa data atual
+        LocalDate dataInclusao = (registro.getDataInclusaoForms() != null) 
+            ? registro.getDataInclusaoForms().toLocalDate() 
+            : LocalDate.now();
+        pessoa.setDataInclusao(dataInclusao);
+        pessoa.setDataUltimaAtualizacao(dataInclusao);
 
         // Busca ou cria Locais hierárquicos (Pais -> Estado -> Cidade)
         String nomePais = registro.getPais();
@@ -614,7 +713,11 @@ public class InscricaoMassivaService {
             pessoa.setComentarios(registro.getComentarios());
         }
 
-        pessoa.setDataUltimaAtualizacao(LocalDate.now());
+        // Usa data do Forms (coluna B) para dataUltimaAtualizacao se disponível
+        LocalDate dataAtualizacao = (registro.getDataInclusaoForms() != null) 
+            ? registro.getDataInclusaoForms().toLocalDate() 
+            : LocalDate.now();
+        pessoa.setDataUltimaAtualizacao(dataAtualizacao);
 
         // Atualiza Locais hierárquicos (Pais -> Estado -> Cidade)
         String nomePais = registro.getPais();
@@ -792,12 +895,17 @@ public class InscricaoMassivaService {
     /**
      * Cria Inscricao
      */
-    private Inscricao criarInscricao(Pessoa pessoa, Instituicao instituicao) {
+    private Inscricao criarInscricao(Pessoa pessoa, Instituicao instituicao, InscricaoFormsRecord registro) {
         Inscricao inscricao = new Inscricao();
         inscricao.setPessoa(pessoa);
         inscricao.setIdInstituicao(instituicao);
-        inscricao.setDataInclusao(LocalDate.now());
-        inscricao.setDataUltimaAtualizacao(LocalDate.now());
+        
+        // Usa data do Forms (coluna B) se disponível, senão usa data atual
+        LocalDate dataInclusao = (registro.getDataInclusaoForms() != null) 
+            ? registro.getDataInclusaoForms().toLocalDate() 
+            : LocalDate.now();
+        inscricao.setDataInclusao(dataInclusao);
+        inscricao.setDataUltimaAtualizacao(dataInclusao);
 
         return inscricaoRepository.save(inscricao);
     }
@@ -978,13 +1086,22 @@ public class InscricaoMassivaService {
         try {
             System.out.println("=== INICIANDO REVERSÃO DE CARGA POR ARQUIVO ===");
 
-            // Valida entidades
-            Optional<TipoAtividade> tipoAtividadeOpt = tipoAtividadeRepository.findById(tipoAtividadeId);
-            if (tipoAtividadeOpt.isEmpty()) {
-                response.addError("Tipo de Atividade não encontrado");
-                return response;
+            // Detecta modo "Excluir Completamente" (tipoAtividadeId == -1)
+            boolean excluirCompletamente = (tipoAtividadeId == -1);
+            TipoAtividade tipoAtividade = null;
+
+            if (excluirCompletamente) {
+                System.out.println("🗑️ MODO: EXCLUSÃO COMPLETA - Todos os tipos de atividade");
+            } else {
+                // Valida TipoAtividade específico
+                Optional<TipoAtividade> tipoAtividadeOpt = tipoAtividadeRepository.findById(tipoAtividadeId);
+                if (tipoAtividadeOpt.isEmpty()) {
+                    response.addError("Tipo de Atividade não encontrado");
+                    return response;
+                }
+                tipoAtividade = tipoAtividadeOpt.get();
+                System.out.println("🔍 MODO: EXCLUSÃO PARCIAL - Tipo: " + tipoAtividade.getTituloTipoAtividade());
             }
-            TipoAtividade tipoAtividade = tipoAtividadeOpt.get();
 
             Optional<Instituicao> instituicaoOpt = instituicaoRepository.findById(instituicaoId);
             if (instituicaoOpt.isEmpty()) {
@@ -1024,81 +1141,231 @@ public class InscricaoMassivaService {
                 // Busca Usuario relacionado
                 Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailPessoa(email);
 
-                // 1. Deleta InscricaoTipoAtividade específica
+                // *** VERIFICAÇÃO PRÉVIA: Existe algum relacionamento com esta instituição? ***
+                Optional<Inscricao> inscricaoCheck = inscricaoRepository
+                        .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId());
+                Optional<PessoaInstituicao> piCheck = pessoaInstituicaoRepository
+                        .findByPessoaIdAndInstituicaoId(pessoa.getId(), instituicao.getId());
+                Optional<UsuarioInstituicao> uiCheck = Optional.empty();
                 if (usuarioOpt.isPresent()) {
-                    Usuario usuario = usuarioOpt.get();
-                    Optional<Inscricao> inscricaoOpt = inscricaoRepository
-                            .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId());
+                    uiCheck = usuarioInstituicaoRepository
+                            .findByUsuarioIdAndInstituicaoId(usuarioOpt.get().getId(), instituicao.getId());
+                }
 
-                    if (inscricaoOpt.isPresent()) {
-                        Inscricao inscricao = inscricaoOpt.get();
-                        Optional<InscricaoTipoAtividade> itaOpt = inscricaoTipoAtividadeRepository
-                                .findByInscricaoIdAndTipoAtividadeId(inscricao.getId(), tipoAtividade.getId());
+                // Se não existe NENHUM relacionamento com esta instituição
+                if (inscricaoCheck.isEmpty() && piCheck.isEmpty() && uiCheck.isEmpty()) {
+                    System.out.println("⚠ Nenhum relacionamento encontrado com esta instituição para: " + email);
 
-                        if (itaOpt.isPresent()) {
-                            inscricaoTipoAtividadeRepository.delete(itaOpt.get());
+                    if (excluirCompletamente) {
+                        // Tentar remoção completa se não houver vínculos em nenhuma instituição ou entidades
+                        List<Inscricao> inscricoesTodas = inscricaoRepository.findByPessoaId(pessoa.getId());
+                        List<PessoaInstituicao> pisTodas = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
+                        List<UsuarioInstituicao> uisTodas = usuarioOpt.isPresent()
+                                ? usuarioInstituicaoRepository.findByUsuarioId(usuarioOpt.get().getId())
+                                : java.util.Collections.emptyList();
+
+                        Optional<Autor> autorGlobalOpt = autorRepository.findByPessoa(pessoa);
+                        boolean temOcorrencias = autorGlobalOpt.isPresent()
+                                && ocorrenciaAtividadeRepository.existsByIdAutorId(autorGlobalOpt.get().getId());
+                        boolean temAtividadesComoSolicitante = atividadeRepository.existsByIdSolicitante(pessoa);
+
+                        if (inscricoesTodas.isEmpty() && pisTodas.isEmpty() && uisTodas.isEmpty()
+                                && !temOcorrencias && !temAtividadesComoSolicitante) {
+                            // Sem vínculos em qualquer lugar: remover completamente
+                            if (autorGlobalOpt.isPresent()) {
+                                autorRepository.delete(autorGlobalOpt.get());
+                                totalDeletados[0]++;
+                                System.out.println("✓ Autor deletado (global)");
+                            }
+                            if (usuarioOpt.isPresent()) {
+                                Usuario usuario = usuarioOpt.get();
+                                usuarioRepository.delete(usuario);
+                                totalDeletados[0]++;
+                                System.out.println("✓ Usuario deletado (global)");
+                            }
+                            pessoaRepository.delete(pessoa);
                             totalDeletados[0]++;
-                            System.out.println("✓ InscricaoTipoAtividade deletada");
+                            System.out.println("✓ Pessoa deletada (global)");
+
+                            response.addWarning("Email " + email
+                                    + " - Usuário completamente removido (sem vínculos em qualquer instituição)");
+                        } else {
+                            // Há vínculos fora desta instituição: manter
+                            emailsNaoEncontrados[0]++;
+                            StringBuilder motivo = new StringBuilder();
+                            if (!inscricoesTodas.isEmpty()) motivo.append("inscrições em outras instituições; ");
+                            if (!pisTodas.isEmpty()) motivo.append("pessoa_instituicao em outras instituições; ");
+                            if (!uisTodas.isEmpty()) motivo.append("usuario_instituicao em outras instituições; ");
+                            if (temAtividadesComoSolicitante) motivo.append("atividade com solicitante; ");
+                            if (temOcorrencias) motivo.append("ocorrência com autor; ");
+                            response.addWarning("Email " + email
+                                    + " - Relacionamentos encontrados fora desta instituição. Usuário mantido. Motivo: "
+                                    + motivo.toString());
+                        }
+                    } else {
+                        response.addWarning("Email " + email + " - Nenhum relacionamento encontrado com esta instituição");
+                        emailsNaoEncontrados[0]++;
+                    }
+                    continue; // Pula para o próximo email
+                }
+
+                if (excluirCompletamente) {
+                    // MODO EXCLUSÃO COMPLETA: Remove todos os relacionamentos da instituição
+                    System.out.println("🗑️ Exclusão completa - Removendo TODOS os relacionamentos da instituição");
+
+                    // 1. Deleta TODAS as InscricaoTipoAtividade da instituição
+                    if (inscricaoCheck.isPresent()) {
+                        Inscricao inscricao = inscricaoCheck.get();
+                        List<InscricaoTipoAtividade> todasItas = inscricaoTipoAtividadeRepository
+                                .findByInscricaoId(inscricao.getId());
+                        
+                        for (InscricaoTipoAtividade ita : todasItas) {
+                            inscricaoTipoAtividadeRepository.delete(ita);
+                            totalDeletados[0]++;
+                            System.out.println("✓ InscricaoTipoAtividade deletada: " + ita.getTipoAtividade().getTituloTipoAtividade());
                         }
 
-                        // Verifica se Inscricao não tem mais InscricaoTipoAtividade
-                        List<InscricaoTipoAtividade> outrasItas = inscricaoTipoAtividadeRepository
-                                .findByInscricaoId(inscricao.getId());
-                        if (outrasItas.isEmpty()) {
-                            inscricaoRepository.delete(inscricao);
-                            totalDeletados[0]++;
-                            System.out.println("✓ Inscricao deletada (sem mais tipos de atividade)");
+                        // Deleta Inscricao
+                        inscricaoRepository.delete(inscricao);
+                        totalDeletados[0]++;
+                        System.out.println("✓ Inscricao deletada");
+                    }
+
+                } else {
+                    // MODO EXCLUSÃO PARCIAL: Remove apenas InscricaoTipoAtividade específica
+                    System.out.println("🔍 Exclusão parcial - Removendo apenas tipo: " + tipoAtividade.getTituloTipoAtividade());
+
+                    if (usuarioOpt.isPresent()) {
+                        Usuario usuario = usuarioOpt.get();
+                        Optional<Inscricao> inscricaoOpt = inscricaoRepository
+                                .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId());
+
+                        if (inscricaoOpt.isPresent()) {
+                            Inscricao inscricao = inscricaoOpt.get();
+                            Optional<InscricaoTipoAtividade> itaOpt = inscricaoTipoAtividadeRepository
+                                    .findByInscricaoIdAndTipoAtividadeId(inscricao.getId(), tipoAtividade.getId());
+
+                            if (itaOpt.isPresent()) {
+                                inscricaoTipoAtividadeRepository.delete(itaOpt.get());
+                                totalDeletados[0]++;
+                                System.out.println("✓ InscricaoTipoAtividade deletada");
+                            }
+
+                            // Verifica se Inscricao não tem mais InscricaoTipoAtividade
+                            List<InscricaoTipoAtividade> outrasItas = inscricaoTipoAtividadeRepository
+                                    .findByInscricaoId(inscricao.getId());
+                            if (outrasItas.isEmpty()) {
+                                inscricaoRepository.delete(inscricao);
+                                totalDeletados[0]++;
+                                System.out.println("✓ Inscricao deletada (sem mais tipos de atividade)");
+                            }
                         }
                     }
                 }
 
-                // 2. Verifica se Pessoa ainda tem Inscricoes ativas antes de deletar
-                List<Inscricao> outrasInscricoes = inscricaoRepository.findByPessoaId(pessoa.getId());
+                // 2. Verifica se Pessoa ainda tem Inscricoes na INSTITUIÇÃO ATUAL
+                List<Inscricao> inscricoesNaInstituicao = inscricaoRepository
+                        .findByPessoaIdAndIdInstituicaoId(pessoa.getId(), instituicao.getId())
+                        .map(Collections::singletonList)
+                        .orElse(Collections.emptyList());
 
-                // 3. Verifica se Pessoa tem outros relacionamentos antes de deletar
-                List<PessoaInstituicao> outrasPis = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
+                // 3. Verifica se Pessoa tem outros relacionamentos (TODAS as instituições)
+                List<PessoaInstituicao> todasPis = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
+                boolean temOutrasInstituicoes = todasPis.size() > 1;
 
-                if (outrasPis.size() <= 1 && outrasInscricoes.isEmpty()) {
-                    // Não tem outros relacionamentos nem inscrições, pode deletar tudo
+                System.out.println("📊 Análise: inscricoesNaInstituicao=" + inscricoesNaInstituicao.size() + 
+                                 ", todasPis=" + todasPis.size() + 
+                                 ", temOutrasInstituicoes=" + temOutrasInstituicoes);
 
-                    // Deleta PessoaInstituicao
+                // DECISÃO 1: Não há mais inscrições nesta instituição?
+                if (inscricoesNaInstituicao.isEmpty()) {
+                    System.out.println("🗑️ Sem inscrições nesta instituição - Removendo relacionamentos");
+
+                    // Deleta PessoaInstituicao desta instituição
                     Optional<PessoaInstituicao> piOpt = pessoaInstituicaoRepository
                             .findByPessoaIdAndInstituicaoId(pessoa.getId(), instituicao.getId());
                     if (piOpt.isPresent()) {
                         pessoaInstituicaoRepository.delete(piOpt.get());
                         totalDeletados[0]++;
-                        System.out.println("✓ PessoaInstituicao deletada");
+                        System.out.println("✓ PessoaInstituicao deletada (instituicao=" + instituicao.getId() + ")");
                     }
 
-                    // Deleta UsuarioInstituicao e Usuario
+                    // Deleta UsuarioInstituicao desta instituição
                     if (usuarioOpt.isPresent()) {
                         Usuario usuario = usuarioOpt.get();
-                        List<UsuarioInstituicao> uis = usuarioInstituicaoRepository.findByUsuarioId(usuario.getId());
-                        for (UsuarioInstituicao ui : uis) {
-                            usuarioInstituicaoRepository.delete(ui);
+                        Optional<UsuarioInstituicao> uiOpt = usuarioInstituicaoRepository
+                                .findByUsuarioIdAndInstituicaoId(usuario.getId(), instituicao.getId());
+                        if (uiOpt.isPresent()) {
+                            usuarioInstituicaoRepository.delete(uiOpt.get());
                             totalDeletados[0]++;
-                            System.out.println("✓ UsuarioInstituicao deletada");
+                            System.out.println("✓ UsuarioInstituicao deletada (instituicao=" + instituicao.getId() + ")");
                         }
-
-                        usuarioRepository.delete(usuario);
-                        totalDeletados[0]++;
-                        System.out.println("✓ Usuario deletado: " + usuario.getUsername());
                     }
 
-                    // Deleta Pessoa
-                    pessoaRepository.delete(pessoa);
-                    totalDeletados[0]++;
-                    System.out.println("✓ Pessoa deletada: " + email);
+                    // DECISÃO 2: Tem vínculos com outras instituições?
+                    if (temOutrasInstituicoes) {
+                        // TEM outros vínculos - Mantém Pessoa e Usuario
+                        pessoasNaoDeletadas[0]++;
+                        System.out.println("⚠ Pessoa/Usuario mantidos (tem vínculos com outras " + (todasPis.size() - 1) + " instituição(ões))");
+                        
+                        if (excluirCompletamente) {
+                            response.addWarning("Email " + email +
+                                    " - Relacionamentos com esta instituição removidos. Usuário mantido (vinculado a outras " + 
+                                    (todasPis.size() - 1) + " instituição(ões))");
+                        } else {
+                            response.addWarning("Email " + email +
+                                    " - Relacionamentos removidos. Usuário mantido (vinculado a outras instituições)");
+                        }
+                    } else {
+                        // NÃO tem outros vínculos - Pode deletar Pessoa e Usuario
+                        System.out.println("🗑️ Sem vínculos com outras instituições - Deletando Pessoa/Usuario");
 
-                    response.addWarning("Email " + email + " - Pessoa/Usuario deletados completamente");
+                        boolean hasAtividadeSolicitante = atividadeRepository.existsByIdSolicitante(pessoa);
+                        Optional<Autor> autorOpt = autorRepository.findByPessoa(pessoa);
+                        boolean hasOcorrenciasComoAutor = autorOpt.isPresent()
+                                && ocorrenciaAtividadeRepository.existsByIdAutorId(autorOpt.get().getId());
 
+                        if (hasAtividadeSolicitante || hasOcorrenciasComoAutor) {
+                            // Há referências externas (Atividade.solicitante ou OcorrenciaAtividade.autor) -> não deletar Pessoa/Usuario
+                            pessoasNaoDeletadas[0]++;
+                            StringBuilder motivo = new StringBuilder();
+                            if (hasAtividadeSolicitante) {
+                                motivo.append("Atividade com solicitante");
+                            }
+                            if (hasOcorrenciasComoAutor) {
+                                if (motivo.length() > 0) motivo.append(" e ");
+                                motivo.append("Ocorrencia de Atividade com Autor");
+                            }
+                            response.addWarning("Email " + email + " - Usuário mantido: existem vínculos em " + motivo);
+                            System.out.println("⚠ Pessoa mantida por vínculos externos: " + motivo);
+                        } else {
+                            // Deleta Autor se existir (relacionamento com Pessoa)
+                            if (autorOpt.isPresent()) {
+                                autorRepository.delete(autorOpt.get());
+                                totalDeletados[0]++;
+                                System.out.println("✓ Autor deletado");
+                            }
+
+                            if (usuarioOpt.isPresent()) {
+                                Usuario usuario = usuarioOpt.get();
+                                usuarioRepository.delete(usuario);
+                                totalDeletados[0]++;
+                                System.out.println("✓ Usuario deletado: " + usuario.getUsername());
+                            }
+
+                            pessoaRepository.delete(pessoa);
+                            totalDeletados[0]++;
+                            System.out.println("✓ Pessoa deletada: " + email);
+
+                            response.addWarning("Email " + email + " - Usuário COMPLETAMENTE removido (sem vínculos restantes)");
+                        }
+                    }
                 } else {
-                    // Tem outros relacionamentos, não deleta Pessoa/Usuario
+                    // AINDA há inscrições nesta instituição - Mantém tudo
                     pessoasNaoDeletadas[0]++;
-                    System.out.println(
-                            "⚠ Pessoa mantida (tem relacionamentos com outros tipos de atividades ou instituições)");
+                    System.out.println("⚠ Mantendo relacionamentos (ainda existem " + inscricoesNaInstituicao.size() + " inscrição(ões) ativa(s))");
                     response.addWarning("Email " + email +
-                            " - Relacionamentos deletados, mas Pessoa/Usuario mantidos (existem vínculos com outros tipos de atividades ou instituições)");
+                            " - Relacionamentos mantidos (ainda existem inscrições ativas nesta instituição)");
                 }
             }
 
@@ -1108,9 +1375,16 @@ public class InscricaoMassivaService {
             System.out.println("Pessoas não deletadas (com outros vínculos): " + pessoasNaoDeletadas[0]);
             System.out.println("Total de registros deletados: " + totalDeletados[0]);
 
-            response.addWarning(String.format("Reversão concluída. Emails: %d processados, %d não encontrados. " +
-                    "Registros deletados: %d. Pessoas mantidas (outros vínculos): %d",
-                    emailsProcessados[0], emailsNaoEncontrados[0], totalDeletados[0], pessoasNaoDeletadas[0]));
+            // Mensagem especial quando nada foi deletado
+            if (totalDeletados[0] == 0) {
+                response.addWarning("⚠ Nenhum relacionamento encontrado para reversão. " +
+                        "Os emails processados não possuem vínculos com esta instituição ou já foram removidos anteriormente.");
+            } else {
+                response.addWarning(String.format("Reversão concluída. Emails: %d processados, %d não encontrados. " +
+                        "Registros deletados: %d. Pessoas mantidas (outros vínculos): %d",
+                        emailsProcessados[0], emailsNaoEncontrados[0], totalDeletados[0], pessoasNaoDeletadas[0]));
+            }
+            
             response.setTotalRegistros(emailsProcessados[0]);
             response.setRegistrosProcessados(emailsProcessados[0] - emailsNaoEncontrados[0]);
 
