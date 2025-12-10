@@ -483,7 +483,7 @@ public class GestaoUsuariosController {
 
             // Capturar o nível anterior antes de atualizar
             Integer nivelAnterior = usuarioInst.getNivelAcessoUsuarioInstituicao();
-            
+
             // Atualizar os dados
             usuarioInst.setNivelAcessoUsuarioInstituicao(nivelAcessoUsuarioInstituicao);
             usuarioInst.setSitAcessoUsuarioInstituicao(sitAcessoUsuarioInstituicao);
@@ -536,7 +536,8 @@ public class GestaoUsuariosController {
             pessoaRepository.save(pessoa);
 
             // Gerenciar entidade Autor
-            // Regra básica: nível 1 não pode ser Autor. Níveis 2/5/9 podem ter Autor, mas só criamos
+            // Regra básica: nível 1 não pode ser Autor. Níveis 2/5/9 podem ter Autor, mas
+            // só criamos
             // automaticamente quando sai do nível 1 para o nível 2.
             if (nivelAcessoUsuarioInstituicao != null && nivelAcessoUsuarioInstituicao == 1) {
                 // Qualquer mudança que volte para nível 1 remove Autor, se existir

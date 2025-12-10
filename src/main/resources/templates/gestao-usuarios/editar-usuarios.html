@@ -625,46 +625,50 @@
           alert("Selecione pelo menos uma alteração a ser aplicada.");
           return;
         }
-        
+
         // Processar cada usuário sequencialmente
         let processados = 0;
         for (const checkbox of selecionados) {
           const form = document.createElement("form");
           form.method = "POST";
           form.action = "/administrador/atualizar-usuario";
-          
+
           // Campo ID
           const inputId = document.createElement("input");
           inputId.type = "hidden";
           inputId.name = "usuarioInstituicaoId";
           inputId.value = checkbox.value;
           form.appendChild(inputId);
-          
+
           // Nível de acesso
           const inputNivel = document.createElement("input");
           inputNivel.type = "hidden";
           inputNivel.name = "nivelAcessoUsuarioInstituicao";
           inputNivel.value = novoNivel || checkbox.getAttribute("data-nivel");
           form.appendChild(inputNivel);
-          
+
           // Situação
           const inputSituacao = document.createElement("input");
           inputSituacao.type = "hidden";
           inputSituacao.name = "sitAcessoUsuarioInstituicao";
-          inputSituacao.value = novaSituacao || checkbox.getAttribute("data-situacao");
+          inputSituacao.value =
+            novaSituacao || checkbox.getAttribute("data-situacao");
           form.appendChild(inputSituacao);
-          
+
           // Sub-Instituição
           if (novaSubInstituicao) {
             const inputSubInst = document.createElement("input");
             inputSubInst.type = "hidden";
             inputSubInst.name = "subInstituicaoUsuario";
-            inputSubInst.value = novaSubInstituicao === "-1" || novaSubInstituicao === "" ? "-1" : novaSubInstituicao;
+            inputSubInst.value =
+              novaSubInstituicao === "-1" || novaSubInstituicao === ""
+                ? "-1"
+                : novaSubInstituicao;
             form.appendChild(inputSubInst);
           }
-          
+
           document.body.appendChild(form);
-          
+
           processados++;
           if (processados === selecionados.length) {
             // Último usuário: faz submit normal para recarregar a página
@@ -676,10 +680,10 @@
               await fetch(form.action, {
                 method: "POST",
                 body: new FormData(form),
-                credentials: 'same-origin'
+                credentials: "same-origin",
               });
             } catch (error) {
-              console.error('Erro ao processar usuário:', error);
+              console.error("Erro ao processar usuário:", error);
             }
             form.remove();
           }

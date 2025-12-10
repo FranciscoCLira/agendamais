@@ -13,18 +13,21 @@ Este guia detalha como migrar o sistema AgendaMais do ambiente local para um ser
 ## 🎯 Plataformas Recomendadas
 
 ### **Opção 1: Render.com** (Gratuito para começar)
+
 - **Custo**: Gratuito (com limitações)
 - **PostgreSQL**: 90 dias grátis, depois precisa migrar
 - **Tempo de Setup**: 10-15 minutos
 - **Ideal para**: Testes, validação, demonstração
 
 ### **Opção 2: Railway.app** ⭐ (Melhor custo-benefício)
+
 - **Custo**: ~$8-12/mês
 - **PostgreSQL**: Incluído, permanente
 - **Tempo de Setup**: 15-20 minutos
 - **Ideal para**: Produção com 690+ usuários
 
 ### **Opção 3: DigitalOcean** (Profissional)
+
 - **Custo**: ~$15-25/mês
 - **PostgreSQL**: Gerenciado ou DIY
 - **Tempo de Setup**: 30-60 minutos
@@ -35,6 +38,7 @@ Este guia detalha como migrar o sistema AgendaMais do ambiente local para um ser
 ## 📦 Pré-requisitos
 
 ### **Antes de Começar**
+
 - [ ] Sistema funcionando localmente
 - [ ] Backup completo do banco de dados
 - [ ] Conta GitHub com repositório atualizado
@@ -42,6 +46,7 @@ Este guia detalha como migrar o sistema AgendaMais do ambiente local para um ser
 - [ ] Configurações SMTP para envio de emails
 
 ### **Verificações Necessárias**
+
 ```bash
 # 1. Confirmar que o código está no GitHub
 git status
@@ -88,6 +93,7 @@ spring.datasource.password=${DB_PASSWORD:postgres}
 
 1. No Render: **New** → **PostgreSQL**
 2. Configurações:
+
    - **Name**: `agendamais-db`
    - **Database**: `agendadb_prod`
    - **User**: `agendamais_user`
@@ -217,6 +223,7 @@ railway run psql < backup-completo.sql
 ```
 
 Ou via connection string:
+
 ```bash
 psql "postgresql://user:pass@containers-us-west-xxx.railway.app:7432/railway" < backup-completo.sql
 ```
@@ -343,18 +350,21 @@ cd C:\DEV-IA2\agendamais\backup-tools
 ### **Restauração no Servidor Remoto**
 
 #### **Método 1: Direto via psql**
+
 ```bash
 # Formato da URL: postgresql://user:password@host:port/database
 psql "<url-conexao>" < backup_completo_20251208.sql
 ```
 
 #### **Método 2: Via pgAdmin**
+
 1. Conectar ao servidor remoto
 2. Botão direito no database → **Restore**
 3. Selecionar arquivo `.sql`
 4. Execute
 
 #### **Método 3: Via DBeaver**
+
 1. Criar conexão remota
 2. **Tools** → **Execute SQL Script**
 3. Selecionar backup
@@ -364,7 +374,7 @@ psql "<url-conexao>" < backup_completo_20251208.sql
 
 ```sql
 -- Verificar contagem de registros
-SELECT 
+SELECT
     'usuarios' as tabela, COUNT(*) as total FROM usuario
 UNION ALL
 SELECT 'pessoas', COUNT(*) FROM pessoa
@@ -474,6 +484,7 @@ spring.mail.properties.mail.smtp.writetimeout=5000
 ### **Template de Email**
 
 O template `boas-vindas.html` já está configurado:
+
 - Link automático: `{{appUrl}}/acesso`
 - Credenciais: `{{email}}`
 - Senha padrão: `Agenda@2025`
@@ -560,7 +571,7 @@ SELECT situacao_usuario, COUNT(*) FROM usuario GROUP BY situacao_usuario;
 SELECT COUNT(*) FROM inscricao WHERE situacao_inscricao = 'A';
 
 -- Emails enviados (último mês)
-SELECT COUNT(*) FROM log_postagem 
+SELECT COUNT(*) FROM log_postagem
 WHERE data_hora_postagem >= NOW() - INTERVAL '30 days';
 
 -- Performance do banco
@@ -581,13 +592,13 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
 ## 💰 Comparação de Custos (690 usuários)
 
-| Plataforma | Custo Mensal | PostgreSQL | SSL | Backup | Uptime |
-|------------|--------------|------------|-----|---------|--------|
-| **Render Free** | $0 | 90 dias | ✅ | Manual | 99% |
-| **Railway** | $8-12 | ✅ Incluído | ✅ | ✅ Auto | 99.9% |
-| **DigitalOcean App** | $12 | +$7 | ✅ | ✅ | 99.99% |
-| **DigitalOcean Droplet** | $6 | DIY | DIY | DIY | 99.99% |
-| **Heroku** | $7 | +$9 | ✅ | ✅ | 99.95% |
+| Plataforma               | Custo Mensal | PostgreSQL  | SSL | Backup  | Uptime |
+| ------------------------ | ------------ | ----------- | --- | ------- | ------ |
+| **Render Free**          | $0           | 90 dias     | ✅  | Manual  | 99%    |
+| **Railway**              | $8-12        | ✅ Incluído | ✅  | ✅ Auto | 99.9%  |
+| **DigitalOcean App**     | $12          | +$7         | ✅  | ✅      | 99.99% |
+| **DigitalOcean Droplet** | $6           | DIY         | DIY | DIY     | 99.99% |
+| **Heroku**               | $7           | +$9         | ✅  | ✅      | 99.95% |
 
 **Recomendação**: Railway.app ($10/mês) - Melhor custo-benefício
 
@@ -596,6 +607,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 ## 📝 Checklist Completo de Migração
 
 ### **Pré-Migração**
+
 - [ ] Backup completo do banco local
 - [ ] Código atualizado no GitHub
 - [ ] Dockerfile testado localmente
@@ -603,6 +615,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 - [ ] SMTP configurado e testado
 
 ### **Durante Migração**
+
 - [ ] Criar conta na plataforma escolhida
 - [ ] Configurar Web Service / App
 - [ ] Criar banco de dados PostgreSQL
@@ -612,6 +625,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 - [ ] Testar login com usuário existente
 
 ### **Pós-Migração**
+
 - [ ] Validar contagem de registros
 - [ ] Testar funcionalidades principais
 - [ ] Configurar domínio customizado (opcional)
@@ -638,15 +652,18 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 ## 📞 Suporte e Recursos
 
 ### **Documentação Oficial**
+
 - Render: https://render.com/docs
 - Railway: https://docs.railway.app
 - DigitalOcean: https://docs.digitalocean.com
 
 ### **Comunidades**
+
 - Railway Discord: https://discord.gg/railway
 - DigitalOcean Community: https://www.digitalocean.com/community
 
 ### **Ferramentas Úteis**
+
 - DBeaver: https://dbeaver.io (GUI para PostgreSQL)
 - Postman: Testar APIs
 - UptimeRobot: https://uptimerobot.com (monitorar uptime)

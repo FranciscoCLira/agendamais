@@ -82,7 +82,8 @@ public class InscricaoMassivaService {
         try {
             // Valida se não é a opção "TODOS OS TIPOS" (-1) que só funciona para reversão
             if (request.getTipoAtividadeId() != null && request.getTipoAtividadeId() == -1) {
-                response.addError("A opção 'TODOS OS TIPOS' só funciona para 'Excluir/Reverter Carga', não para validação ou processamento");
+                response.addError(
+                        "A opção 'TODOS OS TIPOS' só funciona para 'Excluir/Reverter Carga', não para validação ou processamento");
                 return response;
             }
 
@@ -144,7 +145,8 @@ public class InscricaoMassivaService {
         try {
             // Valida se não é a opção "TODOS OS TIPOS" (-1) que só funciona para reversão
             if (request.getTipoAtividadeId() != null && request.getTipoAtividadeId() == -1) {
-                response.addError("A opção 'TODOS OS TIPOS' só funciona para 'Excluir/Reverter Carga', não para processamento de carga");
+                response.addError(
+                        "A opção 'TODOS OS TIPOS' só funciona para 'Excluir/Reverter Carga', não para processamento de carga");
                 return response;
             }
 
@@ -303,7 +305,7 @@ public class InscricaoMassivaService {
                 Cell dataCell = row.getCell(1); // Coluna B
                 if (dataCell != null) {
                     LocalDateTime dataInclusao = null;
-                    
+
                     // Tenta ler como data formatada primeiro
                     if (dataCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dataCell)) {
                         dataInclusao = dataCell.getLocalDateTimeCellValue();
@@ -314,7 +316,7 @@ public class InscricaoMassivaService {
                         dataInclusao = parseDateTimeFromForms(dataStr);
                         System.out.println("📅 Data lida como STRING: " + dataStr + " -> " + dataInclusao);
                     }
-                    
+
                     if (dataInclusao != null) {
                         registro.setDataInclusaoForms(dataInclusao);
                     } else {
@@ -415,22 +417,22 @@ public class InscricaoMassivaService {
             dateStr = dateStr.trim();
 
             // Formato brasileiro: dd/MM/yyyy HH:mm:ss
-            java.time.format.DateTimeFormatter formatterBR = 
-                java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy HH:mm:ss");
-            
+            java.time.format.DateTimeFormatter formatterBR = java.time.format.DateTimeFormatter
+                    .ofPattern("d/M/yyyy HH:mm:ss");
+
             // Tenta com formato brasileiro
             try {
                 return LocalDateTime.parse(dateStr, formatterBR);
             } catch (Exception e1) {
                 // Tenta formato com zero à esquerda
-                java.time.format.DateTimeFormatter formatterBR2 = 
-                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                java.time.format.DateTimeFormatter formatterBR2 = java.time.format.DateTimeFormatter
+                        .ofPattern("dd/MM/yyyy HH:mm:ss");
                 try {
                     return LocalDateTime.parse(dateStr, formatterBR2);
                 } catch (Exception e2) {
                     // Tenta formato americano com AM/PM
-                    java.time.format.DateTimeFormatter formatterUS = 
-                        java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a", java.util.Locale.US);
+                    java.time.format.DateTimeFormatter formatterUS = java.time.format.DateTimeFormatter
+                            .ofPattern("M/d/yyyy h:mm:ss a", java.util.Locale.US);
                     return LocalDateTime.parse(dateStr, formatterUS);
                 }
             }
@@ -657,11 +659,11 @@ public class InscricaoMassivaService {
         pessoa.setCelularPessoa(registro.getCelular());
         pessoa.setSituacaoPessoa("A"); // Ativa
         pessoa.setComentarios(registro.getComentarios());
-        
+
         // Usa data do Forms (coluna B) se disponível, senão usa data atual
-        LocalDate dataInclusao = (registro.getDataInclusaoForms() != null) 
-            ? registro.getDataInclusaoForms().toLocalDate() 
-            : LocalDate.now();
+        LocalDate dataInclusao = (registro.getDataInclusaoForms() != null)
+                ? registro.getDataInclusaoForms().toLocalDate()
+                : LocalDate.now();
         pessoa.setDataInclusao(dataInclusao);
         pessoa.setDataUltimaAtualizacao(dataInclusao);
 
@@ -714,9 +716,9 @@ public class InscricaoMassivaService {
         }
 
         // Usa data do Forms (coluna B) para dataUltimaAtualizacao se disponível
-        LocalDate dataAtualizacao = (registro.getDataInclusaoForms() != null) 
-            ? registro.getDataInclusaoForms().toLocalDate() 
-            : LocalDate.now();
+        LocalDate dataAtualizacao = (registro.getDataInclusaoForms() != null)
+                ? registro.getDataInclusaoForms().toLocalDate()
+                : LocalDate.now();
         pessoa.setDataUltimaAtualizacao(dataAtualizacao);
 
         // Atualiza Locais hierárquicos (Pais -> Estado -> Cidade)
@@ -899,11 +901,11 @@ public class InscricaoMassivaService {
         Inscricao inscricao = new Inscricao();
         inscricao.setPessoa(pessoa);
         inscricao.setIdInstituicao(instituicao);
-        
+
         // Usa data do Forms (coluna B) se disponível, senão usa data atual
-        LocalDate dataInclusao = (registro.getDataInclusaoForms() != null) 
-            ? registro.getDataInclusaoForms().toLocalDate() 
-            : LocalDate.now();
+        LocalDate dataInclusao = (registro.getDataInclusaoForms() != null)
+                ? registro.getDataInclusaoForms().toLocalDate()
+                : LocalDate.now();
         inscricao.setDataInclusao(dataInclusao);
         inscricao.setDataUltimaAtualizacao(dataInclusao);
 
@@ -1157,7 +1159,8 @@ public class InscricaoMassivaService {
                     System.out.println("⚠ Nenhum relacionamento encontrado com esta instituição para: " + email);
 
                     if (excluirCompletamente) {
-                        // Tentar remoção completa se não houver vínculos em nenhuma instituição ou entidades
+                        // Tentar remoção completa se não houver vínculos em nenhuma instituição ou
+                        // entidades
                         List<Inscricao> inscricoesTodas = inscricaoRepository.findByPessoaId(pessoa.getId());
                         List<PessoaInstituicao> pisTodas = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
                         List<UsuarioInstituicao> uisTodas = usuarioOpt.isPresent()
@@ -1193,17 +1196,23 @@ public class InscricaoMassivaService {
                             // Há vínculos fora desta instituição: manter
                             emailsNaoEncontrados[0]++;
                             StringBuilder motivo = new StringBuilder();
-                            if (!inscricoesTodas.isEmpty()) motivo.append("inscrições em outras instituições; ");
-                            if (!pisTodas.isEmpty()) motivo.append("pessoa_instituicao em outras instituições; ");
-                            if (!uisTodas.isEmpty()) motivo.append("usuario_instituicao em outras instituições; ");
-                            if (temAtividadesComoSolicitante) motivo.append("atividade com solicitante; ");
-                            if (temOcorrencias) motivo.append("ocorrência com autor; ");
+                            if (!inscricoesTodas.isEmpty())
+                                motivo.append("inscrições em outras instituições; ");
+                            if (!pisTodas.isEmpty())
+                                motivo.append("pessoa_instituicao em outras instituições; ");
+                            if (!uisTodas.isEmpty())
+                                motivo.append("usuario_instituicao em outras instituições; ");
+                            if (temAtividadesComoSolicitante)
+                                motivo.append("atividade com solicitante; ");
+                            if (temOcorrencias)
+                                motivo.append("ocorrência com autor; ");
                             response.addWarning("Email " + email
                                     + " - Relacionamentos encontrados fora desta instituição. Usuário mantido. Motivo: "
                                     + motivo.toString());
                         }
                     } else {
-                        response.addWarning("Email " + email + " - Nenhum relacionamento encontrado com esta instituição");
+                        response.addWarning(
+                                "Email " + email + " - Nenhum relacionamento encontrado com esta instituição");
                         emailsNaoEncontrados[0]++;
                     }
                     continue; // Pula para o próximo email
@@ -1218,11 +1227,12 @@ public class InscricaoMassivaService {
                         Inscricao inscricao = inscricaoCheck.get();
                         List<InscricaoTipoAtividade> todasItas = inscricaoTipoAtividadeRepository
                                 .findByInscricaoId(inscricao.getId());
-                        
+
                         for (InscricaoTipoAtividade ita : todasItas) {
                             inscricaoTipoAtividadeRepository.delete(ita);
                             totalDeletados[0]++;
-                            System.out.println("✓ InscricaoTipoAtividade deletada: " + ita.getTipoAtividade().getTituloTipoAtividade());
+                            System.out.println("✓ InscricaoTipoAtividade deletada: "
+                                    + ita.getTipoAtividade().getTituloTipoAtividade());
                         }
 
                         // Deleta Inscricao
@@ -1233,7 +1243,8 @@ public class InscricaoMassivaService {
 
                 } else {
                     // MODO EXCLUSÃO PARCIAL: Remove apenas InscricaoTipoAtividade específica
-                    System.out.println("🔍 Exclusão parcial - Removendo apenas tipo: " + tipoAtividade.getTituloTipoAtividade());
+                    System.out.println(
+                            "🔍 Exclusão parcial - Removendo apenas tipo: " + tipoAtividade.getTituloTipoAtividade());
 
                     if (usuarioOpt.isPresent()) {
                         Usuario usuario = usuarioOpt.get();
@@ -1273,9 +1284,9 @@ public class InscricaoMassivaService {
                 List<PessoaInstituicao> todasPis = pessoaInstituicaoRepository.findByPessoaId(pessoa.getId());
                 boolean temOutrasInstituicoes = todasPis.size() > 1;
 
-                System.out.println("📊 Análise: inscricoesNaInstituicao=" + inscricoesNaInstituicao.size() + 
-                                 ", todasPis=" + todasPis.size() + 
-                                 ", temOutrasInstituicoes=" + temOutrasInstituicoes);
+                System.out.println("📊 Análise: inscricoesNaInstituicao=" + inscricoesNaInstituicao.size() +
+                        ", todasPis=" + todasPis.size() +
+                        ", temOutrasInstituicoes=" + temOutrasInstituicoes);
 
                 // DECISÃO 1: Não há mais inscrições nesta instituição?
                 if (inscricoesNaInstituicao.isEmpty()) {
@@ -1298,7 +1309,8 @@ public class InscricaoMassivaService {
                         if (uiOpt.isPresent()) {
                             usuarioInstituicaoRepository.delete(uiOpt.get());
                             totalDeletados[0]++;
-                            System.out.println("✓ UsuarioInstituicao deletada (instituicao=" + instituicao.getId() + ")");
+                            System.out
+                                    .println("✓ UsuarioInstituicao deletada (instituicao=" + instituicao.getId() + ")");
                         }
                     }
 
@@ -1306,11 +1318,13 @@ public class InscricaoMassivaService {
                     if (temOutrasInstituicoes) {
                         // TEM outros vínculos - Mantém Pessoa e Usuario
                         pessoasNaoDeletadas[0]++;
-                        System.out.println("⚠ Pessoa/Usuario mantidos (tem vínculos com outras " + (todasPis.size() - 1) + " instituição(ões))");
-                        
+                        System.out.println("⚠ Pessoa/Usuario mantidos (tem vínculos com outras " + (todasPis.size() - 1)
+                                + " instituição(ões))");
+
                         if (excluirCompletamente) {
                             response.addWarning("Email " + email +
-                                    " - Relacionamentos com esta instituição removidos. Usuário mantido (vinculado a outras " + 
+                                    " - Relacionamentos com esta instituição removidos. Usuário mantido (vinculado a outras "
+                                    +
                                     (todasPis.size() - 1) + " instituição(ões))");
                         } else {
                             response.addWarning("Email " + email +
@@ -1326,14 +1340,16 @@ public class InscricaoMassivaService {
                                 && ocorrenciaAtividadeRepository.existsByIdAutorId(autorOpt.get().getId());
 
                         if (hasAtividadeSolicitante || hasOcorrenciasComoAutor) {
-                            // Há referências externas (Atividade.solicitante ou OcorrenciaAtividade.autor) -> não deletar Pessoa/Usuario
+                            // Há referências externas (Atividade.solicitante ou OcorrenciaAtividade.autor)
+                            // -> não deletar Pessoa/Usuario
                             pessoasNaoDeletadas[0]++;
                             StringBuilder motivo = new StringBuilder();
                             if (hasAtividadeSolicitante) {
                                 motivo.append("Atividade com solicitante");
                             }
                             if (hasOcorrenciasComoAutor) {
-                                if (motivo.length() > 0) motivo.append(" e ");
+                                if (motivo.length() > 0)
+                                    motivo.append(" e ");
                                 motivo.append("Ocorrencia de Atividade com Autor");
                             }
                             response.addWarning("Email " + email + " - Usuário mantido: existem vínculos em " + motivo);
@@ -1357,13 +1373,15 @@ public class InscricaoMassivaService {
                             totalDeletados[0]++;
                             System.out.println("✓ Pessoa deletada: " + email);
 
-                            response.addWarning("Email " + email + " - Usuário COMPLETAMENTE removido (sem vínculos restantes)");
+                            response.addWarning(
+                                    "Email " + email + " - Usuário COMPLETAMENTE removido (sem vínculos restantes)");
                         }
                     }
                 } else {
                     // AINDA há inscrições nesta instituição - Mantém tudo
                     pessoasNaoDeletadas[0]++;
-                    System.out.println("⚠ Mantendo relacionamentos (ainda existem " + inscricoesNaInstituicao.size() + " inscrição(ões) ativa(s))");
+                    System.out.println("⚠ Mantendo relacionamentos (ainda existem " + inscricoesNaInstituicao.size()
+                            + " inscrição(ões) ativa(s))");
                     response.addWarning("Email " + email +
                             " - Relacionamentos mantidos (ainda existem inscrições ativas nesta instituição)");
                 }
@@ -1384,7 +1402,7 @@ public class InscricaoMassivaService {
                         "Registros deletados: %d. Pessoas mantidas (outros vínculos): %d",
                         emailsProcessados[0], emailsNaoEncontrados[0], totalDeletados[0], pessoasNaoDeletadas[0]));
             }
-            
+
             response.setTotalRegistros(emailsProcessados[0]);
             response.setRegistrosProcessados(emailsProcessados[0] - emailsNaoEncontrados[0]);
 
