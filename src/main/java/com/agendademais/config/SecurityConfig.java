@@ -65,6 +65,8 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		if (requireAdmin) {
 			http.authorizeHttpRequests(auth -> auth
+					// Admin endpoints must be authenticated so anonymous requests redirect to login
+					.requestMatchers("/admin/**").authenticated()
 					.requestMatchers(org.springframework.http.HttpMethod.GET,
 							"/administrador/atividades/deletar/**")
 					.permitAll()
