@@ -18,6 +18,7 @@ public class Instituicao {
 	private String smtpUsername;
 	private String smtpPassword;
 	private Boolean smtpSsl; // true = SSL (465) / false = STARTTLS (587)
+	private Integer modoEnvioEmail; // 1=Online (direto), 2=Offline (fila/batch) - Objetivo: formatar diferentes mensagens no rodapé do Email
 
 	// GETTERS AND SETTERS
 
@@ -99,6 +100,14 @@ public class Instituicao {
 
 	public void setSmtpSsl(Boolean smtpSsl) {
 		this.smtpSsl = smtpSsl;
+	}
+
+	public Integer getModoEnvioEmail() {
+		return modoEnvioEmail;
+	}
+
+	public void setModoEnvioEmail(Integer modoEnvioEmail) {
+		this.modoEnvioEmail = modoEnvioEmail;
 	}
 
 	@Override

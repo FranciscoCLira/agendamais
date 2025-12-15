@@ -288,6 +288,29 @@
                   </label>
                 </div>
               </div>
+
+              <div style="margin-bottom: 16px">
+                <label for="modoEnvioEmail" style="display: block; font-weight: bold">Modo de Envio do Email:</label>
+                <select
+                  id="modoEnvioEmail"
+                  th:field="*{modoEnvioEmail}"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border-radius: 6px;
+                    border: 1px solid #ccc;
+                  "
+                >
+                  <option value="">-- Selecione --</option>
+                  <option value="1">Online (Envio direto)</option>
+                  <option value="2">Offline (Processamento em batch/fila)</option>
+                </select>
+                <small style="color: #666; display: block; margin-top: 4px">
+                  <strong>Objetivo:</strong> Parametriza diferentes mensagens no rodapé do email<br/>
+                  <strong>Online:</strong> Disparo imediato com mensagem padrão<br/>
+                  <strong>Offline:</strong> Processamento em segundo plano com mensagem adaptada
+                </small>
+              </div>
             </div>
           </div>
 
