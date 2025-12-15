@@ -7,9 +7,14 @@ import org.springframework.stereotype.Service;
 import com.agendademais.entities.ConfiguracaoSmtpGlobal;
 import com.agendademais.entities.LogPostagem;
 import com.agendademais.entities.OcorrenciaAtividade;
+import com.agendademais.entities.Regiao;
+import com.agendademais.entities.Usuario;
+import com.agendademais.entities.UsuarioInstituicao;
 import com.agendademais.repositories.ConfiguracaoSmtpGlobalRepository;
 import com.agendademais.repositories.LogPostagemRepository;
 import com.agendademais.repositories.OcorrenciaAtividadeRepository;
+import com.agendademais.repositories.UsuarioInstituicaoRepository;
+import com.agendademais.service.RegiaoService;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +47,15 @@ public class DisparoEmailService {
     @Autowired
     private CryptoService cryptoService;
 
+    @Autowired
+    private com.agendademais.service.EmailRodapeService emailRodapeService;
+
+    @Autowired
+    private RegiaoService regiaoService;
+
+    @Autowired
+    private UsuarioInstituicaoRepository usuarioInstituicaoRepository;
+
     @Value("${spring.mail.username:}")
     private String configuredMailUsername;
 
@@ -60,10 +74,122 @@ public class DisparoEmailService {
         public String fatalError; // New field for fatal errors
     }
 
+    /**
+     * Coleta a lista de destinatários aplicando as mesmas regras usadas no envio:
+     * - Apenas vínculos da instituição da ocorrência
+     * - Usuários não bloqueados (situacaoUsuario != B)
+     * - Respeita filtro de região (se informado)
+     */
+    private List<String> coletarDestinatarios(OcorrenciaAtividade ocorrencia, Long regiaoId) {
+        List<String> destinatarios = new ArrayList<>();
+
+        if (ocorrencia == null || ocorrencia.getIdAtividade() == null
+                || ocorrencia.getIdAtividade().getInstituicao() == null) {
+            return destinatarios;
+        }
+
+        Long tipoAtividadeId = ocorrencia.getIdAtividade().getTipoAtividade() != null
+                ? ocorrencia.getIdAtividade().getTipoAtividade().getId()
+                : null;
+        Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
+
+        if (tipoAtividadeId == null || instituicaoId == null) {
+            return destinatarios;
+        }
+
+        // Resolve a região uma única vez; se inválida, retorna lista vazia
+        Regiao regiaoFiltro = null;
+        if (regiaoId != null && regiaoId > 0) {
+            try {
+                regiaoFiltro = regiaoService.obterPorId(regiaoId);
+            } catch (IllegalArgumentException e) {
+                System.out.println("[DisparoEmail] Região informada não encontrada: id=" + regiaoId);
+                return destinatarios;
+            }
+        }
+
+        List<com.agendademais.entities.InscricaoTipoAtividade> inscricoes = inscricaoTipoAtividadeRepository
+                .findAll();
+
+        int skippedPessoa = 0;
+        int skippedUsuario = 0;
+        int skippedRegiao = 0;
+
+        for (com.agendademais.entities.InscricaoTipoAtividade ita : inscricoes) {
+            if (ita.getTipoAtividade() == null || ita.getInscricao() == null
+                    || ita.getInscricao().getIdInstituicao() == null) {
+                continue;
+            }
+
+            boolean mesmoTipo = ita.getTipoAtividade().getId().equals(tipoAtividadeId);
+            boolean mesmaInstituicao = ita.getInscricao().getIdInstituicao().getId().equals(instituicaoId);
+            if (!mesmoTipo || !mesmaInstituicao) {
+                continue;
+            }
+
+            com.agendademais.entities.Pessoa pessoa = ita.getInscricao().getPessoa();
+            // Pessoa precisa estar ativa e com email válido
+            if (pessoa == null || pessoa.getEmailPessoa() == null || pessoa.getEmailPessoa().isBlank()
+                    || pessoa.getSituacaoPessoa() == null
+                    || !"A".equalsIgnoreCase(pessoa.getSituacaoPessoa())) {
+                skippedPessoa++;
+                continue;
+            }
+
+            List<UsuarioInstituicao> vinculos = usuarioInstituicaoRepository
+                    .findByInstituicaoAndUsuario_Pessoa(ita.getInscricao().getIdInstituicao(), pessoa);
+            if (vinculos.isEmpty()) {
+                continue; // Sem vínculo UsuarioInstituicao, ignora
+            }
+
+            Usuario usuario = vinculos.get(0).getUsuario();
+            if (usuario == null) {
+                continue; // Sem usuário, ignora
+            }
+
+            String situacaoUsuario = usuario.getSituacaoUsuario();
+            if (!"A".equalsIgnoreCase(situacaoUsuario) && !"P".equalsIgnoreCase(situacaoUsuario)) {
+                skippedUsuario++;
+                continue; // Apenas A ou P
+            }
+
+            if (regiaoFiltro != null) {
+                if (!regiaoService.pessoaPertenceRegiao(pessoa.getCidade(), regiaoFiltro)) {
+                    skippedRegiao++;
+                    continue; // Fora da região filtrada
+                }
+            }
+
+            destinatarios.add(pessoa.getEmailPessoa());
+        }
+
+        System.out.println("[DisparoEmail] coletarDestinatarios regiaoId=" + regiaoId
+                + " -> total=" + destinatarios.size()
+                + " (skippedPessoa=" + skippedPessoa
+                + ", skippedUsuario=" + skippedUsuario
+                + ", skippedRegiao=" + skippedRegiao + ")");
+
+        return destinatarios;
+    }
+
+    /**
+     * Conta destinatários aplicando todas as regras de envio.
+     */
+    public long contarDestinatarios(OcorrenciaAtividade ocorrencia, Long regiaoId) {
+        return coletarDestinatarios(ocorrencia, regiaoId).size();
+    }
+
     // Simulação de progresso por ocorrenciaId
     private final Map<Long, ProgressoDisparo> progressoMap = new ConcurrentHashMap<>();
 
-    public void iniciarDisparo(Long ocorrenciaId, int totalDestinatarios) {
+    /**
+     * Inicia o disparo de email para uma ocorrência com suporte a filtro de região.
+     * 
+     * @param ocorrenciaId ID da ocorrência
+     * @param totalDestinatarios Número total de destinatários
+     * @param regiaoId ID da região (opcional, null para disparar para toda a instituição)
+     */
+    public void iniciarDisparo(Long ocorrenciaId, int totalDestinatarios, Long regiaoId) {
         ProgressoDisparo progresso = new ProgressoDisparo();
         progresso.total = totalDestinatarios;
         progresso.enviados = 0;
@@ -74,13 +200,34 @@ public class DisparoEmailService {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                // Mensagem de rodapé para descadastro
-                String removerEmailMensagem = "<br><br><hr style='margin:16px 0'>" +
-                        "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>"
-                        +
-                        "Acesse: <a href='" + appUrl + "' style='color:#0066cc;'>" + appUrl + "</a></span>";
-                OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
-                String assunto = "";
+                dispararEmailsInterno(ocorrenciaId, regiaoId);
+            }
+        });
+
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * Sobrecarga para compatibilidade com código antigo (sem regiaoId).
+     */
+    public void iniciarDisparo(Long ocorrenciaId, int totalDestinatarios) {
+        iniciarDisparo(ocorrenciaId, totalDestinatarios, null);
+    }
+
+    /**
+     * Interno: realiza o disparo efetivo de emails.
+     */
+    private void dispararEmailsInterno(Long ocorrenciaId, Long regiaoId) {
+        ProgressoDisparo progresso = progressoMap.get(ocorrenciaId);
+        if (progresso == null) {
+            return; // Não deve acontecer
+        }
+
+        // Mensagem de rodapé para descadastro
+        String removerEmailMensagem = emailRodapeService.gerarMensagemRodape();
+        OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
+        String assunto = "";
                 String conteudoOriginal = ocorrencia != null ? ocorrencia.getDetalheDivulgacao() : "Conteúdo";
                 String dataHoraLinha = "";
                 if (ocorrencia != null && ocorrencia.getDataOcorrencia() != null
@@ -102,33 +249,13 @@ public class DisparoEmailService {
                 }
                 String nomeInstituicao = "";
                 String emailInstituicao = "";
-                List<String> destinatarios = new ArrayList<>();
+                List<String> destinatarios = coletarDestinatarios(ocorrencia, regiaoId);
+                progresso.total = destinatarios.size();
+
                 if (ocorrencia != null && ocorrencia.getIdAtividade() != null
                         && ocorrencia.getIdAtividade().getInstituicao() != null) {
                     nomeInstituicao = ocorrencia.getIdAtividade().getInstituicao().getNomeInstituicao();
                     emailInstituicao = ocorrencia.getIdAtividade().getInstituicao().getEmailInstituicao();
-                    // Buscar todos os inscritos no tipo de atividade da instituição
-                    Long tipoAtividadeId = ocorrencia.getIdAtividade().getTipoAtividade() != null
-                            ? ocorrencia.getIdAtividade().getTipoAtividade().getId()
-                            : null;
-                    Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
-                    if (tipoAtividadeId != null && instituicaoId != null) {
-                        List<com.agendademais.entities.InscricaoTipoAtividade> inscricoes = inscricaoTipoAtividadeRepository
-                                .findAll();
-                        for (com.agendademais.entities.InscricaoTipoAtividade ita : inscricoes) {
-                            if (ita.getTipoAtividade() != null && ita.getTipoAtividade().getId().equals(tipoAtividadeId)
-                                    && ita.getInscricao() != null && ita.getInscricao().getIdInstituicao() != null
-                                    && ita.getInscricao().getIdInstituicao().getId().equals(instituicaoId)) {
-                                com.agendademais.entities.Pessoa pessoa = ita.getInscricao().getPessoa();
-                                if (pessoa != null
-                                        && pessoa.getEmailPessoa() != null
-                                        && !pessoa.getEmailPessoa().isBlank()
-                                        && "A".equalsIgnoreCase(pessoa.getSituacaoPessoa())) {
-                                    destinatarios.add(pessoa.getEmailPessoa());
-                                }
-                            }
-                        }
-                    }
                 } else {
                     nomeInstituicao = "Instituição";
                     emailInstituicao = "fclira.fcl@gmail.com"; // fallback para teste
@@ -154,57 +281,66 @@ public class DisparoEmailService {
                                 com.agendademais.entities.Instituicao inst = null;
                                 if (ocorrencia != null && ocorrencia.getIdAtividade() != null
                                         && ocorrencia.getIdAtividade().getInstituicao() != null) {
-                                // Recarrega instituição do banco para garantir campos SMTP atualizados
-                                Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
-                                inst = instituicaoRepository.findById(instituicaoId).orElse(null);
-                                
-                                // DEBUG: Log configuração SMTP
-                                if (inst != null) {
-                                    System.out.println("[DisparoEmail] Instituição ID=" + inst.getId() + " - " + inst.getNomeInstituicao());
-                                    System.out.println("[DisparoEmail] SMTP Host: " + inst.getSmtpHost());
-                                    System.out.println("[DisparoEmail] SMTP Username: " + inst.getSmtpUsername());
-                                    System.out.println("[DisparoEmail] SMTP Password exists: " + (inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank()));
-                                    System.out.println("[DisparoEmail] useInstitutionSmtp: " + useInstitutionSmtp);
+                                    // Recarrega instituição do banco para garantir campos SMTP atualizados
+                                    Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
+                                    inst = instituicaoRepository.findById(instituicaoId).orElse(null);
+
+                                    // DEBUG: Log configuração SMTP
+                                    if (inst != null) {
+                                        System.out.println("[DisparoEmail] Instituição ID=" + inst.getId() + " - "
+                                                + inst.getNomeInstituicao());
+                                        System.out.println("[DisparoEmail] SMTP Host: " + inst.getSmtpHost());
+                                        System.out.println("[DisparoEmail] SMTP Username: " + inst.getSmtpUsername());
+                                        System.out.println("[DisparoEmail] SMTP Password exists: "
+                                                + (inst.getSmtpPassword() != null
+                                                        && !inst.getSmtpPassword().isBlank()));
+                                        System.out.println("[DisparoEmail] useInstitutionSmtp: " + useInstitutionSmtp);
+                                    }
                                 }
-                            }
-                            // Valida se SMTP está completamente configurado (não-null e não-blank)
-                            if (useInstitutionSmtp && inst != null 
-                                    && inst.getSmtpHost() != null && !inst.getSmtpHost().isBlank()
-                                    && inst.getSmtpUsername() != null && !inst.getSmtpUsername().isBlank()
-                                    && inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank()) {
-                                // 1ª Prioridade: SMTP Institucional
-                                System.out.println("[DisparoEmail] ✓ Usando SMTP da instituição: " + inst.getSmtpUsername());
-                                try {
-                                    senderToUse = buildSenderForInstitution(inst);
-                                } catch (Exception e) {
-                                    System.err.println("[DisparoEmail] ERRO ao construir SMTP institucional: " + e.getMessage());
-                                    String diagnostico = "Erro ao construir SMTP institucional: " + e.getMessage();
-                                    progresso.fatalError = diagnostico;
-                                    throw new RuntimeException("SMTP configurado falhou: " + diagnostico);
-                                }
-                            } else {
-                                // 2ª Prioridade: SMTP Global do banco
-                                System.out.println("[DisparoEmail] ✗ SMTP institucional não configurado, tentando SMTP global...");
-                                Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository
-                                        .findFirstByAtivoTrueOrderByDataCriacaoDesc();
-                                
-                                if (configGlobalOpt.isPresent()) {
-                                    ConfiguracaoSmtpGlobal configGlobal = configGlobalOpt.get();
-                                    System.out.println("[DisparoEmail] ✓ Usando SMTP global (banco): " + configGlobal.getSmtpUsername());
+                                // Valida se SMTP está completamente configurado (não-null e não-blank)
+                                if (useInstitutionSmtp && inst != null
+                                        && inst.getSmtpHost() != null && !inst.getSmtpHost().isBlank()
+                                        && inst.getSmtpUsername() != null && !inst.getSmtpUsername().isBlank()
+                                        && inst.getSmtpPassword() != null && !inst.getSmtpPassword().isBlank()) {
+                                    // 1ª Prioridade: SMTP Institucional
+                                    System.out.println(
+                                            "[DisparoEmail] ✓ Usando SMTP da instituição: " + inst.getSmtpUsername());
                                     try {
-                                        senderToUse = buildSenderForGlobal(configGlobal);
+                                        senderToUse = buildSenderForInstitution(inst);
                                     } catch (Exception e) {
-                                        System.err.println("[DisparoEmail] ERRO ao construir SMTP global: " + e.getMessage());
-                                        String diagnostico = "Erro ao construir SMTP global: " + e.getMessage();
+                                        System.err.println("[DisparoEmail] ERRO ao construir SMTP institucional: "
+                                                + e.getMessage());
+                                        String diagnostico = "Erro ao construir SMTP institucional: " + e.getMessage();
                                         progresso.fatalError = diagnostico;
                                         throw new RuntimeException("SMTP configurado falhou: " + diagnostico);
                                     }
                                 } else {
-                                    // 3ª Prioridade: SMTP das properties (padrão)
-                                    System.out.println("[DisparoEmail] ⚠ Usando SMTP padrão (properties)");
-                                    senderToUse = mailSender;
+                                    // 2ª Prioridade: SMTP Global do banco
+                                    System.out.println(
+                                            "[DisparoEmail] ✗ SMTP institucional não configurado, tentando SMTP global...");
+                                    Optional<ConfiguracaoSmtpGlobal> configGlobalOpt = configuracaoSmtpGlobalRepository
+                                            .findFirstByAtivoTrueOrderByDataCriacaoDesc();
+
+                                    if (configGlobalOpt.isPresent()) {
+                                        ConfiguracaoSmtpGlobal configGlobal = configGlobalOpt.get();
+                                        System.out.println("[DisparoEmail] ✓ Usando SMTP global (banco): "
+                                                + configGlobal.getSmtpUsername());
+                                        try {
+                                            senderToUse = buildSenderForGlobal(configGlobal);
+                                        } catch (Exception e) {
+                                            System.err.println(
+                                                    "[DisparoEmail] ERRO ao construir SMTP global: " + e.getMessage());
+                                            String diagnostico = "Erro ao construir SMTP global: " + e.getMessage();
+                                            progresso.fatalError = diagnostico;
+                                            throw new RuntimeException("SMTP configurado falhou: " + diagnostico);
+                                        }
+                                    } else {
+                                        // 3ª Prioridade: SMTP das properties (padrão)
+                                        System.out.println("[DisparoEmail] ⚠ Usando SMTP padrão (properties)");
+                                        senderToUse = mailSender;
+                                    }
                                 }
-                            }                                MimeMessage message = senderToUse.createMimeMessage();
+                                MimeMessage message = senderToUse.createMimeMessage();
                                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                                 helper.setTo(destinatario);
                                 helper.setSubject(assunto);
@@ -237,10 +373,15 @@ public class DisparoEmailService {
                                     nomePessoa = pessoaDest.getNomePessoa();
                                 }
                                 // Substitui variáveis no corpo do e-mail
-                                String conteudo = conteudoOriginal.replace("${nomePessoa}", nomePessoa);
-                                conteudo = conteudo.replace("${dataHoraLinha}", dataHoraLinha);
-                                conteudo = conteudo.replace("${removerEmailMensagem}", removerEmailMensagem);
-                                conteudo = conteudo.replace("${nomeInstituicao}", nomeInstituicao);
+                                String conteudo = conteudoOriginal
+                                    .replace("{{nomePessoa}}", nomePessoa)
+                                    .replace("${nomePessoa}", nomePessoa)
+                                    .replace("{{dataHoraLinha}}", dataHoraLinha)
+                                    .replace("${dataHoraLinha}", dataHoraLinha)
+                                    .replace("{{removerEmailMensagem}}", removerEmailMensagem)
+                                    .replace("${removerEmailMensagem}", removerEmailMensagem)
+                                    .replace("{{nomeInstituicao}}", nomeInstituicao)
+                                    .replace("${nomeInstituicao}", nomeInstituicao);
                                 helper.setText(conteudo, true);
                                 // Use authenticated SMTP user as envelope-from when available
                                 String envelopeFrom = null;
@@ -266,24 +407,31 @@ public class DisparoEmailService {
                                 }
                                 try {
                                     senderToUse.send(message);
-                                    System.out.println("[DisparoEmail] ✓ Email enviado com sucesso para: " + destinatario);
+                                    System.out.println(
+                                            "[DisparoEmail] ✓ Email enviado com sucesso para: " + destinatario);
                                 } catch (Exception sendEx) {
                                     // NOVA REGRA: Para postagens, NÃO usar fallback - interromper com erro
                                     // Se SMTP institucional foi configurado e falhou, mostrar erro ao usuário
                                     System.err.println(
                                             "[DisparoEmail] ✗ SMTP institucional FALHOU! Erro: " + sendEx.getMessage());
-                                    System.err.println("[DisparoEmail] Causa raiz: " + (sendEx.getCause() != null ? sendEx.getCause().getMessage() : "N/A"));
-                                    
+                                    System.err.println("[DisparoEmail] Causa raiz: "
+                                            + (sendEx.getCause() != null ? sendEx.getCause().getMessage() : "N/A"));
+
                                     // Verifica se é erro de autenticação
-                                    String errorMsg = sendEx.getMessage() != null ? sendEx.getMessage().toLowerCase() : "";
-                                    String causeMsg = sendEx.getCause() != null && sendEx.getCause().getMessage() != null 
-                                            ? sendEx.getCause().getMessage().toLowerCase() : "";
-                                    
+                                    String errorMsg = sendEx.getMessage() != null ? sendEx.getMessage().toLowerCase()
+                                            : "";
+                                    String causeMsg = sendEx.getCause() != null
+                                            && sendEx.getCause().getMessage() != null
+                                                    ? sendEx.getCause().getMessage().toLowerCase()
+                                                    : "";
+
                                     String diagnostico = "";
-                                    if (errorMsg.contains("authentication") && 
-                                            (causeMsg.contains("535 5.7.139") || causeMsg.contains("basic authentication is disabled"))) {
-                                        diagnostico = "Autenticação básica desabilitada. Contas Outlook.com/Hotmail.com pessoais não permitem mais SMTP com senha. " +
-                                                     "Soluções: 1) Usar domínio corporativo M365, 2) Habilitar OAuth2, 3) Usar Gmail com App Password";
+                                    if (errorMsg.contains("authentication") &&
+                                            (causeMsg.contains("535 5.7.139")
+                                                    || causeMsg.contains("basic authentication is disabled"))) {
+                                        diagnostico = "Autenticação básica desabilitada. Contas Outlook.com/Hotmail.com pessoais não permitem mais SMTP com senha. "
+                                                +
+                                                "Soluções: 1) Usar domínio corporativo M365, 2) Habilitar OAuth2, 3) Usar Gmail com App Password";
                                     } else if (errorMsg.contains("authentication")) {
                                         diagnostico = "Falha de autenticação. Verifique usuário e senha SMTP.";
                                     } else if (errorMsg.contains("connect") || errorMsg.contains("timeout")) {
@@ -291,9 +439,9 @@ public class DisparoEmailService {
                                     } else {
                                         diagnostico = sendEx.getMessage();
                                     }
-                                    
+
                                     sendEx.printStackTrace();
-                                    
+
                                     // NÃO usar fallback - lançar exceção para interromper disparo
                                     throw new RuntimeException("SMTP configurado falhou: " + diagnostico, sendEx);
                                 }
@@ -303,10 +451,11 @@ public class DisparoEmailService {
                                     // Erro fatal - interrompe disparo completamente
                                     progresso.fatalError = ex.getMessage();
                                     progresso.concluido = true;
-                                    System.err.println("[DisparoEmail] ✗✗✗ ERRO FATAL - Disparo interrompido: " + ex.getMessage());
+                                    System.err.println(
+                                            "[DisparoEmail] ✗✗✗ ERRO FATAL - Disparo interrompido: " + ex.getMessage());
                                     break; // Sai do loop de destinatários
                                 }
-                                
+
                                 // Outros erros (por destinatário) - continua tentando
                                 progresso.falhas++;
                                 java.io.StringWriter sw = new java.io.StringWriter();
@@ -353,6 +502,17 @@ public class DisparoEmailService {
                         log.setTextoDetalheDivulgacao(ocorrenciaLog.getDetalheDivulgacao());
                         // AutorId pode ser null se não houver autor logado
                         log.setAutorId(ocorrenciaLog.getIdAutor() != null ? ocorrenciaLog.getIdAutor().getId() : null);
+                        // Salvar código da região se foi filtrada
+                        if (regiaoId != null && regiaoId > 0) {
+                            try {
+                                Regiao regiao = regiaoService.obterPorId(regiaoId);
+                                if (regiao != null) {
+                                    log.setCodRegiao(regiao.getCodRegiao());
+                                }
+                            } catch (Exception e) {
+                                System.err.println("[LogPostagem] Erro ao buscar região: " + e.getMessage());
+                            }
+                        }
                         log.setQtEnviados(destinatarios.size());
                         log.setQtFalhas(progresso.falhas);
                         // Mensagem de log
@@ -382,9 +542,6 @@ public class DisparoEmailService {
                     ex.printStackTrace();
                     progresso.fatalError = "Erro inesperado: " + ex.getMessage();
                 }
-            }
-        });
-        thread.start();
     }
 
     public ProgressoDisparo getProgresso(Long ocorrenciaId) {
@@ -433,17 +590,17 @@ public class DisparoEmailService {
         globalSender.setHost(config.getSmtpHost());
         globalSender.setPort(config.getSmtpPort() != null ? config.getSmtpPort() : 587);
         globalSender.setUsername(config.getSmtpUsername());
-        
+
         String decrypted = cryptoService.decryptIfNeeded(config.getSmtpPassword());
         globalSender.setPassword(decrypted);
-        
+
         Properties props = globalSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.connectiontimeout", "10000");
         props.put("mail.smtp.timeout", "10000");
-        
+
         return globalSender;
     }
 }

@@ -225,7 +225,7 @@
                 th:each="pais : ${paises}"
                 th:value="${pais.id}"
                 th:text="${pais.nomeLocal}"
-                th:selected="${regiao != null and regiao.pais != null and regiao.pais.id == pais.id}"
+                th:selected="${regiao != null and regiao.pais != null and regiao.pais.id != null and regiao.pais.id == pais.id}"
               >
                 País
               </option>
@@ -249,7 +249,7 @@
                 th:each="estado : ${estados}"
                 th:value="${estado.id}"
                 th:text="${estado.nomeLocal}"
-                th:selected="${regiao != null and regiao.estado != null and regiao.estado.id == estado.id}"
+                th:selected="${regiao != null and regiao.estado != null and regiao.estado.id != null and regiao.estado.id == estado.id}"
               >
                 Estado
               </option>
@@ -302,7 +302,12 @@
         <!-- Botões de Ação -->
         <div class="botoes-grupo">
           <!-- CSRF token for Spring Security -->
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <input
+            type="hidden"
+            th:if="${_csrf != null}"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
           <button type="submit" class="btn-salvar">
             <i class="fas fa-save"></i> Salvar
           </button>
@@ -370,22 +375,42 @@
         }
 
         const estadoAnterior = estadoSelect.value;
-        estadoSelect.innerHTML = '<option value="">Selecione um Estado</option>';
+        estadoSelect.innerHTML =
+          '<option value="">Carregando...</option>';
 
         fetch("/administrador/regioes/api/estados/" + paisId)
-          .then((response) => response.json())
-          .then((data) => {
-            data.forEach((estado) => {
-              const option = document.createElement("option");
-              option.value = estado.id;
-              option.textContent = estado.nomeLocal;
-              if (estadoAnterior && Number(estadoAnterior) === Number(estado.id)) {
-                option.selected = true;
-              }
-              estadoSelect.appendChild(option);
-            });
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("HTTP " + response.status);
+            }
+            return response.json();
           })
-          .catch((error) => console.error("Erro ao carregar estados:", error));
+          .then((data) => {
+            estadoSelect.innerHTML =
+              '<option value="">Selecione um Estado</option>';
+            if (Array.isArray(data) && data.length > 0) {
+              data.forEach((estado) => {
+                const option = document.createElement("option");
+                option.value = estado.id;
+                option.textContent = estado.nomeLocal;
+                if (
+                  estadoAnterior &&
+                  Number(estadoAnterior) === Number(estado.id)
+                ) {
+                  option.selected = true;
+                }
+                estadoSelect.appendChild(option);
+              });
+            } else {
+              estadoSelect.innerHTML +=
+                '<option disabled>Nenhum estado encontrado</option>';
+            }
+          })
+          .catch((error) => {
+            console.error("Erro ao carregar estados:", error);
+            estadoSelect.innerHTML =
+              '<option value="">Erro ao carregar estados</option>';
+          });
       }
 
       // Carrega cidades quando um estado é selecionado
@@ -406,10 +431,18 @@
           return;
         }
 
+        cidadesContainer.innerHTML =
+          '<p style="color: #666; text-align: center; margin: 0;">Carregando cidades...</p>';
+
         fetch("/administrador/regioes/api/cidades/" + estadoId)
-          .then((response) => response.json())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("HTTP " + response.status);
+            }
+            return response.json();
+          })
           .then((data) => {
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
               cidadesContainer.innerHTML =
                 '<p style="color: #666; text-align: center; margin: 0;">Nenhuma cidade encontrada para este estado</p>';
               return;
@@ -432,7 +465,11 @@
             });
             registrarEventosCidades();
           })
-          .catch((error) => console.error("Erro ao carregar cidades:", error));
+          .catch((error) => {
+            console.error("Erro ao carregar cidades:", error);
+            cidadesContainer.innerHTML =
+              '<p style="color: #d00; text-align: center; margin: 0;">Erro ao carregar cidades</p>';
+          });
       }
 
       // Inicializa o formulário ao carregar a página

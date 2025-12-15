@@ -2,6 +2,7 @@ package com.agendademais.controllers;
 
 import com.agendademais.entities.Instituicao;
 import com.agendademais.entities.Usuario;
+import com.agendademais.entities.Regiao;
 import com.agendademais.model.DisparoEmailBatch;
 import com.agendademais.model.DisparoEmailBatch.StatusDisparo;
 import com.agendademais.model.DisparoEmailBatch.TipoDisparo;
@@ -25,6 +26,9 @@ public class DisparoEmailGenericoController {
 
     @Autowired
     private DisparoEmailGenericoService disparoService;
+
+    @Autowired
+    private com.agendademais.service.RegiaoService regiaoService;
 
     /**
      * Página principal de gerenciamento de disparos.
@@ -60,8 +64,11 @@ public class DisparoEmailGenericoController {
             return "redirect:/acesso";
         }
 
+        // Listar apenas regiões da instituição logada
+        List<Regiao> regioes = regiaoService.listarPorInstituicao(instituicao);
         model.addAttribute("tiposDisparo", TipoDisparo.values());
         model.addAttribute("disparo", new DisparoEmailBatch());
+        model.addAttribute("regioes", regioes);
 
         return "disparo-emails-form";
     }
@@ -77,6 +84,7 @@ public class DisparoEmailGenericoController {
             @RequestParam(value = "filtroSituacao", required = false) String filtroSituacao,
             @RequestParam(value = "filtroDataInicio", required = false) String filtroDataInicio,
             @RequestParam(value = "filtroDataFim", required = false) String filtroDataFim,
+            @RequestParam(value = "filtroRegiaoId", required = false) String filtroRegiaoId,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -106,6 +114,16 @@ public class DisparoEmailGenericoController {
 
             if (filtroDataFim != null && !filtroDataFim.isBlank()) {
                 disparo.setFiltroDataInscricaoFim(LocalDate.parse(filtroDataFim));
+            }
+
+            // Filtro de região
+            if (filtroRegiaoId != null && !filtroRegiaoId.isBlank() && !filtroRegiaoId.equals("0")) {
+                try {
+                    Long regiaoId = Long.parseLong(filtroRegiaoId);
+                    disparo.setFiltroRegiaoId(regiaoId);
+                } catch (NumberFormatException e) {
+                    // Se não conseguir parsear, ignora o filtro
+                }
             }
 
             // Criar disparo (calcula destinatários)
@@ -308,6 +326,7 @@ public class DisparoEmailGenericoController {
             @RequestParam(value = "filtroSituacao", required = false) String filtroSituacao,
             @RequestParam(value = "filtroDataInicio", required = false) String filtroDataInicio,
             @RequestParam(value = "filtroDataFim", required = false) String filtroDataFim,
+            @RequestParam(value = "filtroRegiaoId", required = false) String filtroRegiaoId,
             HttpSession session) {
 
         Instituicao instituicao = (Instituicao) session.getAttribute("instituicaoSelecionada");
@@ -330,6 +349,10 @@ public class DisparoEmailGenericoController {
 
             if (filtroDataFim != null && !filtroDataFim.isBlank()) {
                 disparoTemp.setFiltroDataInscricaoFim(LocalDate.parse(filtroDataFim));
+            }
+
+            if (filtroRegiaoId != null && !filtroRegiaoId.isBlank() && !filtroRegiaoId.equals("0")) {
+                disparoTemp.setFiltroRegiaoId(Long.parseLong(filtroRegiaoId));
             }
 
             return disparoService.contarDestinatarios(disparoTemp);
@@ -372,6 +395,7 @@ public class DisparoEmailGenericoController {
             novoDisparo.setFiltroDataInscricaoFim(disparoOriginal.getFiltroDataInscricaoFim());
             novoDisparo.setFiltroNivelAcesso(disparoOriginal.getFiltroNivelAcesso());
             novoDisparo.setFiltroTipoAtividadeIds(disparoOriginal.getFiltroTipoAtividadeIds());
+            novoDisparo.setFiltroRegiaoId(disparoOriginal.getFiltroRegiaoId());
             novoDisparo.setSubInstituicao(disparoOriginal.getSubInstituicao());
 
             // Criar disparo (já define status PENDENTE e data criação)
@@ -423,8 +447,12 @@ public class DisparoEmailGenericoController {
             disparoCopia.setFiltroDataInscricaoFim(disparoOriginal.getFiltroDataInscricaoFim());
             disparoCopia.setFiltroNivelAcesso(disparoOriginal.getFiltroNivelAcesso());
             disparoCopia.setFiltroTipoAtividadeIds(disparoOriginal.getFiltroTipoAtividadeIds());
+            disparoCopia.setFiltroRegiaoId(disparoOriginal.getFiltroRegiaoId());
             disparoCopia.setSubInstituicao(disparoOriginal.getSubInstituicao());
 
+            // Carregar regiões da instituição para o dropdown
+            List<Regiao> regioes = regiaoService.listarPorInstituicao(instituicao);
+            model.addAttribute("regioes", regioes);
             model.addAttribute("tiposDisparo", TipoDisparo.values());
             model.addAttribute("disparo", disparoCopia);
             model.addAttribute("mensagemInfo", "Editando cópia do disparo ID: " + id);

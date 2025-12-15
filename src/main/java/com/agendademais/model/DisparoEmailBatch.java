@@ -53,6 +53,12 @@ public class DisparoEmailBatch {
     @Column(name = "filtro_data_inclusao_fim")
     private LocalDate filtroDataInscricaoFim;
 
+    @Column(name = "filtro_regiao_id")
+    private Long filtroRegiaoId;
+
+    @Column(name = "cod_regiao", length = 100)
+    private String codRegiao;
+
     // Conteúdo
     @Column(name = "assunto", nullable = false)
     private String assunto;
@@ -183,6 +189,14 @@ public class DisparoEmailBatch {
         this.filtroDataInscricaoFim = filtroDataInscricaoFim;
     }
 
+    public Long getFiltroRegiaoId() {
+        return filtroRegiaoId;
+    }
+
+    public void setFiltroRegiaoId(Long filtroRegiaoId) {
+        this.filtroRegiaoId = filtroRegiaoId;
+    }
+
     public String getAssunto() {
         return assunto;
     }
@@ -261,5 +275,13 @@ public class DisparoEmailBatch {
 
     public void setMensagemErro(String mensagemErro) {
         this.mensagemErro = mensagemErro;
+    }
+
+    public String getCodRegiao() {
+        return codRegiao;
+    }
+
+    public void setCodRegiao(String codRegiao) {
+        this.codRegiao = codRegiao;
     }
 }

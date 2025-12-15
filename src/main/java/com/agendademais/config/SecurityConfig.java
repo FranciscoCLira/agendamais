@@ -65,24 +65,25 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		if (requireAdmin) {
 			http.authorizeHttpRequests(auth -> auth
-					// Admin endpoints must be authenticated so anonymous requests redirect to login
-					.requestMatchers("/admin/**").authenticated()
+					// Admin endpoints require session-based authentication (checked in controllers)
+					.requestMatchers("/administrador/**").permitAll()
+					// Allow public access to custom login and static assets
+					.requestMatchers("/acesso", "/acesso/**").permitAll()
+					.requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 					.requestMatchers(org.springframework.http.HttpMethod.GET,
 							"/administrador/atividades/deletar/**")
 					.permitAll()
 					// Rotas de disparo de emails (controle de acesso via session no controller)
 					.requestMatchers("/disparo-emails/**", "/controle-total/**")
 					.permitAll()
-					// Removed .requestMatchers("/admin/**").hasRole("ADMIN")
-					// because the system uses its own session-based access control
-					// Controllers use @PreAuthorize or session checks for authorization
+					// System uses its own session-based access control in controllers
 					.anyRequest().permitAll());
-			// In secure mode, enable form login but disable CSRF for API endpoints
-			http.formLogin();
+			// Disable Spring Security's form login - using custom session-based login
+			http.formLogin(form -> form.disable());
 			// Disable CSRF for API endpoints to allow JSON POST/PUT/DELETE from JavaScript
 			http.csrf(csrf -> csrf
 					.ignoringRequestMatchers("/api/**", "/controle-total/**", "/disparo-emails/**",
-							"/administrador/atualizar-usuario"));
+							"/administrador/atualizar-usuario", "/acesso", "/acesso/**"));
 
 		} else {
 			http.authorizeHttpRequests(auth -> auth
@@ -95,7 +96,10 @@ public class SecurityConfig {
 		}
 
 		// Common config
-		http.logout(logout -> logout.permitAll())
+		http.logout(logout -> logout
+				.logoutUrl("/logout")
+				.logoutSuccessUrl("/acesso")
+				.permitAll())
 				.headers(headers -> headers.frameOptions(frame -> frame.disable()))
 				.exceptionHandling(eh -> eh.accessDeniedPage("/acesso-negado"));
 

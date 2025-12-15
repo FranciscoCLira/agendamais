@@ -37,6 +37,9 @@ public class LogPostagem {
 	@Column(columnDefinition = "TEXT")
 	private String mensagemLogPostagem;
 
+	// Código da região (se foi filtrada por região)
+	private String codRegiao;
+
 	// GETTERS AND SETTERS
 	public Long getId() {
 		return id;
@@ -116,5 +119,13 @@ public class LogPostagem {
 
 	public void setMensagemLogPostagem(String mensagemLogPostagem) {
 		this.mensagemLogPostagem = mensagemLogPostagem;
+	}
+
+	public String getCodRegiao() {
+		return codRegiao;
+	}
+
+	public void setCodRegiao(String codRegiao) {
+		this.codRegiao = codRegiao;
 	}
 }

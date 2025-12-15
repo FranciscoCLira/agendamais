@@ -6,7 +6,6 @@ import com.agendademais.model.DisparoEmailBatch.StatusDisparo;
 import com.agendademais.model.DisparoEmailBatch.TipoDisparo;
 import com.agendademais.repository.DisparoEmailBatchRepository;
 import com.agendademais.repositories.UsuarioInstituicaoRepository;
-import com.agendademais.repositories.InstituicaoRepository;
 import com.agendademais.repositories.ConfiguracaoSmtpGlobalRepository;
 import com.agendademais.repositories.LogPostagemRepository;
 import com.agendademais.services.CryptoService;
@@ -39,7 +38,10 @@ public class DisparoEmailGenericoService {
     private UsuarioInstituicaoRepository usuarioInstituicaoRepository;
 
     @Autowired
-    private InstituicaoRepository instituicaoRepository;
+    private RegiaoService regiaoService;
+
+    @Autowired
+    private EmailRodapeService emailRodapeService;
 
     @Autowired
     private ConfiguracaoSmtpGlobalRepository configuracaoSmtpGlobalRepository;
@@ -82,6 +84,7 @@ public class DisparoEmailGenericoService {
         System.out.println("Filtro situação: " + disparo.getFiltroSituacaoUsuario());
         System.out.println("Filtro data início: " + disparo.getFiltroDataInscricaoInicio());
         System.out.println("Filtro data fim: " + disparo.getFiltroDataInscricaoFim());
+        System.out.println("Filtro região ID: " + disparo.getFiltroRegiaoId());
 
         List<Pessoa> resultado = vinculos.stream()
                 .map(UsuarioInstituicao::getUsuario)
@@ -146,8 +149,31 @@ public class DisparoEmailGenericoService {
                         }
                     }
 
+                    // Filtro 4: Região da pessoa (se informada)
+                    if (disparo.getFiltroRegiaoId() != null && disparo.getFiltroRegiaoId() > 0) {
+                        // Se a pessoa não tem cidade cadastrada, ignora o filtro de região
+                        if (pessoa.getCidade() == null) {
+                            System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: sem cidade cadastrada e filtro de região ativo");
+                            return false;
+                        }
+                        
+                        try {
+                            Regiao regiao = regiaoService.obterPorId(disparo.getFiltroRegiaoId());
+                            if (!regiaoService.pessoaPertenceRegiao(pessoa.getCidade(), regiao)) {
+                                System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: cidade "
+                                        + pessoa.getCidade().getNomeLocal()
+                                        + " não pertence à região " + regiao.getNomeRegiao());
+                                return false;
+                            }
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("  - Erro ao validar região: " + e.getMessage());
+                            return false;
+                        }
+                    }
+
                     System.out.println("  + Usuário " + usuario.getUsername() + " (" + pessoa.getNomePessoa()
-                            + ") INCLUÍDO: situacao=" + situacaoUsuario + ", dataInclusao=" + dataInclusao);
+                            + ") INCLUÍDO: situacao=" + situacaoUsuario + ", dataInclusao=" + dataInclusao
+                            + ", cidade=" + (pessoa.getCidade() != null ? pessoa.getCidade().getNomeLocal() : "NULL"));
                     return true;
                 })
                 .map(Usuario::getPessoa)
@@ -171,6 +197,19 @@ public class DisparoEmailGenericoService {
         // Calcular total de destinatários
         List<Pessoa> destinatarios = listarDestinatarios(disparo);
         disparo.setTotalDestinatarios(destinatarios.size());
+
+        // Salvar código da região se foi filtrada
+        if (disparo.getFiltroRegiaoId() != null && disparo.getFiltroRegiaoId() > 0) {
+            try {
+                Regiao regiao = regiaoService.obterPorId(disparo.getFiltroRegiaoId());
+                if (regiao != null) {
+                    disparo.setCodRegiao(regiao.getCodRegiao());
+                }
+            } catch (Exception e) {
+                // Se erro ao buscar região, deixa null
+                System.err.println("[DisparoEmailGenericoService] Erro ao buscar região: " + e.getMessage());
+            }
+        }
 
         return disparoBatchRepository.save(disparo);
     }
@@ -263,10 +302,7 @@ public class DisparoEmailGenericoService {
         resultado = resultado.replace("{{dataAtual}}", LocalDateTime.now().toString());
 
         // Mensagem de rodapé para descadastro
-        String removerEmailMensagem = "<br><br><hr style='margin:16px 0'>" +
-                "<span style='font-size:12px;color:#888;'>*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>"
-                +
-                "Acesse: <a href='" + appUrl + "' style='color:#0066cc;'>" + appUrl + "</a></span>";
+        String removerEmailMensagem = emailRodapeService.gerarMensagemRodapeGenerico();
         resultado = resultado.replace("{{removerEmailMensagem}}", removerEmailMensagem);
 
         return resultado;
@@ -401,6 +437,18 @@ public class DisparoEmailGenericoService {
             log.setTituloAtividade("Disparo Email Genérico");
             log.setAssuntoDivulgacao(disparo.getAssunto());
             log.setAutorId(disparo.getUsuarioCriador() != null ? disparo.getUsuarioCriador().getId() : null);
+            // Salvar código da região se foi filtrada
+            if (disparo.getFiltroRegiaoId() != null && disparo.getFiltroRegiaoId() > 0) {
+                try {
+                    Regiao regiao = regiaoService.obterPorId(disparo.getFiltroRegiaoId());
+                    if (regiao != null) {
+                        log.setCodRegiao(regiao.getCodRegiao());
+                        disparo.setCodRegiao(regiao.getCodRegiao()); // Também salvar na entidade do disparo
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao buscar região: " + e.getMessage());
+                }
+            }
             log.setQtEnviados(sucesso ? 1 : 0);
             log.setQtFalhas(sucesso ? 0 : 1);
 

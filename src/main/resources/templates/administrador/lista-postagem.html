@@ -30,8 +30,8 @@
       <script th:inline="javascript">
         /*<![CDATA[*/
         // Setup CSRF token for AJAX requests
-        var csrfToken = /*[[${_csrf.token}]]*/ '';
-        var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
+        var csrfToken = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+        var csrfHeader = /*[[${_csrf != null ? _csrf.headerName : ''}]]*/ '';
         
         $(document).ajaxSend(function(e, xhr, options) {
           if (csrfToken && csrfHeader) {
@@ -236,6 +236,7 @@
             <th>Título Atividade</th>
             <th>Assunto Divulgação</th>
             <th>Autor</th>
+            <th>Região</th>
             <th>Qt.Enviados</th>
             <th>Qt.Falhas</th>
             <th>Ações</th>
@@ -256,6 +257,7 @@
             <td
               th:text="${nomesAutores[log.autorId] != null ? nomesAutores[log.autorId] : log.autorId}"
             ></td>
+            <td th:text="${log.codRegiao != null ? log.codRegiao : '-'}"></td>
             <td th:text="${log.qtEnviados}"></td>
             <td th:text="${log.qtFalhas}"></td>
             <td>

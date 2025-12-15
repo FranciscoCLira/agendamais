@@ -34,6 +34,9 @@ public interface UsuarioInstituicaoRepository extends JpaRepository<UsuarioInsti
 
         List<UsuarioInstituicao> findByUsuarioId(Long usuarioId);
 
+        // Buscar vínculos por instituição e pessoa do usuário
+        List<UsuarioInstituicao> findByInstituicaoAndUsuario_Pessoa(Instituicao instituicao, com.agendademais.entities.Pessoa pessoa);
+
         // Buscar usuários por instituição ordenados por nível de acesso (paginação)
         Page<UsuarioInstituicao> findByInstituicaoOrderByNivelAcessoUsuarioInstituicaoAsc(Instituicao instituicao,
                         Pageable pageable);

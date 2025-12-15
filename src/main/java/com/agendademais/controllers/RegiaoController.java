@@ -169,9 +169,7 @@ public class RegiaoController {
     @GetMapping("/api/estados/{paisId}")
     @ResponseBody
     public List<LocalDTO> obterEstadosPorPais(@PathVariable Long paisId) {
-        Local pais = localRepository.findById(paisId)
-                .orElseThrow(() -> new IllegalArgumentException("País não encontrado"));
-        List<Local> estados = localRepository.findByTipoLocalAndLocalPai(2, pais);
+        List<Local> estados = localRepository.findEstadosByPaisId(2, paisId);
         return estados.stream()
                 .map(e -> new LocalDTO(e.getId(), e.getTipoLocal(), e.getNomeLocal(), e.getRevisadoLocal()))
                 .collect(Collectors.toList());
@@ -184,9 +182,7 @@ public class RegiaoController {
     @GetMapping("/api/cidades/{estadoId}")
     @ResponseBody
     public List<LocalDTO> obterCidadesPorEstado(@PathVariable Long estadoId) {
-        Local estado = localRepository.findById(estadoId)
-                .orElseThrow(() -> new IllegalArgumentException("Estado não encontrado"));
-        List<Local> cidades = localRepository.findByTipoLocalAndLocalPai(3, estado);
+        List<Local> cidades = localRepository.findCidadesByEstadoId(3, estadoId);
         return cidades.stream()
                 .map(c -> new LocalDTO(c.getId(), c.getTipoLocal(), c.getNomeLocal(), c.getRevisadoLocal()))
                 .collect(Collectors.toList());

@@ -16,6 +16,13 @@ public interface LocalRepository extends JpaRepository<Local, Long> {
 
     // Alternativa para usar ID:
     List<Local> findByTipoLocalAndLocalPai(Integer tipoLocal, Local localPai);
+    
+    // Novos métodos que usam ID diretamente (evita lazy loading issues)
+    @Query("SELECT l FROM Local l WHERE l.tipoLocal = :tipoLocal AND l.localPai.id = :paisId ORDER BY l.nomeLocal")
+    List<Local> findEstadosByPaisId(@Param("tipoLocal") Integer tipoLocal, @Param("paisId") Long paisId);
+    
+    @Query("SELECT l FROM Local l WHERE l.tipoLocal = :tipoLocal AND l.localPai.id = :estadoId ORDER BY l.nomeLocal")
+    List<Local> findCidadesByEstadoId(@Param("tipoLocal") Integer tipoLocal, @Param("estadoId") Long estadoId);
 
     Optional<Local> findByTipoLocalAndNomeLocalAndLocalPai(int tipoLocal, String nomeLocal, Local localPai);
 

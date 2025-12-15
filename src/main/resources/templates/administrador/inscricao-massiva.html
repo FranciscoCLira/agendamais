@@ -355,14 +355,14 @@
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <script th:inline="javascript">
+    <script th:inline="javascript" th:with="csrfTokenVal=${_csrf != null ? _csrf.token : ''}, csrfHeaderVal=${_csrf != null ? _csrf.headerName : ''}">
               $(document).ready(function() {
 
                   let selectedFile = null;
                   let ultimaCarga = null; // Armazena dados da última carga para reversão
                   const instituicaoId = [[${instituicao.id}]];
-                  const csrfToken = [[${_csrf.token}]];
-                  const csrfHeader = [[${_csrf.headerName}]];
+                  const csrfToken = /*[[${csrfTokenVal}]]*/ '';
+                  const csrfHeader = /*[[${csrfHeaderVal}]]*/ '';
 
                   // Configura CSRF para todas as requisições AJAX
                   $.ajaxSetup({
@@ -653,11 +653,14 @@
                       formData.append('arquivo', selectedFile);
                       formData.append('tipoAtividadeId', $('#tipoAtividade').val());
 
+                      const fetchHeaders = {};
+                      if (csrfHeader && csrfToken) {
+                          fetchHeaders[csrfHeader] = csrfToken;
+                      }
+
                       fetch('/administrador/inscricao-massiva/validate', {
                           method: 'POST',
-                          headers: {
-                              [csrfHeader]: csrfToken
-                          },
+                          headers: fetchHeaders,
                           body: formData
                       })
                       .then(response => response.json())

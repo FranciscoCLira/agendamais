@@ -7,6 +7,7 @@ import com.agendademais.repositories.AutorRepository;
 import com.agendademais.repositories.OcorrenciaAtividadeRepository;
 import com.agendademais.repositories.UsuarioRepository;
 import com.agendademais.services.DisparoEmailService;
+import com.agendademais.entities.Regiao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -129,15 +130,17 @@ public class PostagemController {
     @Autowired
     private DisparoEmailService disparoEmailService;
     @Autowired
+    private com.agendademais.service.RegiaoService regiaoService;
+    @Autowired
     private com.agendademais.repositories.InscricaoTipoAtividadeRepository inscricaoTipoAtividadeRepository;
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
     private com.agendademais.repositories.InstituicaoRepository instituicaoRepository;
-    
+
     @org.springframework.beans.factory.annotation.Value("${app.mail.useInstitutionSmtp:false}")
     private boolean useInstitutionSmtp;
-    
+
     @org.springframework.beans.factory.annotation.Value("${spring.mail.username:}")
     private String defaultMailUsername;
 
@@ -167,44 +170,55 @@ public class PostagemController {
             origem = origemPadrao.toString();
         }
 
-        // Determina qual email será usado como remetente (mesma lógica do DisparoEmailService)
+        // Determina qual email será usado como remetente (mesma lógica do
+        // DisparoEmailService)
         Instituicao instituicaoDaOcorrencia = null;
         String emailRemetente = null;
         String nomeRemetente = "Sistema";
-        
+
         if (ocorrencia.getIdAtividade() != null && ocorrencia.getIdAtividade().getInstituicao() != null) {
             Long instituicaoId = ocorrencia.getIdAtividade().getInstituicao().getId();
             instituicaoDaOcorrencia = instituicaoRepository.findById(instituicaoId).orElse(null);
-            
+
             if (instituicaoDaOcorrencia != null) {
                 nomeRemetente = instituicaoDaOcorrencia.getNomeInstituicao();
-                
+
                 // Verifica se SMTP da instituição está completamente configurado
-                if (useInstitutionSmtp 
-                        && instituicaoDaOcorrencia.getSmtpHost() != null && !instituicaoDaOcorrencia.getSmtpHost().isBlank()
-                        && instituicaoDaOcorrencia.getSmtpUsername() != null && !instituicaoDaOcorrencia.getSmtpUsername().isBlank()
-                        && instituicaoDaOcorrencia.getSmtpPassword() != null && !instituicaoDaOcorrencia.getSmtpPassword().isBlank()) {
+                if (useInstitutionSmtp
+                        && instituicaoDaOcorrencia.getSmtpHost() != null
+                        && !instituicaoDaOcorrencia.getSmtpHost().isBlank()
+                        && instituicaoDaOcorrencia.getSmtpUsername() != null
+                        && !instituicaoDaOcorrencia.getSmtpUsername().isBlank()
+                        && instituicaoDaOcorrencia.getSmtpPassword() != null
+                        && !instituicaoDaOcorrencia.getSmtpPassword().isBlank()) {
                     // Usa SMTP configurado da instituição
                     emailRemetente = instituicaoDaOcorrencia.getSmtpUsername();
                 } else {
                     // Usa SMTP padrão
-                    emailRemetente = defaultMailUsername != null && !defaultMailUsername.isBlank() 
-                            ? defaultMailUsername 
+                    emailRemetente = defaultMailUsername != null && !defaultMailUsername.isBlank()
+                            ? defaultMailUsername
                             : instituicaoDaOcorrencia.getEmailInstituicao();
                 }
             }
         }
-        
+
         if (emailRemetente == null || emailRemetente.isBlank()) {
-            emailRemetente = defaultMailUsername != null && !defaultMailUsername.isBlank() 
-                    ? defaultMailUsername 
+            emailRemetente = defaultMailUsername != null && !defaultMailUsername.isBlank()
+                    ? defaultMailUsername
                     : "fclira.fcl@gmail.com";
         }
 
         model.addAttribute("instituicaoLogada", instituicaoDaOcorrencia);
-        model.addAttribute("emailInstituicaoLogada", instituicaoDaOcorrencia != null ? instituicaoDaOcorrencia.getEmailInstituicao() : "");
+        model.addAttribute("emailInstituicaoLogada",
+                instituicaoDaOcorrencia != null ? instituicaoDaOcorrencia.getEmailInstituicao() : "");
         model.addAttribute("emailRemetente", emailRemetente);
         model.addAttribute("nomeRemetente", nomeRemetente);
+
+        // Carrega lista de regiões para seleção de filtro (apenas da instituição logada)
+        java.util.List<Regiao> regioes = instituicaoDaOcorrencia != null 
+            ? regiaoService.listarPorInstituicao(instituicaoDaOcorrencia)
+            : java.util.Collections.emptyList();
+        model.addAttribute("regioes", regioes);
 
         model.addAttribute("ocorrencia", ocorrencia);
         model.addAttribute("origem", origem);
@@ -456,11 +470,17 @@ public class PostagemController {
 
     // Simulação de destinatários
     @PostMapping("/simular-disparo")
-    public String simularDisparo(@ModelAttribute OcorrenciaAtividade ocorrencia, Model model,
+    public String simularDisparo(@ModelAttribute OcorrenciaAtividade ocorrencia, 
+            @RequestParam(value = "filtroRegiaoId", required = false) String filtroRegiaoId,
+            Model model,
             jakarta.servlet.http.HttpSession session) {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
         }
+        
+        // Armazenar região selecionada na sessão para persistir após simulação
+        session.setAttribute("filtroRegiaoIdSimulacao", filtroRegiaoId);
+        
         // Buscar a entidade completa pelo id
         OcorrenciaAtividade completa = null;
         if (ocorrencia != null && ocorrencia.getId() != null) {
@@ -469,30 +489,19 @@ public class PostagemController {
         if (completa == null)
             completa = ocorrencia; // fallback para não quebrar
 
-        // Busca o tipo de atividade e a instituição
-        final Long tipoAtividadeId;
-        final Long instituicaoId;
-        if (completa != null && completa.getIdAtividade() != null
-                && completa.getIdAtividade().getTipoAtividade() != null) {
-            tipoAtividadeId = completa.getIdAtividade().getTipoAtividade().getId();
-            instituicaoId = completa.getIdAtividade().getInstituicao().getId();
-        } else {
-            tipoAtividadeId = null;
-            instituicaoId = null;
+        // Converte filtro de região para Long (ou null se vazio)
+        Long regiaoId = null;
+        if (filtroRegiaoId != null && !filtroRegiaoId.isBlank() && !"0".equals(filtroRegiaoId)) {
+            try {
+                regiaoId = Long.parseLong(filtroRegiaoId);
+            } catch (NumberFormatException e) {
+                regiaoId = null;
+            }
         }
-        long totalDestinatarios = 0;
-        if (tipoAtividadeId != null && instituicaoId != null) {
-            java.util.List<com.agendademais.entities.InscricaoTipoAtividade> inscricoes = inscricaoTipoAtividadeRepository
-                    .findAll();
-            totalDestinatarios = inscricoes.stream()
-                    .filter(ita -> ita.getTipoAtividade() != null
-                            && ita.getTipoAtividade().getId().equals(tipoAtividadeId))
-                    .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getIdInstituicao() != null
-                            && ita.getInscricao().getIdInstituicao().getId().equals(instituicaoId))
-                    .filter(ita -> ita.getInscricao() != null && ita.getInscricao().getPessoa() != null
-                            && "A".equalsIgnoreCase(ita.getInscricao().getPessoa().getSituacaoPessoa()))
-                    .count();
-        }
+
+        // Usa o mesmo cálculo de destinatários do disparo real (inclui filtro de região
+        // e exclui usuários bloqueados)
+        long totalDestinatarios = disparoEmailService.contarDestinatarios(completa, regiaoId);
         // Adiciona email da instituição logada ao model
         Instituicao instituicaoLogada = (Instituicao) session.getAttribute("instituicaoSelecionada");
         String emailInstituicaoLogada = instituicaoLogada != null ? instituicaoLogada.getEmailInstituicao() : "";
@@ -501,6 +510,16 @@ public class PostagemController {
         model.addAttribute("ocorrencia", completa);
         model.addAttribute("totalDestinatarios", totalDestinatarios);
         model.addAttribute("simulacao", true);
+        
+        // Carrega lista de regiões para seleção de filtro (apenas da instituição logada)
+        java.util.List<Regiao> regioes = instituicaoLogada != null 
+            ? regiaoService.listarPorInstituicao(instituicaoLogada)
+            : java.util.Collections.emptyList();
+        model.addAttribute("regioes", regioes);
+        
+        // Persistir região selecionada (se houver) na simulação
+        model.addAttribute("filtroRegiaoId", filtroRegiaoId != null ? filtroRegiaoId : "");
+        
         return "administrador/postagem-preview";
     }
 
@@ -508,6 +527,7 @@ public class PostagemController {
     @PostMapping("/disparar")
     public String dispararEmails(@ModelAttribute OcorrenciaAtividade ocorrencia,
             @RequestParam(value = "origem", required = false) String origem,
+            @RequestParam(value = "filtroRegiaoId", required = false) String filtroRegiaoId,
             RedirectAttributes redirectAttributes, jakarta.servlet.http.HttpSession session) {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
@@ -522,24 +542,27 @@ public class PostagemController {
             return "redirect:/administrador/postagens/lista";
         }
 
-        // Busca o tipo de atividade e a instituição
-        Long tipoAtividadeId = null;
-        Long instituicaoId = null;
-        if (completa.getIdAtividade() != null && completa.getIdAtividade().getTipoAtividade() != null) {
-            tipoAtividadeId = completa.getIdAtividade().getTipoAtividade().getId();
-            instituicaoId = completa.getIdAtividade().getInstituicao().getId();
+        // Converte filtro de região para Long (ou null se vazio)
+        Long regiaoId = null;
+        if (filtroRegiaoId != null && !filtroRegiaoId.isBlank() && !"0".equals(filtroRegiaoId)) {
+            try {
+                regiaoId = Long.parseLong(filtroRegiaoId);
+            } catch (NumberFormatException e) {
+                regiaoId = null;
+            }
         }
-        long totalDestinatarios = 0;
-        if (tipoAtividadeId != null && instituicaoId != null) {
-            totalDestinatarios = inscricaoTipoAtividadeRepository
-                    .countByTipoAtividadeIdAndInscricao_IdInstituicao_Id(tipoAtividadeId, instituicaoId);
-        }
+
+        // Usa o mesmo cálculo de destinatários do disparo real (inclui filtro de região
+        // e exclui usuários bloqueados)
+        long totalDestinatarios = disparoEmailService.contarDestinatarios(completa, regiaoId);
+
         // Se não houver destinatários, não interrompe, apenas registra aviso
         if (totalDestinatarios == 0) {
             redirectAttributes.addFlashAttribute("msgAviso",
                     "Nenhum destinatário encontrado para o disparo. Nenhum e-mail será enviado.");
         }
-        disparoEmailService.iniciarDisparo(completa.getId(), (int) totalDestinatarios);
+        
+        disparoEmailService.iniciarDisparo(completa.getId(), (int) totalDestinatarios, regiaoId);
         String redirectUrl = "/administrador/postagens/andamento/" + completa.getId();
         if (origem != null && !origem.isBlank()) {
             redirectUrl += "?origem=" + java.net.URLEncoder.encode(origem, java.nio.charset.StandardCharsets.UTF_8);
