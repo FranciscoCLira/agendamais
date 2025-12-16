@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import com.agendademais.entities.ConfiguracaoSmtpGlobal;
+import com.agendademais.entities.Instituicao;
 import com.agendademais.entities.LogPostagem;
 import com.agendademais.entities.OcorrenciaAtividade;
 import com.agendademais.entities.Regiao;
@@ -224,9 +225,17 @@ public class DisparoEmailService {
             return; // Não deve acontecer
         }
 
-        // Mensagem de rodapé para descadastro
-        String removerEmailMensagem = emailRodapeService.gerarMensagemRodape();
         OcorrenciaAtividade ocorrencia = ocorrenciaAtividadeRepository.findById(ocorrenciaId).orElse(null);
+        
+        // Obter a instituição para passar ao serviço de rodapé
+        Instituicao instituicao = null;
+        if (ocorrencia != null && ocorrencia.getIdAtividade() != null) {
+            instituicao = ocorrencia.getIdAtividade().getInstituicao();
+        }
+        
+        // Mensagem de rodapé para descadastro (baseada no modo de envio da instituição)
+        String removerEmailMensagem = emailRodapeService.gerarMensagemRodape(instituicao);
+        
         String assunto = "";
                 String conteudoOriginal = ocorrencia != null ? ocorrencia.getDetalheDivulgacao() : "Conteúdo";
                 String dataHoraLinha = "";

@@ -51,6 +51,7 @@ public class AdministradorInstituicaoController {
         // Update only allowed fields
         inst.setEmailInstituicao(instituicao.getEmailInstituicao());
         inst.setSituacaoInstituicao(instituicao.getSituacaoInstituicao());
+        inst.setModoEnvioEmail(instituicao.getModoEnvioEmail());
         
         // Update SMTP configuration fields
         // Converte string vazia em NULL para campos SMTP

@@ -301,8 +301,8 @@ public class DisparoEmailGenericoService {
         resultado = resultado.replace("{{appUrl}}", appUrl);
         resultado = resultado.replace("{{dataAtual}}", LocalDateTime.now().toString());
 
-        // Mensagem de rodapé para descadastro
-        String removerEmailMensagem = emailRodapeService.gerarMensagemRodapeGenerico();
+        // Mensagem de rodapé para descadastro (baseada no modo de envio da instituição)
+        String removerEmailMensagem = emailRodapeService.gerarMensagemRodapeGenerico(instituicao);
         resultado = resultado.replace("{{removerEmailMensagem}}", removerEmailMensagem);
 
         return resultado;

@@ -3,10 +3,11 @@ package com.agendademais.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.agendademais.entities.Instituicao;
+
 /**
  * Serviço para gerenciar a mensagem de rodapé de emails
- * Fornece a mensagem apropriada baseado no ambiente (desenvolvimento, produção,
- * offline)
+ * Fornece a mensagem apropriada baseado no modo de envio configurado na instituição
  */
 @Service
 public class EmailRodapeService {
@@ -14,34 +15,32 @@ public class EmailRodapeService {
     @Value("${app.is-production:false}")
     private boolean isProduction;
 
-    @Value("${app.is-offline-mode:false}")
-    private boolean isOfflineMode;
-
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
 
     /**
-     * Gera a mensagem de rodapé para emails
+     * Gera a mensagem de rodapé para emails baseado no modo de envio da instituição
      * 
+     * @param instituicao A instituição que está enviando o email
      * @return HTML com a mensagem de rodapé
      */
-    public String gerarMensagemRodape() {
-        // Detecta se é localhost (considerando tanto localhost:8080 quanto 127.0.0.1:8080)
-        boolean isLocalhost = appUrl != null && (
-            appUrl.contains("localhost") || 
-            appUrl.contains("127.0.0.1")
-        );
+    public String gerarMensagemRodape(Instituicao instituicao) {
+        // Determinar o modo de envio: padrão é Online (1) se não configurado
+        Integer modoEnvio = (instituicao != null && instituicao.getModoEnvioEmail() != null) 
+                            ? instituicao.getModoEnvioEmail() 
+                            : 1; // Default: Online
         
         // Debug logs
-        System.out.println("[EmailRodapeService] isProduction=" + isProduction + 
-                           ", isOfflineMode=" + isOfflineMode + 
-                           ", isLocalhost=" + isLocalhost + 
+        System.out.println("[EmailRodapeService] Instituição: " + 
+                           (instituicao != null ? instituicao.getNomeInstituicao() : "null") +
+                           ", modoEnvioEmail=" + modoEnvio + 
+                           ", isProduction=" + isProduction + 
                            ", appUrl=" + appUrl);
         
-        // Se é localhost E produção, ou modo offline, exibir mensagem offline
-        if (isOfflineMode || (isProduction && isLocalhost)) {
-            System.out.println("[EmailRodapeService] ✓ Usando mensagem OFFLINE");
-            // Modo offline em produção - mensagem simplificada
+        // Modo 2 = Offline (processamento em batch/fila)
+        if (modoEnvio == 2) {
+            System.out.println("[EmailRodapeService] ✓ Usando mensagem OFFLINE (modoEnvioEmail=2)");
+            // Modo offline - mensagem simplificada
             return "<br><br><hr style='margin:16px 0'>" +
                     "<span style='font-size:12px;color:#888;'>" +
                     "*** Esta mensagem foi enviada em modo offline do sistema.<br>" +
@@ -49,8 +48,8 @@ public class EmailRodapeService {
                     +
                     "</span>";
         } else {
-            System.out.println("[EmailRodapeService] ✗ Usando mensagem NORMAL");
-            // Modo normal - mensagem padrão com link para o sistema
+            System.out.println("[EmailRodapeService] ✗ Usando mensagem ONLINE (modoEnvioEmail=1)");
+            // Modo 1 = Online (direto) - mensagem padrão com link para o sistema
             return "<br><br><hr style='margin:16px 0'>" +
                     "<span style='font-size:12px;color:#888;'>" +
                     "*** Não deseja receber mais nossos emails? acesse o sistema e exclua seu cadastro, ou remova esse tipo de atividade em &quot;Minhas Inscrições em Tipos de Atividades&quot;<br>"
@@ -61,20 +60,35 @@ public class EmailRodapeService {
     }
 
     /**
-     * Gera a mensagem de rodapé para disparos genéricos
+     * Gera a mensagem de rodapé para emails (retrocompatibilidade - usa modo Online)
      * 
      * @return HTML com a mensagem de rodapé
+     * @deprecated Use gerarMensagemRodape(Instituicao) para respeitar configuração da instituição
      */
-    public String gerarMensagemRodapeGenerico() {
-        // A lógica é a mesma para disparos genéricos
-        return gerarMensagemRodape();
+    @Deprecated
+    public String gerarMensagemRodape() {
+        return gerarMensagemRodape(null); // Default para modo Online
     }
 
     /**
-     * Verifica se está em modo offline
+     * Gera a mensagem de rodapé para disparos genéricos
+     * 
+     * @param instituicao A instituição que está enviando o email
+     * @return HTML com a mensagem de rodapé
      */
-    public boolean isOfflineMode() {
-        return isOfflineMode;
+    public String gerarMensagemRodapeGenerico(Instituicao instituicao) {
+        return gerarMensagemRodape(instituicao);
+    }
+
+    /**
+     * Gera a mensagem de rodapé para disparos genéricos (retrocompatibilidade)
+     * 
+     * @return HTML com a mensagem de rodapé
+     * @deprecated Use gerarMensagemRodapeGenerico(Instituicao)
+     */
+    @Deprecated
+    public String gerarMensagemRodapeGenerico() {
+        return gerarMensagemRodape(null);
     }
 
     /**
@@ -87,13 +101,17 @@ public class EmailRodapeService {
     /**
      * Obtém o status do ambiente como string
      */
-    public String getAmbienteStatus() {
-        if (isOfflineMode) {
-            return "OFFLINE (Modo Offline)";
-        } else if (isProduction) {
-            return "PRODUÇÃO";
+    public String getAmbienteStatus(Instituicao instituicao) {
+        Integer modoEnvio = (instituicao != null && instituicao.getModoEnvioEmail() != null) 
+                            ? instituicao.getModoEnvioEmail() 
+                            : 1;
+        
+        String modoStr = (modoEnvio == 2) ? "OFFLINE (Batch/Fila)" : "ONLINE (Direto)";
+        
+        if (isProduction) {
+            return "PRODUÇÃO - " + modoStr;
         } else {
-            return "DESENVOLVIMENTO";
+            return "DESENVOLVIMENTO - " + modoStr;
         }
     }
 }
