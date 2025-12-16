@@ -153,10 +153,11 @@ public class DisparoEmailGenericoService {
                     if (disparo.getFiltroRegiaoId() != null && disparo.getFiltroRegiaoId() > 0) {
                         // Se a pessoa não tem cidade cadastrada, ignora o filtro de região
                         if (pessoa.getCidade() == null) {
-                            System.out.println("  - Usuário " + usuario.getUsername() + " ignorado: sem cidade cadastrada e filtro de região ativo");
+                            System.out.println("  - Usuário " + usuario.getUsername()
+                                    + " ignorado: sem cidade cadastrada e filtro de região ativo");
                             return false;
                         }
-                        
+
                         try {
                             Regiao regiao = regiaoService.obterPorId(disparo.getFiltroRegiaoId());
                             if (!regiaoService.pessoaPertenceRegiao(pessoa.getCidade(), regiao)) {

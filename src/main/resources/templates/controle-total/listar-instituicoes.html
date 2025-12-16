@@ -93,8 +93,15 @@
                 th:text="${inst.dataUltimaAtualizacao != null ? #temporals.format(inst.dataUltimaAtualizacao, 'dd/MM/yyyy') : ''}"
                 style="text-align: center"
               ></td>
-              <td style="text-align: center;">
-                <div style="display: inline-flex; gap: 12px; align-items: center; justify-content: center;">
+              <td style="text-align: center">
+                <div
+                  style="
+                    display: inline-flex;
+                    gap: 12px;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
                   <a
                     th:href="@{'/gerenciar-instituicoes/editar/' + ${inst.id}}"
                     class="btn btn-sm btn-warning"
@@ -115,7 +122,7 @@
                   <form
                     th:action="@{'/gerenciar-instituicoes/excluir/' + ${inst.id}}"
                     method="post"
-                    style="display: inline; margin: 0; padding: 0;"
+                    style="display: inline; margin: 0; padding: 0"
                   >
                     <button
                       type="submit"

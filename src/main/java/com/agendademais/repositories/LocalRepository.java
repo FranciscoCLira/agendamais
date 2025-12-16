@@ -12,73 +12,73 @@ import java.util.List;
 
 public interface LocalRepository extends JpaRepository<Local, Long> {
 
-    List<Local> findByTipoLocalAndLocalPaiNomeLocal(Integer tipoLocal, String nomeLocalPai);
+        List<Local> findByTipoLocalAndLocalPaiNomeLocal(Integer tipoLocal, String nomeLocalPai);
 
-    // Alternativa para usar ID:
-    List<Local> findByTipoLocalAndLocalPai(Integer tipoLocal, Local localPai);
-    
-    // Novos métodos que usam ID diretamente (evita lazy loading issues)
-    @Query("SELECT l FROM Local l WHERE l.tipoLocal = :tipoLocal AND l.localPai.id = :paisId ORDER BY l.nomeLocal")
-    List<Local> findEstadosByPaisId(@Param("tipoLocal") Integer tipoLocal, @Param("paisId") Long paisId);
-    
-    @Query("SELECT l FROM Local l WHERE l.tipoLocal = :tipoLocal AND l.localPai.id = :estadoId ORDER BY l.nomeLocal")
-    List<Local> findCidadesByEstadoId(@Param("tipoLocal") Integer tipoLocal, @Param("estadoId") Long estadoId);
+        // Alternativa para usar ID:
+        List<Local> findByTipoLocalAndLocalPai(Integer tipoLocal, Local localPai);
 
-    Optional<Local> findByTipoLocalAndNomeLocalAndLocalPai(int tipoLocal, String nomeLocal, Local localPai);
+        // Novos métodos que usam ID diretamente (evita lazy loading issues)
+        @Query("SELECT l FROM Local l WHERE l.tipoLocal = :tipoLocal AND l.localPai.id = :paisId ORDER BY l.nomeLocal")
+        List<Local> findEstadosByPaisId(@Param("tipoLocal") Integer tipoLocal, @Param("paisId") Long paisId);
 
-    Optional<Local> findByTipoLocalAndNomeLocal(Integer tipoLocal, String nomeLocal);
+        @Query("SELECT l FROM Local l WHERE l.tipoLocal = :tipoLocal AND l.localPai.id = :estadoId ORDER BY l.nomeLocal")
+        List<Local> findCidadesByEstadoId(@Param("tipoLocal") Integer tipoLocal, @Param("estadoId") Long estadoId);
 
-    List<Local> findByTipoLocal(int tipoLocal);
+        Optional<Local> findByTipoLocalAndNomeLocalAndLocalPai(int tipoLocal, String nomeLocal, Local localPai);
 
-    List<Local> findByTipoLocalAndLocalPaiId(int tipoLocal, Long idPai);
+        Optional<Local> findByTipoLocalAndNomeLocal(Integer tipoLocal, String nomeLocal);
 
-    Optional<Local> findByNomeLocalAndTipoLocal(String nomeLocal, int tipoLocal);
+        List<Local> findByTipoLocal(int tipoLocal);
 
-    List<Local> findByTipoLocalAndNomeLocalContainingIgnoreCase(int tipoLocal, String nomeLocal);
+        List<Local> findByTipoLocalAndLocalPaiId(int tipoLocal, Long idPai);
 
-    List<Local> findByTipoLocalAndLocalPaiNomeLocalIgnoreCase(Integer tipoLocal, String nomeLocalPai);
+        Optional<Local> findByNomeLocalAndTipoLocal(String nomeLocal, int tipoLocal);
 
-    // --- Métodos para administração de locais ---
+        List<Local> findByTipoLocalAndNomeLocalContainingIgnoreCase(int tipoLocal, String nomeLocal);
 
-    // Contadores
-    long countByRevisadoLocal(String revisadoLocal);
+        List<Local> findByTipoLocalAndLocalPaiNomeLocalIgnoreCase(Integer tipoLocal, String nomeLocalPai);
 
-    long countByTipoLocal(int tipoLocal);
+        // --- Métodos para administração de locais ---
 
-    // Buscas ordenadas
-    List<Local> findByTipoLocalOrderByNomeLocal(int tipoLocal);
+        // Contadores
+        long countByRevisadoLocal(String revisadoLocal);
 
-    List<Local> findByTipoLocalAndLocalPaiOrderByNomeLocal(int tipoLocal, Local localPai);
+        long countByTipoLocal(int tipoLocal);
 
-    // Versão com paginação para administração
-    Page<Local> findByTipoLocalAndLocalPaiOrderByNomeLocal(int tipoLocal, Local localPai, Pageable pageable);
+        // Buscas ordenadas
+        List<Local> findByTipoLocalOrderByNomeLocal(int tipoLocal);
 
-    // Busca por nome ignorando case e excluindo ID
-    List<Local> findByTipoLocalAndNomeLocalIgnoreCaseAndIdNot(int tipoLocal, String nomeLocal, Long id);
+        List<Local> findByTipoLocalAndLocalPaiOrderByNomeLocal(int tipoLocal, Local localPai);
 
-    // Query customizada para filtros complexos na administração - SIMPLIFICADA
-    @Query("SELECT l FROM Local l WHERE " +
-            "(:tipoLocal IS NULL OR l.tipoLocal = :tipoLocal) AND " +
-            "(:nomeLocal IS NULL OR :nomeLocal = '' OR UPPER(l.nomeLocal) LIKE UPPER(CONCAT('%', :nomeLocal, '%'))) AND "
-            +
-            "(:revisadoLocal IS NULL OR :revisadoLocal = '' OR l.revisadoLocal = :revisadoLocal)")
-    Page<Local> findByFiltros(@Param("tipoLocal") Integer tipoLocal,
-            @Param("nomeLocal") String nomeLocal,
-            @Param("revisadoLocal") String revisadoLocal,
-            Pageable pageable);
+        // Versão com paginação para administração
+        Page<Local> findByTipoLocalAndLocalPaiOrderByNomeLocal(int tipoLocal, Local localPai, Pageable pageable);
 
-    // Busca todos os locais para filtro com acentos (implementação no service)
-    @Query("SELECT l FROM Local l WHERE " +
-            "(:tipoLocal IS NULL OR l.tipoLocal = :tipoLocal) AND " +
-            "(:revisadoLocal IS NULL OR :revisadoLocal = '' OR l.revisadoLocal = :revisadoLocal)")
-    List<Local> findForAccentFilter(@Param("tipoLocal") Integer tipoLocal,
-            @Param("revisadoLocal") String revisadoLocal);
+        // Busca por nome ignorando case e excluindo ID
+        List<Local> findByTipoLocalAndNomeLocalIgnoreCaseAndIdNot(int tipoLocal, String nomeLocal, Long id);
 
-    // Método alternativo simples para filtro por tipo apenas
-    Page<Local> findByTipoLocal(Integer tipoLocal, Pageable pageable);
+        // Query customizada para filtros complexos na administração - SIMPLIFICADA
+        @Query("SELECT l FROM Local l WHERE " +
+                        "(:tipoLocal IS NULL OR l.tipoLocal = :tipoLocal) AND " +
+                        "(:nomeLocal IS NULL OR :nomeLocal = '' OR UPPER(l.nomeLocal) LIKE UPPER(CONCAT('%', :nomeLocal, '%'))) AND "
+                        +
+                        "(:revisadoLocal IS NULL OR :revisadoLocal = '' OR l.revisadoLocal = :revisadoLocal)")
+        Page<Local> findByFiltros(@Param("tipoLocal") Integer tipoLocal,
+                        @Param("nomeLocal") String nomeLocal,
+                        @Param("revisadoLocal") String revisadoLocal,
+                        Pageable pageable);
 
-    // Método de debug para verificar os dados
-    @Query("SELECT COUNT(l) FROM Local l WHERE l.tipoLocal = :tipoLocal")
-    long countByTipoLocalDebug(@Param("tipoLocal") Integer tipoLocal);
+        // Busca todos os locais para filtro com acentos (implementação no service)
+        @Query("SELECT l FROM Local l WHERE " +
+                        "(:tipoLocal IS NULL OR l.tipoLocal = :tipoLocal) AND " +
+                        "(:revisadoLocal IS NULL OR :revisadoLocal = '' OR l.revisadoLocal = :revisadoLocal)")
+        List<Local> findForAccentFilter(@Param("tipoLocal") Integer tipoLocal,
+                        @Param("revisadoLocal") String revisadoLocal);
+
+        // Método alternativo simples para filtro por tipo apenas
+        Page<Local> findByTipoLocal(Integer tipoLocal, Pageable pageable);
+
+        // Método de debug para verificar os dados
+        @Query("SELECT COUNT(l) FROM Local l WHERE l.tipoLocal = :tipoLocal")
+        long countByTipoLocalDebug(@Param("tipoLocal") Integer tipoLocal);
 
 }

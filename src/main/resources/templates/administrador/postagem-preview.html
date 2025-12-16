@@ -91,15 +91,22 @@
 
           <!-- Filtro de Região para Disparo -->
           <div class="mb-3">
-            <label for="filtroRegiao" class="form-label fw-bold">Filtro de Região:</label>
+            <label for="filtroRegiao" class="form-label fw-bold"
+              >Filtro de Região:</label
+            >
             <select id="filtroRegiao" name="filtroRegiaoId" class="form-select">
               <option value="">-- Todos da Instituição --</option>
-              <option th:each="regiao : ${regioes}" 
-                      th:value="${regiao.id}" 
-                      th:text="${regiao.codRegiao} + ' - ' + ${regiao.nomeRegiao}">
-              </option>
+              <option
+                th:each="regiao : ${regioes}"
+                th:value="${regiao.id}"
+                th:text="${regiao.codRegiao} + ' - ' + ${regiao.nomeRegiao}"
+              ></option>
             </select>
-            <small class="text-muted">Selecione uma região para enviar apenas para usuários dessa região, ou deixe em branco para enviar para toda a instituição.</small>
+            <small class="text-muted"
+              >Selecione uma região para enviar apenas para usuários dessa
+              região, ou deixe em branco para enviar para toda a
+              instituição.</small
+            >
           </div>
 
           <div class="d-flex gap-2 mb-3">
@@ -109,7 +116,12 @@
               th:object="${ocorrencia}"
             >
               <input type="hidden" th:field="*{id}" />
-              <input type="hidden" id="filtroRegiaoIdSimular" name="filtroRegiaoId" th:value="${filtroRegiaoId}" />
+              <input
+                type="hidden"
+                id="filtroRegiaoIdSimular"
+                name="filtroRegiaoId"
+                th:value="${filtroRegiaoId}"
+              />
               <button type="submit" class="btn btn-warning">
                 Simular Disparo
               </button>
@@ -121,7 +133,12 @@
             >
               <input type="hidden" th:field="*{id}" />
               <input type="hidden" name="origem" th:value="${origem}" />
-              <input type="hidden" id="filtroRegiaoIdHidden" name="filtroRegiaoId" th:value="${filtroRegiaoId}" />
+              <input
+                type="hidden"
+                id="filtroRegiaoIdHidden"
+                name="filtroRegiaoId"
+                th:value="${filtroRegiaoId}"
+              />
               <button
                 type="submit"
                 class="btn btn-success"
@@ -148,8 +165,8 @@
           </div>
           <div th:if="${simulacao}" class="alert alert-info mt-3">
             <b>Simulação:</b> O e-mail será enviado para
-            <span th:text="${totalDestinatarios}"></span> usuários inscritos e não bloqueados
-            neste tipo de atividade.
+            <span th:text="${totalDestinatarios}"></span> usuários inscritos e
+            não bloqueados neste tipo de atividade.
           </div>
         </div>
       </div>
@@ -157,20 +174,26 @@
 
     <script>
       // Sincronizar dropdown de região com os campos hidden ao mudar seleção
-      document.addEventListener('DOMContentLoaded', function() {
-        const filtroRegiao = document.getElementById('filtroRegiao');
-        const filtroRegiaoIdHidden = document.getElementById('filtroRegiaoIdHidden');
-        const filtroRegiaoIdSimular = document.getElementById('filtroRegiaoIdSimular');
-        
+      document.addEventListener("DOMContentLoaded", function () {
+        const filtroRegiao = document.getElementById("filtroRegiao");
+        const filtroRegiaoIdHidden = document.getElementById(
+          "filtroRegiaoIdHidden"
+        );
+        const filtroRegiaoIdSimular = document.getElementById(
+          "filtroRegiaoIdSimular"
+        );
+
         if (filtroRegiao) {
           // Restaurar valor selecionado se houver
-          const valorAtual = filtroRegiaoIdHidden ? filtroRegiaoIdHidden.value : '';
+          const valorAtual = filtroRegiaoIdHidden
+            ? filtroRegiaoIdHidden.value
+            : "";
           if (valorAtual) {
             filtroRegiao.value = valorAtual;
           }
-          
+
           // Sincronizar ao mudar
-          filtroRegiao.addEventListener('change', function() {
+          filtroRegiao.addEventListener("change", function () {
             if (filtroRegiaoIdHidden) filtroRegiaoIdHidden.value = this.value;
             if (filtroRegiaoIdSimular) filtroRegiaoIdSimular.value = this.value;
           });

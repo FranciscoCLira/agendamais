@@ -28,7 +28,8 @@ public class TipoAtividadeSearchControllerLegacy {
     private TipoAtividadeRepository tipoAtividadeRepository;
 
     /**
-     * Retorna lista de tipos de atividade da instituição atual, opcionalmente filtrada por termo.
+     * Retorna lista de tipos de atividade da instituição atual, opcionalmente
+     * filtrada por termo.
      * Saída mínima com id e título para uso em dropdown.
      */
     @GetMapping("/buscar")

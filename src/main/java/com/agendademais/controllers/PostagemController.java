@@ -214,10 +214,11 @@ public class PostagemController {
         model.addAttribute("emailRemetente", emailRemetente);
         model.addAttribute("nomeRemetente", nomeRemetente);
 
-        // Carrega lista de regiões para seleção de filtro (apenas da instituição logada)
-        java.util.List<Regiao> regioes = instituicaoDaOcorrencia != null 
-            ? regiaoService.listarPorInstituicao(instituicaoDaOcorrencia)
-            : java.util.Collections.emptyList();
+        // Carrega lista de regiões para seleção de filtro (apenas da instituição
+        // logada)
+        java.util.List<Regiao> regioes = instituicaoDaOcorrencia != null
+                ? regiaoService.listarPorInstituicao(instituicaoDaOcorrencia)
+                : java.util.Collections.emptyList();
         model.addAttribute("regioes", regioes);
 
         model.addAttribute("ocorrencia", ocorrencia);
@@ -470,17 +471,17 @@ public class PostagemController {
 
     // Simulação de destinatários
     @PostMapping("/simular-disparo")
-    public String simularDisparo(@ModelAttribute OcorrenciaAtividade ocorrencia, 
+    public String simularDisparo(@ModelAttribute OcorrenciaAtividade ocorrencia,
             @RequestParam(value = "filtroRegiaoId", required = false) String filtroRegiaoId,
             Model model,
             jakarta.servlet.http.HttpSession session) {
         if (isSessaoInvalida(session)) {
             return "redirect:/acesso";
         }
-        
+
         // Armazenar região selecionada na sessão para persistir após simulação
         session.setAttribute("filtroRegiaoIdSimulacao", filtroRegiaoId);
-        
+
         // Buscar a entidade completa pelo id
         OcorrenciaAtividade completa = null;
         if (ocorrencia != null && ocorrencia.getId() != null) {
@@ -510,16 +511,17 @@ public class PostagemController {
         model.addAttribute("ocorrencia", completa);
         model.addAttribute("totalDestinatarios", totalDestinatarios);
         model.addAttribute("simulacao", true);
-        
-        // Carrega lista de regiões para seleção de filtro (apenas da instituição logada)
-        java.util.List<Regiao> regioes = instituicaoLogada != null 
-            ? regiaoService.listarPorInstituicao(instituicaoLogada)
-            : java.util.Collections.emptyList();
+
+        // Carrega lista de regiões para seleção de filtro (apenas da instituição
+        // logada)
+        java.util.List<Regiao> regioes = instituicaoLogada != null
+                ? regiaoService.listarPorInstituicao(instituicaoLogada)
+                : java.util.Collections.emptyList();
         model.addAttribute("regioes", regioes);
-        
+
         // Persistir região selecionada (se houver) na simulação
         model.addAttribute("filtroRegiaoId", filtroRegiaoId != null ? filtroRegiaoId : "");
-        
+
         return "administrador/postagem-preview";
     }
 
@@ -561,7 +563,7 @@ public class PostagemController {
             redirectAttributes.addFlashAttribute("msgAviso",
                     "Nenhum destinatário encontrado para o disparo. Nenhum e-mail será enviado.");
         }
-        
+
         disparoEmailService.iniciarDisparo(completa.getId(), (int) totalDestinatarios, regiaoId);
         String redirectUrl = "/administrador/postagens/andamento/" + completa.getId();
         if (origem != null && !origem.isBlank()) {

@@ -7,7 +7,8 @@ import com.agendademais.entities.Instituicao;
 
 /**
  * Serviço para gerenciar a mensagem de rodapé de emails
- * Fornece a mensagem apropriada baseado no modo de envio configurado na instituição
+ * Fornece a mensagem apropriada baseado no modo de envio configurado na
+ * instituição
  */
 @Service
 public class EmailRodapeService {
@@ -26,17 +27,17 @@ public class EmailRodapeService {
      */
     public String gerarMensagemRodape(Instituicao instituicao) {
         // Determinar o modo de envio: padrão é Online (1) se não configurado
-        Integer modoEnvio = (instituicao != null && instituicao.getModoEnvioEmail() != null) 
-                            ? instituicao.getModoEnvioEmail() 
-                            : 1; // Default: Online
-        
+        Integer modoEnvio = (instituicao != null && instituicao.getModoEnvioEmail() != null)
+                ? instituicao.getModoEnvioEmail()
+                : 1; // Default: Online
+
         // Debug logs
-        System.out.println("[EmailRodapeService] Instituição: " + 
-                           (instituicao != null ? instituicao.getNomeInstituicao() : "null") +
-                           ", modoEnvioEmail=" + modoEnvio + 
-                           ", isProduction=" + isProduction + 
-                           ", appUrl=" + appUrl);
-        
+        System.out.println("[EmailRodapeService] Instituição: " +
+                (instituicao != null ? instituicao.getNomeInstituicao() : "null") +
+                ", modoEnvioEmail=" + modoEnvio +
+                ", isProduction=" + isProduction +
+                ", appUrl=" + appUrl);
+
         // Modo 2 = Offline (processamento em batch/fila)
         if (modoEnvio == 2) {
             System.out.println("[EmailRodapeService] ✓ Usando mensagem OFFLINE (modoEnvioEmail=2)");
@@ -60,10 +61,12 @@ public class EmailRodapeService {
     }
 
     /**
-     * Gera a mensagem de rodapé para emails (retrocompatibilidade - usa modo Online)
+     * Gera a mensagem de rodapé para emails (retrocompatibilidade - usa modo
+     * Online)
      * 
      * @return HTML com a mensagem de rodapé
-     * @deprecated Use gerarMensagemRodape(Instituicao) para respeitar configuração da instituição
+     * @deprecated Use gerarMensagemRodape(Instituicao) para respeitar configuração
+     *             da instituição
      */
     @Deprecated
     public String gerarMensagemRodape() {
@@ -102,12 +105,12 @@ public class EmailRodapeService {
      * Obtém o status do ambiente como string
      */
     public String getAmbienteStatus(Instituicao instituicao) {
-        Integer modoEnvio = (instituicao != null && instituicao.getModoEnvioEmail() != null) 
-                            ? instituicao.getModoEnvioEmail() 
-                            : 1;
-        
+        Integer modoEnvio = (instituicao != null && instituicao.getModoEnvioEmail() != null)
+                ? instituicao.getModoEnvioEmail()
+                : 1;
+
         String modoStr = (modoEnvio == 2) ? "OFFLINE (Batch/Fila)" : "ONLINE (Direto)";
-        
+
         if (isProduction) {
             return "PRODUÇÃO - " + modoStr;
         } else {

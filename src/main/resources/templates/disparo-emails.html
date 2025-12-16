@@ -176,7 +176,9 @@
                     ></span>
                   </td>
                   <td th:text="${disparo.assunto}"></td>
-                  <td th:text="${disparo.codRegiao != null ? disparo.codRegiao : '-'}"></td>
+                  <td
+                    th:text="${disparo.codRegiao != null ? disparo.codRegiao : '-'}"
+                  ></td>
                   <td>
                     <span
                       th:class="'badge badge-' + ${#strings.toLowerCase(disparo.status)}"

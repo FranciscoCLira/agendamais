@@ -375,8 +375,7 @@
         }
 
         const estadoAnterior = estadoSelect.value;
-        estadoSelect.innerHTML =
-          '<option value="">Carregando...</option>';
+        estadoSelect.innerHTML = '<option value="">Carregando...</option>';
 
         fetch("/administrador/regioes/api/estados/" + paisId)
           .then((response) => {
@@ -403,7 +402,7 @@
               });
             } else {
               estadoSelect.innerHTML +=
-                '<option disabled>Nenhum estado encontrado</option>';
+                "<option disabled>Nenhum estado encontrado</option>";
             }
           })
           .catch((error) => {

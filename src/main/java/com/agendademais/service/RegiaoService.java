@@ -42,8 +42,8 @@ public class RegiaoService {
                 regiao.getCodRegiao(), regiao.getInstituicao());
         if (jaExiste) {
             throw new IllegalArgumentException(
-                "Já existe uma região com o código " + regiao.getCodRegiao() +
-                    " para: " + regiao.getInstituicao().getNomeInstituicao());
+                    "Já existe uma região com o código " + regiao.getCodRegiao() +
+                            " para: " + regiao.getInstituicao().getNomeInstituicao());
         }
 
         regiao.setDataUltimaAtualizacao(LocalDate.now());
@@ -65,17 +65,17 @@ public class RegiaoService {
                         "Código da região inválido. Formato esperado: PPEENN (4 letras + 2 números)");
             }
 
-                // Unicidade por instituição + código da região
-                if (regiaoAtualizada.getInstituicao() == null) {
+            // Unicidade por instituição + código da região
+            if (regiaoAtualizada.getInstituicao() == null) {
                 throw new IllegalArgumentException("Instituição obrigatória para atualizar Região");
-                }
-                Optional<Regiao> existente = regiaoRepository.findByCodRegiaoAndInstituicao(
+            }
+            Optional<Regiao> existente = regiaoRepository.findByCodRegiaoAndInstituicao(
                     regiaoAtualizada.getCodRegiao(), regiaoAtualizada.getInstituicao());
-                if (existente.isPresent() && !existente.get().getId().equals(id)) {
+            if (existente.isPresent() && !existente.get().getId().equals(id)) {
                 throw new IllegalArgumentException(
                         "Já existe uma região com o código " + regiaoAtualizada.getCodRegiao() +
-                            " para: " + regiaoAtualizada.getInstituicao().getNomeInstituicao());
-                }
+                                " para: " + regiaoAtualizada.getInstituicao().getNomeInstituicao());
+            }
 
             regiao.setCodRegiao(regiaoAtualizada.getCodRegiao());
         }

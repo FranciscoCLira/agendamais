@@ -188,18 +188,18 @@ public class RegiaoController {
                 .collect(Collectors.toList());
     }
 
-        /**
-         * API: GET /administrador/regioes/api/{regiaoId}/cidades
-         * Retorna todas as cidades de uma região específica
-         */
-        @GetMapping("/api/{regiaoId}/cidades")
-        @ResponseBody
-        public List<LocalDTO> obterCidadesPorRegiao(@PathVariable Long regiaoId) {
+    /**
+     * API: GET /administrador/regioes/api/{regiaoId}/cidades
+     * Retorna todas as cidades de uma região específica
+     */
+    @GetMapping("/api/{regiaoId}/cidades")
+    @ResponseBody
+    public List<LocalDTO> obterCidadesPorRegiao(@PathVariable Long regiaoId) {
         Regiao regiao = regiaoService.obterPorId(regiaoId);
         return regiao.getCidades().stream()
-            .map(c -> new LocalDTO(c.getId(), c.getTipoLocal(), c.getNomeLocal(), c.getRevisadoLocal()))
-            .collect(Collectors.toList());
-        }
+                .map(c -> new LocalDTO(c.getId(), c.getTipoLocal(), c.getNomeLocal(), c.getRevisadoLocal()))
+                .collect(Collectors.toList());
+    }
 
     /**
      * API: GET /administrador/regioes/api/todos
